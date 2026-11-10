@@ -24,6 +24,8 @@ Nothing frozen changed: v1–v7_2, law 8, evaluators, every Phase 1 module (`bat
 | GPU check `gpu_contact_002` (GPU0, SHARED_GPU) | single-env L2 **PASS**, out-of-reach rows exactly 0, cost reported | §4 |
 | Batched contact (L0 / L1, GPU isolation) | **NOT_RUN** — task B1 / B2 | ADR §22.8 |
 | CPU suites | §5 | |
+| Task X1: law `grid_node_penalty_coulomb_v2` + μ envelope (ADR §22.9) | **DONE** (`0b33246`, protocol v2 `8842573`) | dashpots on the realised node velocity; sliding accurate μ ≤ 0.6, static μ ≤ 0.8; §8 |
+| Formal CPU run `contact_v2_001` (`ffb099f`, clean) | -02, -03 **PASS**; -01, -04, -05 **FAIL** (μ 0.8 sliding / pinch 60 µm outside the envelope, stick-run books); -07 CARRIED_OVER; -09 NOT_RUN (B2-v2) | §8 |
 
 ## 1. Decision probe (DIAGNOSTIC, before the protocol)
 
@@ -178,7 +180,7 @@ tests/test_repo_naming.py` (new: `test_rubber_contact.py` 12 = RUBBER-CONT-10, `
 
 ## 6. Open items
 
-ADR §22.8: X1 (decision on the μ 0.8 / pinch FAILs, rcs-xhigh), B1–B3 (batched contact, GPU isolation, Lab coupling
+ADR §22.8 / §22.9: X1 done (§8; X2 = defect 2, rcs-xhigh), B1–B3 (batched contact, GPU isolation, Lab coupling
 adapter), P1 (contact kernel cost), S1 (self-penetration detector before P2-6), C1 (feedback coupling with a shorter or
 iterated handoff), R1 (independent review). Independent rcs-review: NOT_RUN.
 
@@ -304,3 +306,84 @@ lock (585 s); 2 warnings (scipy IntegrationWarning in `rubber_visco_reference.py
 B3 (MaterialCoupling adapter: strip-to-world wrenches, finger recipients, `box_centers` / `set_measured_poses` /
 `reset_masked(mask)` of the coupling surface), a declared decision on the RUBBER-CONT-09 b FAIL (criterion v2 or
 otherwise), P1 (contact kernel cost), S1, C1, merge with the X1 law decision, independent review: NOT_RUN.
+
+## 8. Task X1 — decision on the v1 contact FAILs (ADR 0023 §22.9)
+
+Branch `claude/rl-rubber-p24` (B1 merged at `77cdd10`). Material status **SIMULATOR_ONLY_UNCALIBRATED**. Evidence:
+`docs/evidence/rl_ready/p2_4_contact_x1_001.json`. Protocol `configs/rubber/rubber_contact_tests_v2.json`, sha256
+`89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0` (pinned in `tests/test_rubber_p2_4_protocols.py`,
+declared alone at `8842573` before any run of it). Every v1 result and FAIL (`contact_v1_001`, `gpu_cont09_001`) stays.
+
+### 8.1 Root cause (DIAGNOSTIC)
+
+Scripts `scripts/rubber/p2_4/diag_contact_x1.py` (per-substep per-node impulses on the INC block), `x1_dev_laws.py`
+(dev law switches), `diag_x1_scenes.py` (v1 scenes with a substituted law), `halfspace_sliding_stability.py` (analytic);
+raw outputs `artifacts/rl_ready/p2_4/x1_diag_001` (README with the code state of each sweep), `x1_v2c1_scenes_001`,
+`x1_v2soft_scenes_001`, `x1_v1_identity_002`, `x1_halfspace_stability_001.txt`.
+
+| Observation (v1 law, INC block 16 × 8 × 4 mm, ratio 1.2) | μ 0.2 | 0.4 | 0.6 | 0.8 | 1.0 | 1.2 |
+|---|---|---|---|---|---|---|
+| slip error / (g cosθ) | +0.02 % | +0.06 % | +0.26 % | +1.88 % | +6.8 % | +11.9 % |
+| friction applied / μΣJ_n | 0.999 | 0.998 | 0.996 | 0.979 | 0.947 | 0.881 |
+| bottom nodes in contact per substep | 0.28 | 0.19 | 0.08 | 0.03 | 0.02 | 0.009 |
+
+- **Defect 1 (law):** the v1 dashpots act on the predicted lumped velocity, not on the realised drift velocity Bπ. A
+  frictionless block at rest rattles for 0.3 s (27 % of the bottom nodes in contact, vibration energy ~100× the static
+  elastic energy) with positive kick-paired normal work (+1.1e-8 J) while the nominal dashpot dissipation is 3.0e-6 J.
+  With the dashpots on the realised velocity it settles (100 % in contact, W_n < 0).
+- **Defect 2 (formulation):** friction–normal mode-coupling flutter of the grid-scale penalty interface (the cap follows
+  the per-node penalty force instantaneously); grows with μ; not removed by cfl 0.25 / 0.125, n_t 4 / 6, κ 0.0005–1 or
+  ζ to the limit; continuum rigid-flat Coulomb sliding is stable for μ < 1.000 (ill-posed above), so below μ = 1 it is a
+  discretisation defect.
+- Ruled out: dashpot energy missing from μN·slip (wrong sign), stick–slip hysteresis (0.2 % of μN), slip direction
+  (≤ 0.4 %), cone force timing / content (flutter persists; spring-only cone worse).
+- A normal-force memory of the cap (lag n_τ dt) removes defect 2 in steady sliding (to μ 1.0 / 1.2 / 1.5 at n_τ 100 /
+  200 / 400) but cascades edge micro-slip near threshold under rising load (0.04–0.5 mm at 0.95 μ) and collapses where it
+  does not stabilise: **not adopted** (task X2).
+
+### 8.2 Decision
+
+Route (a) + (b): law **`grid_node_penalty_coulomb_v2`** (`0b33246`; opt-in; parameters unchanged; no new state, so the B1
+batched path runs it unchanged — L0 byte-identical N = 3, `tests/test_rubber_contact_v2.py`) corrects defect 1; defect 2
+is declared as a **μ envelope** with a measured error model: sliding friction to the protocol limits for μ ≤ 0.6, static
+friction (hold at 0.95 μ) for μ ≤ 0.8; μ 0.8 sliding +1.3 … +2.5 % of g cosθ, dissipation 0.87–0.94; μ 1.0 +2.7 … +5.8 %,
+hold lost; μ ≥ 1.0 continuum ill-posed. Labels `contact_sliding_friction_deficit_v2`, `contact_friction_flutter`,
+`contact_coulomb_ill_posed`. **Limitation:** real rubber friction (0.6–1.0+) and the recipes' range [0.3, 1.5] (nominal
+0.8 / 1.0) exceed the envelope; until task X2, scored rubber contact rows stay inside it or carry the labels.
+
+n_t 2 impact books: n_t 2 is the reduced_fidelity `rubber_coarse_v1` profile; the v1 1.024 % is the coarsest-dt O(dt)
+books error (n_t 4: 0.59 / 0.25 %); the 1 % limit is kept (v2: 0.71 %). Pinch clamp balance: the v1 per-step metric is
+the strip's axial vibration (229–286 Hz ≈ c/4L = 267 Hz), unattainable for the exact undamped solution; the window-mean
+balance (0.002–1.35 %) shows no clamp / contact work coupling; v2 scores the window mean at 5 %. RUBBER-CONT-09 b: the
+v1 single-repeat band rejects any noisy scalar with probability 1/2 under H0 (unsound); v2 rule k = 5 per side, λ = 4,
+FWER ≤ 0.4 % (`cont09_band_calibration.py`); a, c strict; the GPU rerun is task B2-v2.
+
+### 8.3 Formal CPU run `contact_v2_001`
+
+`CUDA_VISIBLE_DEVICES='' PYTHONPATH=src .venv/bin/python scripts/rubber/p2_4/run_contact_v2.py --out
+artifacts/rl_ready/p2_4/contact_v2_001 --jobs 32` — commit `ffb099f`, clean tree, protocol sha256 `89bc7680…a339d0`,
+Warp 1.17.0 CPU, Python 3.12, 34 jobs, 35 s, shared Threadripper PRO 9975WX; every job records the law it built
+(`grid_node_penalty_coulomb_v2` only). Smoke `contact_v2_smoke_001` preserved (SMOKE).
+
+| Test | v1 `contact_v1_001` | v2 `contact_v2_001` |
+|---|---|---|
+| -01 a stick | FAIL (P2 at 0.95: 4.8 s) | **PASS** (10 rows incl. elastic and P2 at 0.95 for μ 0.6 / 0.8; ≤ 7e-5 s) |
+| -01 b slip | FAIL (μ 0.8: +1.65 / +1.88 / +1.06 %) | **FAIL** (μ 0.8: +1.83 / +1.26 / +2.46 %, outside the envelope, declared expected); μ 0.4 ≤ +0.09 %; μ 0.6 (unseen INC2) +0.78 / +0.42 / +0.38 % |
+| -01 c onset | FAIL (μ 0.8: −2.75 %) | **PASS** (μ 0.4 / 0.6 / 0.8: −0.31 / −1.61 / −1.47 %) |
+| -01 d books | FAIL (1.03 %) | **FAIL** (3 stick runs 1.67 / 1.28 / 1.19 % of S ≈ 2.5e-10 J, absolute ≤ 4e-12 J; slip runs ≤ 0.09 %; order 0.57) |
+| -01 e validity | PASS | PASS |
+| -02 | PASS | **PASS**; f: Σ k_n δ_I / reaction = 1.000 for every damped run (v1 0.49–0.50 by design) |
+| -03 | FAIL (n_t 2 books 1.024 %) | **PASS** (books 0.36 / 0.21 % n_t 4, 0.71 % n_t 2, P2 0.30 / 0.15 / 0.52 %; t_c +3.3 %; D_contact 2.8 / 3.1 / 4.7 % of E0, convergence 0.60) |
+| -04 | FAIL (μ 0.8: 0.932 / 0.930 / 0.943) | **FAIL** (μ 0.8: 0.931 / 0.943 / 0.869, declared expected); μ 0.4 0.986–0.997; μ 0.6 (INC2) 0.954 / 0.969 / 0.972 |
+| -05 | FAIL (ratio 0.972 / 0.964 / 0.956; per-step balance 9.8 / 6.0 / 6.3 %) | **FAIL** (ratio 0.978 / 0.982 / **0.964**); cone ≤ 0.9999, scaling 1.9 %, penetration ≤ 0.043 s PASS; window-mean balance 0.78 / 1.35 / 0.45 % PASS (per-step 9.8 / 7.0 / 6.9 % reported) |
+| -06 | NOT_RUN | NOT_RUN (NOT_IMPLEMENTED_V1) |
+| -07 | PASS | CARRIED_OVER (contact-free; v1 result applies) |
+| -08 | PASS (B1, v1 law) | v2: L0 N = 3 incline / pinch / pinch P2 byte-identical, v1 / v2 mix refused (pytest) |
+| -09 | FAIL b (1 / 108), a / c PASS (B1) | NOT_RUN (task B2-v2; rule declared) |
+
+### 8.4 CPU suites
+
+See the evidence `cpu_tests` (logs `artifacts/rl_ready/p2_4/cpu_tests_x1_001/`): `tests/test_rubber_*.py
+tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py tests/test_repo_naming.py` with
+`CUDA_VISIBLE_DEVICES=''` and with `=0` (GPU0 lock). New: `tests/test_rubber_contact_v2.py` (8), the v2 protocol pin.
+None of the tests needs local artifacts, torch or CUDA.

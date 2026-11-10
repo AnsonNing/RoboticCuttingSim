@@ -1677,3 +1677,114 @@ grips remain exact.
 | S1 | Self-penetration detector once per control step (HashGrid / FallbackGrid over surface particles, reference distance > 3 dx), sticky flag `RUBBER_SELF_CONTACT_UNRESOLVED`, P2-6 terminates | M |
 | C1 | Feedback coupling: a shorter handoff (≤ 1–2 ms) or an iterated / implicit material–robot exchange for Lab-coupled rubber; re-run RUBBER-CONT-07 envelope under a new declared protocol | M–L |
 | R1 | Independent rcs-review (xhigh) of §22 and `contact_v1_001` | – |
+
+### 22.9 Task X1 — decision on the v1 contact FAILs: law `grid_node_penalty_coulomb_v2` + declared μ envelope (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: root cause of the μ-dependent FAILs of `contact_v1_001` (-01 slip / onset / P2 stick / books, -03 n_t 2 books,
+-04 dissipation, -05 slip ratio / clamp balance) and of the -09 b FAIL of `gpu_cont09_001` (B1), the decision, the
+protocol `rubber_contact_tests_v2` (sha256 `89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0`, declared
+alone at `8842573` before any run of it), and its formal CPU run `contact_v2_001`. Every v1 result and FAIL stays.
+Nothing frozen changed: the v1 kernels are byte-identical (source hashes pinned in `tests/test_rubber_contact_v2.py`;
+four `contact_v1_001` jobs rerun after the change are byte-identical, `x1_v1_identity_002`), v1 stays the default law,
+`rubber_contact_tests_v1` and every frozen module / protocol / Phase 1 file are untouched. Material status:
+`SIMULATOR_ONLY_UNCALIBRATED`.
+
+**Root cause (DIAGNOSTIC: `scripts/rubber/p2_4/diag_contact_x1.py`, `x1_dev_laws.py`, `diag_x1_scenes.py`; raw
+`artifacts/rl_ready/p2_4/x1_diag_001`).** The per-substep instrumentation of the INC block (per-node impulses) shows that
+the friction actually applied is 97.9 % of μ ΣJ_n at μ 0.8 (stick nodes cost 0.2 % of μΣJ_n, slip misalignment
+1.9 %: lateral / axial friction 0.15) and that only 3 % of the bottom nodes are in contact per substep (normal
+impulse std/mean 5.8): the face rattles. Two defects:
+
+1. *The v1 dashpots act on the wrong velocity.* They use the predicted lumped velocity `new_v` = M_l⁻¹π_n + dt f/m_I,
+   while the node moves with the drift velocity Bπ (§18.1 F1, §21.1). For the face's grid-scale modes this dashpot is not
+   dissipative: a **frictionless** elastic block **at rest** keeps a self-excited rattle (27 % of the bottom nodes in
+   contact, vibration energy ≈ 100× the static elastic energy, sustained for 0.3 s) with **positive** kick-paired normal
+   contact work (+1.1e-8 J) while the nominal dashpot dissipation sums to 3.0e-6 J. This is a modelling defect.
+2. *Friction–normal mode-coupling flutter of the grid-scale penalty interface.* The cap μF_n follows the per-node penalty
+   force instantaneously (∂F_t/∂u_n = μk_n, k_n = κm_I/dt² tied to the grid). The flutter grows with μ (bottom contact
+   fraction 0.28 / 0.19 / 0.08 / 0.03 / 0.02 at μ 0.2 / 0.4 / 0.6 / 0.8 / 1.0), makes friction bursty and misaligned
+   and its work correlated with braked node velocities: friction deficit and vibration energy growth (4 % of μN·slip over
+   the -04 window at μ 0.8). Not removed by cfl 0.25 / 0.125, n_t 4 / 6 (worse), any κ ∈ [0.0005, 1] or ζ up to the
+   2ζ√κ ≤ 1 limit; stiffer material reduces it (rigid limit). It is not continuum physics below μ = 1: rigid-flat
+   Coulomb sliding of an elastic half-space is linearly stable for μ < 1.000 and ill-posed above (surface-wave growth
+   ∝ |k|; `halfspace_sliding_stability.py`, ν 0.3–0.49, the Renardy / Martins class of results).
+
+Ruled out as causes (the four candidates of the task): the dashpot energy missing from μN·slip (D_contact contains every
+dashpot; the deficit has the opposite sign); stick–slip hysteresis (stick share < 0.2 % of the load in sliding); the slip
+direction (−v_t instead of the trial direction: ≤ 0.4 % of g cosθ); the timing / velocity of the normal force in the
+cone (dashpot on the predicted v*, the realised g_n or their mean: the flutter persists in all; the spring part only:
+worse, 8–12 % of g cosθ at μ 0.8).
+
+**Decision: route (a) + (b).**
+
+- (a) `grid_node_penalty_coulomb_v2` (opt-in; `ContactSpec(law="grid_node_penalty_coulomb_v2")`; kernel
+  `rubber_contact.node_penalty_contact_v2`, same arguments as v1, selected by the scalar `ct_law`, no new state — the B1
+  batched path runs it unchanged and is L0 byte-identical, `test_v2_batched_l0_heterogeneous`): both dashpots and the
+  tangential trial act on the node's realised velocity g_n = `old` after the P2G grid update minus the obstacle velocity.
+  Corrects defect 1: the frictionless block at rest settles (all bottom nodes in contact, W_n < 0), the elastic block
+  holds at 0.95 μ (v1: crept), the static law becomes δ_I = F_I/k_n (springs carry the whole reaction, -02 f), the impact
+  books improve (n_t 2: 1.024 → 0.71 %). Parameters unchanged (κ 0.25, ζ 0.5; not re-tuned).
+- (b) Defect 2 is **not** corrected; v2 declares a μ envelope with a measured error model (INC, DIAGNOSTIC,
+  `sweepK_v2_errormodel.jsonl`): sliding friction accurate to the protocol limits for **μ ≤ 0.6** (slip error ≤ 0.7 %
+  of g cosθ, dissipation ≥ 0.96), static friction (hold at 0.95 μ, elastic and P2) for **μ ≤ 0.8**. Outside: μ 0.8 slip
+  +1.3 … +2.5 %, dissipation 0.87–0.94; μ 1.0 +2.7 … +5.8 %, 0.85–0.88, the hold at 0.95 μ is lost (slides 7 mm); μ 1.2 /
+  1.5 up to +15 % / +43 %. Labels: `contact_sliding_friction_deficit_v2` (μ > 0.6 with sliding),
+  `contact_friction_flutter` (μ > 0.8), `contact_coulomb_ill_posed` (μ ≥ 1.0). **This is a real limitation**: rubber–steel
+  / rubber–table friction is often 0.6–1.0+, and the generic rubber recipes randomise friction over [0.3, 1.5]
+  (nominal 0.8 / 1.0): scored rubber contact rows must stay inside the envelope or carry the labels (task X2).
+- Not adopted: a normal-force memory of the cap (Prakash–Clifton type, first-order lag of n_τ substeps, consistent as
+  dt → 0). With the v2 dashpots it removes defect 2 in steady sliding (exact to 0.1 % of g cosθ up to μ 1.0 / 1.2 / 1.5 at
+  n_τ 100 / 200 / 400), but near threshold under rising load it lets edge micro-slip cascade (0.04–0.5 mm at 0.95 μ for
+  every μ, also when the lag acts in slip only) and it collapses (friction 35–75 % of μN) where it does not stabilise.
+  It would trade the regime v2 gets right (grasp-and-hold) for sliding accuracy (task X2).
+
+**n_t 2 impact books.** n_t 2 is the declared `rubber_coarse_v1` profile (`reduced_fidelity: coarse_thickness_resolution`),
+not a production grid; the v1 1.024 % was the first-order symplectic books error of the coarsest dt (n_t 4: 0.59 / 0.25 %,
+ratio 0.42). The 1 % limit is kept for every run; v2 gives 0.71 % (n_t 4: 0.36 / 0.21 %).
+
+**Pinch clamp balance.** Not a moving-clamp / contact work coupling: the window-mean imbalance |⟨F_x(clamp) + T⟩| is
+0.002–0.65 % (v1) and 0.45–1.35 % (v2); the v1 per-step metric ⟨|F_x + T|⟩ is the strip's axial vibration (dominant
+229–286 Hz = the clamped / sliding-end quarter-wave mode c/4L = 267 Hz of the 30 mm strip). With sustained unidirectional
+rate-independent Coulomb slip the sliding end carries a constant force, so the undamped strip keeps the slip-onset
+vibration (estimate k_ax v_pull/ω ≈ 0.047 N vs 5 % of T = 0.017 N at 20 µm): the per-step 5 % is unattainable for the
+exact solution of the declared model. v2 scores the window-mean (momentum) balance at the same 5 % and reports the
+per-step value.
+
+**RUBBER-CONT-09 b (B1, `gpu_cont09_001`).** The v1 band max|A − B| ≤ max|A − A′| + 1e-6 max|A| was statistically unsound:
+with one repeat, P(|A − B| > |A − A′|) = 1/2 under H0 by exchangeability (simulated 0.500), so any scalar whose GPU
+run-to-run noise exceeds the 1e-6 floor is a coin flip; ~10² scalars reject almost surely. The 1-of-108 FAIL (a clamp
+wrench, 1.23e-7 N vs 9.2e-8 N) stays preserved and is not evidence of coupling (criteria a and c PASS). v2 rule: k = 5 A
+and 5 B episodes interleaved in one batch, per scalar d = max|A_i − B_j| ≤ 4 s + 1e-6 max|A_i| with s the larger within-side
+range; per-scalar false reject ≤ 5.5e-6 under Gaussian / Laplace / t₃ / uniform noise (`cont09_band_calibration.py`,
+2e6 samples), family-wise ≤ 0.4 % for ≤ 648 scalars (union bound); a shift > 5 s is always rejected. (a) and (c) stay
+strict. The GPU rerun under v2 is task B2-v2.
+
+**Results (formal CPU run `contact_v2_001`, commit `ffb099f`, clean tree, Warp 1.17.0 CPU, 32 workers, 34 jobs, 35 s).**
+
+| Test | v1 (`contact_v1_001`) | v2 (`contact_v2_001`) |
+|---|---|---|
+| -01 a stick | FAIL (P2 0.95 slides 4.8 s) | **PASS** (10 rows incl. elastic + P2 at 0.95, μ 0.6 / 0.8; ≤ 7e-5 s) |
+| -01 b slip | FAIL (μ 0.8 +1.65 / +1.88 / +1.06 %) | **FAIL** (μ 0.8 +1.83 / +1.26 / +2.46 %, outside the envelope, declared expected); μ 0.4 ≤ 0.09 %, μ 0.6 (unseen INC2) +0.78 / +0.42 / +0.38 % PASS |
+| -01 c onset | FAIL (μ 0.8 −2.75 %) | **PASS** (−0.31 / −1.61 / −1.47 % at μ 0.4 / 0.6 / 0.8) |
+| -01 d books | FAIL (1.03 %, one stick run) | **FAIL** (stick runs 1.67 / 1.28 / 1.19 % of S ≈ 2.5e-10 J; absolute ≤ 4e-12 J; slip runs ≤ 0.09 %) |
+| -02 | PASS | **PASS** (+ f: Σk_nδ / reaction 1.000 for every damped run) |
+| -03 | FAIL (n_t 2 books 1.024 %) | **PASS** (0.71 % n_t 2; 0.36 / 0.21 % n_t 4, order 0.59; t_c +3.3 %) |
+| -04 | FAIL (μ 0.8 0.93–0.94) | **FAIL** (μ 0.8 0.87–0.94, declared expected); μ 0.4 0.986–0.997, μ 0.6 (INC2) 0.954–0.972 PASS |
+| -05 | FAIL (ratio 0.972 / 0.964 / 0.956; per-step balance 6–10 %) | **FAIL** (ratio 0.978 / 0.982 / **0.964**); cone, scaling, penetration PASS; window-mean balance 0.78 / 1.35 / 0.45 % PASS (per-step 9.8 / 7.0 / 6.9 % reported) |
+| -06 | NOT_RUN | NOT_RUN (NOT_IMPLEMENTED_V1) |
+| -07 | PASS | CARRIED_OVER (contact-free) |
+| -08 | (B1) PASS | v2 L0 N = 3 incline / pinch / pinch P2 PASS (pytest); mixed v1 / v2 refused |
+| -09 | (B1) FAIL b, a / c PASS | NOT_RUN (task B2-v2, rule declared) |
+
+Reading. The law defect (1) is fixed and the static / impact / penetration behaviour is now correct (-01 a, c, -02, -03
+pass); the sliding friction above μ 0.6 and the two-sided pinch at μ_pad 0.5 still carry the friction–normal flutter of
+defect (2), as declared; the stick-run books are a float-noise-level energy (≤ 4e-12 J) measured against a static
+block's energy scale. Status stays EXPERIMENTAL_NOT_ACCEPTED.
+
+**Tasks (rcs-impl unless stated).**
+
+| Task | Content | Size |
+|---|---|---|
+| X2 (rcs-xhigh) | Defect 2: a contact formulation without the grid-scale friction–normal flutter (e.g. a B-consistent iterated normal constraint on the face, or a loading-safe normal-force memory — lag only in sustained macro-slip with a stick-preserving rule), under a new declared protocol; until then the μ envelope and labels apply and RL friction ranges are clipped or labelled | M–L |
+| B2-v2 | RUBBER-CONT-09 on GPU0 under the v2 rule (k 5 per side, interleaved), v2 law | S |
+| R1 | Independent rcs-review (xhigh) of §22, §22.9, `contact_v1_001`, `contact_v2_001` | – |
