@@ -100,6 +100,20 @@ def test_foreign_hashgrid_strict_raise_is_classified_infrastructure():
         "category"] == "task"
     assert S.VECTOR_ENV_INFRA_KINDS["FOREIGN_DEVICE_HASHGRID"] in S.INFRA_CLASSES
     status = S.step_status({"invalid_reason": [0, 256, 128]}, num_envs=3)      # legacy info path
-    assert status.termination_reason.tolist() == [0, 66, 2] and status.infra.tolist() == [0, 0, 0]
+    # review finding 10: the derived INFRASTRUCTURE bit of FOREIGN_DEVICE_HASHGRID is an infra flag here too
+    assert status.termination_reason.tolist() == [0, 66, 2] and status.infra.tolist() == [0, 1, 0]
     status = S.step_status({"invalid_reason": [0, 256, 128], "termination_reason": [0, 66, 2]}, num_envs=3)
     assert status.infra.tolist() == [0, 1, 0] and status.terminated.tolist() == [False, True, True]
+
+
+# ----------------------------------------------------------------------------- review finding 10
+
+def test_contact_pool_overflow_exit_is_infrastructure_before_the_task_signature():
+    pool = "FloatingPointError: Invalid rigid worlds [0, 2]: {0: ['CONTACT_POOL_OVERFLOW'], 2: ['CONTACT_POOL_OVERFLOW']}"
+    out = T.classify_process_exit(1, "Traceback (most recent call last):\n" + pool)
+    assert (out["category"], out["kind"]) == ("infrastructure", "CONTACT_POOL_OVERFLOW")
+    # the same exception object: classify_exception agrees
+    assert T.classify_exception(FloatingPointError(pool.split(": ", 1)[1])) == ("infrastructure",
+                                                                                 "CONTACT_POOL_OVERFLOW")
+    task = T.classify_process_exit(1, "FloatingPointError: Invalid rigid worlds [1]: {1: ['RIGID_NONFINITE_STATE']}")
+    assert (task["category"], task["kind"]) == ("task", "STRICT_INVALID_ENV")

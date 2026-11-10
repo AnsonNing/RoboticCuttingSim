@@ -13,11 +13,8 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   Franka USD tests and OpenBLAS-kernel-specific pose-interpolation comparisons are NOT_RUN where their inputs are
   absent; narrow xhigh review PASS). `acceptance_v1` frozen at `40c94c7` (D-11). Status
   **`MERGED_RCS_PENDING_OPTIMIZER_SYNC`** until the first descriptor pin in the external agentic optimizer repository.
-- **Next:** PR #13 (follow-up `claude/rl-p1-followup`: `acceptance_v2` with G9 timing steps 229–400 = all s512 tool
-  contact, `G9:window` gate on tool contacts and labels, findings 3/4/10/12, CI concurrency; xhigh review
-  PASS_WITH_LIMITATIONS + re-review PASS; CI running) → merge → pin `rcs_rl_vector_v1` at that merge in the external
-  repository (adapter under xhigh review; frozen checkout, smoke, its PR, sync receipt SYNCED) → first P1-6 optimizer
-  cycle under `acceptance_v2` → RCS PR → merge → new pin → SYNCED.
+- **PR #13 merged into `main` (merge `bfe6d5e`, 2026-11-11):** `acceptance_v2` (G9 times steps 229–400 = all s512 tool contact; `G9:window` gates tool contacts and labels; frozen at `bfe6d5e`, D-14), findings 3/4/10/12, CI concurrency; xhigh review PASS_WITH_LIMITATIONS + re-review PASS; CI green on both runner types.
+- **Now:** first descriptor pin `rcs_rl_vector_v1` at RCS `bfe6d5e` in the external agentic optimizer repository (adapter review PASS_WITH_LIMITATIONS + re-check GO; frozen checkout, smoke incl. GPU stage, its PR, sync receipt) → SYNCED. Then the first P1-6 optimizer cycle under `acceptance_v2` → RCS PR (xhigh review) → merge → new pin → SYNCED.
 - **Phase 2 (rubber, D-12):** merged here: P2-0..P2-2 (232e65b) and the P2-3 prerequisites + moving-clamp accounting +
   P2-3 viscoelasticity (86c5681; xhigh review of 3a43d1b..025ecaf: prerequisites PASS_WITH_LIMITATIONS, moving clamp
   PASS, P2-3 PASS_WITH_LIMITATIONS — visc v2 = post-hoc measurement correction). Running: R1 fix (stale

@@ -60,6 +60,11 @@ INFRA_CLASSES = {
     "INFRA_UNKNOWN_EXIT": "UNKNOWN",
 }
 TASK_STRICT_INVALID_ENV = "TASK_STRICT_INVALID_ENV"   # split termination_reason_v1: uncaught strict invalid env
+# split termination_reason_v1, an infra_error record whose env category is "caller" (a harness or programming error,
+# rl.termination.classify_exception): INFRA_PYTHON_EXCEPTION unless its text names one of these more specific
+# infrastructure classes. Never a task class (review finding 10; no new class: the declared configs fix the set).
+CALLER_INFRA_REFINEMENTS = ("INFRA_OOM_HOST", "INFRA_OOM_DEVICE", "INFRA_DISK", "INFRA_CUDA_ERROR",
+                            "INFRA_CONTACT_POOL_OVERFLOW")
 SPLITS = ("p1_4_v1", "termination_reason_v1")
 INFRA_FAMILIES = tuple(dict.fromkeys(INFRA_CLASSES.values()))
 
@@ -342,6 +347,9 @@ def classify_process_end(returncode, *, records=(), stderr_tail="", supervisor_r
             return done(cls, **detail)
         if split == "termination_reason_v1" and last.get("env_category") == "task":
             return done(TASK_STRICT_INVALID_ENV, **detail)
+        if split == "termination_reason_v1" and last.get("env_category") == "caller":
+            hint = classify_error_text(last.get("exc_type"), last.get("message"))
+            return done(hint if hint in CALLER_INFRA_REFINEMENTS else "INFRA_PYTHON_EXCEPTION", **detail)
         cls = classify_error_text(last.get("exc_type"), last.get("message")) or "INFRA_PYTHON_EXCEPTION"
         return done(cls, **detail)
     hint = classify_error_text(None, stderr_tail)
@@ -400,8 +408,9 @@ def step_status(info, terminated=None, truncated=None, *, num_envs):
         reason = material_termination_bits(invalid).astype(np.int64)
     infra_key = next((k for k in INFRA_INFO_KEYS if k in info), None)
     infra = zeros.copy() if infra_key is None else _host(info[infra_key]).astype(np.int64).reshape(N)
-    if source == "termination_reason":
-        infra = np.where((reason & TERM_INFRASTRUCTURE) != 0, 1, infra)   # the env's own infrastructure bit
+    # the env's own infrastructure bit; on the legacy path it is derived from the material bits (FOREIGN_DEVICE_HASHGRID
+    # sets it), so a bit-256 env is an env-level infrastructure end on both paths (review finding 10)
+    infra = np.where((reason & TERM_INFRASTRUCTURE) != 0, 1, infra)
     term = _host(terminated)
     term = ((reason & TERMINAL_BITS) != 0) | (infra != 0) if term is None else term.astype(bool).reshape(N)
     trunc = _host(truncated)

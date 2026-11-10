@@ -205,6 +205,56 @@ def test_step_status_legacy_info_derives_material_termination():
     assert st.step_count.tolist() == [3, 3, 3, 1200] and "action_status" in st.extra_keys
 
 
+# review finding 10: a caller-category child error (harness / programming error) is infrastructure, never a task
+# class, and its disagreement with classify_process_exit stays visible
+@pytest.mark.parametrize("exc_type, message, stderr, expected", [
+    ("FloatingPointError", "non-finite actions from the policy", "FloatingPointError: non-finite actions",
+     "INFRA_PYTHON_EXCEPTION"),
+    ("ValueError", "actions must be a torch tensor (2, 8)", "ValueError: actions", "INFRA_PYTHON_EXCEPTION"),
+    ("AssertionError", "invalid state in the harness", "", "INFRA_PYTHON_EXCEPTION"),
+    ("ValueError", "CUDA out of memory while staging the batch", "", "INFRA_OOM_DEVICE"),
+])
+def test_caller_category_error_is_infrastructure_under_termination_reason_v1(exc_type, message, stderr, expected):
+    records = [{"type": "infra_error", "exc_type": exc_type, "message": message, "env_category": "caller",
+                "env_kind": exc_type}]
+    out = S.classify_process_end(1, records=records, stderr_tail=stderr, pid=1, oom_probe=_unverified,
+                                 split="termination_reason_v1")
+    assert out["cls"] == expected and out["infrastructure"] is True and out["cls"] != S.TASK_STRICT_INVALID_ENV
+    assert out["env_category"] == "caller"
+    if out["env_exit"]["category"] != "infrastructure":
+        assert out["agrees_with_env_exit"] is False            # not hidden
+
+
+def test_contact_pool_overflow_stderr_is_infrastructure_and_agrees_with_env_exit():
+    stderr = "FloatingPointError: Invalid rigid worlds [0]: {0: ['CONTACT_POOL_OVERFLOW']}"
+    for split in S.SPLITS:
+        out = S.classify_process_end(1, records=[], stderr_tail=stderr, pid=1, oom_probe=_unverified, split=split)
+        assert out["cls"] == "INFRA_CONTACT_POOL_OVERFLOW" and out["infrastructure"] is True
+        assert out["env_exit"]["category"] == "infrastructure" and out["agrees_with_env_exit"] is True
+
+
+def test_legacy_info_foreign_hashgrid_env_is_env_level_infrastructure_in_both_splits():
+    st = S.step_status({"invalid_reason": np.array([0, 256, 64])}, None, None, num_envs=3)
+    assert st.source == "legacy_invalid_reason" and st.infra.tolist() == [0, 1, 0]
+    ends = [S.classify_episode_end(cause="terminated", termination_reason=int(r), invalid_reason=int(i),
+                                   infra=int(f), split=split)
+            for split in S.SPLITS for r, i, f in zip(st.termination_reason, st.invalid_reason, st.infra)][1:]
+    # p1_4_v1: bit 256 -> ENV_INVALID_STATE (the split's env-level infrastructure class), bit 64 -> TERMINATED;
+    # termination_reason_v1: ENV_INFRASTRUCTURE / TERMINATED
+    assert ends == [S.ENV_INVALID_STATE, S.TERMINATED, S.TERMINATED, S.ENV_INFRASTRUCTURE, S.TERMINATED]
+
+
+def test_finding_10_classes_stay_inside_the_declared_class_sets():
+    import json
+    for name in ("long_rollout_v1.json", "long_rollout_v2.json"):
+        cls = json.loads((ROOT / "configs" / "rl_benchmark" / name).read_text())["classification"]
+        declared = set(cls["process_classes"]) | set(cls.get("task_process_classes") or {})
+        assert {"INFRA_PYTHON_EXCEPTION", "INFRA_OOM_DEVICE", "INFRA_INVALID_STATE"} <= declared
+        assert S.ENV_INVALID_STATE in cls["episode_classes"] or name.endswith("v2.json")
+    v2 = json.loads((ROOT / "configs" / "rl_benchmark" / "long_rollout_v2.json").read_text())["classification"]
+    assert set(S.CALLER_INFRA_REFINEMENTS) | {"INFRA_PYTHON_EXCEPTION"} <= set(v2["process_classes"])
+
+
 def test_step_status_termination_reason_v1_infrastructure_bit():
     info = {"invalid_reason": np.array([0, 1, 0, 0]), "termination_reason": np.array([0, 2, 64 | 16, 16 | 32])}
     st = S.step_status(info, None, None, num_envs=4)

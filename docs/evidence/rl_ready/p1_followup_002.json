@@ -1,0 +1,271 @@
+{
+ "acceptance_v2": {
+  "g9": {
+   "num_envs": [
+    1,
+    16
+   ],
+   "order": "BCCBBC",
+   "pairs": 3,
+   "primary": 16,
+   "seeds": [
+    512
+   ],
+   "steps": 172,
+   "timed_steps": [
+    229,
+    400
+   ],
+   "warmup_steps": 228
+  },
+  "replaces_sha256": "a008dd3811da917190972a67a15fea713e17969fd442172cd68efe4730da5af4",
+  "sha256": "b66ace2967b4aad8382ca4297032c0e513a4cf3ebe6564dad03494b8e7dd612a",
+  "window_check": {
+   "min_new_labels": 30000,
+   "min_tool_contact_steps": 80,
+   "plans": [
+    "G6_replay",
+    "G7_batched"
+   ]
+  }
+ },
+ "branch": "claude/rl-p1-followup",
+ "decision": "D-14",
+ "gpu_window_check": {
+  "acceptance_config": {
+   "path": "configs/rl_benchmark/acceptance_v2.json",
+   "sha256": "b66ace2967b4aad8382ca4297032c0e513a4cf3ebe6564dad03494b8e7dd612a",
+   "version": "acceptance_v2"
+  },
+  "build_wall_s": 1.2486500759841874,
+  "cameras": "none",
+  "co_tenant": {
+   "baseline_total_util_pct_max": null,
+   "foreign_compute_pids": [
+    642659
+   ],
+   "foreign_graphics_pids": [
+    5151
+   ],
+   "foreign_memory_mib_max": 826.0,
+   "foreign_memory_mib_mean": 826.0,
+   "foreign_processes_max": 2,
+   "foreign_sm_pct_max": 0.0,
+   "foreign_sm_pct_mean": 0.0,
+   "samples": 77,
+   "sharing_reasons": [
+    "foreign_compute_process",
+    "foreign_graphics_process"
+   ],
+   "total_util_pct_max": 100.0,
+   "total_util_pct_mean": 87.83116883116882
+  },
+  "command": [
+   "scripts/rl_ready/run_perf_acceptance.py",
+   "--variant-json",
+   "artifacts/rl_ready/p1_followup/variants/alias_free_v1.json",
+   "--mode",
+   "episode",
+   "--num-envs",
+   "2",
+   "--seeds",
+   "512",
+   "--warmup-steps",
+   "228",
+   "--steps",
+   "192",
+   "--device",
+   "cuda:0",
+   "--gpu-index",
+   "0",
+   "--config",
+   "configs/rl_benchmark/acceptance_v2.json",
+   "--out",
+   "artifacts/rl_ready/p1_followup/gpu_window_check_002"
+  ],
+  "commit": "4943d75f17d138e466e66b77b9d9b0a3c7903ded",
+  "control_hz": 50.0,
+  "dirty": false,
+  "envs": [
+   {
+    "dump_sha256": "73cf33ee51a35bb571b7870bcc0323f9a7acbe01abc993e66ae5e8415ed85c8b",
+    "env": 0,
+    "invalid_reason": 0,
+    "labels": {
+     "new_in_window": 37958,
+     "step_220": 0,
+     "step_400": 37958
+    },
+    "particle_contact": {
+     "first": 315,
+     "last": 364,
+     "steps": 49,
+     "steps_in_window": 49,
+     "total": 152480
+    },
+    "seed": 512,
+    "tool_contact": {
+     "first": 229,
+     "last": 366,
+     "nonzero_set_equals_native": true,
+     "steps": 101,
+     "steps_in_window": 101,
+     "total": 308502
+    }
+   },
+   {
+    "dump_sha256": "784bb609ddf6f8b7ba2b52e5775b5063b9e9c0c0255487a0cd15803cafcc60d8",
+    "env": 1,
+    "invalid_reason": 0,
+    "labels": {
+     "new_in_window": 37958,
+     "step_220": 0,
+     "step_400": 37958
+    },
+    "particle_contact": {
+     "first": 315,
+     "last": 364,
+     "steps": 49,
+     "steps_in_window": 49,
+     "total": 152491
+    },
+    "seed": 512,
+    "tool_contact": {
+     "first": 229,
+     "last": 366,
+     "nonzero_set_equals_native": true,
+     "steps": 101,
+     "steps_in_window": 101,
+     "total": 308718
+    }
+   }
+  ],
+  "gpu": {
+   "cuda_ordinal": 0,
+   "gpu_driver": "570.211.01",
+   "gpu_index": 0,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+   "memory_total_mib": 32607.0,
+   "name": "NVIDIA GeForce RTX 5090",
+   "nvidia_smi_index": 0,
+   "total_mib": 32111.0625,
+   "uuid": null
+  },
+  "label": "SHARED_GPU",
+  "material_dt_s": 0.0001,
+  "mean_step_wall_1_400_over_approach_mean": 1.032795500888242,
+  "mode": "episode",
+  "note": "in-process step walls are candidate-reported; SHARED_GPU label (one foreign compute PID, foreign SM 0 %)",
+  "num_envs": 2,
+  "particles_per_env": 102732,
+  "phase_step_wall_s": {
+   "after_contact": {
+    "mean": 0.16113085833333335,
+    "median": 0.16112254999999998
+   },
+   "approach": {
+    "mean": 0.15984445721153845,
+    "median": 0.1596638
+   },
+   "cutting_before_particle_contact": {
+    "mean": 0.1859293625,
+    "median": 0.1614044
+   },
+   "particle_contact": {
+    "mean": 0.16237040399999997,
+    "median": 0.16209735
+   },
+   "timed_window": {
+    "mean": 0.17051920988372093,
+    "median": 0.16137669999999998
+   },
+   "tool_contact_before_cutting": {
+    "mean": 0.1595724454545455,
+    "median": 0.15947955000000003
+   }
+  },
+  "recording": "none",
+  "slowest_steps_over_approach_median": [
+   [
+    257,
+    3.033712713839956
+   ],
+   [
+    256,
+    3.0129384368905163
+   ],
+   [
+    274,
+    2.8947895515451845
+   ],
+   [
+    255,
+    2.8415000770368737
+   ],
+   [
+    275,
+    2.435843315767256
+   ],
+   [
+    1,
+    2.2297076732484133
+   ]
+  ],
+  "status": "PASS",
+  "substeps": 200,
+  "variant": {
+   "particle_contact_mode": "alias_free_v1"
+  },
+  "versions": {
+   "numpy": "2.3.1",
+   "torch": "2.11.0+cu128",
+   "warp": "1.17.0"
+  },
+  "vram_peak_mib": 1014.0,
+  "vram_source": "nvidia_smi_process",
+  "wall_s": 78.43591008801013,
+  "warm": "warm"
+ },
+ "native_wp17": {
+  "s15": {
+   "particle_contact_slot4": {
+    "first": 322,
+    "last": 843,
+    "steps": 514,
+    "steps_in_229_400": 79,
+    "steps_in_321_400": 79,
+    "total": 1627145.0
+   },
+   "tool_contact_slot1": {
+    "first": 230,
+    "last": 517,
+    "steps": 248,
+    "steps_in_229_400": 131,
+    "steps_in_321_400": 80,
+    "total": 1073600.0
+   }
+  },
+  "s512": {
+   "particle_contact_slot4": {
+    "first": 315,
+    "last": 364,
+    "steps": 49,
+    "steps_in_229_400": 49,
+    "steps_in_321_400": 44,
+    "total": 152521.0
+   },
+   "tool_contact_slot1": {
+    "first": 229,
+    "last": 366,
+    "steps": 101,
+    "steps_in_229_400": 101,
+    "steps_in_321_400": 46,
+    "total": 308600.0
+   }
+  },
+  "source": "privileged_diagnostics.material_contact_statistics, actions.jsonl of native_optimized_001 (slot 1 tool-material, slot 4 particle-particle)"
+ },
+ "schema": "rcs_rl_evidence_v1",
+ "task": "acceptance_v2 window re-declared to 229-400 (follow-up review finding 1, decision (b)); GPU window re-check"
+}

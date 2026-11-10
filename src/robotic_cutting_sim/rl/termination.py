@@ -210,6 +210,11 @@ def classify_process_exit(returncode, stderr_tail=""):
     if ("InvalidBatchEnvs" in text or "Invalid batched envs" in text) and "FOREIGN_DEVICE_HASHGRID" in text:
         return dict(category="infrastructure", kind="FOREIGN_DEVICE_HASHGRID",
                     detail="strict-mode invalid env from another live CUDA HashGrid (process-level misuse)")
+    if "Invalid rigid worlds" in text and "CONTACT_POOL_OVERFLOW" in text:
+        # review finding 10: the shared MJWarp contact pool overflowing is batch-level infrastructure, as in
+        # classify_exception, never a task outcome (tested before the task signature)
+        return dict(category="infrastructure", kind="CONTACT_POOL_OVERFLOW",
+                    detail="strict-mode rigid invalid env from the shared MJWarp contact pool (batch level)")
     if "InvalidBatchEnvs" in text or "Invalid rigid worlds" in text:
         return dict(category="task", kind="STRICT_INVALID_ENV", detail="strict-mode invalid env raised")
     for kind, pattern in _INFRA_PATTERNS:

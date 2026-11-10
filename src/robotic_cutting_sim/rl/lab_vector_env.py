@@ -38,14 +38,44 @@ import time
 
 import numpy as np
 
-from .vector_env import (ACTION_SPEC, AUTORESET_MODES, LAB_BACKEND, MATERIAL, OBSERVATION_PROFILES, REWARD, RUNTIME,
-                         VECTOR_API_REVISION, VECTOR_ENV_VERSION, TaskFamily, UnsupportedVectorConfiguration,
-                         _box_space, _guard_config, _json_default, _sha256_file, compile_family)
+from .vector_env import (ACTION_SPEC, AUTORESET_MODES, LAB_BACKEND, MATERIAL, NATIVE_TRIM_V7_2_REFERENCE,
+                         OBSERVATION_PROFILES, REWARD, RUNTIME, VECTOR_API_REVISION, VECTOR_ENV_VERSION, TaskFamily,
+                         UnsupportedVectorConfiguration, _box_space, _guard_config, _json_default, _sha256_file,
+                         compile_family, reference_reasons)
+
+from .vector_contract import PRIVILEGED_INFO_KEYS  # noqa: E402
 
 LAB_MATERIAL = "tlmpm_v7_2"
 LAB_OPTIONS = ("tool_mount", "grip_contact_profile", "deterministic_mode", "use_cuda_graph",
                "max_consecutive_ik_failures", "feedback", "ik_iterations", "velocity_feedforward", "cpu_test_mode",
                "evaluation_stream", "input_guard")
+
+
+# Lab options that change the simulated robot / coupling behaviour (review finding 3): a non-default value is a
+# reduced-fidelity reason, never silent. Values are the BatchedLabOptions defaults (the recorded B rows).
+LAB_PHYSICS_DEFAULTS = {"feedback": True, "ik_iterations": 48, "velocity_feedforward": True}
+LAB_FIDELITY_VERSION = "lab_fidelity_v2"     # v1 (P1-2b): episode steps and particle spacing only
+
+
+def lab_fidelity(scene_fidelity, actual, options, reference=NATIVE_TRIM_V7_2_REFERENCE, *, declared_episode_steps):
+    """Workload B ``fidelity()`` (pure; review finding 3). ``scene_fidelity``: ``BatchedLabOptions.fidelity()``
+    (tool-mount reasons, listed differences); ``actual``: the batched material's packed values with the keys of
+    ``vector_env.FIDELITY_REFERENCE_KEYS`` (as workload A); ``options``: the env's resolved Lab options. Every
+    material / control difference from the Native reference and every non-default ``LAB_PHYSICS_DEFAULTS`` option
+    is a reason, so a non-default ``material_dt_s`` (or substeps, spacing, dx, episode length, feedback, IK) is
+    reduced fidelity, never silently full."""
+    reasons = list(scene_fidelity["reasons"])
+    reasons += reference_reasons(actual, reference)
+    if actual["episode_steps"] != declared_episode_steps and \
+            not any(r.startswith("episode_steps=") for r in reasons):
+        reasons.append(f"episode_steps={actual['episode_steps']} (declared {declared_episode_steps})")
+    non_default = {k: options[k] for k, v in LAB_PHYSICS_DEFAULTS.items() if k in options and options[k] != v}
+    for key, value in non_default.items():
+        reasons.append("reaction_not_fed_back" if key == "feedback" else
+                       f"{key}={value} (default {LAB_PHYSICS_DEFAULTS[key]})")
+    return {**scene_fidelity, "reasons": reasons, "reduced_fidelity": bool(reasons), "computed_not_hand_set": True,
+            "fidelity_version": LAB_FIDELITY_VERSION, "reference": reference, "actual": actual,
+            "non_default_options": non_default}
 
 
 def check_grip_contact_profile(profile, tool_mount="rigid_mount_v1"):
@@ -259,7 +289,8 @@ class LabVectorCuttingEnv:
         self.observation_space = self._obs_space(N)
         self.metadata = {**type(self).metadata, "autoreset_mode": "disabled",
                          "observation_profile": self.observation_profile, "max_episode_steps": self.max_episode_steps,
-                         "tool_mount": self.lab_options.tool_mount}
+                         "tool_mount": self.lab_options.tool_mount,
+                         "privileged_info_keys": PRIVILEGED_INFO_KEYS}
 
     def _obs_space(self, n):
         shape = (lambda d: (d,)) if n is None else (lambda d: (n, d))
@@ -459,15 +490,18 @@ class LabVectorCuttingEnv:
     # ------------------------------------------------------------------ receipt
 
     def fidelity(self):
-        fid = self.lab_options.fidelity()
-        reasons = list(fid["reasons"])
-        if self.max_episode_steps != self.declared_episode_steps:
-            reasons.append(f"episode_steps={self.max_episode_steps} (reference {self.declared_episode_steps})")
-        if self.task_family.particle_spacing_m is not None and self.task_family.particle_spacing_m != .001:
-            reasons.append(f"particle_spacing_m={self.task_family.particle_spacing_m} (reference 0.001)")
+        """Computed against the Native TRIM reference with workload A's keys (material dt, substeps, spacing, dx,
+        law, slots, control dt, episode steps) plus non-default robot / coupling options (``lab_fidelity``)."""
+        u = self.material.packed.uniform
+        actual = dict(solver="tlmpm_v7_2", cutting_law=int(u["cutting_law"]), max_cuts=int(u["max_cuts"]),
+                      slots_per_node=int(u["slots"]), particle_spacing_m=float(u["spacing"]), grid_dx_m=float(u["dx"]),
+                      material_dt_s=float(u["dt"]), substeps_per_control_step=int(u["substeps"]),
+                      control_dt_s=self.control_dt, episode_steps=self.max_episode_steps)
+        options = {k: getattr(self.lab_options, k) for k in LAB_PHYSICS_DEFAULTS if hasattr(self.lab_options, k)}
+        fid = lab_fidelity(self.lab_options.fidelity(), actual, options,
+                           declared_episode_steps=self.declared_episode_steps)
         grip = grip_profile_record(self.grip_contact_profile, self.tool_mount)
-        return {**fid, "reasons": reasons, "reduced_fidelity": bool(reasons), "computed_not_hand_set": True,
-                "grip_contact_profile": grip["grip_contact_profile"],
+        return {**fid, "grip_contact_profile": grip["grip_contact_profile"],
                 "contact_solver_profile": None if grip["contact_solver_profile"] is None
                 else grip["contact_solver_profile"]["version"]}
 
@@ -499,6 +533,7 @@ class LabVectorCuttingEnv:
             else "two_frame_reset_and_current_v1", infrastructure_error=self.infrastructure_error,
             terminal_capture={"enabled": False, "statement": "no same-step autoreset on isaac_lab_newton"},
             fidelity=self.fidelity(), lab=self.env.receipt(), material=self.material.receipt(),
+            grasp_initialization=self.env.grasp_initialization,     # B2 settle result (None for B1; finding 4)
             grip=grip_profile_record(self.grip_contact_profile, self.tool_mount),
             launch_simulation={"headless": True, "visualizer": [], "lifetime": "entered at open, exited in close()"},
             versions=dict(python=platform.python_version(), torch=torch.__version__, warp=wp.config.version,
@@ -546,4 +581,5 @@ class LabVectorCuttingEnv:
         self.close()
 
 
-__all__ = ["LabVectorCuttingEnv", "LAB_OPTIONS", "check_grip_contact_profile", "grip_profile_record"]
+__all__ = ["LabVectorCuttingEnv", "LAB_OPTIONS", "LAB_PHYSICS_DEFAULTS", "LAB_FIDELITY_VERSION", "lab_fidelity",
+           "check_grip_contact_profile", "grip_profile_record"]

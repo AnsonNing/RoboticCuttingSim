@@ -165,6 +165,26 @@ def test_b2_settle_gates_snapshot_and_masked_restore(tmp_path_factory):
     assert not np.array_equal(d["before_joint_q"][cs[1]:cs[2]], d["settled_joint_q"][cs[1]:cs[2]])
 
 
+def test_b2_failed_settle_stays_latched_across_resets_in_training_mode(tmp_path_factory):
+    """Review finding 4: non-strict B2 whose real settle gates fail (unmeetable translation tolerance) keeps every
+    failed world flagged after the caller's first ``reset()`` (snapshot restore), terminates it on its first step and
+    re-latches it after a masked reset; world 0 (snapshot flag overridden to passed, test-only) is cleared."""
+    out = run_worker(tmp_path_factory, "grasp_latch", "--mode", "grasp_latch", "--num-envs", 2)
+    r = json.loads((out/"grasp_latch.json").read_text())
+    assert r["grasp_initialization_status"] == "FAIL_PHYSICAL_PREGRASP"
+    assert set(r["failed"]) == {"0", "1"} and r["passed_after_settle"] == [False, False]
+    rows, bit, term_rigid = r["rows"], 16, 1
+    assert all(x & bit for x in rows["after_settle"]["rigid_reason"])
+    first = rows["after_first_reset"]
+    assert first["rigid_reason"][0] == 0 and first["rigid_reason"][1] & bit, first     # never silently cleared
+    assert first["termination_reason"][1] & term_rigid and first["termination_reason"][0] == 0
+    step = rows["after_step"]
+    assert step["terminated"] == [False, True] and step["termination_reason"][1] & term_rigid
+    assert rows["after_masked_reset"]["rigid_reason"][1] & bit
+    assert r["receipt_latch"]["failed_worlds"] == [1] and r["receipt_latch"]["version"] == "grasp_settle_latch_v1"
+    assert r["receipt_status"] == "FAIL_PHYSICAL_PREGRASP" and r["rigid_reasons"]["16"] == "GRASP_SETTLE_FAILED"
+
+
 @pytest.fixture(scope="module")
 def ik_hold(tmp_path_factory):
     def go(name, *args):
