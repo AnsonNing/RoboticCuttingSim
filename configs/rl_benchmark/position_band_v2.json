@@ -1,7 +1,7 @@
 {
  "schema": "rcs_rl_position_band_method_v2",
  "id": "position_band_v2",
- "status": "PRE_DECLARED",
+ "status": "DERIVED_FROM_PRE_DECLARED_METHOD",
  "declared": "2026-11-10, before any band-v2 reference run (review finding F2, docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md)",
  "supersedes": {
   "id": "position_band_v1_p1_0",
@@ -67,5 +67,125 @@
   "change": "final_max_position_diff_m is promoted from reported_not_scored to a second scored statistic, derived from the SAME reference runs with the SAME tolerance rule (one-sided log-normal prediction bound, alpha 0.01, Shapiro-Wilk fallback to the reference max), classified separately; the primary statistic and every other rule are unchanged",
   "judge_view": "after derivation this file gains position_band_m = {\"512\": {\"high_m\": U}, \"15\": {\"high_m\": U}} for final_max_position_diff_m (the judge's statistic) and position_band_m_by_statistic for both statistics; the derived values are also in configs/rl_benchmark/position_band_v2_reference.json. The method digest (rl.position_band.method_digest) excludes these derived keys",
   "not_changed": "configs/rl_benchmark/acceptance_v1.json (frozen; the coordinator decides how the judge adopts band v2)"
- }
+ },
+ "position_band_m": {
+  "512": {
+   "high_m": 0.00012541239105114683,
+   "low_descriptive_m": 4.9368515213945716e-06
+  },
+  "15": {
+   "high_m": 0.00024933874698766426,
+   "low_descriptive_m": 2.2826387084524598e-05
+  }
+ },
+ "position_band_m_statistic": "final_max_position_diff_m",
+ "position_band_m_by_statistic": {
+  "max_position_diff_m_over_time": {
+   "512": {
+    "high_m": 0.00012541239105114683,
+    "low_descriptive_m": 4.9368515213945716e-06
+   },
+   "15": {
+    "high_m": 0.002601062430608319,
+    "low_descriptive_m": 1.1856366139007992e-05
+   }
+  },
+  "final_max_position_diff_m": {
+   "512": {
+    "high_m": 0.00012541239105114683,
+    "low_descriptive_m": 4.9368515213945716e-06
+   },
+   "15": {
+    "high_m": 0.00024933874698766426,
+    "low_descriptive_m": 2.2826387084524598e-05
+   }
+  }
+ },
+ "derived": {
+  "status": "DERIVED",
+  "version": "position_band_v2",
+  "reference": "configs/rl_benchmark/position_band_v2_reference.json",
+  "method_digest": "5d5d6483e1715b8c865464ce1f4e98b85dd1a407193bde5e43be7bbef1042bb0",
+  "runs": {
+   "512": [
+    "review_fix1/band_v2_s512_g0_001",
+    "review_fix1/band_v2_s512_g0_002",
+    "review_fix1/band_v2_s512_g0_003",
+    "review_fix1/band_v2_s512_g0_004",
+    "review_fix1/band_v2_s512_g0_005",
+    "review_fix1/band_v2_s512_g1_001",
+    "review_fix1/band_v2_s512_g1_002",
+    "review_fix1/band_v2_s512_g1_003",
+    "review_fix1/band_v2_s512_g1_004",
+    "review_fix1/band_v2_s512_g1_005"
+   ],
+   "15": [
+    "review_fix1/band_v2_s15_g0_001",
+    "review_fix1/band_v2_s15_g0_002",
+    "review_fix1/band_v2_s15_g0_003",
+    "review_fix1/band_v2_s15_g0_004",
+    "review_fix1/band_v2_s15_g0_005",
+    "review_fix1/band_v2_s15_g1_001",
+    "review_fix1/band_v2_s15_g1_002",
+    "review_fix1/band_v2_s15_g1_003",
+    "review_fix1/band_v2_s15_g1_004",
+    "review_fix1/band_v2_s15_g1_005"
+   ]
+  },
+  "summary": {
+   "max_position_diff_m_over_time": {
+    "512": {
+     "n": 10,
+     "kind": "one_sided_lognormal_prediction_bound",
+     "upper_m": 0.00012541239105114683,
+     "lower_m": 4.9368515213945716e-06,
+     "k": 2.959149060329901,
+     "nominal_false_reject_rate": 0.01,
+     "shapiro_wilk_p": 0.4804578454832554,
+     "geometric_mean_m": 2.488257128117159e-05,
+     "min_m": 9.5524625467026e-06,
+     "max_m": 4.789443021302431e-05
+    },
+    "15": {
+     "n": 10,
+     "kind": "one_sided_lognormal_prediction_bound",
+     "upper_m": 0.002601062430608319,
+     "lower_m": 1.1856366139007992e-05,
+     "k": 2.959149060329901,
+     "nominal_false_reject_rate": 0.01,
+     "shapiro_wilk_p": 0.08908717503809893,
+     "geometric_mean_m": 0.00017561078704826278,
+     "min_m": 6.896665177906356e-05,
+     "max_m": 0.0008567052818063403
+    }
+   },
+   "final_max_position_diff_m": {
+    "512": {
+     "n": 10,
+     "kind": "one_sided_lognormal_prediction_bound",
+     "upper_m": 0.00012541239105114683,
+     "lower_m": 4.9368515213945716e-06,
+     "k": 2.959149060329901,
+     "nominal_false_reject_rate": 0.01,
+     "shapiro_wilk_p": 0.4804578454832554,
+     "geometric_mean_m": 2.488257128117159e-05,
+     "min_m": 9.5524625467026e-06,
+     "max_m": 4.789443021302431e-05
+    },
+    "15": {
+     "n": 10,
+     "kind": "one_sided_lognormal_prediction_bound",
+     "upper_m": 0.00024933874698766426,
+     "lower_m": 2.2826387084524598e-05,
+     "k": 2.959149060329901,
+     "nominal_false_reject_rate": 0.01,
+     "shapiro_wilk_p": 0.6090981417451011,
+     "geometric_mean_m": 7.544204897741555e-05,
+     "min_m": 4.522125263849641e-05,
+     "max_m": 0.00016917853754988286
+    }
+   }
+  }
+ },
+ "version": "position_band_v2"
 }

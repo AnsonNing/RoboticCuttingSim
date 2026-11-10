@@ -70,7 +70,8 @@ def held_out():
     for run in ("smoke_replay_s512_001", "coldcache_replay_s512_001"):
         d = load(ART / "p1_0" / run / "result.json")
         rows.append(("P1-0 frozen single (band v1 runs + single ref)", f"p1_0/{run}", 0, d["seed"],
-                     (d["parity"][PB.METRIC], d["parity"]["final"]["max_position_diff_m"]), False, False,
+                     (d["parity"][PB.METRIC], (d["parity"].get("final") or {}).get("max_position_diff_m")), False,
+                     False,
                      f"{d.get('steps_run')} steps only"))
     for run in ("m0_s512_001", "m0_s15_001", "m0_s512_postfix_001", "m0_s15_postfix_001"):
         d = load(ART / "p1_2" / run / "result.json")
@@ -157,7 +158,7 @@ def main():
     rows, aggregates = classify_all(reference)
     for row in rows:
         a, b = row[PB.METRIC], row[PB.FINAL_METRIC]
-        if a["value_m"] is not None:
+        if a["value_m"] is not None and b["value_m"] is not None:
             print(f"{row['run']:<45} e{row['env']} s{row['seed']:<4} over-time {a['value_m']:.3e} v1 "
                   f"{a['band_v1_status']:<6} v2 {a['band_v2_class']:<16} final {b['value_m']:.3e} v1 "
                   f"{b['band_v1_status']:<6} v2 {b['band_v2_class']}")
