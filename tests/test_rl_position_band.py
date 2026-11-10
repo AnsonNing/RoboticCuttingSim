@@ -79,7 +79,11 @@ def test_reference_file_matches_the_declared_method():
         for seed in ("512", "15"):
             band = reference["statistics"][metric]["seeds"][seed]
             assert band["n"] >= PB.MIN_RUNS and band["status"] == "DERIVED"
-            assert band == PB.derive(band["values_m"], alpha=band["alpha"])
+            again = PB.derive(band["values_m"], alpha=band["alpha"])   # SciPy versions differ in the last bits
+            assert set(again) == set(band) and again["kind"] == band["kind"]
+            for key, value in band.items():
+                if isinstance(value, float):
+                    assert again[key] == pytest.approx(value, rel=1e-6), key
 
 
 def test_method_file_is_consumable_by_the_acceptance_judge():

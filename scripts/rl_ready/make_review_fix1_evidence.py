@@ -172,8 +172,11 @@ def main():
                             refresh_host_wall_ms=d.get("refresh_host_wall_ms"),
                             refresh_gpu_event_ms=d.get("refresh_gpu_event_ms"),
                             particles_per_env=d.get("particles_per_env"), gpu_sharing=tel.get("gpu_sharing"),
-                            foreign_sm_pct_mean=tel.get("foreign_sm_pct_mean"),
-                            foreign_sm_pct_max=tel.get("foreign_sm_pct_max"),
+                            foreign_sm_pct_mean=(tel.get("foreign_sm_pct") or {}).get("mean"),
+                            foreign_sm_pct_max=(tel.get("foreign_sm_pct") or {}).get("max"),
+                            foreign_process_count_max=tel.get("foreign_process_count_max"),
+                            gpu_index=m.get("args", {}).get("gpu_index"),
+                            git_dirty=m.get("git_dirty"),
                             cuda_visible_devices=m.get("cuda_visible_devices"), git_head=m.get("git_head")))
     evidence = dict(
         schema="rcs_rl_review_fix1_evidence_v1", review="docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md",
