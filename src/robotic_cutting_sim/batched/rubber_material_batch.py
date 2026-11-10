@@ -461,6 +461,13 @@ class BatchedRubberMaterial:
     # ------------------------------------------------------------------ inputs
 
     def begin_control_step(self):
+        """Start a control step: every group holds at its last end value until ``set_group_motions`` (q0 = q1, ...).
+        ``motion_table_v1``: the motion table is refreshed, so direct ``solver.step()`` calls after this hold like
+        ``all_nodes_v1`` (ADR 0023 §20.2, review R1)."""
+        self._begin_control_step()
+        self.solver.prepare_motion_table()
+
+    def _begin_control_step(self):
         s = self.solver
         s.index.zero_()
         s.reaction.zero_()
@@ -491,7 +498,7 @@ class BatchedRubberMaterial:
     def advance(self, *, rotation=None, translation=None, affine=None, active=None, traction=None):
         """One control step of every env; returns nothing (read ``wrench``, ``invalid_reason`` on the device)."""
         s = self.solver
-        self.begin_control_step()
+        self._begin_control_step()          # set_group_motions refreshes the motion table (same launches as before R1)
         self.set_group_motions(rotation=rotation, translation=translation, affine=affine, active=active)
         if traction is not None:
             self.set_traction(traction)
@@ -685,6 +692,9 @@ class BatchedRubberMaterial:
                     wp.launch(_reset_visco_env_v2_r, N, [self.reset_mask, s.visco_branch_work_left])
             if full:
                 s.index.zero_()
+        # motion_table_v1: the table follows the reset group motions (review R1; every env recomputed from its
+        # current q0 / q1 / b / A, so the envs that were not reset get the same table values)
+        s.prepare_motion_table()
 
     def rebuild(self, lives, **kwargs):
         options = dict(device=self.device, parity_mode=self.parity_mode, strict=self.strict,
