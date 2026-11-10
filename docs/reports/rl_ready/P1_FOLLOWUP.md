@@ -46,13 +46,13 @@ tool-contact steps and 44 % of the labels (follow-up review finding 1).
 
 | s512 | Tool contact (slot 1) | Particle contact (slot 4) | Labels |
 | --- | --- | --- | --- |
-| whole episode | steps 229–366, 101 non-zero steps (gaps 237–256 and 259–273) | steps 315–364, 49 steps | 0 at step 250, 1,978 at 260, 37,958 from 380 |
+| whole episode | steps 229–366, 101 non-zero steps (gaps 237–257 and 259–274) | steps 315–364, 49 steps | 0 at step 250, 1,978 at 260, 37,958 from 380 |
 | first declaration, 321–400 | 46 steps | 44 steps | +16,588 |
 | **v2 window, 229–400** | **all 101 steps** | **all 49 steps** | **0 → 37,958 (all)** |
 | untimed warm-up, 1–228 | none | none | none |
 | v1 window at N=8/16, 21–120 | none | none | none |
 
-**Seed 15** (held out, not timed): tool contact 229–516, particle contact 321–842, labels until step 530.
+**Seed 15** (held out, not timed): tool contact 230–517, particle contact 322–843, labels until step 530.
 
 **Why W=228, K=172:**
 - Step 229 is the first Native tool-contact step, so W=228 is the largest warm-up that loses none of the
