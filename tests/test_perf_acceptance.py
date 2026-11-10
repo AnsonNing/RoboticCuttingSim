@@ -73,11 +73,16 @@ def test_acceptance_v1_config_is_complete_and_matches_the_contract():
     assert set(gates) == {"G4", "G6", "G7", "G8"}
     assert gates["G6"]["seeds"] == [512, 15] and gates["G6"]["repeats"] == 3 and gates["G6"]["steps"] == 1200
     assert gates["G7"]["num_envs"] == 4 and gates["G8"]["variant"] == "default"
-    # the P1-0 min-max band is a swappable, descriptive input (never a hard gate until a pre-declared band lands)
+    # the position band is a swappable, descriptive input: the pre-declared band v2 (review finding F2) replaced
+    # the P1-0 min-max band before acceptance_v1 entered any baseline; it stays descriptive (WARN only)
     band = cfg["physics"]["position_band"]
-    assert band == {"path": "configs/rl_benchmark/position_band_p1_0.json", "mode": "descriptive"}
+    assert band == {"path": "configs/rl_benchmark/position_band_v2.json", "mode": "descriptive"}
     loaded = PA.load_position_band(ROOT, band)
-    assert loaded["high_m"] == {"512": 3.9e-05, "15": 4.6e-04} and loaded["status"] == "descriptive_only"
+    assert loaded["version"] == "position_band_v2" and loaded["status"] == "DERIVED_FROM_PRE_DECLARED_METHOD"
+    assert loaded["high_m"]["512"] == pytest.approx(1.2541239105114683e-4)
+    assert loaded["high_m"]["15"] == pytest.approx(2.4933874698766426e-4)
+    old = PA.load_position_band(ROOT, {"path": "configs/rl_benchmark/position_band_p1_0.json", "mode": "descriptive"})
+    assert old["high_m"] == {"512": 3.9e-05, "15": 4.6e-04} and old["status"] == "descriptive_only"
     assert set(cfg["gpu_mem_mib"]) >= {str(n) for n in perf["num_envs"]} | {"4"}
 
 
@@ -454,9 +459,11 @@ class Acceptance:
         self.manifest_path.write_text(json.dumps(manifest))
         return self
 
-    def verdict(self, band_mode=None):
+    def verdict(self, band_mode=None, band_path=None):
         J = self.judge_mod
         cfg = PA.load_config(self.cfg_path)
+        if band_path:
+            cfg["physics"]["position_band"]["path"] = band_path
         if band_mode:
             cfg["physics"]["position_band"]["mode"] = band_mode
         manifest = json.loads(self.manifest_path.read_text())
@@ -557,7 +564,12 @@ def test_judge_position_band_is_descriptive_by_default(judge_mod, tmp_path):
     acc = Acceptance(tmp_path, judge_mod)
     acc.candidate_position_offset = 1e-4      # final max diff ~1.7e-4 m > the P1-0 s512 high 3.9e-5 m
     acc.build()
-    v = acc.verdict()
+    # shipped config: band v2, descriptive -> never a PHYSICS failure
+    v2 = acc.verdict()
+    assert v2["layers"] == {"PHYSICS": "PASS", "PERFORMANCE": "PASS", "INTEGRITY": "PASS"}
+    assert v2["position_band"]["mode"] == "descriptive" and v2["position_band"]["version"] == "position_band_v2"
+    P10 = "configs/rl_benchmark/position_band_p1_0.json"
+    v = acc.verdict(band_path=P10)
     assert v["layers"] == {"PHYSICS": "PASS", "PERFORMANCE": "PASS", "INTEGRITY": "PASS"}
     assert v["position_band"]["mode"] == "descriptive" and v["position_band"]["version"] == "p1_0_minmax_v1"
     assert len(v["warnings"]) == 2 and all(w.startswith("WARN position band") for w in v["warnings"])
@@ -565,7 +577,7 @@ def test_judge_position_band_is_descriptive_by_default(judge_mod, tmp_path):
     assert "position_band" not in g6["threshold"]
     assert {x["values"]["position_band_within"] for x in g6["value"] if x["side"] == "candidate"} == {False}
     # the same outputs with the band switched to a gate (as band v2 will be): PHYSICS FAIL
-    v = acc.verdict(band_mode="gate")
+    v = acc.verdict(band_mode="gate", band_path=P10)
     assert v["layers"]["PHYSICS"] == "FAIL" and "position_band@" in next(
         g for g in v["gates"] if g["id"] == "G6")["detail"]
 
