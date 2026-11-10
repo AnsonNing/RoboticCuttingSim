@@ -117,6 +117,9 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 - Both GPUs shared with other projects: rows `SHARED_GPU`; formal rows rerun in an exclusive window.
 - Next: review fixes → merge P1-2b / B2 follow-up → P1-4 long rollout → P1-5 parity + CUT → R0 → Phase 1 review/PR/merge → first pin → P1-6 cycle.
 
+- **Status 2026-11-10 22:55 KST.** PR #12 (Phase 1 → `main`, branch `claude/rl-phase1`) open; review conditions met (head = reviewed f03fbff + review + doc-only fixes + CI skip-guard commits cc0e24c/63c1cfb, separately reviewed PASS). GitHub CI had been red on every RL-ready branch (local-only Franka USD assets in robot-batching tests; `main` green at 0c2b17e); CI on the PR head is running; merge when green. Follow-up branch `claude/rl-p1-followup`: `acceptance_v2` (G9 times the cutting phase), review findings 3/4/10/12, CI concurrency — then its own review and PR. External adapter: acceptance config selectable, v1 refused for real acceptances (8c7c94ea).
+- **Phase 2:** P2-0..P2-2 merged here (232e65b, reviewed 3a43d1b). Batched P2-3 prerequisites done on `claude/rl-rubber` (F8/F9/F10 batched, `motion_table_v1`; unreviewed). Moving-clamp energy gap = bookkeeping (post-kick vs kick-average work); versioned `constraint_work=kick_average_v1`, RUBBER-GRIP-01..04 PASS (declared ea32f2a). `rubber_visc_tests_v1` declared and pinned (95ad1f94…); P2-3 implementation running on `claude/rl-rubber-p23`; protocol v5 runs (n_t 4 refinement, -08 r = 1.5) on `claude/rl-rubber-v5`.
+
 ## 待使用者決定
 
 - Real rubber measurements are not available on this machine; Phase 2
