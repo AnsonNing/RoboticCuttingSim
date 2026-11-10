@@ -86,7 +86,6 @@ def prepare(args):
 def run(args):
     import warp as wp
     from robotic_cutting_sim import rubber_phys as P
-    from robotic_cutting_sim.tlmpm_rubber_v1 import _bc  # noqa: F401  (same module, launched through the solver)
     out = Path(args.out)
     if out.exists():
         sys.exit(f"refusing to overwrite {out}")

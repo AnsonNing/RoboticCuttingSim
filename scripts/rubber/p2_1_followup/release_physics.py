@@ -56,7 +56,6 @@ def shock(lm, lp):
 
 
 def release(lam):
-    E = R.uniaxial_stress(1.0+1e-9, MU, KAPPA)  # noqa: F841
     Ueff = 9*KAPPA*MU/(3*KAPPA+MU)
     c0 = math.sqrt(Ueff/RHO)
     U1, D1 = shock(lam, 1.0)

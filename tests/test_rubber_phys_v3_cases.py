@@ -4,7 +4,6 @@ evaluators need. The formal configurations run only through scripts/rubber/run_r
 import copy
 import math
 
-import numpy as np
 import pytest
 
 from robotic_cutting_sim import rubber_phys as P

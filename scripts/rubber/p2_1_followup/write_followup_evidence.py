@@ -116,6 +116,21 @@ def main():
     if (v3/"summary.json").exists():
         ev["rubber_phys_v3_001"] = {"run_meta": json.loads((v3/"run_meta.json").read_text()),
                                     "summary": json.loads((v3/"summary.json").read_text())}
+        if (v3/"summary_with_validity.json").exists():
+            ev["rubber_phys_v3_001"]["summary_with_validity"] = json.loads(
+                (v3/"summary_with_validity.json").read_text())
+        for name in ("stretch_release_ramped", "stretch_release_instant"):
+            r = json.loads((v3/"raw"/"07"/f"{name}.json").read_text())
+            ev["rubber_phys_v3_001"][f"07_{name}"] = {k: v for k, v in r.items() if k != "rows"}
+        r = json.loads((v3/"raw"/"12"/"guard_regression.json").read_text())
+        ev["rubber_phys_v3_001"]["12_guard_regression"] = r
+    t6 = A/"followup_stop_rule_v3_t6w4nt3_001"/"stop_rule.json"
+    if t6.exists():
+        d = json.loads(t6.read_text())
+        ev["stop_rule_v3_continuation_Lt20_t6mm_Wt4_nt3"] = {k: d[k] for k in (
+            "stop_rule", "ratio_EB_at_stop_x_f32", "ratio_EB_at_stop_u_f64", "ratio_EB_final_x_f32",
+            "ratio_EB_final_u_f64", "elastic_rel_change_after_stop")} | {
+            "series_u_f64": [[r["t_s"], r["delta_u_f64"]/d["delta_EB_m"]] for r in d["after_extra"]]}
     smoke = A/"gpu_smoke_001"
     if (smoke/"results.json").exists():
         ev["gpu_smoke_001"] = {"meta": json.loads((smoke/"meta.json").read_text()),

@@ -29,6 +29,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--label", default="Lt10_t3mm_Wt1_nt3")
     ap.add_argument("--extra", type=float, default=10.0)
+    ap.add_argument("--stop-rule", default="static_stop_v2", choices=("static_stop_v2", "static_stop_v3"))
     args = ap.parse_args()
     out = Path(args.out)
     if out.exists():
@@ -64,7 +65,7 @@ def main():
                 "x_minus_x64_max_m": float(np.abs(x[tip]-x64).max()), "elastic_j": d["elastic"],
                 "kinetic_grid_j": d["kinetic_grid"], "max_grid_speed": d["max_grid_speed_m_s"]}
     t0 = time.perf_counter()
-    init = relax_to_static(live, omega1=w1)
+    init = relax_to_static(live, omega1=w1, stop_rule=args.stop_rule)
     at_stop = measure()
     at_stop["t_s"] = init["time_s"]
     # continue the labelled damped relaxation for --extra T1 (same rate), checks every T1/20 as the stop rule
@@ -83,6 +84,7 @@ def main():
     s.set_initializer_damping(0.0)
     final = rows[-1]
     res = {"label": "DIAGNOSTIC (not a RUBBER-PHYS result)", "config": c, "f1_hz": f1, "delta_EB_m": eb,
+           "stop_rule": args.stop_rule,
            "initializer": {k: init[k] for k in ("converged", "time_s", "substeps", "final")},
            "at_stop": at_stop, "after_extra": rows,
            "ratio_EB_at_stop_x_f32": at_stop["delta_x_f32"]/eb, "ratio_EB_at_stop_u_f64": at_stop["delta_u_f64"]/eb,
