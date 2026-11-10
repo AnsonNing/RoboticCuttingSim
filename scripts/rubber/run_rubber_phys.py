@@ -3,9 +3,10 @@
     PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/rubber/run_rubber_phys.py \
         --tests 01,02,03,04,05,06,07,08,09 --device cpu --workers 24 --out artifacts/rl_ready/p2_1/<run_id>
 
-Protocol: ``--protocol v2`` (default, configs/rubber/rubber_phys_tests_v2.json) or ``v3`` (rubber_phys_tests_v3.json:
--02/-03/-05 with static_stop_v3, -07 variants ramped / instant, -12; the stable-step guard on); each frozen before its
-formal run. The output directory must not exist
+Protocol: ``--protocol v2`` (default, configs/rubber/rubber_phys_tests_v2.json), ``v3`` (rubber_phys_tests_v3.json:
+-02/-03/-05 with static_stop_v3, -07 variants ramped / instant, -12; the stable-step guard on) or ``v4``
+(rubber_phys_tests_v4.json: v3 plus the declared per-test solver options, the guard also on -06 / -08); each frozen
+before its formal run. The output directory must not exist
 (never overwritten). Every case writes raw/<test>/<label>.json as soon as it finishes; an exception is stored as
 the case result (preserved failure). ``--evaluate-only DIR`` re-applies the criteria to existing raw results.
 Material status: SIMULATOR_ONLY_UNCALIBRATED (numerical verification only).
@@ -34,7 +35,10 @@ def _jobs(tests, cfg, device):
             jobs.append(("01", case["id"], "case_patch", dict(case=case, device=device)))
     if "08" in tests:
         for g in cfg["tests"]["RUBBER-PHYS-08"]["setup"]["gamma"]:
-            jobs.append(("08", f"gamma{g:g}", "case_shear", dict(gamma=g, device=device)))
+            kw = dict(gamma=g, device=device)
+            if v3:
+                kw["stable_step_guard"] = P.guard_limit(cfg)
+            jobs.append(("08", f"gamma{g:g}", "case_shear", kw))
     for tid, configs in (("02", P.configs_02), ("03", P.configs_03), ("05", P.configs_05)):
         if tid in tests:
             for c in configs(cfg):
@@ -42,6 +46,8 @@ def _jobs(tests, cfg, device):
                           delta_ref=c.get("delta_ref"), label=c["label"])
                 if v3:
                     kw.update(stop_rule=P.stop_rule_id(cfg), stable_step_guard=P.guard_limit(cfg))
+                if cfg["version"] >= 4:
+                    kw.update(options=P.solver_options(cfg, f"RUBBER-PHYS-{tid}"))
                 jobs.append((tid, c["label"], "case_static_sag", kw))
     if "04" in tests:
         jobs.append(("04", "dt", "case_vibration", dict(run_id="dt", device=device)))
@@ -88,7 +94,8 @@ def _run_job(job, out_dir, protocol="v2"):
         elif func in ("case_uniaxial", "case_stretch_release", "case_guard_regression"):
             result = getattr(P, func)(cfg, device=kw["device"])
         elif func == "case_stretch_release_v3":
-            result = P.case_stretch_release_v3(cfg, kw["variant"], device=kw["device"])
+            result = P.case_stretch_release_v3(cfg, kw["variant"], device=kw["device"],
+                                               options=P.solver_options(cfg, "RUBBER-PHYS-07"))
         elif func == "case_records":
             result = P.case_records(kw["scenario"], kw["t"], kw["Wt"], cfg, device=kw["device"])
         else:
@@ -148,6 +155,8 @@ def _evaluate(out_dir, protocol="v2", summary_name="summary.json"):
             verdicts, measured = {"evaluation": "FAIL"}, {"traceback": traceback.format_exc()}
         if errors:
             verdicts["all_cases_ran"] = "FAIL"
+        if cfg["version"] >= 4 and tid in ("06", "08"):
+            verdicts["valid"] = "PASS" if all(int(r.get("invalid", 0)) == 0 for r in ok_rows) else "FAIL"
         values = set(verdicts.values())
         verdict = "FAIL" if "FAIL" in values else ("PASS" if values == {"PASS"} else
                                                   "PASS_EXCEPT_NOT_RUN" if values <= {"PASS", "NOT_RUN"} else "FAIL")
@@ -170,7 +179,7 @@ def main():
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--out")
     ap.add_argument("--evaluate-only")
-    ap.add_argument("--protocol", default="v2", choices=("v2", "v3"))
+    ap.add_argument("--protocol", default="v2", choices=("v2", "v3", "v4"))
     ap.add_argument("--summary-name", default="summary.json", help="evaluate-only output file (never overwritten)")
     args = ap.parse_args()
     if args.evaluate_only:

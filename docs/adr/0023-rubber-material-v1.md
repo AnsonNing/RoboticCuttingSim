@@ -891,3 +891,39 @@ e^(−6π). The float32 static state therefore creeps at about 5e-4 of δ per T1
 geometrically similar siblings (0.9653, 0.9656): the -02 result depends on the stopping time at the 1e-3 level. Mechanism
 not established (candidates: float32 rounding of F near 1, where the ulp below 1 is half the ulp above 1, under the
 noise-driven increments; to be resolved in F10). This does not change the formal verdict (FAIL), which stays as run.
+
+## 19. P2-2 decisions (amendment, 2026-11-10, rcs-impl; declared with protocol v4 before its formal runs)
+
+Scope: ADR §18.8 F2–F5, F8–F10 and §15 R2.1–R2.4. Nothing frozen changed (v1–v7_2, law 8, evaluators, Phase 1 batched
+modules, `batched/constitutive.py`, `configs/rl_benchmark/*`, `scripts/rl_ready/*`, `rubber_phys_tests_v1/v2/v3.json`,
+the P2-1 records). Raw outputs: `artifacts/rl_ready/p2_2/`; evidence `docs/evidence/rl_ready/p2_2_rubber_001.json`;
+report `docs/reports/rl_ready/P2_2_RUBBER_HYPERELASTIC.md`. Material status unchanged: `SIMULATOR_ONLY_UNCALIBRATED`.
+
+### 19.1 Opt-in solver options of `tlmpm_rubber_v1` (single-env; defaults are the v1 launch sequence, bitwise)
+
+| Option | Id | What it changes | Why (diagnostic, before protocol v4) |
+|---|---|---|---|
+| `dirichlet` | `consistent_mass_projection_v1` (F8) | The pass-1 BC is skipped; after G2P the particle velocities are projected onto the constraint set in the kinetic-energy metric: A = (W M_p Wᵀ) on the constrained (node, component) pairs of each active group (constant in TLMPM, inverted once in float64), μ = A⁻¹(p_C − m_C v_presc), v_p −= Σ_{I∈C} w_pI μ_I; the MUSL pass is repeated, so the MUSL grid velocity meets the constraint exactly. Reaction −m_I μ_I; work = impulse · v_presc. | The lumped projection zeroes the constrained grid velocity but feeds a lumped-mass (Jacobi-like) correction back through the FLIP increment, so the particle state leaves the constraint subspace and the scheme stops being symplectic there. With v = Wᵀa, KE = ½aᵀM_c a and g = M_l⁻¹M_c a, the M_c-orthogonal projection onto {(M_c a)_C = m_C v_presc} is exactly a correction supported on the constrained nodes with the CC block of M_c, and the projected step is symplectic Euler on the constraint subspace. Measured (`f8_clamp_dissipation_001`, λ 1.03 release, 20 T_ax): lumped slope −4.3e-4 Ψ/T_ax (n_t 4, mask x, CFL 0.5) to −1.4e-3 (n_t 3, xyz); projection +0.5e-5 … +1.3e-5 /T_ax, same as free-free (+1.0e-5 … +1.3e-5). |
+| `traction_work` | `grid_displacement_v1` (F9) | Traction work accumulated after the position update as f_t (m_p/M_t)·(x_end − x_start) | The grid-consistent work of a nodal force in the symplectic scheme is f_I·Δu_I = Σ_p j_p·Δx_p/dt; the v1 j·v_p(start) differed by 1.4 % of Ψ over the -07a force ramp (§18.7). |
+| `state_precision` | `f64_shadow_v1` (F10) | F and x accumulated in float64 shadows (the frozen `_deformation` / `_grid_positions` formulas in float64) and rounded once per substep to the float32 state | `f10_static_precision_001` (-02 Lt20 W = t n_t 3, t 3 / 4 / 6 mm, relaxation continued to 10 T1): float32 δ/δ_EB wanders in a 1.9–2.9e-3 band after 3 T1 with Ψ +0.8–1.0 %, and the three geometrically similar configurations differ by 2.8e-3 at 3 T1 (CPU repeat bitwise identical: deterministic); with the shadow the band is ≤ 4.1e-7 and the three agree to 1e-5 (0.99860). Mechanism: near F ≈ I the per-substep increments dt·∇v fall below half an ulp of F (and of x) once the motion has decayed, so float32 F changes only by noise-driven ulp jumps — the §18.9 creep. |
+
+The batched path refuses lives built with any non-default option (`UNSUPPORTED_SOLVER`); a batched projection /
+shadow is future work (P2-6 grips). `rubber_strip_v1` also admits ppc = 3, only as the refinement study's quadrature
+check (§14.4).
+
+### 19.2 Protocol v4 (`configs/rubber/rubber_phys_tests_v4.json`, SHA-pinned, declared before its formal runs)
+
+- -02/-03/-05: `state_precision f64_shadow_v1` (method change justified by 19.1 F10; initializer, static_stop_v3,
+  guard, criteria and thresholds unchanged). The v3 -02 FAIL stays the v3 result.
+- -07 (both variants): `dirichlet consistent_mass_projection_v1`, `traction_work grid_displacement_v1`; criteria and
+  thresholds unchanged. The v2 and v3 -07 FAILs stay recorded.
+- -06 / -08 re-run with the guard on (R2.1 full runs; protocol otherwise unchanged since v2).
+- -10 L3: rule `rubber_l3_band_v4` (`robotic_cutting_sim.rubber_l3`): per (env, observable) the statistic
+  M = max_k |y(k) − ȳ_ref(k)|; leave-one-out M_i from 20 single-env GPU repeats; one-sided lognormal prediction bound
+  at α = 0.05/16 (Bonferroni over 16 statistics; Cantelli fallback when Shapiro–Wilk p < 0.01 or an M_i = 0); nominal
+  false-reject ≤ 5 % per batched run (Monte Carlo of the rule on random-walk series: 2.1–2.3 %); 10 held-out single
+  repeats classified and reported. The v2 L3 FAIL stays the v2 result.
+- -11: Q1–Q4 on n_t ∈ {2, 3, 4, 6} × CFL {0.5, 0.25}, β 50 at n_t 3/4, ppc 3; GCI of the production grid (n_t 3) from
+  the triplet (3, 4, 6) with Celik's observed order, p_eff = clip(p_obs, 1, 2), Fs 1.25 (3.0 if p_obs ∉ [1, 3] or
+  oscillatory), GRID_INDEPENDENT when the triplet range ≤ 1e-4; pass GCI ≤ 2 % and CFL 0.5 → 0.25 change ≤ 0.1 %.
+- New sections: `throughput_v4` (R2.4/F5), `batched_gpu_v4` (R2.1 GPU N = 4 of -07 v3 / -12), `batched_l0_v4` (F4).

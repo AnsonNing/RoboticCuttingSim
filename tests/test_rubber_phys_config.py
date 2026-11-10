@@ -12,6 +12,7 @@ PINS = {
     "configs/rubber/rubber_record_v1.schema.json": "1a1a941e188a5261708f7b5403a7ddf6d6d519b5cf04ad05a78eba43b273d08a",
     "configs/rubber/rubber_phys_tests_v2.json": "e4ff8502817458fe723295ead88d9531757b1cff5c771d5d8c352828bab83060",
     "configs/rubber/rubber_phys_tests_v3.json": "c7fdfc95f8bd024cca82a8dd00f6949a0410a0f2c65beae262c32696a848dbd9",
+    "configs/rubber/rubber_phys_tests_v4.json": "f1cecee63375fb3cfef7a1319e851df472bd2f7e3e2611a2a172b108b06b38f0",
 }
 
 
@@ -78,3 +79,32 @@ def test_v3_differs_from_v2_only_in_the_declared_items():
     for key in ("step_rule", "tip"):
         assert c3.pop(key).startswith(c2.pop(key))
     assert c2 == c3
+
+
+def test_v4_differs_from_v3_only_in_the_declared_items():
+    """P2-2 (ADR 0023 §19): solver options (-02/-03/-05 f64 shadow, -07 projection + grid traction work), the L3 v4 rule,
+    the specified refinement study and the new throughput / batched sections; thresholds of every v3 test unchanged."""
+    v3 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v3.json").read_text())
+    v4 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v4.json").read_text())
+    assert v4["supersedes"]["sha256"] == PINS["configs/rubber/rubber_phys_tests_v3.json"]
+    assert v4["version"] == 4 and v4["id"] == "rubber_phys_tests_v4" and set(v4["tests"]) == set(v3["tests"])
+    options = {"RUBBER-PHYS-02": {"state_precision": "f64_shadow_v1"}, "RUBBER-PHYS-03": {"state_precision": "f64_shadow_v1"},
+               "RUBBER-PHYS-05": {"state_precision": "f64_shadow_v1"},
+               "RUBBER-PHYS-07": {"dirichlet": "consistent_mass_projection_v1", "traction_work": "grid_displacement_v1"}}
+    for tid, test in v3["tests"].items():
+        t4 = json.loads(json.dumps(v4["tests"][tid]))
+        if tid == "RUBBER-PHYS-11":
+            assert t4["thresholds"] == {"gci": 0.02, "dt_rel": 0.001} == test["thresholds"]
+            continue
+        t4.pop("v4_change", None)
+        if tid in options:
+            assert t4["setup"].pop("solver_options") == options[tid]
+        if tid == "RUBBER-PHYS-10":
+            assert t4["setup"].pop("L3_v4")["rule"].startswith("rubber_l3_band_v4")
+            t4["criteria"].pop("L3_v4")
+        assert t4 == test, tid
+    c3, c4 = dict(v3["common"]), dict(v4["common"])
+    c4.pop("solver_options")
+    g3, g4 = c3.pop("stable_step_guard"), c4.pop("stable_step_guard")
+    assert g3["limit"] == g4["limit"] == 1.0
+    assert c3 == c4

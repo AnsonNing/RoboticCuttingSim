@@ -144,12 +144,12 @@ def evaluate_01(results, cfg):
 
 # ----------------------------------------------------------------------------- RUBBER-PHYS-08 simple shear
 
-def case_shear(gamma, device="cpu", mu=4e5, substeps=200):
+def case_shear(gamma, device="cpu", mu=4e5, substeps=200, stable_step_guard=None):
     mat = material(mu)
     spec = _block()
     dt_max = 0.5*spec.grid_dx()/mat.c_p()
     live = LiveRubberMaterial(spec, material=mat, control_dt=substeps*dt_max*(1-1e-9), gravity=(0, 0, 0),
-                              device=device)
+                              device=device, stable_step_guard=stable_step_guard, strict=stable_step_guard is None)
     assert live.substeps == substeps
     Ft = R.simple_shear(gamma, mu)["F"]
     live.advance({0: {"affine": Ft, "translation": np.zeros(3)}})
@@ -159,6 +159,7 @@ def case_shear(gamma, device="cpu", mu=4e5, substeps=200):
     sigma = np.einsum("pij,pkj->pik", P, F)/np.linalg.det(F)[:, None, None]
     m = sigma.mean(0)
     return {"gamma": gamma, "substeps": substeps, "sigma_mean_pa": m.tolist(), "sigma_12_pa": float(m[0, 1]),
+            "invalid": int(live.invalid_reason), "stable_step_guard": stable_step_guard,
             "N1_pa": float(m[0, 0]-m[1, 1]), "sigma_12_ref_pa": mu*gamma, "N1_ref_pa": mu*gamma**2,
             "sigma_12_rel_error": float(m[0, 1]/(mu*gamma)-1), "N1_rel_error": float((m[0, 0]-m[1, 1])/(mu*gamma**2)-1),
             "max_F_deviation": float(np.abs(F-Ft).max())}
@@ -412,11 +413,14 @@ def evaluate_04(results, cfg, batched=None):
 # ----------------------------------------------------------------------------- RUBBER-PHYS-06 / 07 uniaxial
 
 def uniaxial_live(cfg, device="cpu", record=False):
+    """The -06 strip; from protocol v4 on with the protocol's stable-step guard (strict off, flags recorded)."""
     st = cfg["tests"]["RUBBER-PHYS-06"]["setup"]
     spec = rs.RubberStripSpec(length=st["L_m"], width=st["W_m"], thickness=st["t_m"], n_t=st["n_t"], case="C",
                               end_mask="x")
+    guard = guard_limit(cfg) if cfg.get("version", 2) >= 4 else None
     return LiveRubberMaterial(spec, material=material(st["mu_pa"]), control_dt=st["control_interval_s"],
-                              gravity=(0, 0, 0), device=device, record=record)
+                              gravity=(0, 0, 0), device=device, record=record, stable_step_guard=guard,
+                              strict=guard is None)
 
 
 def axial_period(L, mat):
