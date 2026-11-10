@@ -1,0 +1,82 @@
+"""P1-1b B2 follow-up: the opt-in ``mjwarp_grip_v1`` grip contact-solver profile of workload B.
+
+Options (any venv): the profile exists only for the B2 physical grasp, is listed as a difference (never silently
+applied), and the default B1 / the single env's profiles carry no solver profile.
+
+Lab (Isaac Lab venv, Warp CPU device, one build per process through ``scripts/rl_ready/probe_lab_b2_grasp.py``):
+the profile reaches the MuJoCo-Warp model (``DisableBit.NATIVECCD`` set: box-box pairs use MuJoCo's ``box_box``
+collider; ``impratio`` 10), the default profile does not; under the WP-17 seed-512 recorded TRIM commands
+(HOME -> skim reorientation, 150 control steps, robot only) the settled grasp keeps 4 contacts per finger pad and
+the tool stays inside the grasp monitor's warning gates (2 mm, pi/60), while the default point profile's manifold
+collapses to 1-2 points per pad and the tool slides more than 5 mm (the B2 root cause, measured on CPU and GPU).
+"""
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+import numpy as np
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+PROBE = ROOT/"scripts/rl_ready/probe_lab_b2_grasp.py"
+WP17 = ROOT/"artifacts/wp17/native_optimized_001/seed_512/box/env/recording/attempt_000/actions.jsonl"
+
+
+def test_profile_options_and_fidelity_listing():
+    from robotic_cutting_sim.batched import lab_scene as L
+    from robotic_cutting_sim.batched.errors import UnsupportedBatchConfiguration
+    assert L.GRIP_PROFILES == ("legacy_point_contact", "finite_pad_patch_v3", "mjwarp_grip_v1")
+    assert L.contact_solver_profile("legacy_point_contact") is None
+    assert L.contact_solver_profile("finite_pad_patch_v3") is None
+    profile = L.contact_solver_profile(L.MJWARP_GRIP_V1)
+    assert profile["mjwarp_disable_bits"] == ("NATIVECCD",) and profile["impratio"] == 10.
+    options = L.BatchedLabOptions(tool_mount="physical_grasp_v1", grip_contact_profile=L.MJWARP_GRIP_V1,
+                                  device="cpu", cpu_test_mode=True).validate()
+    listed = options.fidelity()["listed_differences"]
+    assert listed["grip_contact_profile"] == "mjwarp_grip_v1"
+    assert listed["contact_solver_profile"]["impratio"] == 10.
+    with pytest.raises(UnsupportedBatchConfiguration, match="UNSUPPORTED_TOOL_MOUNT"):
+        L.BatchedLabOptions(tool_mount="rigid_mount_v1", grip_contact_profile=L.MJWARP_GRIP_V1).validate()
+    with pytest.raises(UnsupportedBatchConfiguration, match="UNSUPPORTED_ACTUATOR_OVERRIDE"):
+        L.BatchedLabOptions(tool_mount="physical_grasp_v1", grip_contact_profile="mjwarp_grip_v2").validate()
+    default = L.BatchedLabOptions().validate()
+    assert default.grip_contact_profile == "legacy_point_contact"
+    assert "contact_solver_profile" not in default.fidelity()["listed_differences"]
+
+
+def _run(tmp_path, name, profile, steps):
+    out = tmp_path/name
+    env = {**os.environ, "CUDA_VISIBLE_DEVICES": "", "PYTHONPATH": str(ROOT/"src")}
+    proc = subprocess.run([sys.executable, str(PROBE), "--device", "cpu", "--scene-seeds", "512", "--steps", str(steps),
+                           "--non-strict", "--contacts-every", "0", "--grip-profile", profile, "--out", str(out)],
+                          env=env, cwd=ROOT, capture_output=True, text=True, timeout=1800)
+    if proc.returncode != 0:
+        raise AssertionError(f"probe failed ({proc.returncode}):\n{proc.stderr[-4000:]}")
+    return json.loads((out/"row.json").read_text()), np.load(out/"diag_trace.npz")
+
+
+@pytest.mark.cpu_sim
+def test_lab_mjwarp_grip_v1_holds_the_reorientation_and_point_profile_collapses(tmp_path):
+    pytest.importorskip("isaaclab", reason="Lab build needs the Isaac Lab venv (NOT_RUN in .venv)")
+    if not WP17.is_file():
+        pytest.skip("WP-17 recorded commands not available (artifacts/wp17)")
+    steps = 150
+    row, trace = _run(tmp_path, "grip", "mjwarp_grip_v1", steps)
+    solver = row["contact_solver"]
+    assert solver["profile"] == "mjwarp_grip_v1" and solver["nativeccd_disabled"] is True
+    assert solver["impratio"] == 10. and solver["box_box_collider"] == "mujoco_box_box_primitive"
+    assert row["grasp_initialization"]["status"] == "PASS_PHYSICAL_PREGRASP"
+    assert row["steps_completed"] == steps and row["termination_reason"] == [0]
+    counts = np.concatenate([trace["count_left"][:, 0], trace["count_right"][:, 0]])
+    assert np.mean(counts == 4) >= .95                               # the 4-corner pad manifold persists
+    slip = np.linalg.norm(trace["slip_hand"][:, 0], axis=-1)
+    rotation = np.linalg.norm(trace["rotvec_hand"][:, 0], axis=-1)
+    assert slip.max() < .002 and rotation.max() < np.pi/60           # inside the monitor's warning gates
+    assert not (trace["monitor_status"] == 2).any()
+    point, point_trace = _run(tmp_path, "point", "legacy_point_contact", steps)
+    assert point["contact_solver"]["nativeccd_disabled"] is False and point["contact_solver"]["impratio"] == 1.
+    point_counts = np.concatenate([point_trace["count_left"][:, 0], point_trace["count_right"][:, 0]])
+    assert np.mean(point_counts <= 2) > .5                            # manifold collapsed to 1-2 points per pad
+    assert np.linalg.norm(point_trace["slip_hand"][:, 0], axis=-1).max() > .005

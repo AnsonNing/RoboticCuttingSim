@@ -47,6 +47,40 @@ REDUCED_FIDELITY = {"rigid_mount_v1": ("rigid_tool_mount_no_grasp", "finger_open
                     "physical_grasp_v1": ()}
 LISTED_DIFFERENCES = {"rigid_engine": "newton_mjwarp (Native reference: physx_cpu)"}
 
+# B2 grip contact profiles. The first two are the single Lab env's (pad_contact.POINT_PROFILE / PATCH_PROFILE,
+# authored identically). ``mjwarp_grip_v1`` (P1-1b B2 follow-up, opt-in) keeps the point-profile geometry, mass,
+# friction coefficient, finger drive, condim 3 and solref/solimp, and changes two MuJoCo-Warp contact-solver
+# options of the B2 model:
+#   * box-box contacts from MuJoCo's dedicated ``box_box`` collider (``DisableBit.NATIVECCD``), which returns up to
+#     8 points with per-point depth and normal, instead of the default GJK/EPA + multicontact polygon path, which
+#     writes ONE EPA depth and normal to every manifold point (mujoco_warp collision_convex.py, write_contact loop)
+#     and lets the finger-pad / handle manifold collapse from 4 to 1-2 points under load (measured, P1-1b B2 report);
+#   * ``impratio`` 10 (elliptic cones): friction constraints 10x harder than normal ones, MuJoCo's documented
+#     setting against slip/creep of soft friction "without increasing the actual friction coefficient".
+# Both are global options of the B2 MuJoCo model (every box-box pair; every elliptic contact), recorded as such.
+MJWARP_GRIP_V1 = "mjwarp_grip_v1"
+GRIP_PROFILES = ("legacy_point_contact", "finite_pad_patch_v3", MJWARP_GRIP_V1)
+CONTACT_SOLVER_PROFILES = {
+    MJWARP_GRIP_V1: {
+        "version": MJWARP_GRIP_V1,
+        "authoring": "legacy_point_contact (unchanged tool/pad USD, friction, condim 3, solref/solimp)",
+        "mjwarp_disable_bits": ("NATIVECCD",),
+        "box_box_collider": "mujoco_box_box_primitive (per-point depth and normal, up to 8 points)",
+        "impratio": 10.,
+        "cone": "elliptic",
+        "scope": "global MuJoCo-Warp options of the B2 model: every box-box geom pair (finger pads/handle, "
+                 "pads or handle against the static table/fixtures) and every elliptic contact",
+        "unchanged": ("geometry", "mass/inertia", "friction coefficient", "torsional/rolling friction (condim 3)",
+                      "solref/solimp", "finger drive gains and force limit", "commanded motion speed"),
+        "physical_calibration": "NOT_VALIDATED (solver contact model choice, not a calibrated grip)",
+    },
+}
+
+
+def contact_solver_profile(grip_contact_profile):
+    """MuJoCo-Warp contact-solver options of a B2 grip profile, or None (the single env's profiles)."""
+    return CONTACT_SOLVER_PROFILES.get(grip_contact_profile)
+
 # Actuator gains of the single Lab env, physical-grasp profile (isaac_lab_env.make_lab_cfg). Finger gains of
 # Franka 0 come from ToolGraspConfig; Franka 1 keeps the legacy 350/10/20 finger drive.
 ARM_ACTUATORS = (("shoulder", "panda_joint[1-4]", 1000., 80., 87., .2),
@@ -149,10 +183,11 @@ class BatchedLabOptions:
         if self.tool_init_mode != "pregrasped":
             raise unsupported("UNSUPPORTED_GRASP_RESETTLE_ON_PARTIAL_RESET", f"tool_init_mode={self.tool_init_mode!r}")
         from ..pad_contact import PATCH_PROFILE
-        if self.grip_contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
+        if self.grip_contact_profile not in GRIP_PROFILES:
             raise unsupported("UNSUPPORTED_ACTUATOR_OVERRIDE", f"grip contact profile {self.grip_contact_profile!r}")
-        if self.grip_contact_profile == PATCH_PROFILE and self.tool_mount != "physical_grasp_v1":
-            raise unsupported("UNSUPPORTED_TOOL_MOUNT", "finite pad contacts need the B2 physical grasp")
+        if self.grip_contact_profile != POINT_PROFILE and self.tool_mount != "physical_grasp_v1":
+            raise unsupported("UNSUPPORTED_TOOL_MOUNT",
+                              f"grip contact profile {self.grip_contact_profile!r} needs the B2 physical grasp")
         if self.material not in MATERIALS:
             raise unsupported("UNSUPPORTED_SOLVER" if isinstance(self.material, str) and self.material.startswith("tlmpm")
                               else "UNSUPPORTED_MATERIAL_COUPLING",
@@ -178,6 +213,10 @@ class BatchedLabOptions:
         differences = dict(LISTED_DIFFERENCES)
         if self.tool_mount == "physical_grasp_v1":
             differences["grip_contact_profile"] = self.grip_contact_profile
+            solver_profile = contact_solver_profile(self.grip_contact_profile)
+            if solver_profile is not None:
+                differences["contact_solver_profile"] = {k: solver_profile[k] for k in
+                                                         ("version", "box_box_collider", "impratio", "scope")}
         return {"reduced_fidelity": bool(reasons), "reasons": reasons, "listed_differences": differences,
                 "grasp_restore": "grasp_restored_from_settled_snapshot" if self.tool_mount == "physical_grasp_v1"
                 else None}
@@ -378,8 +417,9 @@ def author_batched_tool(stage, root, spec, world_pose, grasp, finger_root, *, co
     from pxr import Sdf, UsdGeom, UsdPhysics, UsdShade
     from ..pad_contact import PATCH_PROFILE, POINT_PROFILE, patch_receipt
     contact_profile = POINT_PROFILE if contact_profile is None else contact_profile
-    if contact_profile not in (POINT_PROFILE, PATCH_PROFILE):
+    if contact_profile not in GRIP_PROFILES:
         raise ValueError("Unknown Lab grip contact profile")
+    # mjwarp_grip_v1 authors exactly the point profile; it changes MuJoCo-Warp solver options only (lab_batched_env)
     patch = patch_receipt(spec.handle_half_extents_m, grasp.friction) if contact_profile == PATCH_PROFILE else None
     parent = root.rsplit("/", 1)[0]
     if parent and not stage.GetPrimAtPath(parent):
@@ -556,6 +596,11 @@ def make_batched_lab_cfg(options, task):
     from ..rl.actions import ACTION_DIM
     from ..rl.observations import POLICY_TERMS
     POLICY_DIM = sum(term[1] for term in POLICY_TERMS)
+    solver_profile = contact_solver_profile(options.grip_contact_profile) if options.tool_mount == "physical_grasp_v1" \
+        else None
+    # opt-in B2 contact-solver profile: impratio here; the NATIVECCD bit is set on the built MuJoCo-Warp model
+    # before the first step (IsaacLabBatchedCuttingEnv._apply_contact_solver_profile). Defaults otherwise.
+    profile_kwargs = {} if solver_profile is None else {"impratio": float(solver_profile["impratio"])}
     cfg = DirectRLEnvCfg(seed=int(options.seed), decimation=10, episode_length_s=float(task.duration_s),
         action_space=ACTION_DIM, observation_space=POLICY_DIM, ui_window_class_type=None, scene=scene,
         sim=sim_utils.SimulationCfg(device=options.device, dt=.002, render_interval=10,
@@ -564,7 +609,7 @@ def make_batched_lab_cfg(options, task):
                 solver_cfg=SeparateWorldsMJWarpSolverCfg(use_mujoco_cpu=False, iterations=50, nconmax=256,
                     njmax=1024, integrator="implicitfast", cone="elliptic",
                     # Newton's run_to_run guarantee needs MJWarp's internal sensor stage off (no sensors are used)
-                    disable_sensors=options.deterministic_mode != "not_guaranteed"))))
+                    disable_sensors=options.deterministic_mode != "not_guaranteed", **profile_kwargs))))
     return cfg
 
 
@@ -703,6 +748,7 @@ def scene_receipt(options, task):
 
 
 __all__ = ["LAB_SCENE_VERSION", "TOOL_MOUNTS", "LAB_UNSUPPORTED_CODES", "UnsupportedLabBatchConfiguration",
+           "MJWARP_GRIP_V1", "GRIP_PROFILES", "CONTACT_SOLVER_PROFILES", "contact_solver_profile",
            "BatchedLabOptions", "rigid_scene_key", "check_uniform_rigid_scene", "home_joint_positions",
            "finger_hold_target", "author_batched_tool", "author_rigid_mount_tool", "make_batched_lab_cfg",
            "build_newton_rigid_scene", "NewtonRigidScene", "scene_receipt", "replace"]
