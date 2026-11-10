@@ -292,9 +292,39 @@ CUDA_VISIBLE_DEVICES='' PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312
 
 **Simulated CI.** This worktree has no `artifacts/`, CUDA was hidden, and torch, Isaac Lab, MuJoCo and the Newton USD
 importer looked absent. The run used the project `.venv` with a pytest plugin that hides those packages. Results are in
-§9.
+§8.
 
-## 8. Open
+## 8. GitHub CI
+
+**What CI lacks.** `.github/workflows/tests.yml` runs the full suite without `artifacts/`, torch, Isaac Lab, MuJoCo,
+the Newton USD importer and CUDA, but with pxr.
+
+**Changes in this branch:**
+- `origin/claude/rl-phase1` is merged with a normal merge commit. It brings the module-level NOT_RUN skips of the
+  robot-batching USD tests (`cc0e24c`, `63c1cfb`) and the Phase 1 doc fixes.
+- The workflow gains a concurrency group per workflow and ref, with `cancel-in-progress`. A newer push to the same ref
+  cancels the older run.
+
+**My new and changed tests and their local-only inputs:**
+- The Torch test is gated by `importorskip("torch")`.
+- The Lab tests need Isaac Lab and skip with NOT_RUN without it.
+- The judge reads the real WP-17 tree only through its CLI test, which expects BLOCKED when the tree is absent.
+- Every other new test needs only committed files.
+
+**CI simulated locally.** The test tree is the merge of `2195bb2` with `claude/rl-phase1`; it has the same code as the
+branch head. It was a detached temporary worktree, `/mnt/data/ningan/tmp/rcs_p1fu_ci`, with no `artifacts/`. The
+project `.venv` ran with CUDA hidden. A pytest plugin made torch, Isaac Lab, MuJoCo / MuJoCo-Warp and
+`newton_usd_schemas` look uninstalled. The plugin is copied to `artifacts/rl_ready/p1_followup/ci_block_imports.py`.
+
+| Run | Result |
+| --- | --- |
+| new and changed test files, 16 modules | 225 passed, 23 skipped, 0 failed; every skip states NOT_RUN or the missing module |
+| full suite | **2465 passed, 58 skipped, 6 xfailed, 0 failed in 2939 s** (`ci_sim_full_002`) |
+
+`ci_sim_full_001` is preserved and is not a code result. It is a collection error caused by my first import blocker:
+`find_spec` raised for `mujoco` where an uninstalled package returns None.
+
+## 9. Open
 
 - **A full acceptance under `acceptance_v2` is NOT_RUN.** It needs a candidate. Its real GPU time is also unmeasured; the
   estimate is in §1.2.
