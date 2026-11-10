@@ -38,7 +38,8 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
     episodes), review F5 (`terminal_capture`, `evaluate(episode="last_completed")`, autoreset envs refused) and F7
     (diagnostics-only `allow_multiple_device_hashgrids`). Tests: CPU 286 / Torch 123 / Isaac Lab 53 passed. GPU smoke
     N=2 tasks=[512,15], SHARED_GPU: workload A contract PASS (4.25 env-steps/s), B1 contract PASS (4.89) — API smoke,
-    no cutting in 50 steps.
+    no cutting in 50 steps. Tests on the merge 6e1e544: full CPU suite 2260 passed / 27 skipped / 6 xfailed; Torch
+    RL/vector/acceptance suite 178 passed / 3 skipped (GPU-only and workload B modules, NOT_RUN in that venv).
   - Running now: B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
     P1-6 R0 DONE and merged here (87cfa3b; [report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
     `run_perf_acceptance.py` (one material per child process), `judge_perf_acceptance.py`, `acceptance_v1.json`,
