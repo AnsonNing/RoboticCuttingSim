@@ -230,12 +230,14 @@ def mode_batch_foreign(args):
         env.reset(seeds=[42] * args.copies)
         m, s = env.material, env.material.solver
         counts = wp.zeros(args.copies, dtype=int, device=s.device)
-        with env._stream():
-            with wp.ScopedCapture(device=s.device) as capture:   # mirrors the batch's own build + grouped query
-                s.hash.build(s.x, 2.4 * s.radius, groups=s.env_of_particle)
-                wp.launch(count_grouped, s.total_particles, [s.hash.id, s.x, s.env_of_particle, 2.4 * s.radius,
-                                                             counts], device=s.device)
         P3.sync()
+        # captured on Warp's own stream like the batch graph (capture on the Torch stream fails: "unknown stream");
+        # mirrors the batch's own build + grouped query
+        with wp.ScopedCapture(device=s.device) as capture:
+            s.hash.build(s.x, 2.4 * s.radius, groups=s.env_of_particle)
+            wp.launch(count_grouped, s.total_particles, [s.hash.id, s.x, s.env_of_particle, 2.4 * s.radius,
+                                                         counts], device=s.device)
+        wp.synchronize_device(s.device)
         telemetry.set_phase("run")
 
         def load():   # env_ids form: the full-reset gc re-check of vector_env would refuse the foreign grid
