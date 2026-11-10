@@ -101,9 +101,12 @@ def _advance_all(batch, singles, k, case="A"):
     N, G = batch.num_envs, batch.G
     tr, force = _inputs(k, N, G)
     rot = _rotations(k, N, G) if case == "C" else None
-    batch.advance(translation=tr, traction=force, rotation=rot)
+    active = np.ones((N, G), np.int32)
+    if case == "C" and k == 1 and N > 1:
+        active[1, G-1] = 0                       # env 1 releases its second grip for one control step
+    batch.advance(translation=tr, traction=force, rotation=rot, active=active)
     for e, live in enumerate(singles):
-        motions = {g: {"translation": tr[e, g]} for g in range(G)}
+        motions = {g: {"translation": tr[e, g], "active": bool(active[e, g])} for g in range(G)}
         if rot is not None:
             for g in range(G):
                 motions[g]["rotation"] = rot[e, g]
