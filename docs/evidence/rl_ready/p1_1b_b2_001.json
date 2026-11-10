@@ -2,7 +2,7 @@
  "schema": "rcs_rl_ready_p1_1b_b2_v1",
  "work_package": "P1-1b follow-up: B2 physical-grasp failure",
  "report": "docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md (section 'B2 grasp follow-up')",
- "evidence_commit": "a6c5f96daad6289204a0cc3817e6479d077c088c",
+ "evidence_commit": "6091e4fd38606a5569e8fcc24312fa6790ea80a8",
  "artifacts": "artifacts/rl_ready/p1_1b_b2",
  "native_wp17_grasp": {
   "512": {
@@ -1722,6 +1722,167 @@
  ],
  "lab_rows": [
   {
+   "run": "g0_det_b2grip_n1_001",
+   "artifact": "artifacts/rl_ready/p1_1b_b2/g0_det_b2grip_n1_001",
+   "probe": "g0",
+   "N": 1,
+   "tool_mount": "physical_grasp_v1",
+   "driver": "scripted",
+   "material": "none (robot-only)",
+   "scene_seeds": [
+    512
+   ],
+   "use_cuda_graph": true,
+   "graph_captured": true,
+   "deterministic_mode": "run_to_run",
+   "strict_mode": false,
+   "reduced_fidelity": true,
+   "reasons": [
+    "robot_only_no_material"
+   ],
+   "listed_differences": {
+    "rigid_engine": "newton_mjwarp (Native reference: physx_cpu)",
+    "grip_contact_profile": "mjwarp_grip_v1",
+    "contact_solver_profile": {
+     "version": "mjwarp_grip_v1",
+     "box_box_collider": "mujoco_box_box_primitive (per-point depth and normal, up to 8 points)",
+     "impratio": 10.0,
+     "scope": "global MuJoCo-Warp options of the B2 model: every box-box geom pair (finger pads/handle, pads or handle against the static table/fixtures) and every elliptic contact"
+    }
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "vram_own_peak_mib": 898.0,
+   "commit": {
+    "sha": "6091e4fd38606a5569e8fcc24312fa6790ea80a8",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "660af37c1f2aa7539b0efff1f0e542f6f488f1052ca840829f14fcb7ac84f43e"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "accumulators": [
+     [
+      26.0,
+      26.0,
+      8.518127287970856e-05,
+      0.0003754480567295104,
+      8.590795005147811e-06,
+      0.00018033930973615497,
+      6.490587838925421e-05,
+      0.0
+     ]
+    ],
+    "hidden_attachment": false
+   },
+   "grasp_trace_summary": {
+    "max_slip_m": [
+     0.000135309252073057
+    ],
+    "max_angle_rad": [
+     0.0008521581767126918
+    ],
+    "final_status": [
+     0
+    ],
+    "min_bilateral_fraction": [
+     1.0
+    ]
+   },
+   "particles_per_env": 0,
+   "hashgrids": {
+    "all": [],
+    "cuda_count": 0,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "g0_graph_safety": {
+    "expected_impulse_z_per_step": 0.01,
+    "max_abs_deviation": 7.078051564995969e-10,
+    "wrench_kernel_every_substep": true,
+    "contact_callback_every_substep": true,
+    "per_step": [
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     },
+     {
+      "impulse_z": [
+       0.010000000707805157
+      ],
+      "contact_substeps": [
+       10.0
+      ]
+     }
+    ],
+    "status": "PASS"
+   },
+   "warm": {
+    "steps": 20,
+    "step_wall_s_mean": 0.26387162559549326,
+    "step_wall_s_p50": 0.2672632065368816,
+    "step_wall_s_p95": 0.27348370288964363,
+    "env_steps_per_s": 3.789721603235082
+   },
+   "foreign_sm_pct": {
+    "max": 98.0,
+    "mean": 86.9438202247191,
+    "n": 89
+   },
+   "contact_solver": {
+    "profile": "mjwarp_grip_v1",
+    "mjw_disableflags": 663552,
+    "nativeccd_disabled": true,
+    "box_box_collider": "mujoco_box_box_primitive",
+    "impratio": 10.0,
+    "cone": 1
+   },
+   "grip_material": {
+    "coefficient": 0.6,
+    "torsional_coefficient_m": null,
+    "shapes": 4,
+    "profile": "mjwarp_grip_v1"
+   },
+   "material_input_domain": null,
+   "monitor_status_counts": [
+    {
+     "0": 20
+    }
+   ],
+   "non_holding_steps": [
+    []
+   ]
+  },
+  {
    "run": "g2mat_b2point_n1_postguard_001",
    "artifact": "artifacts/rl_ready/p1_1b_b2/g2mat_b2point_n1_postguard_001",
    "probe": "g2",
@@ -3362,7 +3523,40 @@
    "note": "ran in the main worktree with the material guard written but not yet committed (tracked_src_or_scripts_modified true); workload_b_sources_sha256 660af37c... equals the committed sources at a930a8c; the guard set no flag"
   }
  ],
- "settle_repeats": [],
+ "settle_repeats": [
+  {
+   "run": "g4_settle_b2grip_001",
+   "task_id": "TRIM-01-R",
+   "grip_contact_profile": "mjwarp_grip_v1",
+   "contact_solver": {
+    "profile": "mjwarp_grip_v1",
+    "mjw_disableflags": 655360,
+    "nativeccd_disabled": true,
+    "box_box_collider": "mujoco_box_box_primitive",
+    "impratio": 10.0,
+    "cone": 1
+   },
+   "settle": "PASS_PHYSICAL_PREGRASP",
+   "failed": {},
+   "strict": true
+  },
+  {
+   "run": "g4_settle_b2grip_002",
+   "task_id": "TRIM-01-R",
+   "grip_contact_profile": "mjwarp_grip_v1",
+   "contact_solver": {
+    "profile": "mjwarp_grip_v1",
+    "mjw_disableflags": 655360,
+    "nativeccd_disabled": true,
+    "box_box_collider": "mujoco_box_box_primitive",
+    "impratio": 10.0,
+    "cone": 1
+   },
+   "settle": "PASS_PHYSICAL_PREGRASP",
+   "failed": {},
+   "strict": true
+  }
+ ],
  "material_input_domain": [
   {
    "run": "ood_cpu_far_001",

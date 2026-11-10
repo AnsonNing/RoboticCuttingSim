@@ -513,9 +513,15 @@ the point profile FAILS the settle gate on the tool's angular speed, 1.16 rad/s 
 2 points; with `mjwarp_grip_v1` the settle PASSES with 5e-5 rad/s, rotation drift 0.36 mrad and 4 points per pad in
 every step (`settle_cpu_trim01r_grip_001`). On the seeded TRIM tool the settle accumulators drop from 2.2e-3 to
 1.8e-4 rad/s and from 4.4 to 0.38 mrad (`diag_cpu_point_001` against `prof_cpu_mjwarp_grip_v1_001`). So the S2 settle
-flakiness has the same root cause. The GPU repeats on the G4 ruler-knife task
-(`g4_settle_b2grip_00{1,2,3}`, strict) and the deterministic-mode build (`g0_det_b2grip_n1_001`) are NOT_RUN at the
-time of writing (queued; see the update below if present).
+flakiness has the same root cause. GPU, strict, the G4 batched setting with the profile (`probe_lab_batched_g4.py --grip-profile mjwarp_grip_v1`):
+`g4_settle_b2grip_001` and `_002` PASS with max tool angular speed 4.6e-5 rad/s and rotation drift 0.36 mrad,
+identical accumulators in both builds (the point-profile rows `g4_batched_ns_001..003`: 0.70 / 0.026 / 1.16 rad/s,
+two of three failing; strict builds: 5 of 6 failing, `g4_batched_003..007`). G3_PLACEHOLDER
+
+Deterministic mode (`g0_det_b2grip_n1_001`, `run_to_run`, N=1, graph, 20 steps with a 0.5 N edge force): settle PASS
+(angular speed 1.8e-4 rad/s, drift 0.085 mm / 0.38 mrad), slip 0.14 mm and 0.85 mrad over the 20 steps, graph safety
+PASS. With the point profile the same build ejected the tool (1.43 m, `g0_det_b2_n1_diag_001`). Deterministic B2 is
+therefore no longer blocked by the grasp; the B2 G1/G3 deterministic isolation runs themselves were not done here.
 
 ## 4. Material crash after a lost grasp
 
