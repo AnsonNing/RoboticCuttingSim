@@ -12,9 +12,14 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   1. P1-2 integration + milestones (GPU1, `rcs_rl_runner/gpu1.lock`): M0, M1 N=4, L4, M2 N=1/8/16 COMPLETE;
      single-env reference + nsys runs in progress → `artifacts/rl_ready/p1_2/`, report
      `docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md`.
-  2. P1-1b: S1 DONE ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md): G0/T2/G1 PASS, robot-only and with-material
-     G2 rows SHARED_GPU, table fix 359ce0d); now S2 (B2 grasp + material, G3–G5) and S3 (TRIM seeds 512/15 with
-     recorded commands, frozen evaluator) + reward/evaluator wiring, GPU0/GPU1 under their locks.
+  2. P1-1b S0–S3 DONE ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md), evidence `p1_1b_s2_s3_001.json`, 78a211b):
+     reward/evaluator wiring in the Lab batched env; G3 snapshot restore PASS; G5 L0 bitwise PASS, G5 L3 (frozen single
+     replays reproduce batch final codes, both seeds) PASS; **S3 TRIM B1 (rigid mount, reduced fidelity) N=2/4 both
+     seeds: frozen evaluator PASS**, codes bitwise across N; **B2 physical grasp FAIL** (knife slips 8–13 mm / 0.5 rad
+     in MuJoCo-Warp fingers during HOME→skim reorientation, before material contact → GRASP_LOST; Native PhysX holds);
+     B2 under RUN_TO_RUN BLOCKED; G4 B2 arm offset 3.5e-4 rad FAIL vs pre-set tolerance; material graph SIGSEGV after a
+     lost grasp (edge leaves domain) → must become an invalid flag; CUT on `tlmpm_v7_2` NOT_RUN (CUT scenes use
+     `tlmpm_v5`). HashGrid census: no P1-1b process held >1 device grid.
   3. P1-3a DONE on branch `claude/rl-p1-3a` (worktree `/home/ningan/RoboticCuttingSim-rl-p13`, head 25c4fc1 after a
      trial merge of this branch, no conflicts; merge here after the P1-2 chain ends). Opt-in
      `particle_contact_mode="alias_free_v1"` (C2 alias-free hash dims + C1 + speed guard with conditional-node
