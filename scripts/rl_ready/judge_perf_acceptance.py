@@ -49,6 +49,7 @@ import numpy as np  # noqa: E402
 from robotic_cutting_sim.rl import perf_acceptance as PA  # noqa: E402
 
 HARNESS = ROOT / "scripts" / "rl_ready" / "run_perf_acceptance.py"
+JUDGE_THRESHOLD_KEYS = ("reset_p95_shared_slack_ms",)   # judged here; perf_acceptance.THRESHOLD_KEYS has the rest
 OOM = re.compile(r"out of memory|CUDA_ERROR_OUT_OF_MEMORY|cudaErrorMemoryAllocation|MemoryError", re.IGNORECASE)
 LIMITATIONS = [
     "VRAM peak and reset p95 are measured inside the process under test (candidate-reported, not independently "
@@ -133,9 +134,13 @@ def evaluate(native, times, positions, codes):
 # ----------------------------------------------------------------------------- the judge
 
 class Judge:
-    def __init__(self, cfg, cfg_path, manifest, manifest_path, natives=None):
+    def __init__(self, cfg, cfg_path, manifest, manifest_path, natives=None, known_harness=None):
         """``natives``: an object with ``get(seed)`` (as :class:`Natives`); tests pass synthetic references."""
+        missing = [k for k in JUDGE_THRESHOLD_KEYS if not isinstance(cfg["thresholds"].get(k), (int, float))]
+        if missing:
+            raise ValueError(f"config thresholds: needs numbers {missing}")
         self.cfg, self.cfg_path, self.man, self.manifest_path = cfg, Path(cfg_path), manifest, Path(manifest_path)
+        self.known_harness = list(known_harness or [])
         self.gates, self.rows, self.notes, self.warnings = [], [], [], []
         self.band, self.band_error = None, None
         try:   # the band file is a swappable input of this (evaluator) checkout
@@ -212,8 +217,15 @@ class Judge:
         root = str(env.get("package_root") or "")
         if not checkout or not os.path.realpath(root).startswith(os.path.realpath(str(checkout)) + os.sep):
             p.append(f"package_root {root!r} is not inside the {side} checkout {checkout!r}")
-        if env.get("harness_sha256") != self.harness_sha256 or env.get("shared_module_sha256") != self.shared_sha256:
-            p.append("harness or perf_acceptance module differs from the evaluator checkout's")
+        pair = (env.get("harness_sha256"), env.get("shared_module_sha256"))
+        if pair != (self.harness_sha256, self.shared_sha256):
+            known = next((k for k in self.known_harness
+                          if (k.get("harness_sha256"), k.get("shared_module_sha256")) == pair), None)
+            if known is None:
+                p.append("harness or perf_acceptance module differs from the evaluator checkout's")
+            else:
+                self.notes.append(f"re-judge: run {run.get('id')} harness bytes accepted from --known-harness "
+                                  f"({known.get('note')})")
         for key in ("mode", "num_envs", "warmup_steps", "steps"):
             if res.get(key) != expect[key]:
                 p.append(f"{key} {res.get(key)!r} != {expect[key]!r}")
@@ -658,10 +670,7 @@ class Judge:
             if None in rb + rc:
                 self.gate(f"G9:n{n}:reset", "PERFORMANCE", "BLOCKED", value=dict(baseline=rb, candidate=rc))
             else:
-                limit = statistics.median(rb) * float(th["reset_p95_ratio_max"]) + float(th["reset_p95_slack_ms"])
-                self.gate(f"G9:n{n}:reset", "PERFORMANCE", "PASS" if statistics.median(rc) <= limit else "FAIL",
-                          value=dict(baseline_median=statistics.median(rb), candidate_median=statistics.median(rc)),
-                          threshold=dict(max_ms=limit, rule="median reset p95: C <= 1.25 x B + 2 ms (config)"))
+                self.reset_gate(n, rb, rc, {s: [x.get("gpu_sharing") for x in side_rows[s]] for s in side_rows})
             base_v = next(v for v in views if v["side"] == "baseline")
             want = [r.get("final_labelled") for r in base_v["result"].get("rounds") or []]
             differ = [v["id"] for v in views if [r.get("final_labelled") for r in v["result"].get("rounds") or []]
@@ -670,6 +679,34 @@ class Judge:
             self.gate(f"G9:n{n}:work", "PERFORMANCE", "FAIL" if differ else "PASS", value=differ,
                 threshold="every run: W+K steps, final labelled counts = the first baseline run's")
         return ratios
+
+    def reset_gate(self, n, rb, rc, sharing):
+        """``G9:n<N>:reset`` on the per-side medians of reset p95 over every ABBA process at N. Both sides
+        EXCLUSIVE_GPU: FAIL above ratio x B + slack. Otherwise (SHARED_GPU or UNKNOWN on either side; smoke_001
+        showed per-process reset modes of ~1 ms or ~7 ms independent of the variant): the strict limit still decides
+        PASS, a value between the strict and the shared limit (ratio x B + shared slack) is a WARN
+        (``shared_gpu_reset_bimodality``), FAIL only above the shared limit."""
+        th = self.cfg["thresholds"]
+        mb, mc = statistics.median(rb), statistics.median(rc)
+        ratio = float(th["reset_p95_ratio_max"])
+        strict = mb * ratio + float(th["reset_p95_slack_ms"])
+        shared_limit = mb * ratio + float(th["reset_p95_shared_slack_ms"])
+        exclusive = all(x == "EXCLUSIVE_GPU" for xs in sharing.values() for x in xs) and all(sharing.values())
+        value = dict(baseline_median=mb, candidate_median=mc, baseline=rb, candidate=rc, sharing=sharing,
+                     regime="exclusive" if exclusive else "shared")
+        threshold = dict(strict_max_ms=strict, rule=th.get("reset_p95_rule"))
+        if exclusive:
+            status = "PASS" if mc <= strict else "FAIL"
+        else:
+            threshold["shared_max_ms"] = shared_limit
+            status = "PASS" if mc <= shared_limit else "FAIL"
+            if strict < mc <= shared_limit:
+                value["warning"] = "shared_gpu_reset_bimodality"
+                self.warnings.append(
+                    f"WARN shared_gpu_reset_bimodality: G9:n{n}:reset candidate median reset p95 {mc:.3f} ms > strict "
+                    f"{strict:.3f} ms (1.25 x B {mb:.3f} + {th['reset_p95_slack_ms']} ms) but <= shared limit "
+                    f"{shared_limit:.3f} ms (+ {th['reset_p95_shared_slack_ms']} ms); sharing {sharing}")
+        self.gate(f"G9:n{n}:reset", "PERFORMANCE", status, value=value, threshold=threshold)
 
     def row(self, v, outer):
         r = next((x for x in v["result"].get("rows") or [] if x.get("num_envs") == v["run"].get("num_envs")), {})
@@ -759,6 +796,9 @@ def main(argv=None):
     p.add_argument("--config", required=True)
     p.add_argument("--manifest", required=True)
     p.add_argument("--out", required=True)
+    p.add_argument("--known-harness", default=None,
+                   help="RE-JUDGE OF PRESERVED OUTPUTS ONLY (never in an acceptance): JSON list of {harness_sha256, "
+                        "shared_module_sha256, note} of an earlier harness version whose outputs are accepted")
     args = p.parse_args(argv)
     out = Path(args.out)
     if out.exists() and (not out.is_dir() or (out / "verdict.json").exists() or any(out.iterdir())):
@@ -768,7 +808,12 @@ def main(argv=None):
     try:
         cfg = PA.load_config(args.config)
         manifest = read_json(args.manifest)
-        verdict = Judge(cfg, args.config, manifest, args.manifest).run()
+        known = json.loads(Path(args.known_harness).read_text()) if args.known_harness else None
+        verdict = Judge(cfg, args.config, manifest, args.manifest, known_harness=known).run()
+        if known:
+            verdict["rejudge"] = dict(known_harness=known, note="re-judge of preserved outputs produced by an earlier "
+                                      "harness version; not an acceptance")
+            verdict["limitations"].append("re-judge: harness bytes of the listed earlier version accepted")
     except Exception:
         verdict = blocked_verdict(traceback.format_exc())
     with (out / "verdict.json").open("x") as stream:

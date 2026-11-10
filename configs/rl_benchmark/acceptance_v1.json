@@ -43,8 +43,10 @@
   "vram_slack_mib": 256,
   "reset_p95_ratio_max": 1.25,
   "reset_p95_slack_ms": 2.0,
+  "reset_p95_shared_slack_ms": 10.0,
+  "reset_p95_rule": "G9:<n>:reset on the per-side medians of reset p95 over all ABBA processes at N. Both sides EXCLUSIVE_GPU: FAIL if C > reset_p95_ratio_max x B + reset_p95_slack_ms. Either side SHARED_GPU (or UNKNOWN): PASS if C <= ratio x B + reset_p95_slack_ms; WARN shared_gpu_reset_bimodality (verdict.warnings, not a failure) if C <= ratio x B + reset_p95_shared_slack_ms; FAIL above that. Reason: on a shared GPU each process settles in a ~1 ms or ~7 ms reset mode independent of the variant (smoke_001: B 1.7 ms vs C 7.1 ms at N=1, reversed at N=2).",
   "clock_tolerance": 0.05,
-  "rules": "G9 per N: median over the ABBA pairs of candidate/baseline outer-clock env-steps/s; primary N median >= primary_median_min with >= primary_pairs_above_1 pairs > 1.0; every N median >= all_median_min; max VRAM peak C <= vram_ratio_max x max B + vram_slack_mib; median reset p95 C <= reset_p95_ratio_max x median B + reset_p95_slack_ms; every G9 run |inner/outer - 1| <= clock_tolerance"
+  "rules": "G9 per N: median over the ABBA pairs of candidate/baseline outer-clock env-steps/s; primary N median >= primary_median_min with >= primary_pairs_above_1 pairs > 1.0; every N median >= all_median_min; max VRAM peak C <= vram_ratio_max x max B + vram_slack_mib; median reset p95 per reset_p95_rule; every G9 run |inner/outer - 1| <= clock_tolerance"
  },
  "physics": {
   "position_band": {"path": "configs/rl_benchmark/position_band_p1_0.json", "mode": "descriptive"},

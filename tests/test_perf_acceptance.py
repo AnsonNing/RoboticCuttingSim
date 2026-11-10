@@ -65,6 +65,7 @@ def test_acceptance_v1_config_is_complete_and_matches_the_contract():
     assert (th["primary_median_min"], th["primary_pairs_above_1"], th["all_median_min"]) == (1.05, 4, 0.97)
     assert (th["vram_ratio_max"], th["vram_slack_mib"]) == (1.10, 256)
     assert (th["reset_p95_ratio_max"], th["reset_p95_slack_ms"], th["clock_tolerance"]) == (1.25, 2.0, 0.05)
+    assert th["reset_p95_shared_slack_ms"] == 10.0 and "shared_gpu_reset_bimodality" in th["reset_p95_rule"]
     perf = cfg["performance"]
     assert perf["num_envs"] == [1, 8, 16] and perf["primary_num_envs"] == 16 and perf["pairs"] == 5
     assert perf["order"] == "BCCBBCCBBC"
@@ -343,6 +344,9 @@ class Acceptance:
         self.drop_baseline_results = False
         self.candidate_error = False
         self.candidate_position_offset = 2e-6
+        self.sharing = "SHARED_GPU"
+        self.baseline_reset_ms = 7.0
+        self.candidate_reset_ms = 7.0
 
     def variant(self, side, key):
         return {} if key == "default" else self.cfg["reference_variant"] if side == "baseline" else self.proposal
@@ -430,7 +434,8 @@ class Acceptance:
                 outer = dict(env_steps=steps * n, seconds=steps * n / rate, env_steps_per_s=rate, num_envs=n,
                              vector_steps=steps)
                 row = dict(num_envs=n, env_steps_per_s=inner, vram_peak_mib=1000., vram_source="nvidia_smi_process",
-                           reset_p95_ms=7.0, control_hz=50., gpu_sharing="SHARED_GPU")
+                           reset_p95_ms=self.candidate_reset_ms if side == "candidate" else self.baseline_reset_ms,
+                           control_hz=50., gpu_sharing=self.sharing)
                 rounds = [dict(round=0, final_step_count=[12] * n, final_labelled=[{"0": {"labelled": 0}}] * n)]
                 self.add_run(f"perf_n{n}_{i:02d}_{ch}", side, "G9", "PERFORMANCE", "throughput", n, 2, steps,
                              "reference" if side == "baseline" else "proposal", [row], rounds, [], outer=outer,
@@ -563,3 +568,57 @@ def test_judge_position_band_is_descriptive_by_default(judge_mod, tmp_path):
     v = acc.verdict(band_mode="gate")
     assert v["layers"]["PHYSICS"] == "FAIL" and "position_band@" in next(
         g for g in v["gates"] if g["id"] == "G6")["detail"]
+
+
+# B = 7 ms: strict limit 1.25 x 7 + 2 = 10.75 ms, shared limit 1.25 x 7 + 10 = 18.75 ms
+@pytest.mark.parametrize("sharing, candidate_ms, status, warned", [
+    ("EXCLUSIVE_GPU", 10.7, "PASS", False),
+    ("EXCLUSIVE_GPU", 12.0, "FAIL", False),      # exclusive: strict rule
+    ("SHARED_GPU", 10.7, "PASS", False),
+    ("SHARED_GPU", 12.0, "PASS", True),          # shared: above strict, within +10 ms -> WARN, not a failure
+    ("SHARED_GPU", 19.0, "FAIL", False),         # shared: beyond +10 ms -> FAIL
+])
+def test_judge_reset_p95_rule_exclusive_vs_shared(judge_mod, tmp_path, sharing, candidate_ms, status, warned):
+    acc = Acceptance(tmp_path, judge_mod)
+    acc.sharing, acc.candidate_reset_ms = sharing, candidate_ms
+    v = acc.build().verdict()
+    gates_ = {g["id"]: g for g in v["gates"]}
+    for n in (1, 2):
+        g = gates_[f"G9:n{n}:reset"]
+        assert g["status"] == status
+        assert g["value"]["regime"] == ("exclusive" if sharing == "EXCLUSIVE_GPU" else "shared")
+        assert g["threshold"]["strict_max_ms"] == pytest.approx(10.75)
+        assert ("shared_max_ms" in g["threshold"]) == (sharing != "EXCLUSIVE_GPU")
+    warnings = [w for w in v["warnings"] if "shared_gpu_reset_bimodality" in w]
+    assert len(warnings) == (2 if warned else 0)
+    assert v["layers"]["PERFORMANCE"] == ("FAIL" if status == "FAIL" else "PASS")
+    assert v["layers"]["PHYSICS"] == "PASS" and v["layers"]["INTEGRITY"] == "PASS"
+
+
+def test_judge_mixed_sharing_uses_the_shared_rule(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod)
+    acc.candidate_reset_ms = 12.0
+    acc.build()
+    manifest = json.loads(acc.manifest_path.read_text())
+    for r in manifest["runs"]:                # make every baseline row EXCLUSIVE, candidate rows stay SHARED
+        if r.get("gate") == "G9" and r["side"] == "baseline":
+            res = json.loads(Path(r["result"]).read_text())
+            res["rows"][0]["gpu_sharing"] = "EXCLUSIVE_GPU"
+            Path(r["result"]).write_text(json.dumps(res))
+    v = acc.verdict()
+    g = next(g for g in v["gates"] if g["id"] == "G9:n2:reset")
+    assert g["value"]["regime"] == "shared" and g["status"] == "PASS" and g["value"]["warning"]
+
+
+def test_judge_known_harness_only_for_rejudging_preserved_outputs(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod)
+    old = dict(harness_sha256="a" * 64, shared_module_sha256="b" * 64)
+    acc.shas = dict(old)                     # outputs of an earlier harness version
+    acc.build()
+    v = acc.verdict()
+    assert v["layers"]["INTEGRITY"] == "FAIL" and v["layers"]["PHYSICS"] == "FAIL"
+    cfg = PA.load_config(acc.cfg_path)
+    v = judge_mod.Judge(cfg, acc.cfg_path, json.loads(acc.manifest_path.read_text()), acc.manifest_path,
+                        natives=FakeNatives(), known_harness=[dict(old, note="earlier version")]).run()
+    assert v["layers"] == {"PHYSICS": "PASS", "PERFORMANCE": "PASS", "INTEGRITY": "PASS"}
+    assert any(n.startswith("re-judge:") for n in v["notes"])
