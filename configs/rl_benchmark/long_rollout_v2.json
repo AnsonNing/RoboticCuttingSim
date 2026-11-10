@@ -1,0 +1,555 @@
+{
+ "schema": "rcs_rl_long_rollout_v1",
+ "id": "long_rollout_v2",
+ "status": "PRE_DECLARED",
+ "declared_date": "2026-11-10",
+ "declared_before_any_run": true,
+ "plan_name": "T4.5 / T4.6 runs on the P1-2b API (integration 5f315ba): LR-A2, LR-B, LR-C, LR-D, LR-E outline",
+ "sources": [
+  "docs/RL_READY_PLAN.md section 4 P1-4",
+  "docs/reports/rl_ready/P1_5_PLAN.md section 6 and tasks T4.1-T4.7",
+  "docs/adr/0021-batched-rl-gpu-headless-runtime.md",
+  "docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md section 5 M2",
+  "src/robotic_cutting_sim/rl/termination.py (termination_reason_v1, classify_exception, classify_process_exit)",
+  "coordinator instruction 2026-11-10: use the env's own infrastructure-vs-task classification"
+ ],
+ "rule": "Nothing in this file is changed after the first run of the run it describes. A failed bound is reported as FAIL; it is never re-scored or re-declared.",
+ "process_rules": {
+  "one_material_per_process": true,
+  "reason": "Warp 1.17 replays a captured hash-grid build with the descriptor of the device HashGrid built last on the host (P1-3a probe); BatchedCuttingMaterial refuses a second live device grid (UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS).",
+  "live_device_hashgrids_required": 1,
+  "census_points": [
+   "start",
+   "after every full reset",
+   "every episode-end post-gc sample",
+   "end"
+  ],
+  "hashgrid_init_hook": "every wp.HashGrid.__init__ recorded with device and creator",
+  "graph_capture_hook": "every wp.capture_begin counted",
+  "census_violation_label": "INVALID_MULTI_GRID_PROCESS (run preserved, never used as a row)",
+  "contact_variants_one_per_process": [
+   "frozen_v1",
+   "alias_free_v1"
+  ]
+ },
+ "common": {
+  "workload": "A",
+  "runtime": "rl_gpu_headless",
+  "backend": "kinematic_ideal_tracking_batched",
+  "venv": ".deps/isaacsim-venv",
+  "material": "seeded_trim rcs_trim_random_sim_v1, tlmpm_v7_2 law 8, K=2, S=8, 1 mm particles, 4 mm grid",
+  "material_dt_s": 0.0001,
+  "substeps_per_control_step": 200,
+  "control_hz": 50,
+  "episode_steps": 1200,
+  "cameras": "none",
+  "recording": "none",
+  "strict": false,
+  "warm_warp_cache": true,
+  "fidelity": "reduced_fidelity (workload A: ideal edge tracking, no robot dynamics, reaction not fed back)",
+  "evaluation": "frozen seeded_trim goal evaluator via VectorCuttingEnv.evaluate (2 frames: reset state and episode end), host, at every episode end",
+  "l2_every_steps": 1,
+  "l2_audit_every_steps": 600,
+  "gpu_lock": "/mnt/data/ningan/lab_records/rcs_rl_runner/gpu<N>.lock (flock; one RCS job per GPU)",
+  "cuda_visible_devices": "<N>",
+  "tmpdir": "/mnt/data/ningan/tmp",
+  "free_vram_margin_mib": 4096,
+  "free_vram_rule": "free VRAM >= own_vram_bound_mib + free_vram_margin_mib before launch (D-07), else wait, then BLOCKED",
+  "gpu_sharing_label": "SHARED_GPU / EXCLUSIVE_GPU from sampled co-tenants (rl.telemetry.summarize)",
+  "raw_output": "artifacts/rl_ready/p1_4/<name>_NNN/ (supervisor.jsonl, telemetry.jsonl, attempt_NNN/ledger.jsonl)",
+  "api": "P1-2b (VECTOR_API_REVISION p1_2b): info['termination_reason'] termination_reason_v1, VectorEnvInfrastructureError, material input guard (default on), two-frame evaluation (evaluation_stream off)",
+  "input_guard": "env default (MaterialInputGuardConfig(), on) unless a run declares input_guard"
+ },
+ "drives": {
+  "replay_canary": "step_measured_edge of the WP-17 Native measured trajectory of the env's scene seed (recorded measured edge poses, resolved digits, measured pad boxes)",
+  "recorded_command_policy_v1": "rl.policies_batched.RecordedCommandPolicyV1 over the WP-17 recorded commands of the env's scene seed (edge_delta_v1 actions through the same batched call)",
+  "random_policy_v1": "rl.policies_batched.RandomPolicyV1 (arm_probability 0.5, motion_scale 1.0, salt 0x5EED) keyed by (env reset seed, schedule episode index, step)"
+ },
+ "cadence": {
+  "sample_every_batch_steps": 50,
+  "episode_end_sample": "after gc.collect(), at every batch step where at least one episode ended (after its reset)",
+  "sample_fields": [
+   "warp mempool used current/high",
+   "torch memory_allocated/reserved",
+   "VmRSS/VmHWM",
+   "open fds",
+   "threads",
+   "graph captures",
+   "wp.HashGrid device inits",
+   "warp user modules",
+   "live device HashGrids (gc census; episode-end samples only)"
+  ],
+  "heartbeat_every_batch_steps": 5,
+  "supervisor_sample_interval_s": 5,
+  "supervisor_sample_fields": [
+   "per-PID VRAM of the child process tree and co-tenants (nvidia-smi compute apps, -q -d PIDS, pmon)",
+   "child VmRSS/VmHWM/threads/fds from /proc"
+  ],
+  "tracemalloc": "off in measured runs; enabled only in a diagnostic rerun if B3 fails"
+ },
+ "warmup_rule": "Warm-up ends at the batch step at which every env has completed its first quota episode and the reset after it (rl.stability.warmup_end_step). Bounds use samples at or after that step only.",
+ "bounds": {
+  "slope_gate_statistic": "theil_sen",
+  "slope_reporting": "Theil-Sen slope with Sen's 95 % interval (gate) and OLS slope with t-based 95 % interval (always reported); a flag records when the OLS upper bound exceeds the limit",
+  "B0": {
+   "quantity": "own-PID VRAM peak (nvidia-smi, child process tree)",
+   "own_vram_peak_mib": "per run: own_vram_bound_mib"
+  },
+  "B1": {
+   "quantity": "Warp mempool used current; Torch memory_allocated",
+   "max_minus_min_mib": 1.0,
+   "expected": 0
+  },
+  "B2": {
+   "quantity": "own-PID VRAM (nvidia-smi) vs batch step",
+   "slope_mib_per_1000_batch_steps": 2.0,
+   "max_single_increase_mib": 64.0,
+   "min_samples": 10
+  },
+  "B3": {
+   "quantity": "VmRSS at post-gc episode-end samples vs env-steps (N x batch step)",
+   "slope_mib_per_1000_env_steps": 0.5,
+   "quintile_drift_mib": 64.0,
+   "quintile_drift_fraction": 0.03,
+   "quintile_rule": "median(last quintile) - median(second quintile) <= max(quintile_drift_mib, quintile_drift_fraction * median(second quintile))",
+   "min_samples": 5
+  },
+  "B4": {
+   "quantity": "graph and grid state",
+   "graph_captures_per_process": 1,
+   "live_device_hashgrids": 1,
+   "warp_modules": "constant after warm-up"
+  },
+  "B5": {
+   "quantity": "partial / full reset latency p50, p95, max per kind",
+   "gate": false
+  }
+ },
+ "canary_rule": {
+  "envs": "every env with drive replay_canary",
+  "pass": "every full-length canary episode ends with final codes bitwise equal to the Native final codes of its seed, the Native labelled count, and evaluator verdict PASS",
+  "native_labelled": {
+   "512": 37958,
+   "15": 85786
+  },
+  "native_source": "artifacts/wp17/native_optimized_001/seed_<S>/box/env/recording/attempt_000 (last physics sample)",
+  "terminated_canary": "a canary episode that ends terminated is a canary FAIL",
+  "on_miss": "canary check FAIL (possible state leakage across resets), investigated; never re-scored",
+  "history": "replay through step_measured_edge reproduced the Native final codes in 40/40 earlier episodes (P1-0, M2)"
+ },
+ "classification": {
+  "process_classes": {
+   "COMPLETE": "exit 0 and an end record",
+   "INFRA_OOM_HOST": "MemoryError / std::bad_alloc / ENOMEM recorded by the child",
+   "INFRA_OOM_DEVICE": "torch OutOfMemoryError, CUDA error 2, CUDA out of memory, Warp allocation failure",
+   "INFRA_CUDA_ERROR": "other CUDA / Warp runtime errors (illegal address, launch failure), also when the stderr of a signalled child shows one",
+   "INFRA_CRASH_SIGNAL": "return code -11 / -6 / -7 (SIGSEGV, SIGABRT, SIGBUS) without CUDA / OOM text",
+   "INFRA_KILLED": "-9 / 137; cause UNVERIFIED unless kernel OOM evidence is readable",
+   "INFRA_HANG": "no ledger activity for max(hang_min_s, hang_factor_median_step x median step); py-spy dump if installed, SIGTERM, SIGKILL after term_grace_s",
+   "INFRA_TIMEOUT": "attempt wall time above max_wall_s",
+   "INFRA_INVALID_STATE": "non-finite process state not attributed to an env (split termination_reason_v1: a strict-mode invalid env is TASK_STRICT_INVALID_ENV instead)",
+   "INFRA_DISK": "ENOSPC / EDQUOT / EIO",
+   "INFRA_PYTHON_EXCEPTION": "any other exception (a code bug)",
+   "INFRA_UNKNOWN_EXIT": "no end record and nothing else matches",
+   "INFRA_CONTACT_POOL_OVERFLOW": "VectorEnvInfrastructureError CONTACT_POOL_OVERFLOW (shared MJWarp contact pool, workload B)"
+  },
+  "families": {
+   "OOM": [
+    "INFRA_OOM_HOST",
+    "INFRA_OOM_DEVICE"
+   ],
+   "CUDA_KERNEL_ERROR": [
+    "INFRA_CUDA_ERROR"
+   ],
+   "SEGFAULT_SIGNAL": [
+    "INFRA_CRASH_SIGNAL",
+    "INFRA_KILLED"
+   ],
+   "TIMEOUT": [
+    "INFRA_HANG",
+    "INFRA_TIMEOUT"
+   ],
+   "NAN_INVALID_STATE": [
+    "INFRA_INVALID_STATE"
+   ],
+   "SIMULATOR_CAPACITY": [
+    "INFRA_CONTACT_POOL_OVERFLOW"
+   ],
+   "ENV_LEVEL_INFRASTRUCTURE": [
+    "ENV_INFRASTRUCTURE"
+   ]
+  },
+  "episode_classes": {
+   "TASK_SUCCESS": "full-length episode, frozen evaluator verdict PASS",
+   "TASK_FAILURE": "full-length episode, frozen evaluator verdict not PASS",
+   "TERMINATED": "terminated by any terminal termination_reason bit except 64 (task level; evaluator runs for diagnostics; excluded from success denominators)",
+   "ENV_INVALID_STATE": "split p1_4_v1 only (long_rollout_v1); not produced under termination_reason_v1",
+   "TRUNCATED_BY_FORCED_RESET": "stagger segment force-reset; not evaluated",
+   "TRUNCATED_RUN_END": "in flight when the run completed; not evaluated",
+   "INFRA_INCOMPLETE": "in flight when the process died (supervisor); infrastructure tally only",
+   "ENV_INFRASTRUCTURE": "terminated with termination_reason bit 64 (env-level infrastructure, isolated; excluded from success denominators)"
+  },
+  "numerical_invalid_reasons": [
+   "NONFINITE_STATE",
+   "SLOT_OVERFLOW",
+   "NONFINITE_WRENCH"
+  ],
+  "info_adapter": "rl.supervision.step_status: info['termination_reason'] (termination_reason_v1) when present, infra = bit 64; fallback for envs without it: MATERIAL_INVALID derived from info['invalid_reason'] (kept and tested)",
+  "split": "termination_reason_v1",
+  "split_rule": "The env's own classification decides infrastructure vs task: termination_reason bit 64 (INFRASTRUCTURE_ERROR) -> ENV_INFRASTRUCTURE (env level, infrastructure tally); every other terminal bit (MATERIAL_INVALID incl. non-finite state, MATERIAL_INPUT_DOMAIN_GUARD, RIGID_INVALID, GRASP_LOST, IK_FAILURE_STREAK) -> TERMINATED (task level; material detail in invalid_names, numerical_invalid_reasons reported as a sub-tally only). Process: the child records classify_exception(error); VectorEnvInfrastructureError kinds OOM / CUDA_ERROR / WARP_ERROR / CONTACT_POOL_OVERFLOW map to INFRA_OOM_DEVICE / INFRA_CUDA_ERROR / INFRA_CUDA_ERROR / INFRA_CONTACT_POOL_OVERFLOW; an uncaught strict-mode invalid env is TASK_STRICT_INVALID_ENV (not infrastructure); classify_process_exit is recorded for every exit with an agreement flag.",
+  "task_process_classes": {
+   "TASK_STRICT_INVALID_ENV": "uncaught strict-mode InvalidBatchEnvs / Invalid rigid worlds (env's classify_exception category 'task')"
+  }
+ },
+ "timeouts": {
+  "startup_s": 1800,
+  "hang_min_s": 300,
+  "hang_factor_median_step": 20,
+  "term_grace_s": 30
+ },
+ "recovery": {
+  "max_restarts": 1,
+  "restart_on": [
+   "INFRA_OOM_DEVICE",
+   "INFRA_OOM_HOST",
+   "INFRA_CUDA_ERROR",
+   "INFRA_CRASH_SIGNAL",
+   "INFRA_KILLED",
+   "INFRA_HANG",
+   "INFRA_CONTACT_POOL_OVERFLOW"
+  ],
+  "no_restart_on": [
+   "INFRA_PYTHON_EXCEPTION",
+   "INFRA_DISK",
+   "INFRA_INVALID_STATE",
+   "INFRA_TIMEOUT",
+   "INFRA_UNKNOWN_EXIT"
+  ],
+  "resume": "new attempt directory attempt_NNN in the same run directory, resumed_from recorded; the episode schedule continues at the next schedule index of every env; nothing is overwritten",
+  "seed_rule": "episode seed = SplitMix64(SplitMix64(base_seed + env) + episode_index) (rl.supervision.episode_seed)"
+ },
+ "fault_injection": {
+  "variable": "RCS_FAULT_INJECT (child script only, never library code); the supervisor passes it to attempt 1 only",
+  "spec": "comma-separated kind@batch_step; kinds: exception, memoryerror, cuda_error, cuda_oom, sigsegv, sigabrt, sigkill, hang, disk, strict_invalid, nan_env:E, second_grid, device_oom (GPU only); bad_pose:E (one non-finite measured pose for replay env E: T4.2 re-check), infra_env:E (fake only), reset_leak:E (fake only)",
+  "cpu_tests": "tests/test_rl_supervision.py with the fake child backend",
+  "gpu_probe": "LR-D"
+ },
+ "runs": {
+  "LR-A2": {
+   "description": "as LR-A with alias_free_v1 particle contacts (P1-3a), P1-2b API",
+   "task": "T4.5",
+   "mode": "rollout",
+   "num_envs": 8,
+   "particle_contact_mode": "alias_free_v1",
+   "episodes_per_env": 4,
+   "episode_steps": 1200,
+   "offset_steps_per_env": 150,
+   "base_seed": 20261111,
+   "envs": [
+    {
+     "env": 0,
+     "drive": "replay_canary",
+     "scene_seed": 512
+    },
+    {
+     "env": 1,
+     "drive": "replay_canary",
+     "scene_seed": 15
+    },
+    {
+     "env": 2,
+     "drive": "recorded_command_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 3,
+     "drive": "recorded_command_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 4,
+     "drive": "recorded_command_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 5,
+     "drive": "recorded_command_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 6,
+     "drive": "random_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 7,
+     "drive": "random_policy_v1",
+     "scene_seed": 15
+    }
+   ],
+   "expected_batch_steps_if_all_full_length": 5850,
+   "estimate_wall_h": [
+    2.6,
+    4.1
+   ],
+   "own_vram_bound_mib": 1638,
+   "max_wall_s": 25200,
+   "gpu": "GPU1 or GPU0",
+   "expected": {
+    "canaries": "every full canary episode PASS by canary_rule",
+    "recorded_command_policy_v1": "evaluator PASS expected",
+    "random_policy_v1": "descriptive"
+   },
+   "acceptance": [
+    "supervisor status COMPLETE or COMPLETE_AFTER_RESTART",
+    ">= 4 quota episodes for every env and >= 4 full-length episodes for every replay and recorded-command env",
+    "every canary episode PASS",
+    "B0-B4 PASS on every attempt that reached warm-up",
+    "HashGrid census 1 throughout"
+   ]
+  },
+  "LR-B": {
+   "description": "reset stress: 2 untouched replay canaries; 14 random envs force-reset with probability 0.05 per step (SplitMix64 counter schedule); after every reset the reset envs' per-env checksums of every array the reset kernels write (except seeds) must equal those after the initial full reset",
+   "task": "T4.5",
+   "mode": "reset_stress",
+   "num_envs": 16,
+   "particle_contact_mode": "frozen_v1",
+   "batch_steps": 1000,
+   "episode_steps": 1200,
+   "forced_reset_probability": 0.05,
+   "expected_forced_resets": 700,
+   "base_seed": 20261112,
+   "envs": [
+    {
+     "env": 0,
+     "drive": "replay_canary",
+     "scene_seed": 512
+    },
+    {
+     "env": 1,
+     "drive": "replay_canary",
+     "scene_seed": 15
+    },
+    {
+     "env": 2,
+     "drive": "random_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 3,
+     "drive": "random_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 4,
+     "drive": "random_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 5,
+     "drive": "random_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 6,
+     "drive": "random_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 7,
+     "drive": "random_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 8,
+     "drive": "random_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 9,
+     "drive": "random_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 10,
+     "drive": "random_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 11,
+     "drive": "random_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 12,
+     "drive": "random_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 13,
+     "drive": "random_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 14,
+     "drive": "random_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 15,
+     "drive": "random_policy_v1",
+     "scene_seed": 15
+    }
+   ],
+   "warmup_batch_steps": 200,
+   "canary_sample_every_steps": 100,
+   "canary_max_different_code_particles": 1,
+   "canary_rule": "at every 100-step Native sample the untouched canaries differ from the Native codes in <= 1 particle (M0 history: 0 or 1 particle at single samples from GPU atomic order); positions reported (descriptive band only)",
+   "reset_check_rule": "0 checksum mismatches over every reset (bitwise; the reset is a copy)",
+   "estimate_wall_h": [
+    0.7,
+    1.2
+   ],
+   "own_vram_bound_mib": 2253,
+   "max_wall_s": 10800,
+   "gpu": "GPU1 or GPU0",
+   "acceptance": [
+    "supervisor status COMPLETE",
+    "reset_check 0 mismatches",
+    "canary rule PASS",
+    "B0-B4 PASS (warm-up = warmup_batch_steps)",
+    "HashGrid census 1 throughout"
+   ]
+  },
+  "LR-C": {
+   "description": "rebuild cycle: build -> full reset -> 50 steps -> close()/release(), 10 cycles in one process (one live device grid at a time)",
+   "task": "T4.5",
+   "mode": "rebuild_cycles",
+   "num_envs": 4,
+   "particle_contact_mode": "frozen_v1",
+   "cycles": 10,
+   "steps_per_cycle": 50,
+   "episode_steps": 1200,
+   "base_seed": 20261113,
+   "envs": [
+    {
+     "env": 0,
+     "drive": "recorded_command_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 1,
+     "drive": "recorded_command_policy_v1",
+     "scene_seed": 15
+    },
+    {
+     "env": 2,
+     "drive": "recorded_command_policy_v1",
+     "scene_seed": 512
+    },
+    {
+     "env": 3,
+     "drive": "recorded_command_policy_v1",
+     "scene_seed": 15
+    }
+   ],
+   "bounds": {
+    "min_cycles": 3,
+    "C1": "live device HashGrids: 1 while open, 0 after every close",
+    "C2": {
+     "quantity": "Warp mempool current, Torch allocated after close + gc",
+     "max_minus_min_mib": 1.0
+    },
+    "C3": {
+     "quantity": "own-PID VRAM (nvidia-smi) after close vs cycle",
+     "slope_mib_per_cycle": 8.0
+    },
+    "C4": {
+     "quantity": "VmRSS after close + gc vs cycle",
+     "slope_mib_per_cycle": 8.0
+    },
+    "C5": "graph captures and device HashGrid inits = cycle count (one per build)",
+    "rationale": "a leaked material is about 200 MB per cycle at N=4 (49.5 MB/env); 8 MiB/cycle detects it with a 25x margin"
+   },
+   "estimate_wall_h": [
+    0.2,
+    0.4
+   ],
+   "own_vram_bound_mib": 1126,
+   "max_wall_s": 5400,
+   "gpu": "GPU1 or GPU0",
+   "acceptance": [
+    "supervisor status COMPLETE",
+    "C1-C5 PASS",
+    "L2 PASS every cycle"
+   ]
+  },
+  "LR-D": {
+   "description": "GPU fault probes under the supervisor (one supervised run per fault, each stopped after max_global_steps; reduced by design)",
+   "task": "T4.5",
+   "mode": "rollout",
+   "num_envs": 2,
+   "particle_contact_mode": "frozen_v1",
+   "episodes_per_env": 1,
+   "episode_steps": 1200,
+   "offset_steps_per_env": 0,
+   "base_seed": 20261114,
+   "envs": [
+    {
+     "env": 0,
+     "drive": "replay_canary",
+     "scene_seed": 512
+    },
+    {
+     "env": 1,
+     "drive": "replay_canary",
+     "scene_seed": 15
+    }
+   ],
+   "max_global_steps": 40,
+   "timeouts": {
+    "startup_s": 900,
+    "hang_min_s": 60,
+    "hang_factor_median_step": 20,
+    "term_grace_s": 30
+   },
+   "recovery": {
+    "max_restarts": 0
+   },
+   "probes": {
+    "nan_env:1@20": "COMPLETE; env 1 TERMINATED (MATERIAL_INVALID, invalid NONFINITE_STATE); env 0 continues with L2 PASS",
+    "bad_pose:0@20": "COMPLETE, no crash (T4.2 re-check): env 0 TERMINATED with MATERIAL_INPUT_DOMAIN_GUARD; env 1 continues",
+    "sigsegv@20": "FAILED_INFRA_CRASH_SIGNAL (SIGSEGV), env_exit infrastructure CRASH_SIGSEGV",
+    "hang@20": "FAILED_INFRA_HANG after hang_min_s",
+    "device_oom@20": "FAILED_INFRA_OOM_DEVICE (torch.cuda.set_per_process_memory_fraction(0.02) then an 8 GiB allocation; this process only)"
+   },
+   "own_vram_bound_mib": 1024,
+   "max_wall_s": 1800,
+   "gpu": "GPU1 or GPU0"
+  },
+  "LR-E": {
+   "description": "Lab B1 rigid mount (workload B) long run via open_vector_env(backend='isaac_lab_newton', tool_mount='rigid_mount_v1'), .deps/isaaclab-venv, GPU0",
+   "task": "T4.6",
+   "mode": "rollout",
+   "num_envs": 4,
+   "episodes_per_env": 3,
+   "drive": "recorded_command_policy_v1",
+   "own_vram_bound_mib": 1229,
+   "estimate_wall_h": [
+    1.3,
+    2.0
+   ],
+   "status": "DECLARED_OUTLINE (Lab backend child not implemented in this version; needs a run entry with the Lab options before running)"
+  }
+ },
+ "native_limitations_retained": [
+  "Native stage_reset=reload_in_place requires live cameras; a camera-off in-place reset crashes PhysX (4 of 4 probes, docs/reports/WP11_PHASE_H_PROFILING.md).",
+  "Native reload_in_place memory probe (8 x 20 steps): host 24.2 MiB/episode, GPU 9.3 MiB/episode (docs/POLICY_READY_API.md).",
+  "Native stays NOT POLICY_READY (GPU 52 MiB/episode vs threshold 32, unresolved; docs/PROGRESS.md).",
+  "No new Native long rollout in P1-4; batched results never replace these FULL_NATIVE_REFERENCE limitations."
+ ],
+ "supersedes": "nothing: long_rollout_v1 stays the frozen declaration of LR-A (run on the pre-P1-2b API, split p1_4_v1)",
+ "notes": [
+  "LR-A (long_rollout_v1) was not re-declared; its evidence uses split p1_4_v1 and the pre-P1-2b API."
+ ]
+}
