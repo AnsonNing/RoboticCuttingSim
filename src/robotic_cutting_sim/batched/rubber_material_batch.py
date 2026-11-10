@@ -1,0 +1,488 @@
+"""Batched rubber material ``BatchedRubberMaterial`` for ``rl_gpu_headless`` (ADR 0023 D1, D9, D10; task R1.7).
+
+What ``LiveRubberMaterial.advance`` does for one env, for all N envs at once:
+
+1. every group holds (start = end, one copy of the [N*G] tables), then the caller's group-motion END values
+   (``set_group_motions``: rotation / translation / affine [N, G, ...], active [N, G]) and traction forces are written;
+2. the control step's substeps run as CUDA graph chunks (``graph_chunk``, default 500, plus a remainder graph; captured
+   once per batch shape) or eagerly on CPU (``parity_mode`` only); the device substep index carries across replays;
+3. a kernel converts the per-group reaction impulses to WORLD = strip-local wrenches ``wrench[N, G, 6]`` (force the
+   material exerts on the group, averaged over the step); there is no robot feedback in P2-1 (the 20 ms delayed
+   handoff of a robot coupling belongs to P2-4 / P2-6);
+4. fixed-order segmented diagnostics (``summary[N, 17]``, markers ``[N*K]``) and a validity kernel set the sticky
+   ``invalid_reason[N]`` bits (``NONFINITE_STATE`` 1, ``RUBBER_J_DOMAIN`` 2) and ``invalid_count[1]``; strict mode
+   reads that one int and raises with env ids.
+
+``reset(env_ids, seeds, materials)`` is a masked device reset (no allocation, no recapture) to the freshly packed state,
+optionally with per-env material values (mu0, kappa, density, frictions) resampled inside the declared randomisation
+ranges (staged in preallocated host-written buffers; the step rule's c_p,max covers the ranges). A geometry change on
+partial reset is refused (``rebuild``). There is no wp.HashGrid in rubber v1 (no self-contact), so the process-level
+device-HashGrid guard is not applicable. The ``open_vector_env`` dispatch to this material is deferred to P2-6.
+"""
+import hashlib
+import time
+from pathlib import Path
+
+import numpy as np
+import warp as wp
+
+from .. import tlmpm_rubber_v1 as T
+from . import constitutive_rubber as cr
+from . import rubber_layout
+from .errors import UnsupportedBatchConfiguration
+from .rubber_batch import BatchedTLMPMRubber
+
+wp.set_module_options({"enable_backward": False})
+
+RUNTIME = "rl_gpu_headless"
+VERSION = "batched_rubber_material_v1"
+INVALID_NONFINITE_STATE = 1
+INVALID_RUBBER_J_DOMAIN = 2
+INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_RUBBER_J_DOMAIN: "RUBBER_J_DOMAIN"}
+DIAG_GROUPS = T.DIAG_GROUPS   # fixed reduction width shared with the single reference: same summation order
+DEFAULT_GRAPH_CHUNK = 500
+
+# vars()-complete reset classification (tests/test_rubber_batched.py)
+SOLVER_RESET_ARRAYS = ("x", "v", "x_start", "impulse", "stress", "F", "mass", "gm", "gp", "gj", "old", "new_v", "jbar",
+                       "group_active", "group_q0", "group_q1", "group_b0", "group_b1", "group_A0", "group_A1",
+                       "reaction", "traction_force", "traction_mass", "work", "violations", "params")
+SOLVER_CONSTANT_ARRAYS = ("reference", "nodes", "weights", "gradients", "slot", "slot_code", "particle_traction",
+                          "node_group", "node_mask", "node_X", "group_kind", "group_origin", "cell_node",
+                          "cell_offsets", "cell_particles", "marker_offsets", "marker_particles", "plane", "box_c",
+                          "box_h", "env_of_particle", "env_of_node", "env_of_group", "particle_offset", "node_offset",
+                          "cell_env_offset")
+SOLVER_SHARED_ARRAYS = ("index",)
+MATERIAL_RESET_ARRAYS = ("invalid_reason", "step_count", "seed", "wrench")
+MATERIAL_CONSTANT_ARRAYS = ("initial_params", "initial_mass", "initial_group_active", "env_of_traction",
+                            "traction_counts", "initial_seed")
+RESET_INPUTS = ("reset_mask", "reset_seed", "stage_params", "stage_mass")
+RECOMPUTED_EVERY_CONTROL_STEP = ("invalid_count",)
+DIAGNOSTICS_SCRATCH = ("pp", "pc", "pn", "summary", "marker_x", "marker_v")
+
+
+class InvalidRubberEnvs(FloatingPointError):
+    def __init__(self, env_ids, reasons):
+        self.env_ids, self.reasons = list(env_ids), dict(reasons)
+        super().__init__(f"Invalid rubber envs {self.env_ids}: {self.reasons}")
+
+
+def decode_reason(value):
+    return [name for bit, name in INVALID_REASONS.items() if int(value) & bit]
+
+
+def batched_source_sha256():
+    return dict(sorted(__import__("robotic_cutting_sim.batched.rubber_batch", fromlist=["x"]).source_sha256().items()))
+
+
+# ----------------------------------------------------------------------------- kernels
+
+@wp.kernel
+def _wrench_b(reaction: wp.array(dtype=wp.spatial_vectord), control_dt: wp.float64, G: int,
+              wrench: wp.array3d(dtype=wp.float64)):
+    e, g = wp.tid()
+    r = reaction[e*G+g]
+    for k in range(6):
+        wrench[e, g, k] = -r[k]/control_dt
+
+
+@wp.kernel
+def _validity_b(summary: wp.array2d(dtype=wp.float64), violations: wp.array(dtype=int),
+                wrench: wp.array3d(dtype=wp.float64), G: int, invalid_reason: wp.array(dtype=int),
+                invalid_count: wp.array(dtype=int), step_count: wp.array(dtype=wp.int64)):
+    e = wp.tid()
+    bits = invalid_reason[e]
+    if summary[e, 0] != wp.float64(0.0):
+        bits = bits | 1
+    for g in range(G):
+        for k in range(6):
+            if not wp.isfinite(wrench[e, g, k]):
+                bits = bits | 1
+    if violations[e] > 0:
+        bits = bits | 2
+    invalid_reason[e] = bits
+    step_count[e] = step_count[e]+wp.int64(1)
+    if bits != 0:
+        wp.atomic_add(invalid_count, 0, 1)
+
+
+@wp.kernel
+def _reset_particles_r(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int),
+                       reference: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
+                       x_start: wp.array(dtype=wp.vec3), impulse: wp.array(dtype=wp.vec3),
+                       stress: wp.array(dtype=wp.mat33), F: wp.array(dtype=wp.mat33), mass: wp.array(dtype=float),
+                       stage_mass: wp.array(dtype=float)):
+    p = wp.tid()
+    e = env_of_particle[p]
+    if mask[e] != 0:
+        x[p] = reference[p]
+        v[p] = wp.vec3(0.0)
+        x_start[p] = wp.vec3(0.0)
+        impulse[p] = wp.vec3(0.0)
+        stress[p] = wp.mat33(0.0)
+        F[p] = wp.identity(n=3, dtype=float)
+        mass[p] = stage_mass[e]
+
+
+@wp.kernel
+def _reset_nodes_r(mask: wp.array(dtype=int), env_of_node: wp.array(dtype=int), gm: wp.array(dtype=float),
+                   gp: wp.array(dtype=wp.vec3), gj: wp.array(dtype=wp.vec3), old: wp.array(dtype=wp.vec3),
+                   new_v: wp.array(dtype=wp.vec3), jbar: wp.array(dtype=wp.float64)):
+    i = wp.tid()
+    if mask[env_of_node[i]] != 0:
+        gm[i] = 0.0
+        gp[i] = wp.vec3(0.0)
+        gj[i] = wp.vec3(0.0)
+        old[i] = wp.vec3(0.0)
+        new_v[i] = wp.vec3(0.0)
+        jbar[i] = wp.float64(1.0)
+
+
+@wp.kernel
+def _reset_groups_r(mask: wp.array(dtype=int), env_of_group: wp.array(dtype=int), initial_active: wp.array(dtype=int),
+                    active: wp.array(dtype=int), q0: wp.array(dtype=wp.quatd), q1: wp.array(dtype=wp.quatd),
+                    b0: wp.array(dtype=wp.vec3d), b1: wp.array(dtype=wp.vec3d), A0: wp.array(dtype=wp.mat33d),
+                    A1: wp.array(dtype=wp.mat33d), reaction: wp.array(dtype=wp.spatial_vectord)):
+    g = wp.tid()
+    if mask[env_of_group[g]] != 0:
+        active[g] = initial_active[g]
+        q0[g] = wp.quatd(wp.float64(0.0), wp.float64(0.0), wp.float64(0.0), wp.float64(1.0))
+        q1[g] = wp.quatd(wp.float64(0.0), wp.float64(0.0), wp.float64(0.0), wp.float64(1.0))
+        b0[g] = wp.vec3d()
+        b1[g] = wp.vec3d()
+        A0[g] = wp.identity(n=3, dtype=wp.float64)
+        A1[g] = wp.identity(n=3, dtype=wp.float64)
+        reaction[g] = wp.spatial_vectord()
+
+
+@wp.kernel
+def _reset_traction_r(mask: wp.array(dtype=int), env_of_traction: wp.array(dtype=int),
+                      traction_counts: wp.array(dtype=float), stage_mass: wp.array(dtype=float),
+                      force: wp.array(dtype=wp.vec3), traction_mass: wp.array(dtype=float)):
+    t = wp.tid()
+    e = env_of_traction[t]
+    if mask[e] != 0:
+        force[t] = wp.vec3(0.0)
+        traction_mass[t] = traction_counts[t]*stage_mass[e]
+
+
+@wp.kernel
+def _reset_envs_r(mask: wp.array(dtype=int), stage_params: wp.array2d(dtype=float), params: wp.array2d(dtype=float),
+                  ncols: int, work: wp.array(dtype=wp.float64), violations: wp.array(dtype=int),
+                  invalid_reason: wp.array(dtype=int), step_count: wp.array(dtype=wp.int64),
+                  seed: wp.array(dtype=wp.int64), reset_seed: wp.array(dtype=wp.int64),
+                  wrench: wp.array3d(dtype=wp.float64), G: int):
+    e = wp.tid()
+    if mask[e] != 0:
+        for k in range(ncols):
+            params[e, k] = stage_params[e, k]
+        work[e] = wp.float64(0.0)
+        violations[e] = 0
+        invalid_reason[e] = 0
+        step_count[e] = wp.int64(0)
+        seed[e] = reset_seed[e]
+        for g in range(G):
+            for k in range(6):
+                wrench[e, g, k] = wp.float64(0.0)
+
+
+# ----------------------------------------------------------------------------- material
+
+class BatchedRubberMaterial:
+    """N rubber envs in one process (see the module docstring).
+
+    ``lives``: fresh single-env ``LiveRubberMaterial`` references built on device 'cpu' with a common step rule
+    (pass ``step_material`` = the randomisation maxima so that dt is uniform). ``ranges`` (optional): declared
+    per-reset randomisation ranges {"mu0": (lo, hi), "density": (lo, hi), "friction_table": ...}; each range must be
+    covered by the batch's step rule. ``device='cpu'`` only with ``parity_mode=True`` (tests)."""
+    runtime = RUNTIME
+
+    def __init__(self, lives, *, device="cuda:0", parity_mode=False, strict=True, capture_graph=None,
+                 graph_chunk=DEFAULT_GRAPH_CHUNK, ranges=None, seeds=None, cameras=None, recorders=None,
+                 constitutive_model=cr.DEFAULT_MODEL_ID):
+        if cameras or recorders:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_SENSOR" if cameras else "UNSUPPORTED_RECORDER",
+                                                f"cameras={cameras!r} recorders={recorders!r}")
+        device = str(wp.get_device(device))
+        if device == "cpu" and not parity_mode:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_CPU_WITHOUT_PARITY_MODE",
+                                                "device='cpu' is for parity tests (parity_mode=True)")
+        start = time.perf_counter()
+        self.device, self.parity_mode, self.strict = device, bool(parity_mode), bool(strict)
+        self.capture_graph = wp.get_device(device).is_cuda if capture_graph is None else bool(capture_graph)
+        lives = list(lives)
+        self.packed = rubber_layout.pack_rubber(lives, constitutive_model=constitutive_model)
+        pk = self.packed
+        self.num_envs = N = pk.num_envs
+        self.control_dt = float(pk.uniform["control_dt"])
+        self.solver = s = BatchedTLMPMRubber(pk, device)
+        self.G, self.Gt, self.K = s.G, s.Gt, pk.uniform["markers"]
+        self.ranges = self._check_ranges(ranges, lives)
+        G1, Gt1 = max(self.G, 1), max(self.Gt, 1)
+        seeds = np.arange(N, dtype=np.int64) if seeds is None else np.asarray(seeds, np.int64).reshape(N)
+        trac_counts = (pk.env["traction_particle_counts"].astype(np.float32).reshape(-1) if self.Gt
+                       else np.zeros(1, np.float32))
+        with wp.ScopedDevice(device):
+            self.wrench = wp.zeros((N, G1, 6), dtype=wp.float64)
+            self.invalid_reason = wp.zeros(N, dtype=int)
+            self.invalid_count = wp.zeros(1, dtype=int)
+            self.step_count = wp.zeros(N, dtype=wp.int64)
+            self.initial_seed = wp.array(seeds, dtype=wp.int64)
+            self.seed = wp.array(seeds, dtype=wp.int64)
+            self.reset_seed = wp.array(seeds, dtype=wp.int64)
+            self.reset_mask = wp.zeros(N, dtype=int)
+            self.initial_params = wp.array(pk.host["params"], dtype=float)
+            self.stage_params = wp.array(pk.host["params"], dtype=float)
+            self.initial_mass = wp.array(pk.env["mass_per_particle"], dtype=float)
+            self.stage_mass = wp.array(pk.env["mass_per_particle"], dtype=float)
+            self.initial_group_active = wp.clone(s.group_active)
+            self.env_of_traction = wp.array(np.repeat(np.arange(N, dtype=np.int32), Gt1) if self.Gt
+                                            else np.zeros(1, np.int32), dtype=int)
+            self.traction_counts = wp.array(trac_counts, dtype=float)
+            self.pp = wp.zeros((N*DIAG_GROUPS, 8), dtype=wp.float64)
+            self.pc = wp.zeros((N*DIAG_GROUPS, 4), dtype=wp.float64)
+            self.pn = wp.zeros((N*DIAG_GROUPS, 2), dtype=wp.float64)
+            self.summary = wp.zeros((N, T.NDIAG), dtype=wp.float64)
+            self.marker_x = wp.zeros(N*self.K, dtype=wp.vec3d)
+            self.marker_v = wp.zeros(N*self.K, dtype=wp.vec3d)
+        for module in (__name__, T.__name__):
+            wp.load_module(module=module, device=device)
+        self.graph_chunk = max(1, min(int(graph_chunk), s.substeps))
+        self.graphs = None
+        self.capture_receipt = None
+        if self.capture_graph:
+            self._capture()
+        self.build_wall_s = time.perf_counter()-start
+
+    def _check_ranges(self, ranges, lives):
+        if not ranges:
+            return {}
+        names = cr.RUBBER_PARAM_NAMES
+        out = {}
+        for key, (lo, hi) in ranges.items():
+            if key not in names or not 0 < lo <= hi:
+                raise ValueError(f"randomisation range {key!r}: ({lo}, {hi})")
+            out[key] = (float(lo), float(hi))
+        mu_max = out.get("mu0", (0, max(l.material.mu0 for l in lives)))[1]
+        beta = max(l.material.beta for l in lives)
+        rho_min = out.get("density", (min(l.material.density for l in lives), 0))[0]
+        c_max = cr.wave_speed(mu_max, beta*mu_max, rho_min)
+        cfl = self.solver.dt*c_max/self.solver.dx
+        if cfl > 0.5+1e-9:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_NONUNIFORM_BATCH",
+                                                f"randomisation ranges need CFL {cfl:.3f} > 0.5 at the batch dt; build "
+                                                "the single references with step_material = the range maxima")
+        return out
+
+    def _capture(self):
+        start = time.perf_counter()
+        chunk = self.graph_chunk
+        repeats, rest = divmod(self.solver.substeps, chunk)
+        graphs = []
+        for size in (chunk, rest):
+            if size == 0:
+                graphs.append(None)
+                continue
+            with wp.ScopedCapture(device=self.device) as capture:
+                for _ in range(size):
+                    self.solver.step()
+            graphs.append(capture.graph)
+        self.graphs = (graphs[0], repeats, graphs[1])
+        self.capture_receipt = {"graph_chunk_substeps": chunk, "chunk_replays": repeats, "remainder_substeps": rest,
+                                "capture_wall_s": time.perf_counter()-start}
+        # the capture ran the substeps: restore the fresh packed state of every env
+        self.reset()
+
+    # ------------------------------------------------------------------ inputs
+
+    def begin_control_step(self):
+        s = self.solver
+        s.index.zero_()
+        s.reaction.zero_()
+        for a0, a1 in ((s.group_q0, s.group_q1), (s.group_b0, s.group_b1), (s.group_A0, s.group_A1)):
+            wp.copy(a0, a1)
+
+    def set_group_motions(self, *, rotation=None, translation=None, affine=None, active=None):
+        """Host [N, G, ...] END values of this control step (call between begin and run, or pass to advance)."""
+        s, N, G = self.solver, self.num_envs, self.G
+        if rotation is not None:
+            from scipy.spatial.transform import Rotation
+            R = np.asarray(rotation, float).reshape(N*G, 3, 3)
+            q = Rotation.from_matrix(R).as_quat()
+            prev = s.group_q1.numpy()
+            q[np.einsum("ij,ij->i", prev, q) < 0] *= -1
+            s.group_q1.assign(q)
+        if translation is not None:
+            s.group_b1.assign(np.asarray(translation, float).reshape(N*G, 3))
+        if affine is not None:
+            s.group_A1.assign(np.asarray(affine, float).reshape(N*G, 3, 3))
+        if active is not None:
+            s.group_active.assign(np.asarray(active, np.int32).reshape(N*G))
+
+    def set_traction(self, forces):
+        self.solver.traction_force.assign(np.asarray(forces, np.float32).reshape(-1, 3))
+
+    def advance(self, *, rotation=None, translation=None, affine=None, active=None, traction=None):
+        """One control step of every env; returns nothing (read ``wrench``, ``invalid_reason`` on the device)."""
+        s = self.solver
+        self.begin_control_step()
+        self.set_group_motions(rotation=rotation, translation=translation, affine=affine, active=active)
+        if traction is not None:
+            self.set_traction(traction)
+        with wp.ScopedDevice(self.device):
+            if self.graphs is not None:
+                main, repeats, rest = self.graphs
+                for _ in range(repeats):
+                    wp.capture_launch(main)
+                if rest is not None:
+                    wp.capture_launch(rest)
+            else:
+                for _ in range(s.substeps):
+                    s.step()
+            if self.G:
+                wp.launch(_wrench_b, (self.num_envs, self.G), [s.reaction, wp.float64(self.control_dt), self.G,
+                                                               self.wrench])
+            self.launch_diagnostics()
+            self.invalid_count.zero_()
+            wp.launch(_validity_b, self.num_envs, [self.summary, s.violations, self.wrench, self.G,
+                                                   self.invalid_reason, self.invalid_count, self.step_count])
+        if self.strict:
+            self.check_valid()
+
+    def launch_diagnostics(self):
+        s, N = self.solver, self.num_envs
+        with wp.ScopedDevice(self.device):
+            wp.launch(T.rc.cell_jbar, s.total_cells, [s.cell_node, s.cell_offsets, s.cell_particles, s.F, s.jbar])
+            wp.launch(T.diag_particles, (N, DIAG_GROUPS), [s.x, s.v, s.F, s.mass, s.reference, s.gravity, s.volume,
+                                                           s.params, s.particle_offset, DIAG_GROUPS, self.pp])
+            wp.launch(T.diag_cells, (N, DIAG_GROUPS), [s.jbar, s.cell_node, s.cell_offsets, s.cell_env_offset,
+                                                       DIAG_GROUPS, s.params, s.volume, self.pc])
+            wp.launch(T.diag_nodes, (N, DIAG_GROUPS), [s.gm, s.new_v, s.node_offset, DIAG_GROUPS, self.pn])
+            wp.launch(T.diag_combine, N, [self.pp, self.pc, self.pn, DIAG_GROUPS, DIAG_GROUPS, DIAG_GROUPS,
+                                          s.particle_offset, s.cell_env_offset, self.summary])
+            wp.launch(T.markers_kernel, N*self.K, [s.x, s.v, s.marker_offsets, s.marker_particles, self.marker_x,
+                                                   self.marker_v])
+
+    def diagnostics_read(self):
+        return [dict(zip(T.DIAG_COLUMNS, map(float, r))) for r in self.summary.numpy()]
+
+    def check_valid(self):
+        if int(self.invalid_count.numpy()[0]):
+            reasons = self.invalid_reason.numpy()
+            ids = np.flatnonzero(reasons)
+            raise InvalidRubberEnvs(ids.tolist(), {int(e): decode_reason(reasons[e]) for e in ids})
+        return 0
+
+    # ------------------------------------------------------------------ reset
+
+    def reset(self, env_ids=None, seeds=None, materials=None, scene_keys=None, rng_ranges=False):
+        """Masked partial reset (no allocation, no recapture). ``materials``: one ``MaterialValues`` per reset env
+        (inside the declared ranges); ``rng_ranges=True`` samples them from the declared ranges with the env seed."""
+        N = self.num_envs
+        ids = np.arange(N) if env_ids is None else np.asarray(env_ids, np.int64).reshape(-1)
+        if ids.size and (ids.min() < 0 or ids.max() >= N or np.unique(ids).size != ids.size):
+            raise ValueError(f"env_ids must be distinct and in [0, {N})")
+        if scene_keys is not None:
+            for e, key in zip(ids, scene_keys):
+                if key != self.packed.scene_keys[e]:
+                    raise UnsupportedBatchConfiguration("UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET",
+                                                        f"env {int(e)}: use rebuild()")
+        seed = self.seed.numpy().astype(np.int64)
+        if seeds is not None:
+            seed[ids] = np.asarray(seeds, np.int64).reshape(len(ids))
+        params = self.initial_params.numpy().copy()
+        mass = self.initial_mass.numpy().copy()
+        if rng_ranges:
+            if not self.ranges:
+                raise ValueError("no randomisation ranges declared")
+            materials = [self._sample(int(seed[e]), e) for e in ids]
+        if materials is not None:
+            from ..rubber_material import mass_per_particle
+            for e, m in zip(ids, materials):
+                self._check_in_range(m)
+                params[e] = np.array(cr.env_parameters(m), np.float64).astype(np.float32)
+                mass[e] = mass_per_particle(m.density, self.solver.spacing)
+        mask = np.zeros(N, np.int32)
+        mask[ids] = 1
+        self.reset_mask.assign(mask)
+        self.reset_seed.assign(seed)
+        self.stage_params.assign(params)
+        self.stage_mass.assign(mass)
+        self.reset_masked(full=len(ids) == N)
+
+    def _sample(self, seed, e):
+        from ..rubber_material import MaterialValues
+        rng = np.random.default_rng(seed)
+        base = dict(zip(cr.RUBBER_PARAM_NAMES, map(float, self.initial_params.numpy()[e])))
+        beta = base["kappa"]/base["mu0"]
+        vals = {k: (rng.uniform(*self.ranges[k]) if k in self.ranges else base[k]) for k in cr.RUBBER_PARAM_NAMES}
+        return MaterialValues(mu0=vals["mu0"], kappa=beta*vals["mu0"], density=vals["density"],
+                              friction_table=vals["friction_table"], friction_pad=vals["friction_pad"],
+                              friction_self=vals["friction_self"])
+
+    def _check_in_range(self, m):
+        values = dict(zip(cr.RUBBER_PARAM_NAMES, cr.env_parameters(m)))
+        for key, (lo, hi) in self.ranges.items():
+            if not lo-1e-12*abs(lo) <= values[key] <= hi+1e-12*abs(hi):
+                raise ValueError(f"{key} = {values[key]} outside the declared range [{lo}, {hi}]")
+        c = cr.wave_speed(m.mu0, m.kappa, m.density)
+        if self.solver.dt*c/self.solver.dx > 0.5+1e-9:
+            raise ValueError("material violates the batch step rule (CFL > 0.5)")
+
+    def reset_masked(self, full=False):
+        s, N = self.solver, self.num_envs
+        with wp.ScopedDevice(self.device):
+            wp.launch(_reset_particles_r, s.total_particles, [self.reset_mask, s.env_of_particle, s.reference, s.x,
+                                                              s.v, s.x_start, s.impulse, s.stress, s.F, s.mass,
+                                                              self.stage_mass])
+            wp.launch(_reset_nodes_r, s.total_nodes, [self.reset_mask, s.env_of_node, s.gm, s.gp, s.gj, s.old,
+                                                      s.new_v, s.jbar])
+            if self.G:
+                wp.launch(_reset_groups_r, N*self.G, [self.reset_mask, s.env_of_group, self.initial_group_active,
+                                                      s.group_active, s.group_q0, s.group_q1, s.group_b0, s.group_b1,
+                                                      s.group_A0, s.group_A1, s.reaction])
+            if self.Gt:
+                wp.launch(_reset_traction_r, N*self.Gt, [self.reset_mask, self.env_of_traction, self.traction_counts,
+                                                         self.stage_mass, s.traction_force, s.traction_mass])
+            wp.launch(_reset_envs_r, N, [self.reset_mask, self.stage_params, s.params, cr.NUM_PARAMS, s.work,
+                                         s.violations, self.invalid_reason, self.step_count, self.seed,
+                                         self.reset_seed, self.wrench, self.G])
+            if full:
+                s.index.zero_()
+
+    def rebuild(self, lives, **kwargs):
+        options = dict(device=self.device, parity_mode=self.parity_mode, strict=self.strict,
+                       capture_graph=self.capture_graph, graph_chunk=self.graph_chunk, ranges=self.ranges or None)
+        options.update(kwargs)
+        replacement = type(self)(lives, **options)
+        self.__dict__.clear()
+        self.__dict__.update(replacement.__dict__)
+
+    # ------------------------------------------------------------------ queries
+
+    def markers(self):
+        return self.marker_x.numpy().reshape(self.num_envs, self.K, 3)
+
+    def device_arrays(self):
+        out = {f"solver.{k}": v for k, v in self.solver.device_arrays().items()}
+        out.update({k: v for k, v in vars(self).items() if isinstance(v, wp.array)})
+        return out
+
+    def memory_bytes(self):
+        return int(sum(v.capacity for v in self.device_arrays().values()))
+
+    def audits(self):
+        host = {name: getattr(self.solver, name).numpy() for name in
+                ("nodes", "cell_particles", "cell_offsets", "cell_node", "marker_particles", "marker_offsets",
+                 "node_group", "particle_traction")}
+        return rubber_layout.range_audit(self.packed, host)
+
+    def receipt(self):
+        return {"runtime": RUNTIME, "version": VERSION, "device": self.device, "parity_mode": self.parity_mode,
+                "strict": self.strict, "graph": self.capture_receipt, "control_dt_s": self.control_dt,
+                "layout": self.packed.layout_receipt(), "solver": self.solver.solver_receipt(),
+                "envs": self.packed.receipts, "ranges": self.ranges, "memory_bytes": self.memory_bytes(),
+                "build_wall_s": self.build_wall_s, "calibration": "SIMULATOR_ONLY_UNCALIBRATED",
+                "device_hashgrid_guard": "not_applicable_no_hashgrid (rubber v1 has no self-contact)",
+                "coupling": "kinematic Dirichlet groups (no robot feedback in P2-1)",
+                "open_vector_env": "deferred to P2-6 (P1-5 owns the configured-scene dispatch)",
+                "diagnostics_groups": DIAG_GROUPS}

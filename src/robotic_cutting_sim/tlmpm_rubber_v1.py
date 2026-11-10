@@ -43,6 +43,7 @@ DIAG_COLUMNS = ("nonfinite", "J_min", "J_max", "volume_ratio", "Jbar_min", "Jbar
                 "elastic_iso", "elastic_vol", "elastic", "kinetic_particle", "kinetic_grid", "gravity",
                 "max_speed_m_s", "cells", "particles", "max_grid_speed_m_s")
 NDIAG = len(DIAG_COLUMNS)
+DIAG_GROUPS = 64
 _HERE = Path(__file__).resolve().parent
 SOURCES = ("tlmpm_rubber_v1.py", "rubber_constitutive.py")
 FROZEN_KERNELS = ("tlmpm_v5._p2g", "tlmpm_v5._grid_update", "tlmpm_v5._g2p", "tlmpm_v5._musl",
@@ -349,9 +350,9 @@ class SegmentedRubberDiagnostics:
     def __init__(self, solver, particle_counts, cell_counts, node_counts):
         self.solver = solver
         d = solver.device
-        self.gp = int((int(np.max(particle_counts))+63)//64)
-        self.gc = int((int(np.max(cell_counts))+63)//64)
-        self.gn = int((int(np.max(node_counts))+63)//64)
+        # fixed reduction width (independent of the env size): the single reference and the batch then sum every
+        # env's partials in the same order, so their diagnostics are bitwise equal on CPU (L0)
+        self.gp = self.gc = self.gn = DIAG_GROUPS
         N = len(particle_counts)
         with wp.ScopedDevice(d):
             self.pp = wp.zeros((N*self.gp, 8), dtype=wp.float64)
