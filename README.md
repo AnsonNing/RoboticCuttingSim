@@ -271,8 +271,24 @@ CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src flock /mnt/dat
 - Warp 1.17 replays a captured HashGrid query with the descriptor of the last-built grid. So the rule is **one
   device HashGrid per process**: one batch or single material per process (`UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS`;
   a grid created later sets `FOREIGN_DEVICE_HASHGRID`, which counts as material-invalid plus infrastructure).
-- Every batched throughput number so far is `SHARED_GPU` (co-tenants on the machine). Exclusive-GPU rows are
-  pending.
+- Performance: the formal table is merged —
+  [P1 performance table](docs/reports/rl_ready/P1_PERFORMANCE_TABLE.md) (GPU1, RTX 5090, 20 of 23 runs
+  `EXCLUSIVE_GPU`; particles/env 102,732 (A, s512), 96,000 (CUT) or about 103,300 (B, seeds 512/15 mixed); 50 Hz
+  control, material dt 0.1 ms = 200 substeps; headless rows have no cameras and no recording in the timed calls;
+  warm). Headline env-steps/s:
+  - Native D-s512 (full RGB-D rig): 4.04; frozen single-env headless replay s512: 7.57;
+  - workload A `frozen_v1`: 6.75 at N=1, 9.83 at N=16; opt-in `alias_free_v1`: 9.74 at N=1, 13.56 at N=16
+    (A windows are pre-contact at N ≥ 4);
+  - batched CUT (v7_2 scene): 6.85 at N=1, 10.35 at N=8, 10.22 at N=16;
+  - workload B1 (rigid mount): 4.96 at N=1, 8.67 at N=8; N=16 (8.79) is `SHARED_GPU` only; B2 N=4: 7.37.
+
+  The rows measured code `691b571`, before the per-step HashGrid refresh of review fix F1. P1-4 long-rollout rows
+  and every partial-reset latency are `SHARED_GPU`. No B-vs-Native ratio is claimed.
+- Status: **P1-6 external-optimizer sync is PENDING**. After the Phase 1 merge the status is
+  `MERGED_RCS_PENDING_OPTIMIZER_SYNC` until the external descriptor is pinned. `acceptance_v1` is not to be used for
+  a P1-6 acceptance; the first acceptance needs `acceptance_v2` (G9 window with contact and cutting).
+- "Whole-RCS RL-ready" is **PARTIAL for CUT**: the frozen v5 CUT is not batched, and batched CUT is the opt-in
+  v7_2 scene with ideal tracking and no robot.
 - Materials are provisional and uncalibrated. The rubber material is Phase 2 work on its own branch.
 
 Reports in `docs/reports/rl_ready/`:
@@ -283,7 +299,10 @@ Reports in `docs/reports/rl_ready/`:
 [P1-4 long rollout](docs/reports/rl_ready/P1_4_LONG_ROLLOUT.md) ·
 [P1-5 CUT](docs/reports/rl_ready/P1_5_CUT.md) ·
 [P1-6 acceptance harness](docs/reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md) ·
-[acceptance review](docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md).
+[P1 parity matrix](docs/reports/rl_ready/P1_PARITY_MATRIX.md) ·
+[P1 performance table](docs/reports/rl_ready/P1_PERFORMANCE_TABLE.md) ·
+[P1-1/P1-2/P1-3a acceptance review](docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md) ·
+[Phase 1 acceptance review](docs/reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md) (PASS_WITH_LIMITATIONS at `f03fbff`).
 
 ## Agentic control robot seeded trimming
 
