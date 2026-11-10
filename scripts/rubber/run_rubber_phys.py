@@ -3,7 +3,9 @@
     PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/rubber/run_rubber_phys.py \
         --tests 01,02,03,04,05,06,07,08,09 --device cpu --workers 24 --out artifacts/rl_ready/p2_1/<run_id>
 
-Protocol: configs/rubber/rubber_phys_tests_v2.json (frozen before this run). The output directory must not exist
+Protocol: ``--protocol v2`` (default, configs/rubber/rubber_phys_tests_v2.json) or ``v3`` (rubber_phys_tests_v3.json:
+-02/-03/-05 with static_stop_v3, -07 variants ramped / instant, -12; the stable-step guard on); each frozen before its
+formal run. The output directory must not exist
 (never overwritten). Every case writes raw/<test>/<label>.json as soon as it finishes; an exception is stored as
 the case result (preserved failure). ``--evaluate-only DIR`` re-applies the criteria to existing raw results.
 Material status: SIMULATOR_ONLY_UNCALIBRATED (numerical verification only).
@@ -26,6 +28,7 @@ ROOT = Path(__file__).resolve().parents[2]
 def _jobs(tests, cfg, device):
     from robotic_cutting_sim import rubber_phys as P
     jobs = []
+    v3 = cfg["version"] >= 3
     if "01" in tests:
         for case in cfg["tests"]["RUBBER-PHYS-01"]["setup"]["cases"]:
             jobs.append(("01", case["id"], "case_patch", dict(case=case, device=device)))
@@ -37,14 +40,22 @@ def _jobs(tests, cfg, device):
             for c in configs(cfg):
                 kw = dict(L=c["L"], W=c["W"], t=c["t"], n_t=c["n_t"], mu=c["mu"], g=c["g"], device=device,
                           delta_ref=c.get("delta_ref"), label=c["label"])
+                if v3:
+                    kw.update(stop_rule=P.stop_rule_id(cfg), stable_step_guard=P.guard_limit(cfg))
                 jobs.append((tid, c["label"], "case_static_sag", kw))
     if "04" in tests:
         jobs.append(("04", "dt", "case_vibration", dict(run_id="dt", device=device)))
         jobs.append(("04", "dt_half", "case_vibration_half", dict(device=device)))
     if "06" in tests:
         jobs.append(("06", "uniaxial", "case_uniaxial", dict(device=device)))
-    if "07" in tests:
+    if "07" in tests and v3:
+        for variant in cfg["tests"]["RUBBER-PHYS-07"]["setup"]["variants"]:
+            jobs.append(("07", f"stretch_release_{variant}", "case_stretch_release_v3", dict(variant=variant,
+                                                                                            device=device)))
+    elif "07" in tests:
         jobs.append(("07", "stretch_release", "case_stretch_release", dict(device=device)))
+    if "12" in tests and v3:
+        jobs.append(("12", "guard_regression", "case_guard_regression", dict(device=device)))
     if "09" in tests:
         for c in P.configs_09(cfg):
             jobs.append(("09", f"{c['scenario']}_t{c['t']*1e3:g}mm_Wt{c['Wt']}", "case_records",
@@ -52,12 +63,12 @@ def _jobs(tests, cfg, device):
     return jobs
 
 
-def _run_job(job, out_dir):
+def _run_job(job, out_dir, protocol="v2"):
     tid, label, func, kw = job
     import warp as wp
     wp.config.log_level = getattr(wp, "LOG_WARNING", None) or 0
     from robotic_cutting_sim import rubber_phys as P
-    cfg = P.load_config()
+    cfg = P.load_config(P.PROTOCOLS[protocol])
     start = time.perf_counter()
     try:
         if func == "case_vibration_half":
@@ -74,8 +85,10 @@ def _run_job(job, out_dir):
                                       substeps=2*rule["substeps_per_control_step"])
         elif func == "case_vibration":
             result = P.case_vibration(kw["run_id"], cfg, device=kw["device"])
-        elif func in ("case_uniaxial", "case_stretch_release"):
+        elif func in ("case_uniaxial", "case_stretch_release", "case_guard_regression"):
             result = getattr(P, func)(cfg, device=kw["device"])
+        elif func == "case_stretch_release_v3":
+            result = P.case_stretch_release_v3(cfg, kw["variant"], device=kw["device"])
         elif func == "case_records":
             result = P.case_records(kw["scenario"], kw["t"], kw["Wt"], cfg, device=kw["device"])
         else:
@@ -91,9 +104,10 @@ def _run_job(job, out_dir):
     return tid, label, result["status"], result["job_wall_s"]
 
 
-def _evaluate(out_dir):
+def _evaluate(out_dir, protocol="v2"):
     from robotic_cutting_sim import rubber_phys as P
-    cfg = P.load_config()
+    cfg = P.load_config(P.PROTOCOLS[protocol])
+    v3 = cfg["version"] >= 3
     raw = Path(out_dir)/"raw"
     summary = {}
     def load(tid):
@@ -103,7 +117,7 @@ def _evaluate(out_dir):
         return rows
     evaluators = {"01": P.evaluate_01, "02": P.evaluate_02, "03": P.evaluate_03, "05": P.evaluate_05,
                   "08": P.evaluate_08, "09": P.evaluate_09}
-    for tid in ("01", "02", "03", "04", "05", "06", "07", "08", "09"):
+    for tid in ("01", "02", "03", "04", "05", "06", "07", "08", "09") + (("12",) if v3 else ()):
         rows = load(tid)
         name = f"RUBBER-PHYS-{tid}"
         if rows is None:
@@ -122,8 +136,12 @@ def _evaluate(out_dir):
                 verdicts, measured = P.evaluate_04(ok_rows, cfg, batched=batched)
             elif tid == "06":
                 verdicts, measured = P.evaluate_06(ok_rows[0], cfg) if ok_rows else ({"run": "FAIL"}, {})
+            elif tid == "07" and v3:
+                verdicts, measured = P.evaluate_07_v3(ok_rows, cfg)
             elif tid == "07":
                 verdicts, measured = P.evaluate_07(ok_rows[0], cfg) if ok_rows else ({"run": "FAIL"}, {})
+            elif tid == "12":
+                verdicts, measured = P.evaluate_12(ok_rows[0], cfg) if ok_rows else ({"run": "FAIL"}, {})
         except Exception:
             verdicts, measured = {"evaluation": "FAIL"}, {"traceback": traceback.format_exc()}
         if errors:
@@ -147,9 +165,10 @@ def main():
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--out")
     ap.add_argument("--evaluate-only")
+    ap.add_argument("--protocol", default="v2", choices=("v2", "v3"))
     args = ap.parse_args()
     if args.evaluate_only:
-        print(json.dumps({k: v["verdict"] for k, v in _evaluate(args.evaluate_only).items()}, indent=1))
+        print(json.dumps({k: v["verdict"] for k, v in _evaluate(args.evaluate_only, args.protocol).items()}, indent=1))
         return
     out = Path(args.out)
     if out.exists():
@@ -157,17 +176,19 @@ def main():
     out.mkdir(parents=True)
     sys.path.insert(0, str(ROOT/"src"))
     from robotic_cutting_sim import rubber_phys as P
-    cfg = P.load_config()
+    cfg_path = P.PROTOCOLS[args.protocol]
+    cfg = P.load_config(cfg_path)
     tests = [t.strip().zfill(2) for t in args.tests.split(",")]
     jobs = _jobs(tests, cfg, args.device)
-    jobs.sort(key=lambda j: 0 if j[0] in ("02", "05", "03", "06", "07") else 1)   # long jobs first
+    jobs.sort(key=lambda j: 0 if j[0] in ("07", "12", "02", "05", "03", "06") else 1)   # long jobs first
     commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     dirty = subprocess.run(["git", "status", "--porcelain", "src", "configs"], cwd=ROOT, capture_output=True,
                            text=True).stdout.strip()
     import warp as wp
     import numpy as np
     meta = {"command": " ".join(sys.argv), "python": sys.executable, "commit": commit, "src_or_configs_dirty": bool(dirty),
-            "config": str(P.CONFIG.relative_to(ROOT)), "config_sha256": hashlib.sha256(P.CONFIG.read_bytes()).hexdigest(),
+            "config": str(cfg_path.relative_to(ROOT)), "config_sha256": hashlib.sha256(cfg_path.read_bytes()).hexdigest(),
+            "protocol": args.protocol,
             "device": args.device, "workers": args.workers, "jobs": len(jobs), "warp": wp.config.version,
             "numpy": np.__version__, "cpu": platform.processor() or platform.machine(), "host": platform.node(),
             "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED"}
@@ -175,12 +196,13 @@ def main():
     start = time.perf_counter()
     ctx = mp.get_context("spawn")
     with ctx.Pool(args.workers, maxtasksperchild=1) as pool:
-        for tid, label, status, wall in pool.starmap(_run_job, [(j, str(out)) for j in jobs], chunksize=1):
+        for tid, label, status, wall in pool.starmap(_run_job, [(j, str(out), args.protocol) for j in jobs],
+                                                     chunksize=1):
             print(f"{tid} {label} {status} {wall:.1f}s", flush=True)
     meta["wall_s"] = time.perf_counter()-start
     meta["finished"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     (out/"run_meta.json").write_text(json.dumps(meta, indent=1))
-    summary = _evaluate(out)
+    summary = _evaluate(out, args.protocol)
     print(json.dumps({k: v["verdict"] for k, v in summary.items()}, indent=1))
 
 

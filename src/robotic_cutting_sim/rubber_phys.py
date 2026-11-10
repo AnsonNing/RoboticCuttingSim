@@ -1,4 +1,6 @@
-"""RUBBER-PHYS protocol implementations (ADR 0023 §14.3; frozen protocol ``configs/rubber/rubber_phys_tests_v2.json``).
+"""RUBBER-PHYS protocol implementations (ADR 0023 §14.3; frozen protocols ``configs/rubber/rubber_phys_tests_v2.json`` and
+``rubber_phys_tests_v3.json``; v3 = P2-1 follow-up: static_stop_v3 for -02/-03/-05, the redesigned -07, the guard
+regression -12, see ADR 0023 §18).
 
 Each ``case_*`` function runs one configuration in the single-env reference and returns a JSON-able dict of
 measurements (never a verdict); each ``evaluate_*`` function applies the pre-declared criteria of the frozen config to
@@ -15,17 +17,29 @@ import numpy as np
 from . import rubber_material as rm
 from . import rubber_reference as R
 from . import rubber_scene as rs
-from .live_rubber_material import LiveRubberMaterial, validate_records
+from .live_rubber_material import LiveRubberMaterial, decode_reason, validate_records
 from .rubber_constitutive import evaluate_pk1
 from .rubber_initializer import relax_to_static
 
 CONFIG = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v2.json"
+CONFIG_V3 = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v3.json"
+PROTOCOLS = {"v2": CONFIG, "v3": CONFIG_V3}
 RHO = 1150.0
 BETA = 20.0
 
 
 def load_config(path=CONFIG):
     return json.loads(open(path).read())
+
+
+def guard_limit(cfg):
+    """The protocol's stable-step guard limit (v3: common.stable_step_guard.limit; v2: off)."""
+    g = cfg["common"].get("stable_step_guard")
+    return None if g is None else float(g["limit"])
+
+
+def stop_rule_id(cfg):
+    return cfg["common"]["static_initializer"].get("stop_rule_id", "static_stop_v2")
 
 
 def material(mu, rho=RHO, beta=BETA):
@@ -160,16 +174,21 @@ def cantilever_live(L, W, t, n_t, mu, g, device="cpu", control_dt=1e-3, **kw):
                               device=device, **kw)
 
 
-def case_static_sag(L, W, t, n_t, mu, g, *, device="cpu", delta_ref=None, label=None):
-    """Static sag by the relax_mass_proportional_v1 initializer (static_stop_v2)."""
+def case_static_sag(L, W, t, n_t, mu, g, *, device="cpu", delta_ref=None, label=None, stop_rule="static_stop_v2",
+                    stable_step_guard=None):
+    """Static sag by the relax_mass_proportional_v1 initializer (static_stop_v2, or v3: the deflection is measured
+    on the float64 initializer markers, the float32-position value is reported as ``delta_x_f32_m``)."""
     start = time.perf_counter()
-    live = cantilever_live(L, W, t, n_t, mu, g, device)
+    live = cantilever_live(L, W, t, n_t, mu, g, device, stable_step_guard=stable_step_guard)
     mat = live.material
     E = mat.young_effective()
     f1 = R.cantilever_f1(mat.density, W, t, L, E)
-    init = relax_to_static(live, omega1=2*math.pi*f1)
+    init = relax_to_static(live, omega1=2*math.pi*f1, stop_rule=stop_rule)
     diag = live.solver.diagnostics.read()[0]
     markers = live.markers()
+    delta_x_f32 = float(live.scene.marker_reference[-1][2]-markers[-1][2])
+    if stop_rule == "static_stop_v3":
+        markers = np.asarray(init["markers_f64_m"])
     delta = float(live.scene.marker_reference[-1][2]-markers[-1][2])
     eb = R.euler_bernoulli_sag(mat.density, g, W, t, L, E)
     return {"label": label, "L_m": L, "W_m": W, "t_m": t, "n_t": n_t, "mu_pa": mu, "gravity_m_s2": g,
@@ -179,7 +198,8 @@ def case_static_sag(L, W, t, n_t, mu, g, *, device="cpu", delta_ref=None, label=
             "delta_ref_m": delta_ref, "initializer": init, "Jbar_min": diag["Jbar_min"], "Jbar_max": diag["Jbar_max"],
             "J_min": diag["J_min"], "J_max": diag["J_max"], "tip_x_m": float(markers[-1][0]),
             "reaction_residual": init["final"].get("reaction_residual"), "device": live.device,
-            "wall_s": time.perf_counter()-start}
+            "stop_rule": stop_rule, "delta_x_f32_m": delta_x_f32, "invalid": live.invalid_reason,
+            "cfl_eff_max_end": diag["cfl_eff_max"], "wall_s": time.perf_counter()-start}
 
 
 def configs_02(cfg):
@@ -514,6 +534,151 @@ def evaluate_07(result, cfg):
                                                     "energy_drift_rel": result["energy_drift_rel"],
                                                     "post_J_range": result["post_J_range"],
                                                     "invalid_flags": result["invalid_flags"]}
+
+
+# ----------------------------------------------------------------------------- RUBBER-PHYS-07 (v3) and -12
+
+def _strip_07(cfg, device, control_dt, guard, traction_end=False):
+    st = cfg["tests"]["RUBBER-PHYS-06"]["setup"]
+    L = st["L_m"]
+    spacing = st["t_m"]/st["n_t"]/2
+    regions = (("end_layer", (L-spacing, -1.0, -1.0), (1.0, 1.0, 1.0)),) if traction_end else ()
+    spec = rs.RubberStripSpec(length=L, width=st["W_m"], thickness=st["t_m"], n_t=st["n_t"], case="C",
+                              end_mask="x", traction_regions=regions)
+    return LiveRubberMaterial(spec, material=material(st["mu_pa"]), control_dt=control_dt, gravity=(0, 0, 0),
+                              device=device, strict=False, stable_step_guard=guard), st
+
+
+def case_stretch_release_v3(cfg, variant, device="cpu"):
+    """RUBBER-PHYS-07 v3 (``variant`` = "ramped" / "instant", see the v3 protocol): cosine ramp to lambda, hold, then
+    either a force-controlled release (grip 1 replaced in the same control step by a traction on the end particle
+    layer carrying the hold force, cosine-ramped to zero) or the instantaneous removal of grip 1; then 10 fixed-free
+    axial periods. One row per control step (no record files)."""
+    t7 = cfg["tests"]["RUBBER-PHYS-07"]
+    var = t7["setup"]["variants"][variant]
+    dtc = float(t7["setup"]["control_interval_s"])
+    ramped = var["release"] == "ramped_traction"
+    live, st = _strip_07(cfg, device, dtc, guard_limit(cfg), traction_end=ramped)
+    mat, L, t = live.material, st["L_m"], st["t_m"]
+    T_ax = axial_period(L, mat)
+    steps = lambda periods: int(math.ceil(periods*T_ax/dtc-1e-9))                       # noqa: E731
+    n_r, n_h, n_post = steps(60), steps(10), steps(20)
+    n_rel = steps(60) if ramped else 0
+    T_r, lam_max = n_r*dtc, float(var["lambda"])
+    m_ref = live.scene.marker_reference
+    length_ref = float(m_ref[8][0]-m_ref[0][0])
+    s = live.solver
+    rows = []
+
+    def row(phase):
+        d, mk = live.last_diagnostics, live.markers()
+        work = float(s.work.numpy()[0])
+        rows.append({"step": live.step_count, "phase": phase, "length_rel": float((mk[8][0]-mk[0][0])/length_ref),
+                     "lateral_m": float(np.abs(mk[:, 1:]-m_ref[:, 1:]).max()) if np.isfinite(mk).all() else None,
+                     "kinetic": d["kinetic_particle"], "elastic": d["elastic"], "external_work": work,
+                     "total": d["kinetic_particle"]+d["elastic"]+d["gravity"]-work, "J_min": d["J_min"],
+                     "J_max": d["J_max"], "Jbar_min": d["Jbar_min"], "Jbar_max": d["Jbar_max"],
+                     "cfl_eff_max": d["cfl_eff_max"], "invalid": int(live.invalid_reason)})
+    start = time.perf_counter()
+    wrench = None
+    for k in range(n_r+n_h):
+        lam = cosine_path((k+1)*dtc, T_r, lam_max)
+        wrench = live.advance({1: {"translation": np.array([(lam-1)*L, 0.0, 0.0])}})
+        row("ramp" if k < n_r else "hold")
+    hold_force = (-np.asarray(wrench)[1, :3]).tolist()       # force grip 1 exerts on the material (last hold step)
+    rel = dict(rows[-1])
+    if ramped:
+        T_rel = n_rel*dtc
+        for k in range(n_rel):
+            f = hold_force[0]*(1+math.cos(math.pi*(k+0.5)*dtc/T_rel))/2
+            live.advance({1: {"active": False}} if k == 0 else None, traction={0: [f, 0.0, 0.0]})
+            row("release_ramp")
+    for k in range(n_post):
+        motions = {1: {"active": False}} if (not ramped and k == 0) else None
+        live.advance(motions, traction={0: [0.0, 0.0, 0.0]} if ramped else None)
+        row("post")
+    after = [r for r in rows if r["phase"] in ("release_ramp", "post")]
+    post = [r for r in rows if r["phase"] == "post"]
+    finite = all(np.isfinite(r["total"]) for r in after)
+    return {"variant": variant, "release": var["release"], "lambda": lam_max, "T_ax_s": T_ax, "control_interval_s": dtc,
+            "ramp_steps": n_r, "hold_steps": n_h, "release_ramp_steps": n_rel, "post_steps": n_post,
+            "substeps": live.substeps, "dt_s": live.dt, "cfl_actual": live.step_rule["cfl_actual"],
+            "stable_step_guard": guard_limit(cfg), "particles": live.scene.n, "length_reference_m": length_ref,
+            "hold_force_n": hold_force, "at_release": rel,
+            "mean_length_rel_error": float(np.mean([r["length_rel"] for r in post])-1) if finite else None,
+            "post_length_std_rel": float(np.std([r["length_rel"] for r in post])) if finite else None,
+            "energy_drift_rel_psi": (float(max(abs(r["total"]-rel["total"]) for r in after)/rel["elastic"])
+                                     if finite else None),
+            "max_lateral_m": max((r["lateral_m"] for r in rows if r["lateral_m"] is not None), default=None),
+            "thickness_m": t, "invalid_flags": decode_reason(live.invalid_reason),
+            "cfl_eff_max": max(r["cfl_eff_max"] for r in rows), "J_range": [min(r["J_min"] for r in rows),
+                                                                            max(r["J_max"] for r in rows)],
+            "Jbar_range": [min(r["Jbar_min"] for r in rows), max(r["Jbar_max"] for r in rows)], "rows": rows,
+            "wall_s": time.perf_counter()-start, "device": live.device}
+
+
+def evaluate_07_v3(results, cfg):
+    th = cfg["tests"]["RUBBER-PHYS-07"]["thresholds"]
+    by = {r["variant"]: r for r in results}
+    ok, measured = {}, {}
+    for variant in cfg["tests"]["RUBBER-PHYS-07"]["setup"]["variants"]:
+        r = by.get(variant)
+        if r is None:
+            ok[f"{variant}_ran"] = False
+            continue
+        good = r["mean_length_rel_error"] is not None
+        ok[f"{variant}_mean_length"] = good and abs(r["mean_length_rel_error"]) <= th["length_rel"]
+        ok[f"{variant}_energy"] = good and r["energy_drift_rel_psi"] <= th["energy_rel_psi"]
+        ok[f"{variant}_valid"] = not r["invalid_flags"]
+        ok[f"{variant}_no_fold"] = r["max_lateral_m"] is not None and r["max_lateral_m"] <= th["lateral_over_t"]*r[
+            "thickness_m"]
+        measured[variant] = {k: r[k] for k in ("lambda", "release", "mean_length_rel_error", "post_length_std_rel",
+                                                "energy_drift_rel_psi", "max_lateral_m", "invalid_flags",
+                                                "cfl_eff_max", "J_range", "Jbar_range", "hold_force_n", "dt_s",
+                                                "substeps", "cfl_actual")}
+    return {k: _verdict(v) for k, v in ok.items()}, measured
+
+
+def case_guard_regression(cfg, device="cpu"):
+    """RUBBER-PHYS-12 (v3): the v2 RUBBER-PHYS-07 path (lambda 1.5, 5 ms control interval, instantaneous release of
+    grip 1, CFL 0.5) with the stable-step guard on and strict mode off; flags per control step."""
+    t12 = cfg["tests"]["RUBBER-PHYS-12"]["setup"]
+    dtc = float(t12["control_interval_s"])
+    live, st = _strip_07(cfg, device, dtc, guard_limit(cfg))
+    L = st["L_m"]
+    T_ax = axial_period(L, live.material)
+    steps = lambda periods: int(math.ceil(periods*T_ax/dtc-1e-9))                       # noqa: E731
+    n_r, n_h, n_post = steps(60), steps(10), steps(20)
+    rows = []
+    start = time.perf_counter()
+    for k in range(n_r+n_h+n_post):
+        if k < n_r+n_h:
+            lam = cosine_path((k+1)*dtc, n_r*dtc, float(t12["lambda"]))
+            live.advance({1: {"translation": np.array([(lam-1)*L, 0.0, 0.0])}})
+        else:
+            live.advance({1: {"active": False}} if k == n_r+n_h else None)
+        d = live.last_diagnostics
+        rows.append({"step": live.step_count, "post_release": k >= n_r+n_h, "flags": decode_reason(live.invalid_reason),
+                     "nonfinite": bool(d["nonfinite"]), "cfl_eff_max_end": d["cfl_eff_max"], "J_min": d["J_min"]})
+
+    def first(pred):
+        return next((r["step"] for r in rows if pred(r)), None)
+    return {"control_interval_s": dtc, "lambda": t12["lambda"], "substeps": live.substeps, "dt_s": live.dt,
+            "stable_step_guard": guard_limit(cfg), "release_after_step": n_r+n_h,
+            "first_cfl_flag_step": first(lambda r: "RUBBER_CFL_EXCEEDED" in r["flags"]),
+            "first_j_flag_step": first(lambda r: "RUBBER_J_DOMAIN" in r["flags"]),
+            "first_nonfinite_step": first(lambda r: "NONFINITE_STATE" in r["flags"]),
+            "rows": rows, "wall_s": time.perf_counter()-start, "device": live.device}
+
+
+def evaluate_12(result, cfg):
+    flags = [s for s in (result["first_cfl_flag_step"], result["first_j_flag_step"]) if s is not None]
+    nonfinite = result["first_nonfinite_step"]
+    first_flag = min(flags) if flags else None
+    ok = {"flagged": first_flag is not None,
+          "flag_before_nonfinite": first_flag is not None and (nonfinite is None or first_flag < nonfinite)}
+    return {k: _verdict(v) for k, v in ok.items()}, {k: result[k] for k in (
+        "first_cfl_flag_step", "first_j_flag_step", "first_nonfinite_step", "release_after_step", "stable_step_guard")}
 
 
 # ----------------------------------------------------------------------------- RUBBER-PHYS-09 records
