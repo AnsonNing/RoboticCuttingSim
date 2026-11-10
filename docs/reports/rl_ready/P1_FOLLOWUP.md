@@ -174,7 +174,7 @@ Under heavy co-tenancy, such as `smoke_003` at about ×2.2, one acceptance excee
 ### 1.4 Freeze (finding 2)
 
 `tests/test_acceptance_frozen.py` pins:
-- `acceptance_v1.json`: `3592d9408f314c3d2825171361b8ec640534c60577bb6216a10c4f2b22897bf4`;
+- `acceptance_v1.json`: `3592d9408f314c3d2825171361b8ec640534c60577bb6216a10c4f2b22897bf4`, frozen at the PR #12 merge `40c94c7` (D-11);
 - `acceptance_v2.json`: `b66ace2967b4aad8382ca4297032c0e513a4cf3ebe6564dad03494b8e7dd612a`;
 - both band files.
 
