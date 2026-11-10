@@ -93,7 +93,11 @@ Ticked means the checkbox is met by merged evidence, with its limitation stated.
     4/4.
   - Frozen-source SHA tests run in the CPU suite.
 
-  Limitations: L4 RUN_TO_RUN is BLOCKED (frozen v5 atomics); the batched replay of the Native v7_2 recording is
+  Limitations: the device pose interpolation equals the live chain (≤ 1 float32 ulp, 0 ulp for FK quaternions) on
+  hosts whose NumPy/OpenBLAS uses the AVX-512 (SkylakeX) kernels, as the workstation and its Native runs do; on
+  hosts without AVX-512 the live chain itself rounds differently (GitHub EPYC 7763 / OpenBLAS Haswell: up to 3300
+  float32 ulp in tiny-angle twists), so those comparisons are NOT_RUN there (`tests/test_batched_pose_interp.py`);
+  L4 RUN_TO_RUN is BLOCKED (frozen v5 atomics); the batched replay of the Native v7_2 recording is
   NOT_RUN; GPU position bands are descriptive. Evidence: `p1_2_milestones_001.json`, `review_fix1_001.json`,
   `p1_5_cut_001.json`, `p1_1b_s2_s3_001.json`.
 - [x] **GPU-native action / observation / reward / done, independent per-env seeds, reproducible scenes, API
