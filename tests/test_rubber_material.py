@@ -149,7 +149,10 @@ def test_values_overrides_stay_in_range():
 
 def test_resolution_and_lattice_checks():
     r = rm.load_recipe()
-    assert rm.resolution_check(r, 0.004, 0.004/3)["label"] == "full"
+    # R2.5 review decision (a): n_t 3 (rubber_rl_v1, the recipe default) is labelled reduced fidelity with its bias
+    assert rm.resolution_check(r, 0.004, 0.004/3)["label"] == "reduced_fidelity: thickness_resolution_n_t3"
+    assert "static_sag_L_over_t_20_W_4t" in r.resolution()["measured_bias"]
+    assert rm.resolution_check(r, 0.004, 0.001, profile="rubber_ref_v1")["label"] == "full"
     with pytest.raises(rm.RubberRecipeError):
         rm.resolution_check(r, 0.004, 0.002)
     assert rm.resolution_check(r, 0.004, 0.002, profile="rubber_coarse_v1")["label"].startswith("reduced_fidelity")

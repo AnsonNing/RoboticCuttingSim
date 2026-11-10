@@ -83,6 +83,14 @@ sits 1–2 % below beam theory because the clamp suppresses lateral contraction 
 **Findings:** without J-bar the operator locks volumetrically even at β = 20 (−12 % at n_t = 4); with J-bar the error to
 the converged value is ≤ 0.5 % at n_t ≥ 3 and 2–4 % at n_t = 2; n_t = 1 is unusable.
 
+> **Erratum (R2.5 review F1, 2026-11-10; §21).** "≤ 0.5 % at n_t ≥ 3" holds only for the L/t 10 rows. The L/t 20
+> J-bar row of the table above already shows n_t 3 0.9 % above n_t 6 (0.999 vs 0.990). Measured in P2-2 (v4 data):
+> the n_t 3 static sag lies **+1.08 %** above the n_t → ∞ extrapolation at L/t 20, W = t (RUBBER-PHYS-11 Q1) and
+> **+1.26 % to +1.75 %** for W = 4t (the workload E geometry class; -02 pairs); the first bending frequency −0.89 %
+> (Q2), the large-deflection tip drop +0.16 % (Q4). n_t 3 is therefore a reduced-fidelity grid for bending; the
+> full-fidelity grid for bending-dominated scenes is n_t ≥ 4 (§8, §21). Protocol v5 re-measures the n_t 3 bias against
+> n_t 8 (§21).
+
 ### E2 — explicit stability (`PR/probe_tlmpm_dynamic.py stability`)
 
 Cantilever L 100 mm, W = t = 10 mm, μ 2 MPa, β 20, ρ 1150, n_t 3, J-bar, pic 0. With
@@ -197,8 +205,11 @@ these numbers.
   monitoring (§6). ν = 0.499 with plain Neo-Hookean is refused.
 - **D4 Time integration:** pure FLIP (`pic = 0`), MUSL, v6 grid-consistent positions, `dt = 0.5·dx/c_p,max` (measured
   critical ≈ 1.2–1.5), CUDA graph in chunks; no artificial damping in dynamics; equilibrium initializer only at CFL ≤ 0.25.
-- **D5 Resolution:** 2 particles per cell per axis; ≥ 3 cells through the thickness for `rubber_ref_v1`/`rubber_rl_v1`
-  (n_t = 2 only as `reduced_fidelity: coarse_thickness_resolution`); geometry aligned to the particle lattice.
+- **D5 Resolution (amended in §21):** 2 particles per cell per axis; ≥ 4 cells through the thickness for
+  `rubber_ref_v1` (full fidelity for bending-dominated scenes); `rubber_rl_v1` (n_t 3) is
+  `reduced_fidelity: thickness_resolution_n_t3` with its measured bending bias; n_t = 2 only as
+  `reduced_fidelity: coarse_thickness_resolution`; geometry aligned to the particle lattice. (P2-0 text: "≥ 3 cells
+  through the thickness for `rubber_ref_v1`/`rubber_rl_v1`", corrected by the R2.5 review F1.)
 - **D6 Boundary conditions:** nodal Dirichlet groups (clamp / kinematic grip, per-component mask, exact rigid motion,
   measured reaction wrench), traction groups, gravity, table plane and fixture boxes.
 - **D7 Viscoelasticity (P2-3 design):** finite-strain Prony series on the isochoric PK2 (Simo/Holzapfel internal
@@ -228,7 +239,10 @@ cutting profile (pic 0.05, no J-bar, 4 mm grid), which the rubber profile change
 ### 4.2 Grid resolution for a strip a few millimetres thick
 
 E1: with J-bar and 2 particles per cell, bending error vs the converged value is 2–4 % at 2 cells through the
-thickness and ≤ 0.5 % at ≥ 3. The 4 mm cutting grid is therefore unusable for a 2–8 mm strip (≤ 2 cells); the rubber
+thickness and ≤ 0.5 % at ≥ 3 for L/t 10. **Corrected (R2.5 review F1, §21):** at n_t 3 the measured bending error is
+about 1 % at L/t 20 (+1.08 % static sag, W = t) and 1.3–1.75 % for wide strips (W = 4t); it is ≤ 0.5 % only at L/t 10.
+The full-fidelity grid for bending-dominated scenes is therefore n_t ≥ 4 (`rubber_ref_v1`); n_t 3 (`rubber_rl_v1`) is a
+labelled reduced-fidelity grid. The 4 mm cutting grid is therefore unusable for a 2–8 mm strip (≤ 2 cells); the rubber
 grid is `dx = t_min / n_t` with n_t ≥ 3 (t 3 mm → dx 1 mm; t 4.5 mm → 1.5 mm). Particles per env:
 `8 L W t / dx³` (2 per cell per axis). Examples: 150×20×4 mm at dx 1 mm → 96k particles (≈ TRIM's 103k);
 at dx 1.33 mm (n_t 3) → 40.5k.
@@ -366,8 +380,8 @@ directly (the recipe takes μ and β; ν is derived).
 
 | Profile | ppc/axis | n_t (min over batch) | β | CFL | pic | Use | Label |
 |---|---|---|---|---|---|---|---|
-| `rubber_ref_v1` | 2 | ≥ 4 | 20 | 0.5 | 0 | refinement anchor, acceptance | full |
-| `rubber_rl_v1` (default) | 2 | ≥ 3 | 20 | 0.5 | 0 | P2-6 vector env | full (≤ 0.5 % bending error vs converged, E1) |
+| `rubber_ref_v1` | 2 | ≥ 4 | 20 | 0.5 | 0 | refinement anchor, acceptance; **full-fidelity production grid for bending-dominated scenes** (acceptance tests, P2-5 calibration fits, the Full Native reference; R2.5 decision (a), §21) | full |
+| `rubber_rl_v1` (default) | 2 | ≥ 3 | 20 | 0.5 | 0 | P2-6 vector env (RL throughput) | **`reduced_fidelity: thickness_resolution_n_t3`** with its measured bending bias (receipts print it; §21). Corrected from "full (≤ 0.5 % bending error vs converged, E1)", which the E1 L/t 20 row and P2-2 refuted (R2.5 review F1) |
 | `rubber_coarse_v1` | 2 | 2 | 20 | 0.5 | 0 | fast curricula | `reduced_fidelity: coarse_thickness_resolution` |
 
 Geometry is placed on the particle lattice (spacing s = dx/2; L, W, t multiples of s, minimum corner on a grid line), so
@@ -1073,3 +1087,45 @@ discrete motion) is not yet isolated. Open before batched VISC hysteresis runs w
 - The F8 row kernels `_proj_rhs` / `_proj_reaction_b` still evaluate `group_target` per row (the same float64 cost as
   §20.2); they could read the motion table.
 - Viscoelasticity (`neo_hookean_jbar_prony_v1`) and `rubber_visc_tests_v1` are not started (declared after the review).
+
+## 21. Protocol v5 — R2.5 review decisions (a) and (b), F7, F9 (amendment, 2026-11-10, rcs-impl)
+
+Scope: the two decisions of the R2.5 xhigh acceptance review (`docs/reports/rl_ready/P2_0_P2_2_ACCEPTANCE_REVIEW.md`
+§3, §4) and its findings F7 (guard never on for -04 / -09) and F9 (ppc 3 accepted for any scene). Nothing frozen
+changed (v1–v7_2, law 8, evaluators, Phase 1 batched modules, `batched/constitutive.py`, `batched/errors.py`,
+`configs/rl_benchmark/*`, `scripts/rl_ready/*`, `rubber_phys_tests_v1..v4.json`, `workload_e_v1.json`,
+`tlmpm_rubber_v1.py`, `rubber_constitutive.py`). Material status unchanged: `SIMULATOR_ONLY_UNCALIBRATED`.
+
+### 21.1 Declaration (`configs/rubber/rubber_phys_tests_v5.json`, commit `8881ff0`, sha256 `7e02f57b…67f0`)
+
+Committed alone and SHA-pinned before any v5 run; `tests/test_rubber_phys_config.py` asserts that the -11 `rule`
+block, the thresholds (gci 0.02, dt_rel 0.001), the CFL set {0.5, 0.25}, the guard 1.0 and the verdict CFL are
+byte-identical to v4 and that every threshold of every test is unchanged.
+
+| Test | v5 change | Why |
+|---|---|---|
+| -02 small sag | grids n_t 4 / 6, two-grid extrapolation from (4, 6), r 3/2, order 2 | decision (a): the production grid for bending is n_t 4 |
+| -03 scaling | n_t 4; series_t L 0.096 m (0.1 m is off the n_t 4 lattice of t 3 mm) | decision (a) |
+| -04 free vibration | n_t 4; guard on (dt, dt_half, batched N = 4); L0 byte-wise; validity criterion | decision (a); F7 |
+| -05 large sag | n_t 4 | decision (a) |
+| -08 simple shear | `deformation_reserve` 1.5 from the rule r = ⌈2·CFL_eff,max(r = 1)/(0.9·limit)⌉/2 at γ_max 2 (CFL_eff,max(1) = 1.2966 → r 1.5, CFL_eff 0.864); same control interval (300 substeps) | decision (b) |
+| -09 records | guard on; cantilever / vibration runs flag-free; a flag precedes any non-finite state; stretch_release (λ 1.5 instantaneous release, a fold scene) flags reported | F7 |
+| -11 refinement | Q1, Q2, Q4 and the new wide-strip Q1w (L/t 20, t 4 mm, W = 4t, f64 shadow, static_stop_v3) on n_t {3, 4, 6, 8}; production GCI = GCI_coarse of n_t 4 from (4, 6, 8); CFL 0.25 at n_t 3 and 4; n_t 3 reported as the `rubber_rl_v1` bias, not scored; Q3 keeps its v4 PASS; β / ppc not repeated | decision (a) |
+| `workload_e_v2_gpu` | workload E v2 (n_t 4) batched on GPU0, N 1 / 4 / 8: L2 invariants and throughput rows | decision (a) |
+
+Not re-run: -01 (v2), -06 / -07 (v4; uniaxial, already n_t 4), -10 (v4), -12 (v3). Every earlier result and failure
+stays recorded (v4 -08 FAIL, v4 -11 FAIL, …).
+
+### 21.2 Code and documentation (after the declaration, before the runs)
+
+- `rubber_material.RESOLUTION_PROFILES`: `rubber_rl_v1` → `reduced_fidelity: thickness_resolution_n_t3` with a
+  `measured_bias` block (printed by the recipe receipt and `resolution_check`); `rubber_ref_v1` stays `full` and names
+  its use. E1, §3 D5, §4.2 and §8 corrected above (errata, original wording kept).
+- `configs/rubber/workload_e_v2.json`: row `E` (`E_full`) at n_t 4 / `rubber_ref_v1`, `reduced_fidelity: false`; row
+  `E_n_t3` at n_t 3 / `rubber_rl_v1`, `reduced_fidelity: true` with its bias. `workload_e_v1.json` unchanged (now
+  SHA-pinned).
+- F9: `rubber_scene.compile_strip` refuses ppc 3 unless `RubberStripSpec(quadrature_check=True)`; such scenes carry a
+  `quadrature_check` receipt field. The refinement study sets the flag for its ppc 3 runs only.
+- Runners: `run_rubber_phys.py --protocol v5`, `scripts/rubber/p2_2_v5/run_refinement_v5.py`,
+  `run_batched_04_v5.py`, `run_workload_e_v2.py`; `rubber_refinement.jobs_v5` / `evaluate_v5`;
+  `rubber_phys.evaluate_09_v5`; the -02 evaluator takes its extrapolation pair from the protocol.

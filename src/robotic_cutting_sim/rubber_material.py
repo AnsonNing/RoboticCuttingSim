@@ -28,10 +28,25 @@ ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RECIPE = ROOT/"configs"/"materials"/"rubber_generic_soft_v1.json"
 CALIBRATION_DIR = ROOT/"configs"/"rubber"/"calibration"
 
-# ADR 0023 §8 resolution profiles (ppc per axis, minimum cells through the thickness, label).
+# ADR 0023 §8 resolution profiles (ppc per axis, minimum cells through the thickness, label). R2.5 review decision (a)
+# (ADR 0023 §21): rubber_ref_v1 is the full-fidelity grid for bending-dominated scenes; rubber_rl_v1 (n_t 3) is a
+# labelled reduced-fidelity profile whose receipts carry its measured bending bias (the earlier label "full
+# (<= 0.5 % bending error, E1)" generalised the L/t 10 rows of E1 and is refuted at L/t 20 and for wide strips).
 RESOLUTION_PROFILES = {
-    "rubber_ref_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 4, "label": "full"},
-    "rubber_rl_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 3, "label": "full"},
+    "rubber_ref_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 4, "label": "full",
+                      "use": "full-fidelity production grid for bending-dominated scenes (acceptance tests, P2-5 "
+                             "calibration fits, the Full Native reference)"},
+    "rubber_rl_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 3,
+                     "label": "reduced_fidelity: thickness_resolution_n_t3",
+                     "measured_bias": {
+                         "source": "P2-2 v4 data (refinement_v4_002, rubber_phys_v4_001; R2.5 review F1); relative "
+                                   "to the n_t -> infinity extrapolation, beta 20, CFL 0.5, 2 particles per cell",
+                         "static_sag_L_over_t_10": "<= 0.5 % (ADR 0023 E1)",
+                         "static_sag_L_over_t_20_W_t": "+1.08 % (RUBBER-PHYS-11 v4 Q1, p_eff 2)",
+                         "static_sag_L_over_t_20_W_4t": "+1.26 % to +1.75 % (v4 -02 pairs, p 3.26 to 2)",
+                         "first_bending_frequency": "-0.89 % (RUBBER-PHYS-11 v4 Q2)",
+                         "large_deflection_tip_drop": "+0.16 % (RUBBER-PHYS-11 v4 Q4)",
+                         "uniaxial_stress": "grid independent (RUBBER-PHYS-11 v4 Q3)"}},
     "rubber_coarse_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 2,
                          "label": "reduced_fidelity: coarse_thickness_resolution"},
 }
@@ -408,8 +423,10 @@ def resolution_check(recipe, thickness_min, dx, profile=None):
     required = RESOLUTION_PROFILES[name]["min_cells_through_thickness"]
     if n_t < required-1e-9:
         _refuse(f"{name}: {n_t:.3f} cells through the thickness < {required}")
-    return {"resolution_profile": name, "cells_through_thickness": n_t,
-            "label": RESOLUTION_PROFILES[name]["label"]}
+    out = {"resolution_profile": name, "cells_through_thickness": n_t, "label": RESOLUTION_PROFILES[name]["label"]}
+    if "measured_bias" in RESOLUTION_PROFILES[name]:
+        out["measured_bias"] = RESOLUTION_PROFILES[name]["measured_bias"]
+    return out
 
 
 def lattice_check(length, spacing):

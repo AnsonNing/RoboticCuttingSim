@@ -14,6 +14,8 @@ PINS = {
     "configs/rubber/rubber_phys_tests_v3.json": "c7fdfc95f8bd024cca82a8dd00f6949a0410a0f2c65beae262c32696a848dbd9",
     "configs/rubber/rubber_phys_tests_v4.json": "f1cecee63375fb3cfef7a1319e851df472bd2f7e3e2611a2a172b108b06b38f0",
     "configs/rubber/rubber_phys_tests_v5.json": "7e02f57bd8c7a09c6163fe26d7c7d37f46689314b7e119714fe7285a8ad867f0",
+    "configs/rubber/workload_e_v1.json": "17ade5b1156b2419af0de22bc921ad1baf6b1eb16641e95682c5b8ea6d00a0e3",
+    "configs/rubber/workload_e_v2.json": "199e25b16c0759be3623ee0b0fe292f3681cf7c5bf68ecc9245b7d2b21d9df55",
 }
 
 
@@ -175,3 +177,23 @@ def test_v5_deformation_reserve_follows_the_declared_rule():
     limit = v5["common"]["stable_step_guard"]["limit"]
     assert math.ceil(2*cfl1/(0.9*limit))/2 == s8["deformation_reserve"] == 1.5
     assert abs(cfl1-1.2966) < 1e-4 and cfl1/1.5 < 0.9*limit
+
+
+def test_workload_e_v2_full_row_is_n_t4_and_the_n_t3_row_is_labelled():
+    """R2.5 review decision (a): workload E v2 (full fidelity) is n_t 4 / rubber_ref_v1; the n_t 3 row is reduced
+    fidelity with its measured bias; v1 unchanged; the v5 GPU check names the full row."""
+    from robotic_cutting_sim.rubber_material import RESOLUTION_PROFILES
+    w = json.loads((ROOT/"configs"/"rubber"/"workload_e_v2.json").read_text())
+    assert w["supersedes"]["sha256"] == PINS["configs/rubber/workload_e_v1.json"]
+    full, rl = w["workloads"]
+    assert full["reduced_fidelity"] is False and full["material"]["n_t"] == 4
+    assert full["material"]["resolution_profile"] == "rubber_ref_v1" and full["N"] == [1, 4, 8]
+    assert rl["reduced_fidelity"] is True and rl["material"]["n_t"] == 3
+    assert rl["material"]["resolution_profile"] == "rubber_rl_v1"
+    assert rl["reduced_fidelity_reasons"] == ["thickness_resolution_n_t3"]
+    assert RESOLUTION_PROFILES["rubber_rl_v1"]["label"] == "reduced_fidelity: thickness_resolution_n_t3"
+    assert RESOLUTION_PROFILES["rubber_ref_v1"]["label"] == "full"
+    for key in ("geometry_m", "randomisation", "control_dt_s", "bulk_ratio_beta", "cfl"):
+        assert full["material"][key] == rl["material"][key], key
+    v5 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v5.json").read_text())["workload_e_v2_gpu"]
+    assert "workload_e_v2.json row E_full" in v5["workload"] and v5["N"] == full["N"]

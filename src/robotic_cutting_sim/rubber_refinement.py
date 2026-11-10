@@ -6,10 +6,13 @@ Observables (single-env reference, stable-step guard on, static_stop_v3 for the 
 - Q2 first bending frequency (RUBBER-PHYS-04 type): f1 (Hz) of the strip released straight under gravity;
 - Q3 nominal stress at lambda 1.5 (RUBBER-PHYS-06 type, load half of the path): grip-1 reaction / (W t) (Pa) over the
   control interval whose mid stretch is nearest 1.5; Q5 (mean gauge Jbar error, Jbar extremes) reported with it;
-- Q4 large-deflection tip drop (RUBBER-PHYS-05 type, alpha 9): delta (m).
+- Q4 large-deflection tip drop (RUBBER-PHYS-05 type, alpha 9): delta (m);
+- Q1w (protocol v5): Q1 on the -02 wide strip (W = 4t), the workload E geometry class.
 
 Each ``case_q*`` returns raw measurements (no verdict); ``evaluate`` applies the pre-declared v4 rule (GCI of the
-production grid from the three finest grids, dt sensitivity, beta / ppc sensitivity reported) with ``rubber_gci``.
+production grid from the three finest grids, dt sensitivity, beta / ppc sensitivity reported) with ``rubber_gci``;
+``jobs_v5`` / ``evaluate_v5`` the v5 declaration (``rubber_phys_tests_v5.json``: grids 3 / 4 / 6 / 8, production n_t 4
+from the triplet (4, 6, 8) under the unchanged rule block, n_t 3 reported as the rubber_rl_v1 bias).
 Material status: SIMULATOR_ONLY_UNCALIBRATED.
 """
 import math
@@ -37,6 +40,11 @@ def _live(spec, mat, control_dt, gravity, cfl, guard, options, record=False):
                               stable_step_guard=guard, strict=False, record=record, **(options or {}))
 
 
+def _spec(run, **geometry):
+    """The run's strip; ppc 3 only as the labelled quadrature check (``rubber_scene`` refuses it otherwise)."""
+    return rs.RubberStripSpec(n_t=run["n_t"], ppc=run["ppc"], quadrature_check=run["ppc"] == 3, **geometry)
+
+
 def _common(live, run, t0):
     return {"run": run, "particles": live.scene.n, "dt_s": live.dt, "substeps": live.substeps,
             "cfl_actual": live.step_rule["cfl_actual"], "dx_m": live.scene.dx, "invalid": int(live.invalid_reason),
@@ -54,7 +62,7 @@ def case_q1(q, run, device="cpu", options=None, guard=1.0):
     A, I = R.rect_section(W, t)
     g = q["alpha"]*E20*I/(RHO*A*L**3)
     mat = material(q["mu_pa"], run["beta"])
-    spec = rs.RubberStripSpec(length=L, width=W, thickness=t, n_t=run["n_t"], ppc=run["ppc"], case="A")
+    spec = _spec(run, length=L, width=W, thickness=t, case="A")
     live = _live(spec, mat, 1e-3, (0.0, 0.0, -g), run["cfl"], guard, options)
     E = mat.young_effective()
     f1 = R.cantilever_f1(RHO, W, t, L, E)
@@ -71,8 +79,7 @@ def case_q2(q, run, device="cpu", options=None, guard=1.0):
     """Q2: f1 of the -04 type strip (L_m, W_m, t_m, mu_pa, gravity_m_s2, record_interval_s, periods)."""
     t0 = time.perf_counter()
     mat = material(q["mu_pa"], run["beta"])
-    spec = rs.RubberStripSpec(length=q["L_m"], width=q["W_m"], thickness=q["t_m"], n_t=run["n_t"], ppc=run["ppc"],
-                              case="A")
+    spec = _spec(run, length=q["L_m"], width=q["W_m"], thickness=q["t_m"], case="A")
     live = _live(spec, mat, q["record_interval_s"], (0, 0, -q["gravity_m_s2"]), run["cfl"], guard, options)
     E = mat.young_effective()
     f_eb = R.cantilever_f1(RHO, q["W_m"], q["t_m"], q["L_m"], E)
@@ -101,8 +108,7 @@ def case_q3(q, run, device="cpu", options=None, guard=1.0):
     from .rubber_phys import _gauge_cells, axial_period, cosine_path
     t0 = time.perf_counter()
     mat = material(q["mu_pa"], run["beta"])
-    spec = rs.RubberStripSpec(length=q["L_m"], width=q["W_m"], thickness=q["t_m"], n_t=run["n_t"], ppc=run["ppc"],
-                              case="C", end_mask="x")
+    spec = _spec(run, length=q["L_m"], width=q["W_m"], thickness=q["t_m"], case="C", end_mask="x")
     live = _live(spec, mat, q["control_interval_s"], (0, 0, 0), run["cfl"], guard, options)
     L, dtc = q["L_m"], live.control_dt
     T_ax = axial_period(L, material(q["mu_pa"]))                 # the beta = 20 path for every run (same loading)
@@ -143,7 +149,7 @@ def case_q4(q, run, device="cpu", options=None, guard=1.0):
     L = q["alpha"]*E20/(12*RHO*q["gravity_m_s2"]*q["L_over_t"]**2)
     t = L/q["L_over_t"]
     mat = material(q["mu_pa"], run["beta"])
-    spec = rs.RubberStripSpec(length=L, width=t, thickness=t, n_t=run["n_t"], ppc=run["ppc"], case="A")
+    spec = _spec(run, length=L, width=t, thickness=t, case="A")
     live = _live(spec, mat, 1e-3, (0.0, 0.0, -q["gravity_m_s2"]), run["cfl"], guard, options)
     E = mat.young_effective()
     f1 = R.cantilever_f1(RHO, t, t, L, E)
@@ -159,7 +165,7 @@ def case_q4(q, run, device="cpu", options=None, guard=1.0):
                 Jbar_range=[d["Jbar_min"], d["Jbar_max"]])
 
 
-CASES = {"Q1": case_q1, "Q2": case_q2, "Q3": case_q3, "Q4": case_q4}
+CASES = {"Q1": case_q1, "Q1w": case_q1, "Q2": case_q2, "Q3": case_q3, "Q4": case_q4}   # Q1w: v5, the -02 wide strip
 
 
 def run_label(qid, run):
@@ -248,4 +254,83 @@ def evaluate(rows, cfg):
                                  "NOT_RUN" if prod not in dt else "FAIL")
         verdicts[f"{qid}_valid"] = "PASS" if not bad and not missing else "FAIL"
         measured[qid] = m
+    return verdicts, measured
+
+
+# ----------------------------------------------------------------------------- protocol v5 (R2.5 review decision (a))
+
+def jobs_v5(cfg):
+    """(qid, label, run) for every declared run of RUBBER-PHYS-11 v5: every grid at CFL 0.5, the declared CFL 0.25
+    grids, beta 20, ppc 2 (beta / ppc sensitivities are not repeated in v5)."""
+    st = cfg["tests"]["RUBBER-PHYS-11"]["setup"]
+    out = []
+    for qid in st["observables"]:
+        runs = [{"n_t": n, "cfl": 0.5, "beta": 20.0, "ppc": 2} for n in st["grids_n_t"]]
+        runs += [{"n_t": n, "cfl": 0.25, "beta": 20.0, "ppc": 2} for n in st["cfl_0.25_grids_n_t"]]
+        out += [(qid, run_label(qid, run), run) for run in runs]
+    return out
+
+
+def _triplet(by, qid, grids, cfl, rule):
+    """The declared rule (unchanged since v4) on one triplet; None if a run is missing."""
+    keys = [(qid, n, cfl, 20.0, 2) for n in sorted(grids, reverse=True)]                   # fine -> coarse
+    if not all(k in by for k in keys):
+        return None
+    h = [1.0/n for n in sorted(grids, reverse=True)]
+    phi = [by[k]["Q"] for k in keys]
+    res = G.study(h, phi, p_bounds=tuple(rule["p_bounds"]), fs_verified=rule["fs_verified"],
+                  fs_unverified=rule["fs_unverified"], verified_window=tuple(rule["verified_window"]))
+    rng = (max(phi)-min(phi))/abs(phi[0])            # = res["range_rel"] whenever the order is defined (v4 logic)
+    if rng <= rule["grid_independent_range_rel"]:
+        res.update(status="GRID_INDEPENDENT", gci_coarse=rule["fs_verified"]*rng, gci_fine=rule["fs_verified"]*rng)
+    res["grids_n_t"] = sorted(grids, reverse=True)
+    return res
+
+
+def evaluate_v5(rows, cfg):
+    """Apply the declared v5 rule (rubber_phys_tests_v5.json RUBBER-PHYS-11) to raw rows: production GCI_coarse of
+    n_t 4 from (4, 6, 8) at the verdict CFL, dt at the production grid, validity; n_t 3 bias reported, not scored."""
+    st = cfg["tests"]["RUBBER-PHYS-11"]["setup"]
+    th = cfg["tests"]["RUBBER-PHYS-11"]["thresholds"]
+    rule, prod, vcfl = st["rule"], st["production_n_t"], st["verdict_cfl"]
+    by = {(r["qid"], r["run"]["n_t"], r["run"]["cfl"], r["run"]["beta"], r["run"]["ppc"]): r for r in rows
+          if r.get("status") == "OK"}
+    verdicts, measured = {}, {}
+    for qid in st["observables"]:
+        ok_rows = [r for k, r in by.items() if k[0] == qid]
+        m = {"invalid_or_unconverged": [r["label"] for r in ok_rows if r.get("invalid") or r.get("converged") is False
+                                        or r["Q"] is None],
+             "missing": [lab for q, lab, run in jobs_v5(cfg) if q == qid
+                         and (qid, run["n_t"], run["cfl"], run["beta"], run["ppc"]) not in by]}
+        fine = _triplet(by, qid, st["triplet_finest"], vcfl, rule)
+        coarse = _triplet(by, qid, st["triplet_coarsest"], vcfl, rule)
+        m["triplet_finest"], m["triplet_coarsest"] = fine, coarse
+        m["values_cfl0.5"] = {n: by[(qid, n, vcfl, 20.0, 2)]["Q"] for n in st["grids_n_t"]
+                              if (qid, n, vcfl, 20.0, 2) in by}
+        m["dt_change_cfl050_to_cfl025"] = {n: by[(qid, n, 0.25, 20.0, 2)]["Q"]/by[(qid, n, 0.5, 20.0, 2)]["Q"]-1
+                                           for n in st["cfl_0.25_grids_n_t"]
+                                           if (qid, n, 0.25, 20.0, 2) in by and (qid, n, 0.5, 20.0, 2) in by}
+        bias = {}
+        if fine is not None:
+            ext = fine.get("phi_ext", fine["phi"][0])
+            ext_obs = fine.get("phi_ext_p_obs")
+            for n in (3, 4):
+                v = m["values_cfl0.5"].get(n)
+                if v is not None:
+                    bias[f"nt{n}_over_ext_p_eff_minus_1"] = v/ext-1
+                    if ext_obs is not None:
+                        bias[f"nt{n}_over_ext_p_obs_minus_1"] = v/ext_obs-1
+            bias["phi_ext_p_eff"], bias["phi_ext_p_obs"] = ext, ext_obs
+        if coarse is not None:
+            bias["nt3_gci_coarse_triplet_3_4_6"] = coarse.get("gci_coarse")
+        m["rubber_rl_v1_bias_reported_not_scored"] = bias
+        m["values"] = {r["label"]: r["Q"] for r in ok_rows}
+        gci = None if fine is None else fine.get("gci_coarse")
+        verdicts[f"{qid}_gci_production"] = ("NOT_RUN" if fine is None else
+                                             "PASS" if gci is not None and gci <= th["gci"] else "FAIL")
+        dt = m["dt_change_cfl050_to_cfl025"].get(prod)
+        verdicts[f"{qid}_dt"] = "NOT_RUN" if dt is None else ("PASS" if abs(dt) <= th["dt_rel"] else "FAIL")
+        verdicts[f"{qid}_valid"] = "PASS" if not m["invalid_or_unconverged"] and not m["missing"] else "FAIL"
+        measured[qid] = m
+    measured["Q3"] = st.get("Q3_status")
     return verdicts, measured
