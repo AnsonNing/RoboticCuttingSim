@@ -515,3 +515,14 @@ def test_receipt_reports_the_contact_path():
     assert r["calibration"] == "SIMULATOR_ONLY_UNCALIBRATED"
     assert batch.pad_wrench.shape == (2, 4, 6) and batch.pending_wrench.shape == (2, 6)
     assert batch.box_wrench.shape == (2, 2, 2, 6) and batch.plane_wrench.shape == (2, 1, 6)
+
+
+def test_contact_ownership_audit_is_zero():
+    batch = _build("pinch", PINCH_HETERO)
+    for k in range(2):
+        _advance("pinch", batch, None, k)
+    audit = rcb.contact_audit(batch.solver)
+    assert audit and all(v == 0 for v in audit.values()), audit
+    assert all(v == 0 for v in batch.audits().values())
+    batch.solver.ct_obst.assign(np.full(batch.solver.total_nodes, 99, np.int32))     # mutation: detected
+    assert rcb.contact_audit(batch.solver)["contact_obstacle_id_out_of_env"] == batch.solver.total_nodes

@@ -384,6 +384,29 @@ class ContactOutputs:
         return out
 
 
-__all__ = ["BatchedTLMPMRubberContact", "ContactOutputs", "CONTACT_SOLVER_RESET_ARRAYS",
+def contact_audit(solver):
+    """Env-ownership audits of the contact rows on host copies (all counts must be 0; RUBBER-CONT-09 c): node env ids
+    against the node ranges, slider obstacle ids inside [-1, P + F*B) (env-local), row counts of the plane / frame /
+    box tables (N*P, N*F, N*F*B) and the pad-frame table."""
+    s = solver
+    N, P, F, B = s.num_envs, s.ct_P, s.ct_F, s.ct_B
+    no = s.packed.node_offset
+    env_n = s.env_of_node.numpy()
+    expected = np.repeat(np.arange(N, dtype=np.int32), np.diff(no))
+    obst = s.ct_obst.numpy()
+    out = {"contact_node_env_mismatch": int(np.count_nonzero(env_n != expected)),
+           "contact_obstacle_id_out_of_env": int(np.count_nonzero((obst < -1) | (obst >= P+F*B)))}
+    bad_rows = 0
+    for name, rows in (("ct_planes", N*P), ("ct_plane_reaction", N*P), ("ct_fq0", N*F), ("ct_fq1", N*F),
+                       ("ct_fb0", N*F), ("ct_fb1", N*F), ("ct_factive", N*F), ("ct_fkind", N*F), ("ct_forigin", N*F),
+                       ("ct_box_c", N*F*B), ("ct_box_h", N*F*B), ("ct_box_reaction", N*F*B)):
+        bad_rows += int(getattr(s, name).shape[0] != max(rows, 1))
+    out["contact_row_table_size_mismatch"] = bad_rows
+    out["contact_env_table_size_mismatch"] = int(any(getattr(s, n).shape[0] != N for n in
+                                                     ("ct_work", "ct_pen_max", "ct_counts", "ct_energy")))
+    return out
+
+
+__all__ = ["BatchedTLMPMRubberContact", "ContactOutputs", "contact_audit", "CONTACT_SOLVER_RESET_ARRAYS",
            "CONTACT_SOLVER_CONSTANT_ARRAYS", "CONTACT_SOLVER_ALIAS_ARRAYS", "CONTACT_MATERIAL_RESET_ARRAYS",
            "CONTACT_MATERIAL_CONSTANT_ARRAYS"]
