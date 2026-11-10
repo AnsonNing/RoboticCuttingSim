@@ -1,0 +1,29 @@
+{
+ "schema": "rcs_rl_smoke_v1",
+ "status": "PREDECLARED",
+ "declared": "2026-11-10, P1-5 T5.12 (docs/reports/rl_ready/P1_5_PLAN.md section 5), before any smoke run. No training and no gradient step; a smoke is never a benchmark row. Changes are a new versioned file.",
+ "format": "rcs_rl_rollout_v1 (src/robotic_cutting_sim/rl/rollout.py)",
+ "consumer_check": "scripts/rl_ready/check_rl_rollout.py (PASS/FAIL per item; exit code 0 alone is not a pass)",
+ "common": {
+  "runtime": "rl_gpu_headless, one process, one VectorCuttingEnv (one material, one device HashGrid), no Kit",
+  "autoreset": "same_step", "strict": false, "terminal_capture": true,
+  "evaluation": "evaluate(episode='last_completed') for every TRUNCATED_TIME_LIMIT / TERMINATED_INVALID episode (two-frame mode; host, outside timing); forced-reset episodes are not evaluated",
+  "forced_resets": "random envs only: gaps uniform in [50, 300] steps from SplitMix64(forced_reset_seed, env, counter); the writer marks the last stored transition truncated (TRUNCATED_BY_FORCED_RESET) and stores the pre-reset observation as next_obs",
+  "policy_inputs": "live env counters (step_count, seed, episode)"
+ },
+ "runs": [
+  {"id": "S-TRIM", "task": "seeded_trim", "scene_seeds": [512, 15, 512, 15, 512, 15, 512, 15],
+   "env_seeds": [100, 101, 102, 103, 104, 105, 106, 107], "num_envs": 8, "batch_steps": 1500,
+   "drives": ["recorded_command", "recorded_command", "recorded_command", "recorded_command", "random", "random", "random", "random"],
+   "random_arm_probability": 0.2, "forced_reset_seed": 1512, "forced_reset_gap": [50, 300], "chunk_size": 256,
+   "particle_spacing_m": null, "max_episode_steps": null, "reduced_fidelity": "workload A labels (ideal tracking, no robot, handle box only)"},
+  {"id": "S-CUT", "task": "cut_v7_2_v1", "num_envs": 4, "env_seeds": [200, 201, 202, 203], "batch_steps": 1400,
+   "drives": ["reference_command", "reference_command", "random", "random"],
+   "random_arm_probability": 0.2, "forced_reset_seed": 1700, "forced_reset_gap": [50, 300], "chunk_size": 256,
+   "particle_spacing_m": null, "max_episode_steps": null, "reduced_fidelity": "C2 labels (ideal tracking, no robot, handle box only)"},
+  {"id": "S-CPU", "task": "seeded_trim", "scene_seeds": [512, 15, 512], "env_seeds": [300, 301, 302], "num_envs": 3,
+   "batch_steps": 40, "drives": ["reference_command", "random", "random"], "random_arm_probability": 0.5,
+   "forced_reset_seed": 3, "forced_reset_gap": [5, 15], "chunk_size": 16, "particle_spacing_m": 0.0025,
+   "max_episode_steps": 10, "reduced_fidelity": "coarse 2.5 mm particles and 10-step episodes (CPU pytest only)"}
+ ]
+}
