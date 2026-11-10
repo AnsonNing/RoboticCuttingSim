@@ -124,7 +124,7 @@ def main():
                                      "pad_force_z": [float(c["box_wrench"][0, 0, 2]), float(c["box_wrench"][1, 0, 2])],
                                      "events": int(c["impulse_events"])})
                 if name == "contact_out_of_reach":
-                    ok = bool(np.all(vals == 0.0)) and np.all(live.solver.ct_jn.numpy() == 0.0)
+                    ok = bool(np.all(vals == 0.0)) and bool(np.all(live.solver.ct_jn.numpy() == 0.0))
                     zero_rows_ok = ok if zero_rows_ok is None else (zero_rows_ok and ok)
         d = live.last_diagnostics
         warm = float(np.median(walls[1:])) if len(walls) > 1 else walls[0]
@@ -135,9 +135,10 @@ def main():
                "l2": {"finite": d["nonfinite"] == 0.0, "invalid_reason": int(live.invalid_reason),
                       "guard_violations": int(live.solver.cfl_violations.numpy()[0]), "cfl_eff_max": d["cfl_eff_max"]},
                "contact_rows": contact_rows, "zero_rows_exact": zero_rows_ok}
+        row["l2"]["finite"] = bool(row["l2"]["finite"])
         row["l2"]["pass"] = row["l2"]["finite"] and row["l2"]["invalid_reason"] == 0 and row["l2"]["guard_violations"] == 0
         rows.append(row)
-        print(json.dumps({k: v for k, v in row.items() if k not in ("contact_rows", "graph")}), flush=True)
+        print(json.dumps({k: v for k, v in row.items() if k not in ("contact_rows", "graph")}, default=float), flush=True)
         if name == "contact":
             # stage split: eager substeps under Warp kernel timing (the split, not the throughput)
             s = live.solver
