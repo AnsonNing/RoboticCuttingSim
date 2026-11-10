@@ -20,7 +20,9 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      (frozen `tlmpm_v5._particle_contacts` mixes add/max atomics). HashGrid audit: no P1-2 evidence run held >1
      device grid; P1-1 `ab_timing_001` is INVALID_MULTI_GRID_PROCESS → its "≈1.9× at N=4" claim is withdrawn.
      Guard `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` added (a24ac46).
-  - P1-3a merged into this branch (3682786; release() also frees the alias_free_v1 grid, new CPU test).
+  - P1-3a merged into this branch (3682786; release() also frees the alias_free_v1 grid, new CPU test). Tests on
+    3682786: full CPU suite 2211 passed / 24 skipped / 6 xfailed; Torch vector-env/RL suite 117 passed / 1 skipped
+    (GPU stream test, NOT_RUN on CPU).
   - **xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786: PASS_WITH_LIMITATIONS ×3, no BLOCKER**
     ([review](reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md), 2480dc2). MAJOR: frozen_v1 grid-after-build hazard
     is only checked at build/full reset; the 4-run L3 position band is not a valid pass/fail test and some statuses were
