@@ -13,12 +13,20 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      `open_vector_env` (workload A, reduced fidelity: replayed edge, no robot). M0 s512/s15, M1 N=4 (staggered
      partial resets, policy + replay envs), M2 N=8 ×3 episodes (24/24) and N=16 (16/16): final codes = Native,
      frozen evaluator PASS, L2 every step, no leak. Matched-load throughput (co-tenant ~46 %, SHARED_GPU):
-     N=1 3.354 → N=8 4.849 (1.45×) → N=16 4.752 env-steps/s (1.42×); VRAM 834 / 1378 / 2064 MiB; partial reset
+     N=1 3.354 → N=8 4.849 → N=16 4.752 env-steps/s as first reported (1.45× / 1.42×, but over mismatched step
+     windows; matched windows give **1.40× / 1.37×** per the acceptance review, being corrected in the report;
+     vs the frozen single env ~1.24–1.26×); VRAM 834 / 1378 / 2064 MiB; partial reset
      4–9 ms. Kernel time ~linear in N (one 103k-particle env already fills most of the GPU). L4 RUN_TO_RUN BLOCKED
      (frozen `tlmpm_v5._particle_contacts` mixes add/max atomics). HashGrid audit: no P1-2 evidence run held >1
      device grid; P1-1 `ab_timing_001` is INVALID_MULTI_GRID_PROCESS → its "≈1.9× at N=4" claim is withdrawn.
      Guard `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` added (a24ac46).
   - P1-3a merged into this branch (3682786; release() also frees the alias_free_v1 grid, new CPU test).
+  - **xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786: PASS_WITH_LIMITATIONS ×3, no BLOCKER**
+    ([review](reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md), 2480dc2). MAJOR: frozen_v1 grid-after-build hazard
+    is only checked at build/full reset; the 4-run L3 position band is not a valid pass/fail test and some statuses were
+    misreported. Fixes: findings 1–4, 6, 8–10 in worktree `/home/ningan/RoboticCuttingSim-rl-fix1` (grid refresh
+    before each launch, pre-declared position band v2 with ≥10 replays/seed, matched-window throughput, stale text);
+    findings 5 (autoreset → evaluate) and 7 (diagnostics opt-out) folded into P1-2b.
   - Running now: xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786; P1-2b (isaac_lab_newton dispatch, `tasks=`,
     `termination_reason`, full evaluation stream, per-env pose-bounds invalidation) in worktree
     `/home/ningan/RoboticCuttingSim-rl-p12b`; B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
