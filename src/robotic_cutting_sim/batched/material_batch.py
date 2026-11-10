@@ -8,6 +8,8 @@
    SciPy ``interpolate_measured_poses`` (the L0 input path), or by the caller directly;
 2. ``index``, ``reaction``, ``box_reactions`` and ``stats`` are zeroed;
 3. one CUDA graph (captured once per batch shape) replays the 200 substeps; on CPU the substeps run eagerly;
+   right before either, the batch's own HashGrid is rebuilt on the host (``refresh_device_hashgrid``, Warp 1.17
+   static-descriptor hazard, review fix F1) after a step-time census of other device grids;
 4. a kernel converts ``reaction[N]`` and ``box_reactions[N*B]`` to world wrenches: the 20 ms delayed handoff
    keeps ``pending_wrench[N,6]`` (applied in the next interval) and ``applied_previous[N,6]``, pad wrenches
    ``pad_wrench[N,B,6]`` (rows of non-recipient boxes stay zero);
@@ -17,8 +19,10 @@
 ``reset(env_ids)`` is a masked device reset (no allocation, no recapture) to the exact freshly packed
 state. A geometry change on partial reset is refused; ``rebuild(specs)`` repacks and recaptures.
 """
+import functools
 import hashlib
 import time
+import weakref
 from pathlib import Path
 
 import numpy as np
@@ -48,10 +52,16 @@ INVALID_OBSTACLE_BOXES = 32
 # alias_free_v1 only (P1-3a): the particle-contact speed certificate failed in some substep (frozen fallback ran
 # for that env in "fallback" mode; no parity claim in "flag" mode).
 INVALID_CONTACT_SPEED_GUARD = 64
+# Review fix F1 (device_hashgrid_census_v1): another CUDA wp.HashGrid was alive, or built on the host, when this
+# batch launched a control step. The batch's own physics is protected by the descriptor refresh before every
+# launch; the bit marks the process as multi-grid (unsupported; another grid's graph may replay this batch's
+# descriptor). Set for every env of a guarded batch (not with allow_multiple_device_hashgrids=True).
+INVALID_FOREIGN_DEVICE_HASHGRID = 128
 INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_SLOT_OVERFLOW: "SLOT_OVERFLOW",
                    INVALID_POSE: "INVALID_MEASURED_POSE", INVALID_CUT_DIGIT: "INVALID_CUT_DIGIT",
                    INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH", INVALID_OBSTACLE_BOXES: "INVALID_OBSTACLE_BOXES",
-                   INVALID_CONTACT_SPEED_GUARD: "CONTACT_SPEED_GUARD"}
+                   INVALID_CONTACT_SPEED_GUARD: "CONTACT_SPEED_GUARD",
+                   INVALID_FOREIGN_DEVICE_HASHGRID: "FOREIGN_DEVICE_HASHGRID"}
 
 BATCHED_SOURCES = ("material_batch.py", "pose_interp.py", "diagnostics.py", "errors.py", "layout.py",
                    "constitutive.py", "tlmpm_v7_2_batch.py", "particle_contacts.py")
@@ -235,6 +245,13 @@ def _mask_from_int(mask: wp.array(dtype=wp.int32), seed: wp.array(dtype=wp.int64
 
 
 @wp.kernel
+def _flag_all_envs_b(invalid_reason: wp.array(dtype=int), flag: int):
+    """Review fix F1: OR a batch-level flag into every env's sticky ``invalid_reason`` (launched only on detection)."""
+    e = wp.tid()
+    invalid_reason[e] = invalid_reason[e] | flag
+
+
+@wp.kernel
 def _finish_control_step(step_count: wp.array(dtype=wp.int64), last_pose: wp.array2d(dtype=wp.float64),
                          actual_pose: wp.array2d(dtype=wp.float64)):
     """``LiveCuttingMaterial.advance``: ``self.last_pose = actual`` (= ``validate_pose(measured)``)."""
@@ -385,7 +402,44 @@ def _reset_envs(mask: wp.array(dtype=int), segments: int, boxes: int, T: int,
 # ----------------------------------------------------------------------------- device HashGrid guard
 
 DEVICE_HASHGRID_GUARD = "single_device_hashgrid_per_process_v1"
+# Review fix F1 (2480dc2 review): every control step rebuilds the batch's OWN grid on the host right before the graph
+# launch (or the eager substeps), so the function-static descriptor a captured build copies at replay time is this
+# batch's, whatever grid was built on the host before. alias_free_v1 did this since P1-3a (restore_descriptor);
+# frozen_v1 now does the same with the identical build call of its substep (no kernel or graph change).
+DEVICE_HASHGRID_REFRESH = "host_rebuild_before_every_launch_v1"
+# Review fix F1: per-step detection of other grids without a device sync (Python census, see _install_grid_census).
+DEVICE_HASHGRID_CENSUS = "device_hashgrid_census_v1"
 _REBUILD_EXEMPT_GRIDS = []   # grids of a material being replaced by rebuild() (dropped right after)
+_GRID_CENSUS = weakref.WeakSet()   # every wp.HashGrid created (or found by a gc scan) since this module was imported
+_LAST_HOST_BUILD = {"grid": None, "builds": 0}   # weakref to the grid of the last HashGrid.build() call, call count
+
+
+def _install_grid_census():
+    """Wrap ``wp.HashGrid.__init__``/``build`` once per process with pure bookkeeping (no Warp behaviour change):
+    new grids join ``_GRID_CENSUS`` (weak) and each host-side ``build`` call records its grid as the last built. The
+    per-step check then costs a few Python operations and no device sync. Grids created before this module was
+    imported are found by the construction-time gc scan and added to the census there."""
+    cls = wp.HashGrid
+    if getattr(cls, "_rcs_grid_census", None) == DEVICE_HASHGRID_CENSUS:
+        return
+    init, build = cls.__init__, cls.build
+
+    @functools.wraps(init)
+    def __init__(self, *args, **kwargs):
+        init(self, *args, **kwargs)
+        _GRID_CENSUS.add(self)
+
+    @functools.wraps(build)
+    def build_(self, *args, **kwargs):
+        out = build(self, *args, **kwargs)
+        _LAST_HOST_BUILD["grid"] = weakref.ref(self)
+        _LAST_HOST_BUILD["builds"] += 1
+        return out
+
+    cls.__init__, cls.build, cls._rcs_grid_census = __init__, build_, DEVICE_HASHGRID_CENSUS
+
+
+_install_grid_census()
 
 
 def _guard_applies(device):
@@ -399,9 +453,26 @@ def _is_device_grid(grid):
 def live_device_hashgrids():
     """Every live ``wp.HashGrid`` of this process that counts for the guard (CUDA grids; gc scan)."""
     import gc
+    import warnings
     gc.collect()
-    return [o for o in gc.get_objects() if isinstance(o, wp.HashGrid) and getattr(o, "id", None)
-            and _is_device_grid(o)]
+    with warnings.catch_warnings():   # isinstance() on some torch objects warns (review note N6); harmless here
+        warnings.simplefilter("ignore", FutureWarning)
+        grids = [o for o in gc.get_objects() if isinstance(o, wp.HashGrid) and getattr(o, "id", None)
+                 and _is_device_grid(o)]
+    for grid in grids:   # grids created before the census hooks were installed
+        _GRID_CENSUS.add(grid)
+    return grids
+
+
+def foreign_device_hashgrids(own):
+    """Census check at step time (no gc scan, no device sync): other live grids that count for the guard, and
+    whether the last host-side ``HashGrid.build`` of the process was of another such grid."""
+    live = [g for g in list(_GRID_CENSUS) if g is not own and getattr(g, "id", None) and _is_device_grid(g)
+            and not any(g is x for x in _REBUILD_EXEMPT_GRIDS)]
+    ref = _LAST_HOST_BUILD["grid"]
+    last = ref() if ref is not None else None
+    foreign_last_build = last is not None and last is not own and _is_device_grid(last)
+    return live, foreign_last_build
 
 
 def check_single_device_hashgrid(own=None):
@@ -412,8 +483,10 @@ def check_single_device_hashgrid(own=None):
     host in the process, not its own (P1-3a, ``probe_hashgrid_descriptor.py``). With two device grids every graph
     but the last-built one runs particle contacts against the wrong grid. ``own`` (this material's grid) and
     grids being replaced by ``rebuild()`` are exempt. Host (CPU) grids have no such static and are not counted.
-    Limitation: a device grid created AFTER this check (e.g. a frozen single LiveCuttingMaterial on CUDA built
-    later) is not detected here; ``rl.vector_env`` re-checks on full reset."""
+    A device grid created AFTER this check (e.g. a frozen single LiveCuttingMaterial on CUDA built later) is not
+    refused here; review fix F1 covers it at step time: ``advance()`` rebuilds the batch's own grid on the host
+    before every launch (``DEVICE_HASHGRID_REFRESH``, so the batch never replays a foreign descriptor) and checks the
+    census (``foreign_device_hashgrids``), setting the sticky ``FOREIGN_DEVICE_HASHGRID`` bit and the receipt."""
     others = [g for g in live_device_hashgrids()
               if g is not own and not any(g is x for x in _REBUILD_EXEMPT_GRIDS)]
     if others:
@@ -509,6 +582,10 @@ class BatchedCuttingMaterial:
         s = self.solver
         self.device_hashgrid_guard = (DEVICE_HASHGRID_GUARD if guarded else "disabled"
                                       if self.allow_multiple_device_hashgrids else "not_applicable_host_grid")
+        if _guard_applies(self.device) and not guarded:
+            live_device_hashgrids()   # opt-out: no refusal, but seed the census for the step-time check
+        self.descriptor_refreshes = 0
+        self.foreign_hashgrid = None   # sticky per-batch record of the step-time census (review fix F1)
         N, B = self.num_envs, s.boxes
         recipients = pk.uniform["recipients"]
         recipient_mask = np.zeros(B, np.int32)
@@ -586,6 +663,7 @@ class BatchedCuttingMaterial:
                        particle_contact_options=self.particle_contact_options,
                        allow_multiple_device_hashgrids=self.allow_multiple_device_hashgrids)
         own = getattr(getattr(self, "solver", None), "hash", None)
+        foreign = getattr(self, "foreign_hashgrid", None)
         _REBUILD_EXEMPT_GRIDS.append(own)
         try:
             replacement = type(self)(specs, **options)
@@ -593,6 +671,7 @@ class BatchedCuttingMaterial:
             _REBUILD_EXEMPT_GRIDS.remove(own)
         self.__dict__.clear()
         self.__dict__.update(replacement.__dict__)
+        self.foreign_hashgrid = foreign   # the per-batch census record is sticky across rebuild()
 
     @property
     def _contact_guard(self):
@@ -752,9 +831,11 @@ class BatchedCuttingMaterial:
             wp.launch(_check_boxes, self.num_envs, [s.boxes, s.box_centers, s.box_halves, self.invalid_reason,
                                                    INVALID_OBSTACLE_BOXES])
             s.zero_control_step_accumulators()
+            self._check_foreign_hashgrids()
+            # Review fix F1: the batch's own grid is the last one built on the host before EVERY launch path
+            # (graph replay and eager substeps), in both particle-contact modes.
+            self.refresh_device_hashgrid()
             if self.graph is not None:
-                if s.particle_contact is not None:   # alias_free_v1 only: Warp static-descriptor guard
-                    s.particle_contact.restore_descriptor(s)
                 wp.capture_launch(self.graph)
             else:
                 for _ in range(s.substeps):
@@ -773,6 +854,57 @@ class BatchedCuttingMaterial:
         self.interpolation_steps[interpolation] += 1
         if self.strict:
             self.check_valid()
+
+    @property
+    def own_hashgrid(self):
+        """The device grid this batch's particle contacts query (``solver.hash``; alias_free_v1: its grid)."""
+        s = self.solver
+        return s.particle_contact.grid if s.particle_contact is not None else s.hash
+
+    def refresh_device_hashgrid(self):
+        """Host rebuild of this batch's own grid with the exact build call of its substep, so the Warp 1.17
+        function-static descriptor that a captured ``HashGrid.build`` copies at replay is this batch's
+        (``DEVICE_HASHGRID_REFRESH``). Same points, cell width and groups as the first substep's in-graph build,
+        which rebuilds the grid again before any query: no physics change. Asynchronous (no host sync)."""
+        s = self.solver
+        if s.particle_contact is not None:   # alias_free_v1 (P1-3a): its own grid and cell width
+            s.particle_contact.restore_descriptor(s)
+        elif s.hash is not None:
+            s.hash.build(s.x, 2.4*s.radius, groups=s.env_of_particle)
+        else:
+            raise RuntimeError("material released (release()): no device grid")
+        self.descriptor_refreshes += 1
+
+    def _check_foreign_hashgrids(self):
+        """Step-time census (review fix F1; no gc scan, no device sync). On detection: a sticky per-batch record
+        (receipt ``device_hashgrid``) and, for a guarded batch, the sticky ``FOREIGN_DEVICE_HASHGRID`` bit in every
+        env's ``invalid_reason`` (strict mode raises, training mode terminates; visible in ``info``)."""
+        if not _guard_applies(self.device):
+            return
+        live, foreign_build = foreign_device_hashgrids(self.own_hashgrid)
+        if not live and not foreign_build:
+            return
+        step = int(self.descriptor_refreshes)   # control steps launched before this one
+        record = self.foreign_hashgrid
+        if record is None:
+            record = self.foreign_hashgrid = {"status": "FOREIGN_DEVICE_HASHGRID_OBSERVED", "first_control_step": step,
+                                              "control_steps_flagged": 0, "max_foreign_live_grids": 0,
+                                              "foreign_last_host_build_steps": 0,
+                                              "invalid_bit_set": self.device_hashgrid_guard == DEVICE_HASHGRID_GUARD}
+        record["last_control_step"] = step
+        record["control_steps_flagged"] += 1
+        record["max_foreign_live_grids"] = max(record["max_foreign_live_grids"], len(live))
+        record["foreign_last_host_build_steps"] += int(bool(foreign_build))
+        if self.device_hashgrid_guard == DEVICE_HASHGRID_GUARD:
+            wp.launch(_flag_all_envs_b, self.num_envs, [self.invalid_reason, INVALID_FOREIGN_DEVICE_HASHGRID])
+
+    def device_hashgrid_receipt(self):
+        return {"guard": getattr(self, "device_hashgrid_guard", None), "descriptor_refresh": DEVICE_HASHGRID_REFRESH,
+                "census": DEVICE_HASHGRID_CENSUS if _guard_applies(self.device) else "not_applicable_host_grid",
+                "descriptor_refreshes": int(getattr(self, "descriptor_refreshes", 0)),
+                "status": "OK" if getattr(self, "foreign_hashgrid", None) is None
+                else "FOREIGN_DEVICE_HASHGRID_OBSERVED",
+                "foreign": None if getattr(self, "foreign_hashgrid", None) is None else dict(self.foreign_hashgrid)}
 
     @property
     def pose_interpolation(self):
@@ -981,4 +1113,5 @@ class BatchedCuttingMaterial:
                 "material_fidelity_reasons": reasons, "batched_source_sha256": batched_source_sha256(),
                 "calibration": "SIMULATOR_ONLY_UNCALIBRATED", "memory_bytes": self.memory_bytes(),
                 "build_wall_s": self.build_wall_s,
-                "device_hashgrid_guard": getattr(self, "device_hashgrid_guard", None)}
+                "device_hashgrid_guard": getattr(self, "device_hashgrid_guard", None),
+                "device_hashgrid": self.device_hashgrid_receipt()}
