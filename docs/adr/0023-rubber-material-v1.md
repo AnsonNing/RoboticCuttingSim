@@ -1371,3 +1371,101 @@ the bound holds through the elastic W bound's margin (0.9 %). Formal CPU run `vi
 - Thresholds and the v1 protocol are unchanged and the v1 FAILs stay the v1 results. A v2 (estimator / inertia budget
   for -03; `visco_energy = branch_work_kick_average_v2` for -05) must be declared before its run; that decision belongs
   to rcs-xhigh. VISC-10 GPU cost rows: report §4.
+
+### 21.7 Decision on the v1 FAILs of RUBBER-VISC-03 and -05: protocol `rubber_visc_tests_v2` (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: whether a v2 is justified for the two v1 FAILs of §21.6, and what it may change. Rule applied: a v2 may only
+correct a measurement or reference defect that would also bias the exact solution; thresholds stay unless the exact
+solution provably cannot meet them; the held-out rates stay held out; the v1 FAILs remain the v1 results
+(`visc_v1_001`, `p2_3_visco_001.json`). Nothing frozen changes (§21 list; `rubber_visc_tests_v1.json` `95ad1f94…`).
+Material status unchanged: `SIMULATOR_ONLY_UNCALIBRATED`.
+
+**21.7.1 Independent verification** (DIAGNOSTIC `scripts/rubber/p2_3/diag_visc_v1_reanalysis.py`, run
+`visc_diag_v1_reanalysis_001` at `b9baa57`, clean tree; it re-reads the `visc_v1_001` raw series and the
+`visc_diag_cantilever_books_002` summary and runs no simulation). E′ relative errors (grip-1 reaction, P2 strip):
+
+| Rate | v1 declared | estimator alone (exact sinusoids) | exact 1-D inertia, grip 1 | grip 1 − grip 0: observed / predicted | whole periods + de-embedded: E′ / E″ |
+|---|---|---|---|---|---|
+| 1 Hz | −0.404 % | 0 | −0.002 % | −0.003 / −0.003 % | −0.402 / −0.435 % |
+| 2 Hz | −0.410 % | 0 | −0.007 % | −0.010 / −0.010 % | −0.402 / −0.443 % |
+| 4 Hz | −0.430 % | 0 | −0.027 % | −0.037 / −0.037 % | −0.403 / −0.467 % |
+| 8 Hz | −0.507 % | 0 | −0.103 % | −0.139 / −0.140 % | −0.404 / −0.511 % |
+| 16 Hz | −1.042 % | −0.249 % | −0.391 % | −0.528 / −0.530 % | −0.405 / −0.508 % |
+| 32 Hz | −2.544 % | −0.687 % | −1.453 % | −1.968 / −1.971 % | −0.414 / −0.750 % |
+
+- *Estimator leakage: confirmed.* With 312.5 / 156.25 samples per period the last-"full"-cycle window has 313 / 157
+  samples and the σ mean is not removed. On exact steady-state samples on the protocol grid the declared estimator alone
+  gives E′ −0.249 / −0.687 %, E″ −0.303 / −0.823 % (16 / 32 Hz). A window of K whole periods with an integer sample count
+  (K = 2 at 16 Hz, 4 at 32 Hz: 625 samples) with σ and ε mean-removed gives ≤ 7e-16. Including the start-up
+  transient (exact linear response from rest), a whole-period window that starts after 6 τ_max gives ≤ 1e-5 (E′),
+  ≤ 1.9e-4 (E″) at every rate. With v1's run lengths that window would start at 5 τ_max / 4.4 τ_max and carry +0.13 % in E″.
+- *Drive-end inertia: confirmed, with a corrected factor.* The exact steady state of the 1-D linear viscoelastic rod
+  (u(0) = 0, u(L) = U e^{iωt}) with the actual marker layers gives σ(L)/ε_g = E*·k(b − a)cos kL/(sin kb − sin ka),
+  k = ω(ρ/E*)^½. The markers are the nearest particle layers a = 7.25 mm, b = 22.25 mm, not L/4 and 3L/4.
+  At 32 Hz this is −1.453 %. The implementer's −(3/8)ρω²L²/E = −1.476 % is the mid-span value. The grip-1 − grip-0
+  difference, −1.968 % observed vs −1.971 % predicted (−0.528 / −0.530 % at 16 Hz), validates the rod model on the
+  measured data. Grip 0 de-embedded with σ(0)/ε_g = E*·k(b − a)/(sin kb − sin ka) agrees with grip 1 within 0.004 %.
+- *After both corrections* E′ is −0.402 … −0.414 % at every rate: the finite-strain model form the v1 rationale budgets
+  ("about 0.4 %"); the implementer's three-part sum holds (residual ≤ 0.014 % with the exact factor). The protocol's
+  identification on the corrected data (DIAGNOSTIC) gives τ₁ −3.2 %, g₁ +1.2 %, τ₂ −0.24 %, g₂ −0.02 % and held-out 2 / 8 /
+  32 Hz E′ +0.03 / +0.02 / −0.08 %, E″ +0.03 / −0.20 / +1.83 %: the held-out 32 Hz FAIL has the same cause.
+- *Not explained (reported, not acted on):* the de-embedded E″ at 32 Hz (−0.75 %) is lower than at 1–16 Hz
+  (−0.44 … −0.51 %), while the energy-based loss is −0.36 … −0.41 % at every rate. The forces of a control step are
+  sampled at t_{k−1} + j·dt, j = 0 … n − 1, so the average is centred dt/2 before the declared stamp t_k − Δt_c/2.
+  That would shift E″ by +(ω dt/2)/tan δ = +0.02 … +0.46 %, which matches 1–8 Hz but over-corrects 16/32 Hz. The stamp
+  is not changed (E″ limit 3 %; no failure depends on it).
+- *Energy books: confirmed.* Symplectic Euler gives KE_{n+1} − KE_n = f_n·(Δu_{n−1} + Δu_n)/2 exactly, so the work
+  of the branch force conjugate to the discrete KE is W_kp = Σ pb_n:(ΔF_{n−1} + ΔF_n)/2. Reindexed, this is
+  Σ ½(pb_n + pb_{n+1}):ΔF_n, the trapezoid over the interval each Prony update spans. The declared left-point W_b
+  differs by −½Σ(pb_{n+1} − pb_n):ΔF_n plus boundary terms. For Ψ_eq the same term averages out against Ψ's
+  second-order term (a bounded shadow-energy oscillation). For a Maxwell branch at ωτ ≫ 1, Δpb ≈ g_i·(tangent)·ΔF,
+  so the term is one-signed, ≈ ½dt·k_b⟨v²⟩ per substep, a ratio ≈ ½ω²τ·dt to the branch dissipation. The drift
+  therefore grows with τ and halves with dt (2.58 → 1.05 → 0.47 %).
+  *Independent check:* in every diag_002 variant, W_kp equals the branch's own energy D + Ψ_v (computed from Q only)
+  to ≤ 1e-5 of S_N. The left-point W_b misses it by exactly its book drift (P2 −2.09 % vs B_N 2.08 %, τ 50 ms −5.70 %
+  vs 5.69 %). The left-point sum is therefore a first-order quadrature that would bias an exact branch history too.
+  The v1 budget "O(ω dt) ~ 1e-3 of the loss" holds only for the drive frequency, not for the high-frequency content
+  the tap and the per-control-step velocity jumps excite. The explicit dissipation D and the dynamics are correct.
+
+**21.7.2 Decision per test.**
+
+- **RUBBER-VISC-03: v2 justified.** Two measurement defects bias the exact solution as much as the simulation:
+  (i) the estimator's non-whole window (fixed by K whole periods with an integer number of samples, σ and ε
+  mean-removed, the window starting after 6 τ_max; the 16 / 32 Hz runs become 2500 control steps, the 1–8 Hz runs keep
+  their v1 length); (ii) the drive-end reaction is not the gauge stress (fixed by de-embedding the measured modulus with
+  the exact 1-D rod transfer above).
+  The de-embedding uses only ρ, L, the scene's marker reference positions and ω: no Prony parameter and no reference
+  value. It is applied identically to every rate, so the fit (1 / 4 / 16 Hz) and the held-out rates (2 / 8 / 32 Hz)
+  stay separate. A new *validity* condition guards it: grip 0 and grip 1 de-embedded must agree in E′ within 0.2 %
+  (one fifth of e1_rel; observed ≤ 0.004 % on v1 data). The reference E*(ω), the time stamps, the finite-strain
+  model-form budget (−0.40 %, declared in v1 and attainable) and every threshold are unchanged.
+  Rejected: widening e1_rel (forbidden, and unnecessary: the corrected bias is 0.41 % of a 1 % limit); the
+  approximate (3/8)π² budget (approximate, and the wrong lever: a budget does not remove a bias); scoring grip 0
+  (still +0.51 % biased at 32 Hz); new drive rates or a different gauge (changes the test).
+- **RUBBER-VISC-05: v2 justified.** The declared branch-work quadrature is a measurement defect; the method is fixed,
+  not the limit. New opt-in option `visco_energy = branch_work_kick_average_v2`: W_b = Σ_n Σ_p V pb_n:(ΔF_{n−1} + ΔF_n)/2,
+  ΔF_{−1} = 0 after a reset, one float64 `visco_df_prev[P]` (mat33d) per particle. The v1 left-point sum is accumulated
+  alongside in `visco_branch_work_left` (reported). It is bookkeeping only: the stress pass, D, `visco_pb` and every
+  state array are byte-identical to `branch_work_v1` and `off_v1`, and `off_v1` / `branch_work_v1` are unchanged
+  (no array, no launch added). The cycle criteria (c), (d) use the v2 whole-period window: over a non-whole window
+  Ψ_v, Ψ_eq and E_kin are not periodic (ΔΨ_v was 0.5 % of the 32 Hz loss in v1). Thresholds unchanged.
+- **No threshold changes.** Neither failure shows a threshold that the exact solution cannot meet.
+
+**21.7.3 Protocol `configs/rubber/rubber_visc_tests_v2.json`** (declared and SHA-pinned in
+`tests/test_rubber_p2_3_protocols.py` in its own commit, before the option is implemented and before any v2 run).
+Scope: re-scores RUBBER-VISC-03 and -05 only. -01, -02, -04, -06 … -10 keep their v1 definitions and `visc_v1_001`
+results. The -02 creep and -04b cantilever runs are re-run because -05 books them; their -02 / -04b numbers are
+reported as a consistency check. Every strip, creep, cantilever and block run whose schedule (or prefix) equals a v1
+run must reproduce every recorded v1 column except `branch_work` byte-identically, and its left-point W_b must equal
+the v1 `branch_work` column. Otherwise the v2 run is INVALID: an energy option must not move the dynamics.
+
+**21.7.4 Tasks (rcs-xhigh, this branch).** (1) The option in `TLMPMRubberVisco` and the batched path (allocation,
+launch, snapshot, masked reset, vars()-complete tables, uniform-signature refusal of mixed v1/v2), default bitwise-off.
+(2) Tests: dynamics byte identity (off_v1 / branch_work_v1 / v2, single and batched); left-point accumulator = v1 W_b
+bytes; kick-paired accumulator = host float64 recompute every substep; L0 N = 1 / N = 3; reset; refusal.
+(3) Declared estimator and de-embedding in `rubber_visco_reference.py` (tests: exact synthetic signals, the
+transfer's small-kL expansion and E* round trip). (4) Formal runner `run_visc_v2.py` (CPU), smoke labelled SMOKE.
+(5) Formal run, evidence `p2_3_visco_002.json`, report section, results below.
+
+**21.7.5 What v2 does not establish.** No calibration (synthetic Prony sets). The finite-strain model form stays
+−0.4 % against the small-strain E*. The 32 Hz E″ phase residual (21.7.1) stays open. No GPU strip/cantilever run.
