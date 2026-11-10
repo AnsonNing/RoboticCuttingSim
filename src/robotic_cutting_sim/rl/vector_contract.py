@@ -17,6 +17,12 @@ STEP_INFO = {"step_count": "int64", "action_status": "int32", "invalid_reason": 
              "off_target_delta": "float64", "target_bond_progress_fraction": "float64",
              "off_target_bond_fraction": "float64", "severed_target_bonds": "int64",
              "severed_substrate_bonds": "int64", "invalid_penalty_applied": "bool"}
+# step info keys computed from oracle state (material solver validity / codes, simulator validity): a deployable
+# policy must never consume them (review finding 12). Both backends list them in env.metadata["privileged_info_keys"]
+# (``input_guard_reason`` only with the guard, ``rigid_reason`` on workload B).
+PRIVILEGED_INFO_KEYS = ("invalid_reason", "termination_reason", "progress_delta", "off_target_delta",
+                        "target_bond_progress_fraction", "off_target_bond_fraction", "severed_target_bonds",
+                        "severed_substrate_bonds", "invalid_penalty_applied", "input_guard_reason", "rigid_reason")
 RECEIPT_KEYS = ("version", "api_revision", "runtime", "backend", "num_envs", "termination", "input_guard",
                 "evaluation_stream", "evaluation_mode", "fidelity", "observation", "action_spec", "reward", "tasks",
                 "episode", "versions", "calibration", "success_source", "terminal_capture")
@@ -87,8 +93,10 @@ def check_vector_env_contract(env, *, steps=3, reset_ids=(1,), reset_step=1, see
     _check(tuple(env.single_action_space.shape) == (8,) and tuple(env.action_space.shape) == (N, 8), "action spaces")
     _check(tuple(env.single_observation_space["policy"].shape) == (POLICY_DIM,), "single observation space")
     _check(tuple(env.observation_space["policy"].shape) == (N, POLICY_DIM), "batched observation space")
-    for key in ("autoreset_mode", "observation_profile", "max_episode_steps"):
+    for key in ("autoreset_mode", "observation_profile", "max_episode_steps", "privileged_info_keys"):
         _check(key in env.metadata, f"metadata has {key!r}")
+    _check(set(PRIVILEGED_INFO_KEYS) & set(STEP_INFO) <= set(env.metadata["privileged_info_keys"]),
+           "metadata labels the oracle-derived step info keys as privileged")
     report["clauses"].append("receipt/spaces/metadata")
     # full reset
     seeds = list(range(100, 100 + N)) if seeds is None else list(seeds)
@@ -169,4 +177,4 @@ def summarize_info_dtypes(info):
 
 
 __all__ = ["check_vector_env_contract", "contract_actions", "CONTRACT_VERSION", "STEP_INFO", "RESET_INFO",
-           "RECEIPT_KEYS", "POLICY_DIM", "summarize_info_dtypes"]
+           "RECEIPT_KEYS", "POLICY_DIM", "PRIVILEGED_INFO_KEYS", "summarize_info_dtypes"]

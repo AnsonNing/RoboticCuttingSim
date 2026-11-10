@@ -97,6 +97,8 @@ NATIVE_TRIM_V7_2_REFERENCE = dict(
     robot="Native Isaac Sim 6.2 PhysX Franka, physical grasp, IK tracking", reaction_fed_back=True,
     source="WP-17 native_optimized_001 (seeded_trim rcs_trim_random_sim_v1, seeds 512/15)")
 
+from .vector_contract import PRIVILEGED_INFO_KEYS  # noqa: E402  (Torch-free constants)
+
 # keys of a Native reference that a batched env's actual material / control setup is compared with (fidelity());
 # shared by workload A (VectorCuttingEnv) and workload B (LabVectorCuttingEnv, review finding 3)
 FIDELITY_REFERENCE_KEYS = ("cutting_law", "max_cuts", "slots_per_node", "particle_spacing_m", "grid_dx_m",
@@ -636,7 +638,8 @@ class VectorCuttingEnv:
         self.single_observation_space = self._obs_space(None)
         self.observation_space = self._obs_space(N)
         self.metadata = {**type(self).metadata, "autoreset_mode": "same_step" if self.autoreset else "disabled",
-                         "observation_profile": self.observation_profile, "max_episode_steps": self.max_episode_steps}
+                         "observation_profile": self.observation_profile, "max_episode_steps": self.max_episode_steps,
+                         "privileged_info_keys": PRIVILEGED_INFO_KEYS}
 
     def _obs_space(self, n):
         shape = (lambda d: (d,)) if n is None else (lambda d: (n, d))

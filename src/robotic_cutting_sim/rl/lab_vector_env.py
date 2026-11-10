@@ -43,6 +43,8 @@ from .vector_env import (ACTION_SPEC, AUTORESET_MODES, LAB_BACKEND, MATERIAL, NA
                          UnsupportedVectorConfiguration, _box_space, _guard_config, _json_default, _sha256_file,
                          compile_family, reference_reasons)
 
+from .vector_contract import PRIVILEGED_INFO_KEYS  # noqa: E402
+
 LAB_MATERIAL = "tlmpm_v7_2"
 LAB_OPTIONS = ("tool_mount", "grip_contact_profile", "deterministic_mode", "use_cuda_graph",
                "max_consecutive_ik_failures", "feedback", "ik_iterations", "velocity_feedforward", "cpu_test_mode",
@@ -287,7 +289,8 @@ class LabVectorCuttingEnv:
         self.observation_space = self._obs_space(N)
         self.metadata = {**type(self).metadata, "autoreset_mode": "disabled",
                          "observation_profile": self.observation_profile, "max_episode_steps": self.max_episode_steps,
-                         "tool_mount": self.lab_options.tool_mount}
+                         "tool_mount": self.lab_options.tool_mount,
+                         "privileged_info_keys": PRIVILEGED_INFO_KEYS}
 
     def _obs_space(self, n):
         shape = (lambda d: (d,)) if n is None else (lambda d: (n, d))
