@@ -360,6 +360,9 @@ class FallbackGrid:
         # Warp's float32 cell_width_inv = Type(1) / cell_width (hashgrid.cpp), cell_width = float32(build radius).
         self.inv = float(np.float32(1.0)/np.float32(cell_width))
         self.end_bit = max(int(N*self.cells-1).bit_length(), 1)
+        # Every launch names this device: an unpinned launch runs on Warp's current default device (cuda:0 when a
+        # GPU is visible) even for CPU arrays, which raced the host radix sort in the CPU parity test.
+        self.device = wp.get_device(s.device)
         with wp.ScopedDevice(s.device):
             self.keys = wp.zeros(2*n, dtype=int)
             self.ids = wp.zeros(2*n, dtype=int)
@@ -371,16 +374,18 @@ class FallbackGrid:
 
     def build(self, s):
         n = s.total_particles
-        wp.launch(_fallback_keys_b, n, [s.x, s.env_of_particle, self.inv, self.dims, self.cells, self.keys, self.ids])
-        wp.utils.radix_sort_pairs(self.keys, self.ids, n, 0, self.end_bit)
-        self.starts.zero_()
-        self.ends.zero_()
-        wp.launch(_fallback_ranges_b, n, [self.keys, n, self.starts, self.ends])
+        with wp.ScopedDevice(self.device):
+            wp.launch(_fallback_keys_b, n, [s.x, s.env_of_particle, self.inv, self.dims, self.cells, self.keys,
+                                            self.ids], device=self.device)
+            wp.utils.radix_sort_pairs(self.keys, self.ids, n, 0, self.end_bit)
+            self.starts.zero_()
+            self.ends.zero_()
+            wp.launch(_fallback_ranges_b, n, [self.keys, n, self.starts, self.ends], device=self.device)
 
     def launch_contacts(self, s, r, dt):
         wp.launch(_particle_contacts_fallback_b, s.total_particles, [s.x, s.reference, s.v, s.mass, s.code,
             s.impulse, s.stats_sum, s.stats_max, r, 3*s.dx, dt, s.params, s.env_of_particle, s.contact_guard_flag,
-            self.inv, self.dims, self.cells, self.starts, self.ends, self.ids])
+            self.inv, self.dims, self.cells, self.starts, self.ends, self.ids], device=self.device)
 
 
 @wp.kernel
