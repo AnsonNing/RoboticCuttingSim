@@ -138,3 +138,20 @@ The plan's "Phase 1 done" also requires these, all still open:
 | `evaluate()` on a non-finite env | A structured `FAIL_INTEGRITY` entry (`nonfinite_env_integrity_failure_v1`): decoded material and termination reasons, no physics metrics, evaluator not called. Covers the current state and `episode="last_completed"`, on both backends. Other envs are evaluated normally. Strict `step()` is unchanged | PASS (Torch CPU tests) |
 | Invalid bit → termination | `material_invalid_termination_v1`: one mapping for both backends and the supervisor. The supervisor's stale copy of the material bits, which lacked 128 and 256, is replaced. A strict-mode foreign-grid raise is classified as infrastructure without changing the raise | PASS (CPU tests iterate `INVALID_REASONS`) |
 | `tasks=` for configured scenes | Configured entries resolve to a `ConfiguredTaskFamily`. TRIM + CUT mixes are refused by the compiled layout | PASS (CPU + Torch CPU tests) |
+
+Tests of the consolidation commit `53b915e` (evidence `p1_consolidation_001.json`). The machine was shared, with a
+load average of about 65 on 64 cores.
+
+| Suite | Passed | Failed | Skipped | Other |
+| --- | --- | --- | --- | --- |
+| Full CPU suite, `CUDA_VISIBLE_DEVICES=''` | 2443 | 1 | 28 | 6 xfailed |
+| Full CPU suite, `CUDA_VISIBLE_DEVICES=0` (under the GPU0 flock) | 2443 | 1 | 28 | 6 xfailed |
+| Torch RL / vector suite, CPU device | 343 | 0 | 10 | — |
+| Isaac Lab suite, Warp CPU | 56 | 0 | 0 | — |
+
+- The one CPU failure, `test_wp12_phase5_native_success.py::test_reproduces_phase2b_records`, comes from local
+  WP-12 artifacts: `workcell_live_006` holds analysis class CUTTING_FAILURE, while the committed evidence says
+  TASK_SUCCESS. It fails identically at the base `181ed37` and the test imports no RL module. It is OPEN and
+  unrelated to this branch.
+- The Torch skips are NOT_RUN: the workload-B modules need Isaac Lab or OpenUSD, and the CUDA stream test needs a
+  GPU.
