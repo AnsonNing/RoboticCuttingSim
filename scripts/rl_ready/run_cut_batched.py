@@ -66,6 +66,7 @@ def main():
     p.add_argument("--max-steps", type=int, help="truncate every episode (smoke only; never a row)")
     p.add_argument("--run-name", required=True)
     args = p.parse_args()
+    import robotic_cutting_sim  # noqa: F401  (the manifest records the package origin)
     run = M.new_run_dir(args.run_name)
     manifest = M.manifest(args, run)
     telemetry = M.telemetry_start(args.gpu_index)
