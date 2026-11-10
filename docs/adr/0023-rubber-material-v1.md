@@ -946,3 +946,130 @@ check (§14.4).
 
 Open decisions for R2.5: production n_t for bending observables (Q1), -08 with an explicit deformation reserve,
 batched projection / shadow before P2-6.
+
+## 20. P2-3 prerequisites in the batched path (amendment, 2026-11-10, rcs-impl)
+
+Scope: the P2-3 prerequisites that hold whatever the P2-0..P2-2 acceptance review decides (P2_2 report §14 items 2,
+3, 7). Viscoelasticity itself is NOT implemented: `rubber_visc_tests_v1` is declared first, after the review. Nothing
+frozen changed (v1–v7_2, law 8, evaluators, Phase 1 batched modules, `batched/constitutive.py`,
+`configs/rl_benchmark/*`, `scripts/rl_ready/*`, `rubber_phys_tests_v1..v4.json`, the single-env reference
+`tlmpm_rubber_v1.py`). Changed: `batched/rubber_batch.py`, `batched/rubber_layout.py`,
+`batched/rubber_material_batch.py` (Phase 2 files). Raw outputs: `artifacts/rl_ready/p2_3_prep/`.
+
+### 20.1 Batched execution of the §19.1 options (opt-in, versioned by the single-env ids)
+
+A batch runs the options its single references (`LiveRubberMaterial(..., dirichlet=, traction_work=,
+state_precision=)`) were built with; the option values are part of the uniform batch signature (mixed options:
+`UNSUPPORTED_NONUNIFORM_BATCH`); the §19.1 `UNSUPPORTED_SOLVER` refusal is lifted for exactly these ids. With the
+defaults the batch allocates no option array and launches no option kernel (bitwise-off).
+
+| Option | Batched execution |
+|---|---|
+| F8 `consistent_mass_projection_v1` | rows of all envs concatenated (global node / group / block ids, CSR offsets per env); the float64 block inverses copied bit-for-bit from each single reference; `_proj_rhs`, `_proj_solve`, `_proj_particles` of `tlmpm_rubber_v1` launched unchanged, `_proj_reaction_b` with the group's env work; lumped pass-1 BC skipped and MUSL repeated as in the single solver. A reset with new material values rebuilds that env's inverses on the host with the single solver's `projection_blocks` (the particle mass enters the consistent-mass blocks; cached per (env, mass)) and writes them into the preallocated array (no device allocation, no recapture). |
+| F9 `grid_displacement_v1` | `_traction_work_grid_b` (work of the particle's env) after the position update; the v1 accumulation goes to a discarded per-env `work_scratch`, as in the single solver. |
+| F10 `f64_shadow_v1` | flat `F64` / `x64` shadows; `_deformation_f64` / `_positions_f64` of `tlmpm_rubber_v1` launched unchanged; `reference64` (the single solver's exact float64 X) restores `x64` on reset. |
+
+The masked reset restores the option state of the reset envs (shadows to identity / `reference64`, projection scratch
+and `work_scratch` to zero, inverses to the env's material); the vars()-complete classification covers the option
+arrays (`OPTION_RESET_ARRAYS`, `OPTION_CONSTANT_ARRAYS`).
+
+### 20.2 BC launch: per-control-step motion table (`motion_table_v1`, new default)
+
+Diagnosis first: the P2-2 profile attributed 14–17 % of GPU time to the `_bc_b` "node loop". An interleaved GPU0
+micro-benchmark (`bc_bench_001`, workload E N = 4, 400 rounds, SHARED_GPU) shows the loop over unconstrained nodes is
+not the cost: the BC pair of one substep costs 0.0806 ms (median; p10–p90 0.0796–0.0820) over every node and 0.0835 ms
+over the packed list of the 768 constrained nodes (`constrained_list_v1`), against a 0.0037 ms one-thread launch floor.
+Without the reaction (2 `group_target` evaluations per thread) a launch costs about 34 µs, with it (3 evaluations and
+the float64 atomics) about 50 µs, holding or rotating alike: the cost is the per-thread float64 evaluation of the
+group map (slerp, quaternion to matrix).
+
+`bc_launch` (constructor of `BatchedTLMPMRubber` / `BatchedRubberMaterial`):
+
+| Value | BC pass |
+|---|---|
+| `all_nodes_v1` | the P2-1/P2-2 launch: `_bc_b` over every node, maps evaluated per node |
+| `constrained_list_v1` | the same body over the packed constrained-node list (no measured gain; kept for the A/B) |
+| `motion_table_v1` (default) | `_motion_table_b` evaluates M(s), b(s) of every group at every substep boundary s = k / substeps once per control step (one thread per (k, group), launched by `set_group_motions` / `prepare_motion_table`), and `_bc_table_b` over the constrained-node list computes M X + b from the table; past the table (direct `step()` calls beyond the control step) it evaluates `group_target` as before |
+
+The table holds exactly the M, b that `group_target` computes before M X + b, so on the Warp CPU device every variant is
+byte-identical to `all_nodes_v1` and to the single reference (tests: case A heterogeneous, case C two grips with partial
+masks, rotation and an inactive grip, affine block; v1 options and F8 + F9 + F10; past-table steps). GPU:
+`bc_bench_002` BC pair 0.0185 ms with the table (4.3× less) plus 0.019 ms per control step for the table (≈ 4 ns per
+substep); end-to-end interleaved A/B (`bc_e2e_none_001`, workload E N = 4, guard 1.0, graph chunks, 10 rounds,
+SHARED_GPU): 0.404 → 0.331 ms per substep, 1.98 → 2.42 env-steps/s, paired ratio median 0.804 (0.74–0.84, all rounds
+faster); with F8 + F9 + F10 (`bc_e2e_all_001`) 0.562 → 0.532 ms, ratio median 0.949 (0.81–1.14). The sequential smoke
+rows (`gpu_smoke_002/003`, rows run one after another under changing co-tenant load) do not resolve the difference
+(0.363 vs 0.386 ms in `_003`); their per-kernel splits are inflated by co-tenant scheduling (a one-thread kernel shows
+26 µs per substep in `gpu_smoke_001`) and are not used for the decision. On a GPU the BC float64 reaction atomics were
+and remain order-nondeterministic.
+
+### 20.3 F8 block structure in the batched path (review F8)
+
+The batched projection keeps the single solver's structure: one dense block per (env, group, component), solved
+independently. Envs cannot couple (disjoint node ranges). Within an env, a particle whose stencil holds constrained
+nodes of two groups in the same component would couple two independently solved blocks; `pack_rubber` refuses such
+lives with `UNSUPPORTED_SOLVER: PROJECTION_CROSS_GROUP_COUPLING` (`rubber_layout.projection_cross_group_particles`;
+the code is `UNSUPPORTED_SOLVER` with a fixed tag because `batched/errors.py` is a frozen Phase 1 module). Every scene
+used so far has none (case A one group, case C faces ≥ 2 cells apart, pins inside a group); a one-cell case C strip has
+32 coupled particles and is refused (test). Merging coupled blocks is future work (P2-4 / P2-6 multi-grip scenes).
+
+### 20.4 L0 is byte-wise from here on; erratum on earlier "bitwise" wording (review F5)
+
+The batched rubber L0 / L1 / A-B tests now compare dtype, shape and raw bytes (`_same_bytes`), not `np.array_equal`
+(which equates +0.0 and −0.0 and needs `equal_nan` for NaN). The only byte difference this found was a signed zero in
+the derived wrench of a zero reaction (an inactive grip): Warp's unary minus is `0 - x` (+0.0 stays +0.0), NumPy's flips
+the sign bit. `_wrench_b` now computes `(r * -1) / control_dt`, byte-identical to the single reference's
+`-reaction / control_dt` for every finite value and both zeros (a NaN keeps its sign bit; a NaN wrench sets
+`NONFINITE_STATE`). This changes no state array and no nonzero wrench value.
+
+Erratum (wording only; records unchanged): the P2-1/P2-2 batched L0 results, including §19.3 "CPU L0 (-07 v3, -12)"
+and the evidence field `bitwise_equal_every_step: true` of `f4_batched_l0_12_003`, are **value-exact**
+(`np.array_equal`, NaN positions equal, signed zero not distinguished). For -12 the first byte-level difference is at
+step 54 in the derived wrench (the signed zero above); state arrays were not compared byte-wise in those runs.
+
+### 20.5 Results
+
+CPU (Warp 1.17.0, `.venv`): new `tests/test_rubber_batched_options.py` (23 tests) — L0 byte-wise vs the single
+reference after every control step for F8, F9, F10 and all three, at N = 1 and N = 3 heterogeneous (geometry, μ, ρ,
+friction, motion; different constrained-row counts per env), case C two grips with rotation, partial masks and an
+inactive grip, the guard on, the affine block; L1 perturbation isolation, masked partial reset (vars()-complete with
+the option arrays) equal to a fresh env and evolving like one, reset with resampled material equal to the single
+reference built with it (F8 inverses rebuilt) and restored on the next plain reset; refusals (mixed options, unknown
+launch, cross-group coupling). A mutation check (one ulp in a block inverse, 1e-12 in x64, the v1 traction work into
+`work`) is detected by the comparison. Full suites (`cpu_tests_002`, commit c820c59, clean tree; `tests/test_rubber_*.py`, `test_live_rubber_material.py`, `test_tlmpm_rubber_v1.py`, `test_batched_*.py`, `test_rl_policies_batched.py`): `CUDA_VISIBLE_DEVICES=''` 319 passed, 4 skipped (528 s); `CUDA_VISIBLE_DEVICES=0` 319 passed, 4 skipped (534 s); the 4 skips are the torch / WP-17-recording tests of `test_rl_policies_batched.py` (NOT_RUN in `.venv`).
+
+GPU0 smoke `gpu_smoke_003` (commit c820c59, clean tree, driver 570.211.01, workload E N = 4, 41,220 particles/env,
+50 Hz, dt 4.0e-6 s, 4,996 substeps, guard 1.0, graph chunks 500, no cameras / recording, SHARED_GPU): rows
+`default_all_nodes`, `default_motion_table`, `options_motion_table` (F8 + F9 + F10) all **L2_INVARIANTS_PASS** (finite,
+mass constant between resets, invalid bits 0 before and after 4 masked resets with resampled material, guard violations
+0, audits 0, max CFL_eff 0.498); options row: F = float32(F64) and x = float32(x64) byte-equal, F8 MUSL momentum on the
+2,304 constrained rows minus m v_presc 1.0e-8 (1.7e-8 after the resets) of max |p|; VRAM peak 760 / 762 / 854 MB.
+Warm: 2.20 / 2.07 / 1.71 env-steps/s (sequential rows, see §20.2). `gpu_smoke_001` (list launch) and `_002` (table,
+before the F10 metadata) are preserved, both L2 PASS; their metas lack the driver version.
+
+Costs of the options (workload E, N = 4, SHARED_GPU): in `gpu_smoke_003` (sequential rows) the table launch with v1
+options runs 0.386 ms per substep and with F8 + F9 + F10 0.469 ms (+21 %); the two end-to-end A/B runs give 0.331
+(v1 options) and 0.532 ms (all options) with the table, but ran at different times and are not a matched comparison.
+The projection adds four row kernels, a particle kernel and a second MUSL scatter per substep; device arrays
+65.9 → 91.2 MB. A reset with resampled material rebuilds that env's F8 inverses on the host with the single solver's
+`projection_blocks` (0.35–0.87 s per env on workload E; cached per (env, mass)); a reset to the packed material copies
+the packed inverses.
+
+Moving-grip energy (review F8 recommendation, diagnostic probe, not a protocol test; `probe_moving_grip_energy.py`,
+case A n_t 2, grip lifted 1 mm and rolled 0.15–0.3 rad over 6 ms, then held): residual Ψ + KE + E_grav − W relative to
+max(Ψ + KE) is −22 % (linear-in-time motion: velocity jumps at start / stop are inelastic for any constraint) and
+−1.6 … −2.0 % with a C2 smootherstep, **the same for the lumped clamp and the projection**. The F8 projection removes the
+clamp's dissipation at rest (§19.1) but does not close the energy books of a moving grip to better than ≈ 2 % here; the
+cause (constraint-work quadrature j · v_presc at the end of the substep, the jaw particles' kinetic energy, or the
+discrete motion) is not yet isolated. Open before batched VISC hysteresis runs with moving grips and P2-6.
+
+### 20.6 Open
+
+- Unreviewed: everything after 3a43d1b on `claude/rl-rubber` (b922665 … this section), including the default
+  `motion_table_v1`.
+- Moving-grip energy residual (§20.5).
+- Host-side F8 inverse rebuild on resampled reset (0.35–0.87 s per env): a vectorised assembly with the same
+  accumulation order would keep the bits; not done.
+- The F8 row kernels `_proj_rhs` / `_proj_reaction_b` still evaluate `group_target` per row (the same float64 cost as
+  §20.2); they could read the motion table.
+- Viscoelasticity (`neo_hookean_jbar_prony_v1`) and `rubber_visc_tests_v1` are not started (declared after the review).

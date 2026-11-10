@@ -399,6 +399,12 @@ compared byte-wise and reported a first byte difference at step 54 in the derive
 `_003` records both: L0-equal at every step; first byte-wise difference at step 54 (wrench). The 07 runs' `commit`
 field was read at the end of the run; the code they imported at their start (18:22 KST) is `44e5b59`.
 
+**Erratum (2026-11-10, ADR 0023 §20.4; review F5):** "bitwise" / "equal at every step" in this section and the
+evidence field `bitwise_equal_every_step: true` mean **value-exact** (`np.array_equal`; NaN positions equal; signed zero
+not distinguished). The first byte-level difference of -12 (step 54, derived wrench) is the signed zero of a zero
+reaction, made sign-consistent in the batched `_wrench_b` after this report; the recorded runs and evidence are
+unchanged. From §20 on, batched L0 tests compare raw bytes.
+
 ## 15. Artifacts
 
 `artifacts/rl_ready/p2_2/`: `f2_gpu_smoke_guard_001`, `l3_v4_001`, `throughput_v4_001`, `batched_gpu_v4_001`,
