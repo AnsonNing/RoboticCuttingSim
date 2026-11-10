@@ -112,7 +112,7 @@ judge's `verdict.json` and `adapter_checks` finds nothing on the local manifest.
 | 11 | Warp kernel cache | Warp writes its kernel cache outside `--out` unless `WARP_CACHE_PATH` is set. | The caller sets it (as specified); the harness writes nothing else outside `--out`. |
 | 13 | Position band (coordinator, after the review of `2480dc2`) | Not a hard gate. | `physics.position_band = {path, mode}`; P1-0 values in `position_band_p1_0.json`, `mode: descriptive` (WARN only); a band v2 file needs `position_band_m` per seed (`[low, high]` or `{high_m}`); `mode: gate` then enables it. A missing / unreadable band file is a WARN (descriptive) or BLOCKED (gate). |
 | 14 | One material per process (coordinator; the integration branch's `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` guard) | The first version built several rounds sequentially in one process (releasing in between). | Since `5ea4ce4` each round is its own child process (G6 N=1 s512 + s15 = two processes); the harness never relies on the guard and never builds a second material in a process. |
-| 12 | Reset p95 rule `C ≤ 1.25 × B + 2 ms` | On the shared GPU each process settles in one of two reset-latency modes, ≈ 1 ms or ≈ 7 ms, for all its resets, independently of the variant (smoke_001: B 1.7 / C 7.1 ms at N=1, B 7.4 / C 1.4 ms at N=2). With 5 runs per side the median can still land in different modes, so `G9:n<N>:reset` can FAIL on a co-tenant artefact. | Kept as specified (U2); flagged for a decision (open item). smoke_001 was REJECTED_PERFORMANCE on exactly this gate. |
+| 12 | Reset p95 rule `C ≤ 1.25 × B + 2 ms` | On the shared GPU each process settles in one of two reset-latency modes, ≈ 1 ms or ≈ 7 ms, for all its resets, independently of the variant (smoke_001: B 1.7 / C 7.1 ms at N=1, B 7.4 / C 1.4 ms at N=2), so `G9:n<N>:reset` FAILed on a co-tenant artefact (smoke_001 REJECTED_PERFORMANCE, preserved). | **Amended by coordinator decision (`214ac11`), before any baseline:** per-side medians of reset p95 over all ABBA processes at N; both sides `EXCLUSIVE_GPU` → strict rule (FAIL if C > 1.25 × B + 2 ms); either side `SHARED_GPU` (or `UNKNOWN`) → PASS within the strict limit, WARN `shared_gpu_reset_bimodality` in `verdict.warnings` (not a failure) within 1.25 × B + 10 ms, FAIL beyond. Both slacks and the rule are config `thresholds` (`reset_p95_slack_ms`, `reset_p95_shared_slack_ms`, `reset_p95_rule`). |
 
 
 ## 3. GPU smoke
@@ -161,15 +161,23 @@ Earlier runs (preserved):
   environment problems, C/B 1.381.
 - `probe_throughput_n2_001` (GPU1) and `cpu_probe/episode_cpu_001` (Warp CPU, 2 steps, 28 s per step): bring-up.
 
+**Re-judge under the amended reset rule** (`214ac11`; CPU only, `.venv`, no GPU rerun; evidence
+`docs/evidence/rl_ready/p1_6_r0_003.json`). Each re-judge directory (`artifacts/rl_ready/p1_6_r0/<smoke>_rejudge_001/`)
+holds a config copy with the new threshold keys (smoke_001's `position_band_m` mapped to the descriptive band input)
+and a manifest copy pointing at it (`rejudge_of` records the original manifest and config sha256); the original
+verdicts are untouched. smoke_001's outputs come from the harness before `6b71363` and are accepted with the
+judge's re-judge-only `--known-harness` option (recorded in `verdict.rejudge`).
+
+| Smoke | Original verdict | Re-judge | Reset gates (B / C median reset p95, regime, limits) |
+| --- | --- | --- | --- |
+| smoke_001 | PHYSICS PASS, **PERFORMANCE FAIL** (`G9:n1:reset`), INTEGRITY PASS | **PASS / PASS / PASS**, 1 WARN | n1: 1.705 / 7.094 ms, shared, strict 4.131, shared 12.131 → PASS + WARN `shared_gpu_reset_bimodality`; n2: 7.426 / 1.394 ms → PASS |
+| smoke_003 | PASS / PASS / PASS (1 band WARN) | **PASS / PASS / PASS** (same band WARN) | n1: 7.303 / 7.186 ms → PASS; n2: 10.429 / 6.782 ms → PASS (strict limits 11.13 / 15.04 ms) |
+
 After smoke_003 the `contact_total_rel_tol` floor was raised from 0.01 to 0.02: frozen_v1 vs alias_free_v1 s15
 contact totals differ by 0.51 %, a 2× margin only, and G7 has one baseline run (no spread term).
 
 ## 4. Open
 
-- **Decision needed: the reset p95 rule on a shared GPU** (§2 item 12). smoke_001 was REJECTED_PERFORMANCE by a
-  co-tenant artefact. Options: keep it and run G9 only on an exclusive GPU, make the reset gate BLOCKED (not FAIL)
-  when both sides are `SHARED_GPU` and the difference is within the observed ~6 ms quantum, or widen the slack;
-  any of them is `acceptance_v2` once R0 is in the baseline.
 - Position band: `physics.position_band` points at the descriptive P1-0 file; switch `path`/`mode` to band v2
   (`position_band_v2.json`, `mode: gate`) when it lands (the file must provide `position_band_m` per seed).
 - The full acceptance (G4/G6/G7/G8 incl. s15 held-out, G9 N=1/8/16 × 5 ABBA pairs) has not been run; the first real
