@@ -46,28 +46,34 @@ def schedule(case, cfg, P, T_ax):
     return dtc, ramped, out
 
 
+def same(a, b):
+    """Bitwise identity (byte comparison: NaN at the same place with the same payload is equal; array_equal is not)."""
+    a, b = np.ascontiguousarray(a), np.ascontiguousarray(b)
+    return a.shape == b.shape and a.dtype == b.dtype and a.tobytes() == b.tobytes()
+
+
 def compare(batch, e, live, names):
     snap = batch.solver.snapshot(e)
     s = live.solver
     G, Gt = s.G, s.Gt
     for name in names["particle"]+names["node"]+("cell_node", "cell_offsets", "cell_particles", "index"):
-        if not np.array_equal(snap[name], getattr(s, name).numpy()):
+        if not same(snap[name], getattr(s, name).numpy()):
             return name
     for name in names["group"]:
-        if not np.array_equal(snap[name], getattr(s, name).numpy()[:G]):
+        if not same(snap[name], getattr(s, name).numpy()[:G]):
             return name
     for name in names["traction"]:
-        if not np.array_equal(snap[name], getattr(s, name).numpy()[:Gt]):
+        if not same(snap[name], getattr(s, name).numpy()[:Gt]):
             return name
     for name in ("work", "violations", "cfl_violations"):
-        if not np.array_equal(snap[name], getattr(s, name).numpy()):
+        if not same(snap[name], getattr(s, name).numpy()):
             return name
-    if not np.array_equal(batch.summary.numpy()[e], s.diagnostics.summary.numpy()[0]):
+    if not same(batch.summary.numpy()[e], s.diagnostics.summary.numpy()[0]):
         return "diagnostics"
     K = batch.K
-    if not np.array_equal(batch.marker_x.numpy()[e*K:(e+1)*K], s.diagnostics.marker_x.numpy()):
+    if not same(batch.marker_x.numpy()[e*K:(e+1)*K], s.diagnostics.marker_x.numpy()):
         return "markers"
-    if not np.array_equal(batch.wrench.numpy()[e, :G], live.last_wrench):
+    if not same(batch.wrench.numpy()[e, :G], live.last_wrench):
         return "wrench"
     if int(batch.invalid_reason.numpy()[e]) != int(live.invalid_reason):
         return "invalid_reason"
@@ -90,6 +96,7 @@ def main():
     from robotic_cutting_sim.batched import rubber_layout as RL
     from robotic_cutting_sim.batched.rubber_material_batch import BatchedRubberMaterial
     cfg = P.load_config(P.CONFIG_V3)
+    commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     names = {"particle": RL.PARTICLE_ARRAYS, "node": RL.NODE_ARRAYS, "group": RL.GROUP_ARRAYS,
              "traction": RL.TRACTION_ARRAYS}
     ramped_case = args.case == "07_ramped"
@@ -139,7 +146,7 @@ def main():
            "particles_per_env": live.scene.n, "stable_step_guard": P.guard_limit(cfg),
            "bitwise_equal_every_step": first_mismatch is None, "first_mismatch": first_mismatch,
            "single_invalid": int(live.invalid_reason), "batched_invalid": batch.invalid_reason.numpy().tolist(),
-           "commit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip(),
+           "commit_at_start": commit, "comparison": "byte-wise (tobytes) per array",
            "wall_s": time.perf_counter()-t0}
     (out/"l0.json").write_text(json.dumps(res, indent=1, default=float))
     print(json.dumps(res, default=float))
