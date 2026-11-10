@@ -15,13 +15,13 @@ Raw outputs (not committed): `artifacts/rl_ready/p1_2/<run>_NNN/`, logs `artifac
 | `recorded_command_policy_v1` reconstruction of the WP-17 commanded targets | PASS (≤ 3.3e-11 m, ≤ 2.5e-10 quaternion component; host frozen path and device Torch path) |
 | **M0** N=1 reset/step + WP-17 replay s512 / s15, frozen evaluator | PASS (pre- and post-review-fix) |
 | M0 L3 band: final codes, labelled counts, evaluator | PASS (4/4 runs: codes = Native, 0 particles) |
-| M0 L3 band: max position difference vs Native over time | 3 of 4 runs inside; **pre-fix s15 outside** (6.50e-4 m > band max 4.62e-4 m); post-fix s15 inside |
-| **M1** N=4, 2 replay + 2 policy-driven full episodes, staggered partial resets, L2 every step, evaluate() | PASS (pre-fix run; post-fix rerun see §5) |
+| M0 L3 band: max position difference vs Native over time | ~~3 of 4 runs inside~~ **SUPERSEDED (review fix F2).** Against the P1-0 band v1 ([min, max] of 4 runs) the strict tally is **1 of 4 inside**: `m0_s512_postfix_001` 3.85346e-5 m is above the v1 max 3.84649e-5 m, `m0_s15_001` 6.50e-4 m above and `m0_s15_postfix_001` 1.87e-4 m below the v1 range. Band v1 is statistically unusable (false-reject 40 %); band v2 classification in the acceptance review (`P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md` §7) |
+| **M1** N=4, 2 replay + 2 policy-driven full episodes, staggered partial resets, L2 every step, evaluate() | PASS (pre-fix run; post-fix rerun see §5). Env independence: **CPU bitwise L1; GPU outcome-level only; L4 BLOCKED** (review F8) |
 | M1 L4 `DeterministicMode.RUN_TO_RUN` | **BLOCKED** (frozen `tlmpm_v5._particle_contacts` mixes add/max atomics; module does not compile) |
 | **M2** N=8, 3 consecutive full episodes per env with staggered partial resets (24 episodes) | PASS physics (L2, codes = Native 24/24, evaluator PASS 24/24) |
 | M2 N=16, 1 full episode per env (16 episodes) | PASS physics (codes = Native 16/16, evaluator PASS 16/16) |
 | M2 memory: VRAM / mempool / RSS per 100 steps | PASS (Warp mempool and Torch allocation flat; RSS bounded) |
-| **M2 throughput gain over N=1** | PASS at matched co-tenant load: **1.45× (N=8), 1.42× (N=16)** over batched N=1 (alternation round 1, separate processes, co-tenant SM mean 46–47 % in all three); see §6 for the confounded comparisons |
+| **M2 throughput gain over N=1** | PASS at matched co-tenant load and matched step windows: **1.40× (N=8, steps 0–150), 1.37× (N=16, steps 0–100)** over batched N=1 (alternation round 1, separate processes, co-tenant SM mean 46–47 % in all three; review fix F3 — the earlier 1.45× / 1.42× compared unequal windows and is superseded). About 1.24–1.26× over the frozen single env (inferred, F4); see §6 |
 | One kernel launch covers all envs (nsys graph-node trace N=1 vs N=4) | PASS |
 | Multi-HashGrid audit (Warp 1.17 static-descriptor hazard) | PASS — no P1-2 evidence run held two device grids; guard added |
 | EXCLUSIVE_GPU rows | NOT_RUN (GPU1 had a co-tenant at up to 99 % SM during every run) |
@@ -147,16 +147,17 @@ boxes; 120 host samples (every 10 steps, outside timing) compared with the Nativ
 
 | run | code | final codes vs Native | labelled d0 (Native) | max pos. diff over time (P1-0 band) | final max / mean diff | transient code diffs | evaluator 2 / 121 frames | L2 (min det F) | warm step median | env-steps/s | co-tenant SM mean |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| m0_s512_001 | pre-fix | equal (0) | 37958 (37958) | 2.24e-5 m (1.39e-5–3.85e-5) inside | 2.24e-5 / 5.2e-7 | step 320, 1 particle | PASS / PASS, identical | PASS (0.910) | 0.293 s | 3.51 | 45 % |
-| m0_s512_postfix_001 | post-fix | equal (0) | 37958 | 3.85e-5 m inside (at the band max) | 3.85e-5 / 1.0e-6 | none | PASS / PASS, identical | PASS (0.910) | 0.293 s | 3.50 | 47 % |
+| m0_s512_001 | pre-fix | equal (0) | 37958 (37958) | 2.24e-5 m (v1 1.39e-5–3.85e-5) inside v1 | 2.24e-5 / 5.2e-7 | step 320, 1 particle | PASS / PASS, identical | PASS (0.910) | 0.293 s | 3.51 | 45 % |
+| m0_s512_postfix_001 | post-fix | equal (0) | 37958 | 3.85346e-5 m **above the v1 max** 3.84649e-5 (corrected; was "inside (at the band max)") | 3.85e-5 / 1.0e-6 | none | PASS / PASS, identical | PASS (0.910) | 0.293 s | 3.50 | 47 % |
 | m0_s15_001 | pre-fix | equal (0) | 85786 (85786) | **6.50e-4 m — outside** (1.96e-4–4.62e-4) | **1.36e-4** (band 6.3e-5–1.18e-4) / 1.5e-6 | step 500, 1 particle | PASS / PASS, identical | PASS (0.844) | 0.309 s | 3.29 | 46 % |
-| m0_s15_postfix_001 | post-fix | equal (0) | 85786 | 1.87e-4 m (below the band minimum) | 7.0e-5 / 8.6e-7 | step 500, 1 particle | PASS / PASS, identical | PASS (0.844) | 0.309 s | 3.27 | 49 % |
+| m0_s15_postfix_001 | post-fix | equal (0) | 85786 | 1.87e-4 m **below the v1 minimum** 1.96e-4 (outside v1) | 7.0e-5 / 8.6e-7 | step 500, 1 particle | PASS / PASS, identical | PASS (0.844) | 0.309 s | 3.27 | 49 % |
 
 Evaluator (all four): verdict PASS, integrity PASS, removed fraction 1.0 for every protrusion, largest
 below-plane component share 1.0 (P1-0/Native: 0.9999999999992), detached 0.0. Pre- vs post-fix: identical final
 codes and evaluator outcomes, identical timing (0.293 / 0.309 s median); position differences vary within the GPU
-float-atomic run-to-run spread, which the 4-run single-env band (P1-0) under-samples — the pre-fix s15 run is the
-only one outside it (P1-3a also reports s15 outside the band in 3 of 4 envs of its own runs). Cold start (process
+float-atomic run-to-run spread, which the 4-run single-env band (P1-0) under-samples. *Corrected (review F2):* three
+of the four M0 runs are outside band v1 (one above the s512 max by 7e-8 m, one above and one below the s15 range), not
+one; P1-3a's s15 envs are 4 of 4 outside v1, not 3 of 4. Band v2 classification: acceptance review §7. Cold start (process
 start → first step done) 6.3–10.5 s; first reset 0.05–0.06 s; graph capture allocation 0 bytes (mempool before =
 after); VRAM peak 866 MiB own process.
 
@@ -212,12 +213,12 @@ L2 monitor, host samples, resets and evaluation outside.
 
 | run | boundary | N | particles/env | control Hz | material dt | cameras | env-steps/s | aggregate sim-time/wall | VRAM peak | reset p95 | physics verdict | warm/cold | co-tenant SM mean | commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| m0_s512_001 (pre-fix) | batched_headless | 1 | n/a | 50 | 1e-4 s (200 substeps) | none | 3.508 | 0.0702 | 866 MiB | n/a | PASS | warm | 45 % | 6ba47b7 |
-| m0_s15_001 (pre-fix) | batched_headless | 1 | n/a | 50 | 1e-4 s (200 substeps) | none | 3.288 | 0.0658 | 866 MiB | n/a | PASS | warm | 47 % | 7e827a7 |
-| m0_s512_postfix_001 | batched_headless | 1 | n/a | 50 | 1e-4 s (200 substeps) | none | 3.499 | 0.0700 | 866 MiB | n/a | PASS | warm | 47 % | 138c937 |
-| m0_s15_postfix_001 | batched_headless | 1 | n/a | 50 | 1e-4 s (200 substeps) | none | 3.267 | 0.0653 | 866 MiB | n/a | PASS | warm | 49 % | d0a09ff |
-| m1_n4_001 (pre-fix) | batched_headless | 4 | n/a | 50 | 1e-4 s (200 substeps) | none | 3.647 | 0.0729 | 1086 MiB | 0.0143 s | PASS | warm | 46 % | 9bf4d21 |
-| m1_n4_postfix_001 | batched_headless | 4 | n/a | 50 | 1e-4 s (200 substeps) | none | 3.637 | 0.0727 | 1086 MiB | 0.0069 s | PASS | warm | 47 % | a24ac46 |
+| m0_s512_001 (pre-fix) | batched_headless | 1 | 102732 | 50 | 1e-4 s (200 substeps) | none | 3.508 | 0.0702 | 866 MiB | n/a | PASS | warm | 45 % | 6ba47b7 |
+| m0_s15_001 (pre-fix) | batched_headless | 1 | 103898 | 50 | 1e-4 s (200 substeps) | none | 3.288 | 0.0658 | 866 MiB | n/a | PASS | warm | 47 % | 7e827a7 |
+| m0_s512_postfix_001 | batched_headless | 1 | 102732 | 50 | 1e-4 s (200 substeps) | none | 3.499 | 0.0700 | 866 MiB | n/a | PASS | warm | 47 % | 138c937 |
+| m0_s15_postfix_001 | batched_headless | 1 | 103898 | 50 | 1e-4 s (200 substeps) | none | 3.267 | 0.0653 | 866 MiB | n/a | PASS | warm | 49 % | d0a09ff |
+| m1_n4_001 (pre-fix) | batched_headless | 4 | 103315 | 50 | 1e-4 s (200 substeps) | none | 3.647 | 0.0729 | 1086 MiB | 0.0143 s | PASS | warm | 46 % | 9bf4d21 |
+| m1_n4_postfix_001 | batched_headless | 4 | 103315 | 50 | 1e-4 s (200 substeps) | none | 3.637 | 0.0727 | 1086 MiB | 0.0069 s | PASS | warm | 47 % | a24ac46 |
 | m2_n1_001 | batched_headless | 1 | 102732 | 50 | 1e-4 s (200 substeps) | none | 5.091 | 0.1018 | 834 MiB | n/a | PASS | warm | 24 % | ddfe2c7 |
 | m2_n1_001 | batched_headless | 1 | 102732 | 50 | 1e-4 s (200 substeps) | none | n/a | n/a | 834 MiB | n/a | REPORTED_NOT_SCORED | cold | 24 % | ddfe2c7 |
 | m2_n1_002 | batched_headless | 1 | 103898 | 50 | 1e-4 s (200 substeps) | none | 4.803 | 0.0961 | 834 MiB | n/a | PASS | warm | 23 % | fe971fb |
@@ -247,13 +248,28 @@ Torch action/observation/reward work per step).
 
 | round | N=1 env-steps/s (co-tenant SM mean) | N=8 (co-tenant) | N=16 (co-tenant) | N=8 / N=1 | N=16 / N=1 |
 | --- | --- | --- | --- | --- | --- |
-| 1 | 3.354 (46 %) | 4.849 (47 %) | 4.752 (46 %) | **1.45×** | **1.42×** |
-| 2 | 3.352 (45 %) | 6.201 (35 %) | 7.040 (22 %) | 1.85× (confounded: lighter co-tenant) | 2.10× (confounded) |
+| 1 | 3.354 (46 %) | 4.849 (47 %) | 4.752 (46 %) | ~~1.45×~~ superseded | ~~1.42×~~ superseded |
+| 2 | 3.352 (45 %) | 6.201 (35 %) | 7.040 (22 %) | ~~1.85×~~ (confounded: lighter co-tenant) | ~~2.10×~~ (confounded) |
 
-Round 1 is the only comparison at matched co-tenant load: batching gives **~1.4×** aggregate env-steps/s at N=8–16
-over N=1 (inside the ADR 0021 estimate of 1.3–3×), with no further gain from N=8 to N=16. The same ratio follows
-from M0/M1/M2 at similar loads (N=1 3.27–3.51 at 45–49 % vs N=8 4.96 at 44 %, N=16 4.82 at 45 %). Round 2's larger
-ratios come from the co-tenant easing off and are not claimed.
+*Corrected (review fix F3, recomputed from the raw `steps.npz` `step_wall_s`).* The table above divides rates over
+unequal windows: N=1 was timed over steps 0–300, N=8 over 0–150 and N=16 over 0–100, and the N=1 cost rises in steps
+200–300 (3.130 env-steps/s in [200:300] against 3.469 in [0:100], round 1). Over matched windows:
+
+| round | N=1 [0:150] | N=8 [0:150] | **N=8 / N=1** | N=1 [0:100] | N=16 [0:100] | **N=16 / N=1** |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 (matched co-tenant) | 3.475 | 4.850 | **1.40×** | 3.469 | 4.752 | **1.37×** |
+| 2 (confounded, not claimed) | 3.473 | 6.199 | 1.79× | 3.469 | 7.038 | 2.03× |
+
+Round 1 is the only comparison at matched co-tenant load: batching gives **1.37–1.40×** aggregate env-steps/s at
+N=8–16 over batched N=1, with no further gain from N=8 to N=16. These windows cover the approach (no cutting yet); a
+window that includes the cutting phase is not measured (EXCLUSIVE_GPU alternation over steps 0–600 is open).
+*Corrected (review fix F4):* the earlier sentence "inside the ADR 0021 estimate of 1.3–3×" used the wrong baseline.
+The ADR estimate is relative to sequential **frozen single** envs; batched N=1 is ~10 % slower than the frozen single
+env at matched load (5.091 vs 5.630 env-steps/s above), so the gain over the frozen single env is about
+1.37–1.40 × 0.904 ≈ **1.24–1.26×** — inferred, not measured in one alternation round, and **below** the ADR's 1.3×
+lower estimate (ADR §14 risk #6). The same N=1→N=8/16 ratio follows from M0/M1/M2 at similar loads (N=1 3.27–3.51 at
+45–49 % vs N=8 4.96 at 44 %, N=16 4.82 at 45 %; full-episode windows). Round 2's larger ratios come from the
+co-tenant easing off and are not claimed.
 
 ### 6.1 Profile: one launch per kernel covers all envs
 
@@ -267,7 +283,8 @@ per env by ~1.3× at N=4, consistent with the ~1.4× end-to-end gain at N=8–16
 
 ## 7. Next bottleneck
 
-1. **Batching gives only ~1.4× at N=8–16** (matched co-tenant load): the per-env work (≈1e5 particles,
+1. **Batching gives only 1.37–1.40× at N=8–16 over batched N=1, ≈1.24–1.26× over the frozen single env (inferred)**
+   (matched co-tenant load, matched windows; review F3/F4): the per-env work (≈1e5 particles,
    200 substeps) already fills most of our time slice; kernel time grows nearly linearly with N (3.1× at N=4),
    and N=16 is no faster per env than N=8. Further gain must come from cheaper kernels: `_particle_contacts_b` is 55–56 % of GPU time at N=1 and N=4 (P1-3a's
    `alias_free_v1` measured 1.40–1.45× end to end), then `_p2g` (15–18 %), the hash-grid radix sort (≈10 % at N=1)
@@ -276,6 +293,7 @@ per env by ~1.3× at N=4, consistent with the ~1.4× end-to-end gain at N=8–16
 3. L4 needs batched copies of the frozen v5 grid kernels (separate module) before determinism can be tested.
 4. L3 band: the 4-run single-env band under-samples GPU run-to-run variation for seed 15; define the band from
    more runs (or from the batched copies of M2, which agree on codes in 40/40 episodes) before scoring positions.
+   *Done (review fix F2):* band v2, acceptance review §7.
 
 ## 8. Failures, preserved runs, open items
 
@@ -288,5 +306,11 @@ per env by ~1.3× at N=4, consistent with the ~1.4× end-to-end gain at N=8–16
   3.64 env-steps/s (co-tenant 47 %).
 - Open: EXCLUSIVE_GPU rows; L4; Native confirmation of the policy-driven (ideal tracking) episodes; the
   `evaluate()` integrity layer sees only 2 frames (digit-rewrite history between them is checked on the device by
-  the L2 monitor in the milestone runs, not by `evaluate()` itself); a device grid created after a batch (e.g. a
-  frozen single material on CUDA built later) is detected only at the env's next full reset.
+  the L2 monitor in the milestone runs, not by `evaluate()` itself); ~~a device grid created after a batch (e.g. a
+  frozen single material on CUDA built later) is detected only at the env's next full reset~~ — *fixed (review fix
+  F1):* the batch rebuilds its own grid on the host before every launch and flags a foreign grid at step time
+  (`FOREIGN_DEVICE_HASHGRID`, receipt `device_hashgrid`).
+- M1 env independence (plan: non-reset envs bit-identical to an un-reset run on the same device) is shown bitwise on
+  the Warp CPU device only (`tests/test_vector_env_api.py`, batched L1 tests); on GPU it is outcome-level (Native
+  final codes kept by every replay env while others reset; 0 foreign grouped-query candidates) because L4
+  (RUN_TO_RUN) is BLOCKED (review F8).

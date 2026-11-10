@@ -16,7 +16,7 @@ Evidence: [`docs/evidence/rl_ready/p1_3a_001.json`](../../evidence/rl_ready/p1_3
 | Kernel split, nsys graph-node trace, N=1/16, all sub-flags | contact kernel −68 % / −50 %; all kernels −35 % / −29 % (SHARED) |
 | End-to-end control-step wall, one variant per process, N=1/4/8/16 | **1.40–1.45× faster** (SHARED, 2 reps at N=1/16) |
 | Full episodes, alias_free_v1: N=1 s512, N=1 s15, N=4 (s512, s15, s512, s15); hardened code again N=1 s512 and s15 | final codes = Native, labels = Native, frozen evaluator PASS (2 and 121 frames), L2 PASS, 0 guard violations: **PASS** |
-| L3 position band vs Native (P1-0 single-env band) | s512 inside everywhere; s15 **outside** in 3 of 4 s15 envs (max over time) — the unchanged frozen batched path (P1-2 `m0_s15_001`) is outside too |
+| L3 position band vs Native (P1-0 single-env band) | ~~s512 inside everywhere; s15 outside in 3 of 4 s15 envs~~ **SUPERSEDED (review fix F2).** Strict band-v1 tally: s512 3 of 4 inside (`episode_512_15_512_15_001` env 0, 3.85294e-5 m, is above the v1 max 3.84649e-5 m); s15 **0 of 4** inside (8.34e-4, 8.20e-4, 5.98e-4 m above; 1.73e-4 m below). Band v1 is statistically unusable; band v2 classification in the acceptance review §7 |
 | EXCLUSIVE_GPU timing, RUN_TO_RUN determinism, C3 | NOT_RUN |
 
 ## 1. What changed
@@ -251,8 +251,8 @@ max s512 1.4–3.8e-5 m, s15 6.3e-5–1.2e-4 m.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | episode_solo_512_001 (1) | 0 / 512 | yes (0) | 37958 (37958) | PASS / PASS | PASS | 0 | 2.49e-5: inside | 2.49e-5: inside | 7.385 |
 | episode_solo_15_001 (1) | 0 / 15 | yes (0) | 85786 (85786) | PASS / PASS | PASS | 0 | 8.34e-4: **outside** | 1.74e-4: **outside** | 7.467 |
-| episode_512_15_512_15_001 (0), N=4 | 0 / 512 | yes (0) | 37958 | PASS / PASS | PASS | 0 | 3.85e-5: inside | 3.85e-5: edge of band | 5.839 (batch) |
-| | 1 / 15 | yes (0) | 85786 | PASS / PASS | PASS | 0 | 1.73e-4: below band | 7.9e-5: inside | |
+| episode_512_15_512_15_001 (0), N=4 | 0 / 512 | yes (0) | 37958 | PASS / PASS | PASS | 0 | 3.85294e-5: **above v1 max** 3.84649e-5 (corrected; was "inside") | 3.85e-5: above v1 max (was "edge of band") | 5.839 (batch) |
+| | 1 / 15 | yes (0) | 85786 | PASS / PASS | PASS | 0 | 1.73e-4: **below v1 min (outside v1)** | 7.9e-5: inside | |
 | | 2 / 512 | yes (0) | 37958 | PASS / PASS | PASS | 0 | 2.31e-5: inside | 2.31e-5: inside | |
 | | 3 / 15 | yes (0) | 85786 | PASS / PASS | PASS | 0 | 8.20e-4: **outside** | 1.80e-4: **outside** | |
 | hardened_episode_512_001 (1, hardened) | 0 / 512 | yes (0) | 37958 (37958) | PASS / PASS | PASS | 0 | 1.58e-05: inside | 1.58e-05: inside | 5.088 |
@@ -262,10 +262,11 @@ max s512 1.4–3.8e-5 m, s15 6.3e-5–1.2e-4 m.
 
 Final codes equal Native with 0 differing particles in every alias-free episode; evaluator PASS on 2 and 121 frames
 everywhere; L2 PASS (no digit rewrite, finite, min detF > 0, no slot overflow, no invalid flag, grouped-query
-foreign = 0, mass bitwise constant); no guard violation (certified bound 150.5 m/s). Position band: s512 inside
-everywhere; **s15 outside the P1-0 single-env band** in 3 of 4 s15 envs (max over time) — like the unchanged frozen batched path in P1-2
-(`m0_s15_001`), so the band is not met by the batched GPU path at s15 in general; it is reported, not attributed to
-alias_free_v1. Transient code differences (1–2 particles at t = 5.4 s or 9.6–10.0 s for s15, 6.4 s for s512, as in
+foreign = 0, mass bitwise constant); no guard violation (certified bound 150.5 m/s). Position band (*corrected,
+review F2*): against band v1 the strict tally is s512 3 of 4 inside and **s15 0 of 4 inside** (three above, one
+below), like the unchanged frozen batched path in P1-2 (`m0_s15_001` above, `m0_s15_postfix_001` below). Band v1
+([min, max] of 4 runs) rejects conforming runs at 40 %, so these statuses are superseded by band v2 (acceptance review
+§7); they are reported, not attributed to alias_free_v1. Transient code differences (1–2 particles at t = 5.4 s or 9.6–10.0 s for s15, 6.4 s for s512, as in
 P1-0) occur, none at the end. (`episode_512_001` / `episode_15_001` also contain a frozen_v1 control interleaved in
 the same process; by the §3.0 mechanism its own grid was the last built on the host, so that half is plausibly
 valid — s512 2.45e-5 m inside, s15 1.99e-2 m outside — but it is not used as evidence.)
@@ -288,11 +289,11 @@ valid — s512 2.45e-5 m inside, s15 1.99e-2 m outside — but it is not used as
 | 16 | 103315 | 50 | 0.0001 s | none | 6.556 | 0.1311 | 2222 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 86%, mem max 11895 MiB | rl_ready/p1_3/solo_n16_alias_free_v1_002 | 39d96f3de7e4 |
 | 1 | 102732 | 50 | 0.0001 s | none | 5.069 | 0.1014 | 894 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 82%, mem max 11895 MiB | rl_ready/p1_3/hardened_solo_n1_alias_free_v1_001 | 39d96f3de7e4 |
 | 16 | 103315 | 50 | 0.0001 s | none | 6.552 | 0.1310 | 2190 MiB | n/a | REPORTED_NOT_SCORED | batched_headless | A-replay s512/s15 alternating, steps 3-14 [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 74%, mem max 11895 MiB | rl_ready/p1_3/hardened_solo_n16_alias_free_v1_001 | 39d96f3de7e4 |
-| 1 | n/a | 50 | 0.0001 s | none | 7.385 | 0.1477 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 75%, mem max 11895 MiB | rl_ready/p1_3/episode_solo_512_001 | 39d96f3de7e4 |
-| 1 | n/a | 50 | 0.0001 s | none | 7.467 | 0.1493 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 67%, mem max 11895 MiB | rl_ready/p1_3/episode_solo_15_001 | 39d96f3de7e4 |
-| 4 | n/a | 50 | 0.0001 s | none | 5.839 | 0.1168 | 1166 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512, 15, 512, 15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#0, 570.211.01) | SHARED_GPU | procs 4, SM max 98%, mem max 15529 MiB | rl_ready/p1_3/episode_512_15_512_15_001 | a18e8f5c42d5 |
-| 1 | n/a | 50 | 0.0001 s | none | 5.088 | 0.1018 | 896 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 94%, mem max 11895 MiB | rl_ready/p1_3/hardened_episode_512_001 | 39d96f3de7e4 |
-| 1 | n/a | 50 | 0.0001 s | none | 5.037 | 0.1007 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 86%, mem max 11895 MiB | rl_ready/p1_3/hardened_episode_15_001 | 39d96f3de7e4 |
+| 1 | 102732 | 50 | 0.0001 s | none | 7.385 | 0.1477 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 75%, mem max 11895 MiB | rl_ready/p1_3/episode_solo_512_001 | 39d96f3de7e4 |
+| 1 | 103898 | 50 | 0.0001 s | none | 7.467 | 0.1493 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 67%, mem max 11895 MiB | rl_ready/p1_3/episode_solo_15_001 | 39d96f3de7e4 |
+| 4 | 103315 | 50 | 0.0001 s | none | 5.839 | 0.1168 | 1166 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512, 15, 512, 15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#0, 570.211.01) | SHARED_GPU | procs 4, SM max 98%, mem max 15529 MiB | rl_ready/p1_3/episode_512_15_512_15_001 | a18e8f5c42d5 |
+| 1 | 102732 | 50 | 0.0001 s | none | 5.088 | 0.1018 | 896 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [512] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 94%, mem max 11895 MiB | rl_ready/p1_3/hardened_episode_512_001 | 39d96f3de7e4 |
+| 1 | 103898 | 50 | 0.0001 s | none | 5.037 | 0.1007 | 928 MiB | n/a | PASS | batched_headless | A-replay full episode seeds [15] [alias_free_v1] | 200 | 0 | rigid tool + handle/2 measured pad boxes + fixtures + particle contacts (material only) | none | warm | n/a | yes | NVIDIA GeForce RTX 5090 (#1, 570.211.01) | SHARED_GPU | procs 1, SM max 86%, mem max 11895 MiB | rl_ready/p1_3/hardened_episode_15_001 | 39d96f3de7e4 |
 
 ## 5. Rollback
 
@@ -315,7 +316,10 @@ on it.
   per process asserted) needs its own work package; until then keep one material per process and run A/B variants
   in separate processes.
 - **s15 L3 position band** exceeded by alias-free and by the frozen batched path (P1-2); final codes, labels and the
-  frozen evaluator are unaffected. Needs a band re-derived for the batched GPU path (≥ 3 runs per seed).
+  frozen evaluator are unaffected. Needs a band re-derived for the batched GPU path (≥ 3 runs per seed). *Done
+  (review fix F2):* band v2 from ≥ 10 frozen single-env runs per seed, classification in the acceptance review §7.
+- *Superseded (review fix F1):* the open default-path item above — `frozen_v1` now rebuilds its own grid on the host
+  before every launch (`material_batch.DEVICE_HASHGRID_REFRESH`) and flags foreign grids at step time.
 - Not run: EXCLUSIVE_GPU timing (both GPUs shared in every window), `RUN_TO_RUN` comparison (P1-2 L4 pending), C3
   (P1-3b).
 
@@ -348,7 +352,8 @@ PYTHONPATH=src .venv/bin/python scripts/rl_ready/make_p1_3a_evidence.py ... --ou
 ## 8. Merge readiness
 
 Ready to merge into `claude/rl-ready-rubber-physics` as an **opt-in** mode: the default path is unchanged and
-byte-identical, physics parity is bitwise on CPU and inside the frozen GPU band on GPU, every alias-free full
+byte-identical, physics parity is bitwise on CPU (*corrected, review F2:* on GPU the position statuses against
+the frozen band v1 are s512 3/4 and s15 0/4 inside, see the status table at the top; band v2 in the acceptance review §7), every alias-free full
 episode reproduces the Native final codes and passes the frozen evaluator, and the measured end-to-end gain is
 1.40–1.45× (SHARED_GPU, one variant per process). Do not switch the default before an EXCLUSIVE_GPU confirmation;
 fix the Warp descriptor hazard for `frozen_v1` in its own work package, and run any later A/B one variant per process

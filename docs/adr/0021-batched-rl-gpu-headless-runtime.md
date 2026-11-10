@@ -263,6 +263,12 @@ a tolerance.
 - **Band.** Replay them into the single v7_2 material on GPU at least 3 times. That defines the run-to-run band of
   removed target fraction, substrate share, components, labelled count and maximum position difference.
 - **Check.** Batched N=1 and N=4 copies must fall within the band and pass the frozen evaluator's thresholds.
+- **Amendment (review fix F2, 2026-11-10).** The position part of this band was taken as [min, max] of 4 runs, which
+  rejects a conforming run with probability 2/(n+1) = 40 %. It is superseded by `position_band_v2`
+  (`configs/rl_benchmark/position_band_v2.json`, pre-declared): a one-sided log-normal prediction bound from ≥ 10
+  frozen single-env replays per seed with a nominal 1 % false-reject rate per run, values in
+  `configs/rl_benchmark/position_band_v2_reference.json`, consumer `robotic_cutting_sim.rl.position_band`. The
+  outcome criteria (codes, labelled counts, frozen evaluator) are unchanged.
 - **Pad boxes.** Rebuilding them from recorded finger poses is **UNVERIFIED**. Until it is verified, replays use the
   handle box only and carry that label.
 - **Native outcomes** are compared descriptively, never bitwise.
@@ -732,7 +738,10 @@ tests `tests/test_batched_{layout,cpu_parity,isolation,partial_reset,frozen_sour
   - `ab_timing_001`: GPU1 at 96% utilisation before the run (co-tenant active).
   - Interleaved A/B in one process (`artifacts/rl_ready/p1_1/ab_timing_001`), per 20 ms control step (200 substeps):
     single graph 270 ms; batched N=1 270 ms; batched N=4 558 ms. That is about 1.9× aggregate over sequential
-    singles at N=4.
+    singles at N=4. **WITHDRAWN (2026-11-10):** `ab_timing_001` held three device grids in one process
+    (INVALID_MULTI_GRID_PROCESS, Warp 1.17 static-descriptor hazard; see the device HashGrid guard note under
+    "P1-1b coupling" below and `P1_1_P1_2_MILESTONES.md` §4). Measured instead, one batch per process at matched
+    co-tenant load and matched step windows: 1.37–1.40× at N=8–16 over batched N=1 (review fix F3).
   - The first smoke, `gpu_smoke_001`, ran before the `_claim_slots` guard and measured N=1 at 0.43 s against the
     single's 0.13 s (then about 1% co-tenant load). It is kept as a failed-performance record.
 
@@ -871,3 +880,16 @@ tests/test_wp17_frontier.py tests/test_repo_naming.py`.
 - **Milestones** (`docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md`): M0/M1/M2 physics PASS (final codes equal Native
   in every replayed episode, 4 + 2 + 40), L4 BLOCKED (frozen `tlmpm_v5._particle_contacts` mixes add/max atomics),
   throughput ~1.4× at N=8–16 over N=1 at matched co-tenant load (SHARED_GPU, one batch per process).
+  **Corrected (review fixes F3/F4, 2026-11-10):** over matched step windows the gain is 1.40× (N=8, steps 0–150) and
+  1.37× (N=16, steps 0–100) over batched N=1. Batched N=1 is about 10 % slower than the frozen single env at matched
+  load (5.091 vs 5.630 env-steps/s, full s512 episodes, co-tenant SM mean 24 %), so the gain over sequential single
+  envs, the baseline of the "Time" estimate above, is about 1.24–1.26× (inferred, not measured in one alternation):
+  below the 1.3–3× estimate (risk #6 of §14).
+- **Default-path descriptor refresh (review fix F1, 2026-11-10).** The construction-time guard and the full-reset
+  re-check did not cover a device grid built after the batch. `BatchedCuttingMaterial.advance()` now rebuilds the
+  batch's own grid on the host right before every launch (graph and eager) in both particle-contact modes
+  (`DEVICE_HASHGRID_REFRESH = host_rebuild_before_every_launch_v1`; same build call as the substep; no kernel or graph
+  change) and runs a step-time census without gc scan or device sync (`device_hashgrid_census_v1`). A foreign grid
+  sets the sticky per-env bit `FOREIGN_DEVICE_HASHGRID` (128) of a guarded batch and a per-batch receipt record
+  (`receipt()["device_hashgrid"]`). The refresh protects the batch's own graph only; another grid's graph (e.g. a
+  frozen single `LiveCuttingMaterial`) is not protected, so one device grid per process stays the rule.
