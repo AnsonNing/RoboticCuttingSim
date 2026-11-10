@@ -1,0 +1,3887 @@
+{
+ "acceptance_dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p1_6_r0/smoke_002",
+ "adapter_probe": {
+  "B": {
+   "clock": {
+    "consistent": true,
+    "inner": 3.622753172037038,
+    "outer": 3.622739942412525,
+    "ratio": 1.000003651828374
+   },
+   "env_problems": [],
+   "gpu": {
+    "label": "SHARED_GPU",
+    "mem_used_max_mib": 19681,
+    "mem_used_min_mib": 17337,
+    "samples": 43,
+    "util_p50": 99
+   },
+   "outer": {
+    "env_steps": 40,
+    "env_steps_per_s": 3.622739942412525,
+    "num_envs": 2,
+    "seconds": 11.041367,
+    "vector_steps": 20
+   },
+   "rc": 0
+  },
+  "C": {
+   "clock": {
+    "consistent": true,
+    "inner": 5.00339989960911,
+    "outer": 5.003355297599237,
+    "ratio": 1.0000089144198683
+   },
+   "env_problems": [],
+   "gpu": {
+    "label": "SHARED_GPU",
+    "mem_used_max_mib": 19743,
+    "mem_used_min_mib": 17375,
+    "samples": 18,
+    "util_p50": 99.0
+   },
+   "outer": {
+    "env_steps": 40,
+    "env_steps_per_s": 5.003355297599237,
+    "num_envs": 2,
+    "seconds": 7.994635,
+    "vector_steps": 20
+   },
+   "rc": 0
+  },
+  "ratio_C_over_B": 1.381097008654534
+ },
+ "base_commit": "25c4fc1",
+ "baseline": {
+  "checkout": "/home/ningan/RoboticCuttingSim-rl-r0",
+  "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+  "variant": {}
+ },
+ "branch": "claude/rl-p1-6-r0",
+ "candidate": {
+  "checkout": "/home/ningan/RoboticCuttingSim-rl-r0",
+  "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+  "variant": {
+   "particle_contact_mode": "alias_free_v1"
+  }
+ },
+ "commands": {
+  "adapter_probe": "external adapter harness.command/harness_env/run (read-only import) on GPU0 by UUID, throughput N=2 W=3 K=20, B={} then C=alias_free_v1 -> artifacts/rl_ready/p1_6_r0/adapter_probe_001",
+  "cpu_tests": ".venv/bin/python -m pytest -p no:cacheprovider tests/test_perf_acceptance.py; PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaacsim-venv/bin/python -m pytest -p no:cacheprovider tests/test_perf_acceptance.py",
+  "smoke_001": "same on gpu1.lock / --gpu-index 1 with smoke_config_001.json (G4 300 steps, 1 ABBA pair, the original samestate samples) -> artifacts/rl_ready/p1_6_r0/smoke_001",
+  "smoke_002": "flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env TMPDIR=/mnt/data/ningan/tmp .deps/isaacsim-venv/bin/python scripts/rl_ready/run_perf_acceptance_local.py --config artifacts/rl_ready/p1_6_r0/smoke_config_002.json --baseline-checkout . --candidate-checkout . --proposal-json artifacts/rl_ready/p1_6_r0/proposal_alias_free_v1.json --gpu-index 0 --cpu-tests-args 'tests/test_repo_naming.py tests/test_rl_benchmark.py tests/test_perf_acceptance.py' --out artifacts/rl_ready/p1_6_r0/smoke_002"
+ },
+ "config": "acceptance_v1_r0_smoke_002",
+ "config_sha256": "f739673ce3a1512fa580fcc0b589a3d863f22b840d9006af53f7538703fa3e64",
+ "cpu_tests": {
+  "baseline": {
+   "cpu_tests": {
+    "args": [
+     "tests/test_repo_naming.py",
+     "tests/test_rl_benchmark.py",
+     "tests/test_perf_acceptance.py"
+    ],
+    "errors": 0,
+    "failed": 0,
+    "failed_ids": [],
+    "junit": "/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p1_6_r0/smoke_002/cpu/baseline/junit.xml",
+    "passed": 55,
+    "rc": 0,
+    "skipped": 1,
+    "skipped_ids": [
+     "tests.test_perf_acceptance::test_harness_cpu_one_step_end_to_end"
+    ],
+    "tests": 56
+   }
+  },
+  "candidate": {
+   "cpu_tests": {
+    "args": [
+     "tests/test_repo_naming.py",
+     "tests/test_rl_benchmark.py",
+     "tests/test_perf_acceptance.py"
+    ],
+    "errors": 0,
+    "failed": 0,
+    "failed_ids": [],
+    "junit": "/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p1_6_r0/smoke_002/cpu/candidate/junit.xml",
+    "passed": 55,
+    "rc": 0,
+    "skipped": 1,
+    "skipped_ids": [
+     "tests.test_perf_acceptance::test_harness_cpu_one_step_end_to_end"
+    ],
+    "tests": 56
+   }
+  }
+ },
+ "dirty_note": "the smoke ran on 6b71363 with docs/RL_READY_PLAN.md modified (D-11 entry) and the config/tests untracked; harness, judge and perf_acceptance.py were committed and unchanged (the judge verifies their bytes)",
+ "gpu_note": "every row SHARED_GPU (co-tenant compute processes present; foreign SM max 64-98 %); RTX 5090, driver 570.211.01, isaacsim-venv Python 3.12.12, Warp 1.17.0, Torch 2.11.0+cu128, NumPy 2.3.1; no Kit",
+ "harness_commit": "6b71363",
+ "runs": [
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 3.358235413735386,
+    "outer": 3.3582367459772904,
+    "ratio": 0.9999996032912493
+   },
+   "dumps": [
+    {
+     "bytes": 996717,
+     "kind": "samestate",
+     "path": "dumps/r0_samestate_s512.npz",
+     "sha256": "0f48e0aa2430bfaa987734ed07e2e6bcdf2b4b558fec12d9559947c30d4e7445"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G4",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 125.21665355097502,
+   "id": "G4_samestate_baseline_r0",
+   "mode": "samestate",
+   "num_envs": 1,
+   "outer": {
+    "env_steps": 400,
+    "env_steps_per_s": 3.3582367459772904,
+    "num_envs": 1,
+    "seconds": 119.11012541898526,
+    "vector_steps": 400
+   },
+   "process_wall_s": 125.856,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.2285946250194684,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": null,
+     "invalid_reason": [
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      7.03117495868355,
+      7.04408495221287,
+      7.0250260177999735,
+      5.9687040047720075
+     ],
+     "round": 0,
+     "samestate_rerun": {
+      "15": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 0.0,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        0,
+        0
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "32": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 1.240121427770191e-08,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        12,
+        12
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         6.0
+        ],
+        [
+         6.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         5.207167674825541e-08
+        ],
+        [
+         5.207167674825541e-08
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "33": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 3.841389073500068e-08,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        31,
+        31
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         21.0
+        ],
+        [
+         21.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         3.632153209309763e-07
+        ],
+        [
+         3.632153209309763e-07
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "34": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 9.722429084035866e-09,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        18,
+        18
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         14.0
+        ],
+        [
+         14.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         6.596837209826845e-08
+        ],
+        [
+         6.596837209826845e-08
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "35": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 1.3300800461024664e-08,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        13,
+        13
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         9.0
+        ],
+        [
+         9.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         4.918852880564373e-08
+        ],
+        [
+         4.918852880564373e-08
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "36": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 2.170971846737757e-08,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        13,
+        13
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         12.0
+        ],
+        [
+         12.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         1.1129910149065836e-07
+        ],
+        [
+         1.1129910149065836e-07
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "43": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 0.0,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        0,
+        0
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "60": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 0.0,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        0,
+        0
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "80": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 0.0,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        0,
+        0
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      }
+     },
+     "timing": {
+      "env_steps_per_s": 3.358235413735386,
+      "first_step_s": 0.3530223519774154,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback; contact counts inside",
+      "step_wall_median_s": 0.2923398474813439,
+      "step_wall_p95_s": 0.30992776594939636,
+      "warmup_steps": 0,
+      "window_s": 119.11017267103307,
+      "window_steps": 400
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.06716470827470772,
+    "allocator_peak_mib": 74.7374095916748,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151
+     ],
+     "foreign_memory_mib_max": 13836.0,
+     "foreign_memory_mib_mean": 13836.0,
+     "foreign_processes_max": 3,
+     "foreign_sm_pct_max": 88.0,
+     "foreign_sm_pct_mean": 49.15966386554622,
+     "samples": 119,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.58823529411765
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 3.358235413735386,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "samestate",
+    "num_envs": 1,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 4,
+    "reset_mean_ms": 6.7672474833671,
+    "reset_p95_ms": 7.042148453183472,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 400,
+    "vram_peak_mib": 832.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "cold",
+    "warmup_steps": 0,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "baseline",
+   "status": "COMPLETE",
+   "variant": {},
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 4.8620744357599595,
+    "outer": 4.86207508922297,
+    "ratio": 0.9999998655999756
+   },
+   "dumps": [
+    {
+     "bytes": 997227,
+     "kind": "samestate",
+     "path": "dumps/r0_samestate_s512.npz",
+     "sha256": "6ab9c833c6c50d11a330ed236452930f057b27cf7ac0a381791ee5a790d83aeb"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G4",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 88.56494910398033,
+   "id": "G4_samestate_candidate_r0",
+   "mode": "samestate",
+   "num_envs": 1,
+   "outer": {
+    "env_steps": 400,
+    "env_steps_per_s": 4.86207508922297,
+    "num_envs": 1,
+    "seconds": 82.26939992897678,
+    "vector_steps": 400
+   },
+   "process_wall_s": 89.157,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.1502979178912938,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": [
+      0
+     ],
+     "invalid_reason": [
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      6.950993090867996,
+      6.962070008739829,
+      6.9880090886726975,
+      6.716509931720793
+     ],
+     "round": 0,
+     "samestate_rerun": {
+      "15": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 0.0,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        0,
+        0
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "32": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 1.240121427770191e-08,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        12,
+        12
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         6.0
+        ],
+        [
+         6.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         5.207168030096909e-08
+        ],
+        [
+         5.207168030096909e-08
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "33": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 3.841389073500068e-08,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        31,
+        31
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         21.0
+        ],
+        [
+         21.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         3.6321534935268573e-07
+        ],
+        [
+         3.6321534935268573e-07
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "34": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 9.722429084035866e-09,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        18,
+        18
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         14.0
+        ],
+        [
+         14.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         6.596837209826845e-08
+        ],
+        [
+         6.59683792036958e-08
+        ]
+       ],
+       "stats5_max_abs_diff": 7.105427357601002e-15,
+       "stats6_identical": true
+      },
+      "35": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 1.3300800461024664e-08,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        13,
+        13
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         9.0
+        ],
+        [
+         9.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         4.9188532358357406e-08
+        ],
+        [
+         4.9188532358357406e-08
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "36": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 2.170971846737757e-08,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        13,
+        13
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         12.0
+        ],
+        [
+         12.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         1.1129910149065836e-07
+        ],
+        [
+         1.11299094385231e-07
+        ]
+       ],
+       "stats5_max_abs_diff": 7.105427357601002e-15,
+       "stats6_identical": true
+      },
+      "43": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 0.0,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        0,
+        0
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "60": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 0.0,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        0,
+        0
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      },
+      "80": {
+       "impulse_bitwise_equal": true,
+       "impulse_max_abs": 0.0,
+       "impulse_max_abs_diff": 0.0,
+       "impulse_max_rel_diff": 0.0,
+       "nonzero_particles": [
+        0,
+        0
+       ],
+       "nonzero_sets_identical": true,
+       "stats4_count": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats4_identical": true,
+       "stats5": [
+        [
+         0.0
+        ],
+        [
+         0.0
+        ]
+       ],
+       "stats5_max_abs_diff": 0.0,
+       "stats6_identical": true
+      }
+     },
+     "timing": {
+      "env_steps_per_s": 4.8620744357599595,
+      "first_step_s": 0.29069195594638586,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback; contact counts inside",
+      "step_wall_median_s": 0.20083039498422295,
+      "step_wall_p95_s": 0.20437849898589774,
+      "warmup_steps": 0,
+      "window_s": 82.26941098598763,
+      "window_steps": 400
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.09724148871519919,
+    "allocator_peak_mib": 85.82923793792725,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151
+     ],
+     "foreign_memory_mib_max": 13836.0,
+     "foreign_memory_mib_mean": 13836.0,
+     "foreign_processes_max": 3,
+     "foreign_sm_pct_max": 98.0,
+     "foreign_sm_pct_mean": 51.329268292682926,
+     "samples": 82,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.3780487804878
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 4.8620744357599595,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "samestate",
+    "num_envs": 1,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 4,
+    "reset_mean_ms": 6.904395530000329,
+    "reset_p95_ms": 6.984118226682767,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 400,
+    "vram_peak_mib": 894.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "cold",
+    "warmup_steps": 0,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "candidate",
+   "status": "COMPLETE",
+   "variant": {
+    "particle_contact_mode": "alias_free_v1"
+   },
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 2.906547750242873,
+    "outer": 2.9065478057323952,
+    "ratio": 0.9999999809087873
+   },
+   "dumps": [
+    {
+     "bytes": 2401481,
+     "kind": "episode",
+     "path": "dumps/r0_e0_s512.npz",
+     "sha256": "eb105f9b5bd1a174c351825e9d77c8e949f29519563295942d44254ce82a885b"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G6",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 419.49307579093147,
+   "id": "G6_replay_baseline_r0",
+   "mode": "episode",
+   "num_envs": 1,
+   "outer": {
+    "env_steps": 1200,
+    "env_steps_per_s": 2.9065478057323952,
+    "num_envs": 1,
+    "seconds": 412.8609196220059,
+    "vector_steps": 1200
+   },
+   "process_wall_s": 420.289,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.0304642209084705,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512
+     ],
+     "evaluate_2_candidate_reported": [
+      "PASS"
+     ],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": null,
+     "invalid_reason": [
+      0
+     ],
+     "l2_candidate_reported_status": "PASS",
+     "particle_contact_mode": null,
+     "reset_ms": [
+      6.965364096686244,
+      6.946434965357184,
+      6.951762945391238
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 2.906547750242873,
+      "first_step_s": 0.36317843897268176,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback; L2 monitor, contact counts and Native samples inside",
+      "step_wall_median_s": 0.34943876654142514,
+      "step_wall_p95_s": 0.37543146636453456,
+      "warmup_steps": 0,
+      "window_s": 412.8609275040217,
+      "window_steps": 1200
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.05813095500485746,
+    "allocator_peak_mib": 78.73741722106934,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17120.06553398058,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 88.0,
+     "foreign_sm_pct_mean": 55.53398058252427,
+     "samples": 412,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.40291262135922
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 2.906547750242873,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "episode",
+    "num_envs": 1,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 3,
+    "reset_mean_ms": 6.954520669144888,
+    "reset_p95_ms": 6.964003981556743,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 1200,
+    "vram_peak_mib": 836.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "cold",
+    "warmup_steps": 0,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "baseline",
+   "status": "COMPLETE",
+   "variant": {},
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 4.108138672726773,
+    "outer": 4.108138296795934,
+    "ratio": 1.000000091508808
+   },
+   "dumps": [
+    {
+     "bytes": 2414363,
+     "kind": "episode",
+     "path": "dumps/r0_e0_s512.npz",
+     "sha256": "bac86c27caa169f5a1eabec774aec276822b5065b3061f90a1901496b38d76d9"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G6",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 300.1056720140623,
+   "id": "G6_replay_candidate_r0",
+   "mode": "episode",
+   "num_envs": 1,
+   "outer": {
+    "env_steps": 1200,
+    "env_steps_per_s": 4.108138296795934,
+    "num_envs": 1,
+    "seconds": 292.10311661998276,
+    "vector_steps": 1200
+   },
+   "process_wall_s": 300.892,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.3130279349861667,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512
+     ],
+     "evaluate_2_candidate_reported": [
+      "PASS"
+     ],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": [
+      0
+     ],
+     "invalid_reason": [
+      0
+     ],
+     "l2_candidate_reported_status": "PASS",
+     "particle_contact_mode": null,
+     "reset_ms": [
+      8.480543969199061,
+      8.753795991651714,
+      8.46581207588315
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 4.108138672726773,
+      "first_step_s": 0.3249231700319797,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback; L2 monitor, contact counts and Native samples inside",
+      "step_wall_median_s": 0.24089899205137044,
+      "step_wall_p95_s": 0.2571681367524434,
+      "warmup_steps": 0,
+      "window_s": 292.1030898899771,
+      "window_steps": 1200
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.08216277345453546,
+    "allocator_peak_mib": 87.82923793792725,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17802.551369863013,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 98.0,
+     "foreign_sm_pct_mean": 56.28767123287671,
+     "samples": 292,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 98.98287671232876
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 4.108138672726773,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "episode",
+    "num_envs": 1,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 3,
+    "reset_mean_ms": 8.566717345577976,
+    "reset_p95_ms": 8.726470789406449,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 1200,
+    "vram_peak_mib": 896.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "cold",
+    "warmup_steps": 0,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "candidate",
+   "status": "COMPLETE",
+   "variant": {
+    "particle_contact_mode": "alias_free_v1"
+   },
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 2.8723944765949443,
+    "outer": 2.8723685883197017,
+    "ratio": 1.000009012866715
+   },
+   "dumps": [
+    {
+     "bytes": 642,
+     "kind": "final_codes",
+     "path": "dumps/r0_final_codes.npz",
+     "sha256": "ca46b4741ef1e86ab7d9d020ab781095056fecd8a8904dfa701c80a21e88c7f9"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G9",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 14.21666815399658,
+   "id": "perf_n1_00_B",
+   "mode": "throughput",
+   "num_envs": 1,
+   "outer": {
+    "env_steps": 20,
+    "env_steps_per_s": 2.8723685883197017,
+    "num_envs": 1,
+    "seconds": 6.962894693017006,
+    "vector_steps": 20
+   },
+   "process_wall_s": 14.959,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.1401579130906612,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": null,
+     "invalid_reason": [
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      8.987014996819198,
+      4.764455952681601,
+      1.2960119638592005,
+      1.812178990803659,
+      8.879684028215706,
+      9.22771799378097,
+      8.681045030243695,
+      9.249359951354563,
+      8.692400995641947,
+      9.24662605393678
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 2.8723944765949443,
+      "first_step_s": 0.4260982000268996,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback",
+      "step_wall_median_s": 0.34244703192962334,
+      "step_wall_p95_s": 0.3676405744627118,
+      "warmup_steps": 3,
+      "window_s": 6.962831937940791,
+      "window_steps": 20
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.05744788953189889,
+    "allocator_peak_mib": 74.71153163909912,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17807.125,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 98.0,
+     "foreign_sm_pct_mean": 73.25,
+     "samples": 8,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.25
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 2.8723944765949443,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "throughput",
+    "num_envs": 1,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 10,
+    "reset_mean_ms": 7.083649595733732,
+    "reset_p95_ms": 9.24812969751656,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 20,
+    "vram_peak_mib": 832.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm",
+    "warmup_steps": 3,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "baseline",
+   "status": "COMPLETE",
+   "variant": {},
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 4.201987645146958,
+    "outer": 4.201929387650229,
+    "ratio": 1.0000138644635248
+   },
+   "dumps": [
+    {
+     "bytes": 642,
+     "kind": "final_codes",
+     "path": "dumps/r0_final_codes.npz",
+     "sha256": "ca46b4741ef1e86ab7d9d020ab781095056fecd8a8904dfa701c80a21e88c7f9"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G9",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 11.876926600001752,
+   "id": "perf_n1_01_C",
+   "mode": "throughput",
+   "num_envs": 1,
+   "outer": {
+    "env_steps": 20,
+    "env_steps_per_s": 4.201929387650229,
+    "num_envs": 1,
+    "seconds": 4.759718251996674,
+    "vector_steps": 20
+   },
+   "process_wall_s": 12.615,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.2296920460648835,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": [
+      0
+     ],
+     "invalid_reason": [
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      8.367222035303712,
+      8.664238965138793,
+      9.499086067080498,
+      9.587128995917737,
+      8.79491597879678,
+      8.82592296693474,
+      9.377963957376778,
+      8.981177001260221,
+      8.639011066406965,
+      10.405011009424925
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 4.201987645146958,
+      "first_step_s": 0.3455988980131224,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback",
+      "step_wall_median_s": 0.23872405348811299,
+      "step_wall_p95_s": 0.24906508644344286,
+      "warmup_steps": 3,
+      "window_s": 4.759652261971496,
+      "window_steps": 20
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.08403975290293916,
+    "allocator_peak_mib": 85.82923793792725,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 17787.0,
+     "foreign_memory_mib_mean": 17646.0,
+     "foreign_processes_max": 12,
+     "foreign_sm_pct_max": 64.0,
+     "foreign_sm_pct_mean": 51.6,
+     "samples": 5,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.2
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 4.201987645146958,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "throughput",
+    "num_envs": 1,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 10,
+    "reset_mean_ms": 9.114167804364115,
+    "reset_p95_ms": 10.03696410334669,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 20,
+    "vram_peak_mib": 894.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm",
+    "warmup_steps": 3,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "candidate",
+   "status": "COMPLETE",
+   "variant": {
+    "particle_contact_mode": "alias_free_v1"
+   },
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 4.213937986445621,
+    "outer": 4.213883087103802,
+    "ratio": 1.0000130282071626
+   },
+   "dumps": [
+    {
+     "bytes": 642,
+     "kind": "final_codes",
+     "path": "dumps/r0_final_codes.npz",
+     "sha256": "ca46b4741ef1e86ab7d9d020ab781095056fecd8a8904dfa701c80a21e88c7f9"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G9",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 11.836261460906826,
+   "id": "perf_n1_02_C",
+   "mode": "throughput",
+   "num_envs": 1,
+   "outer": {
+    "env_steps": 20,
+    "env_steps_per_s": 4.213883087103802,
+    "num_envs": 1,
+    "seconds": 4.746216158964671,
+    "vector_steps": 20
+   },
+   "process_wall_s": 12.579,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.207284372067079,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": [
+      0
+     ],
+     "invalid_reason": [
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      8.130345027893782,
+      8.378257974982262,
+      9.43578197620809,
+      8.799081901088357,
+      8.701554965227842,
+      8.370656985789537,
+      8.259008987806737,
+      8.706182008609176,
+      8.502506068907678,
+      8.261412964202464
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 4.213937986445621,
+      "first_step_s": 0.3370232810266316,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback",
+      "step_wall_median_s": 0.23965291201602668,
+      "step_wall_p95_s": 0.2523791444138624,
+      "warmup_steps": 3,
+      "window_s": 4.746154325082898,
+      "window_steps": 20
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.08427875972891241,
+    "allocator_peak_mib": 85.82923793792725,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17810.4,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 97.0,
+     "foreign_sm_pct_mean": 51.6,
+     "samples": 5,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 99.0,
+     "total_util_pct_mean": 98.6
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 4.213937986445621,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "throughput",
+    "num_envs": 1,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 10,
+    "reset_mean_ms": 8.554478886071593,
+    "reset_p95_ms": 9.14926694240421,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 20,
+    "vram_peak_mib": 894.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm",
+    "warmup_steps": 3,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "candidate",
+   "status": "COMPLETE",
+   "variant": {
+    "particle_contact_mode": "alias_free_v1"
+   },
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 2.871092629150478,
+    "outer": 2.8710683989923242,
+    "ratio": 1.0000084394221198
+   },
+   "dumps": [
+    {
+     "bytes": 642,
+     "kind": "final_codes",
+     "path": "dumps/r0_final_codes.npz",
+     "sha256": "ca46b4741ef1e86ab7d9d020ab781095056fecd8a8904dfa701c80a21e88c7f9"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G9",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 14.006723414058797,
+   "id": "perf_n1_03_B",
+   "mode": "throughput",
+   "num_envs": 1,
+   "outer": {
+    "env_steps": 20,
+    "env_steps_per_s": 2.8710683989923242,
+    "num_envs": 1,
+    "seconds": 6.9660479029407725,
+    "vector_steps": 20
+   },
+   "process_wall_s": 14.803,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.1053210919490084,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": null,
+     "invalid_reason": [
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      10.794607922434807,
+      9.3872279394418,
+      9.193766047246754,
+      9.391904924996197,
+      11.646209983155131,
+      10.156536940485239,
+      9.375771041959524,
+      9.38649708405137,
+      9.168038028292358,
+      9.376712958328426
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 2.871092629150478,
+      "first_step_s": 0.4212917760014534,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback",
+      "step_wall_median_s": 0.3500941204838455,
+      "step_wall_p95_s": 0.36162637739325876,
+      "warmup_steps": 3,
+      "window_s": 6.965989114018157,
+      "window_steps": 20
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.05742185258300956,
+    "allocator_peak_mib": 74.71153163909912,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17892.875,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 70.0,
+     "foreign_sm_pct_mean": 48.375,
+     "samples": 8,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.375
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 2.871092629150478,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "throughput",
+    "num_envs": 1,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 10,
+    "reset_mean_ms": 9.78772728703916,
+    "reset_p95_ms": 11.262989055830985,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 20,
+    "vram_peak_mib": 832.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm",
+    "warmup_steps": 3,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "baseline",
+   "status": "COMPLETE",
+   "variant": {},
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 3.6448408669023262,
+    "outer": 3.6448238135474704,
+    "ratio": 1.000004678787159
+   },
+   "dumps": [
+    {
+     "bytes": 1262,
+     "kind": "final_codes",
+     "path": "dumps/r0_final_codes.npz",
+     "sha256": "dc9e6920f20567eb8c649597da9513cc1b6e6403a9b2faa043fca0d66191e194"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G9",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 19.293553224997595,
+   "id": "perf_n2_00_B",
+   "mode": "throughput",
+   "num_envs": 2,
+   "outer": {
+    "env_steps": 40,
+    "env_steps_per_s": 3.6448238135474704,
+    "num_envs": 2,
+    "seconds": 10.974467366933823,
+    "vector_steps": 20
+   },
+   "process_wall_s": 20.086,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.5867689129663631,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512,
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": null,
+     "invalid_reason": [
+      0,
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      8.89844202902168,
+      3.8350060349330306,
+      9.149841032922268,
+      2.3279270390048623,
+      1.033787033520639,
+      0.9199549676850438,
+      0.847937073558569,
+      0.8817680645734072,
+      6.424244958907366,
+      6.674592033959925
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 3.6448408669023262,
+      "first_step_s": 0.6475449530407786,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback",
+      "step_wall_median_s": 0.5505287819541991,
+      "step_wall_p95_s": 0.5689235659665428,
+      "warmup_steps": 3,
+      "window_s": 10.97441601997707,
+      "window_steps": 20
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.07289681733804652,
+    "allocator_peak_mib": 166.41460704803467,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17838.153846153848,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 97.0,
+     "foreign_sm_pct_mean": 49.61538461538461,
+     "samples": 13,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.53846153846153
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 3.6448408669023262,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "throughput",
+    "num_envs": 2,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732,
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 10,
+    "reset_mean_ms": 4.099350026808679,
+    "reset_p95_ms": 9.036711481167004,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512,
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 20,
+    "vram_peak_mib": 936.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm",
+    "warmup_steps": 3,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "baseline",
+   "status": "COMPLETE",
+   "variant": {},
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 4.960134422518801,
+    "outer": 4.960107712452061,
+    "ratio": 1.0000053849771595
+   },
+   "dumps": [
+    {
+     "bytes": 1262,
+     "kind": "final_codes",
+     "path": "dumps/r0_final_codes.npz",
+     "sha256": "dc9e6920f20567eb8c649597da9513cc1b6e6403a9b2faa043fca0d66191e194"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G9",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 15.968263401999138,
+   "id": "perf_n2_01_C",
+   "mode": "throughput",
+   "num_envs": 2,
+   "outer": {
+    "env_steps": 40,
+    "env_steps_per_s": 4.960107712452061,
+    "num_envs": 2,
+    "seconds": 8.064341002027504,
+    "vector_steps": 20
+   },
+   "process_wall_s": 16.801,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.6175131890922785,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512,
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": [
+      0,
+      0
+     ],
+     "invalid_reason": [
+      0,
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      10.222346056252718,
+      9.444162948057055,
+      9.251554030925035,
+      9.535161079838872,
+      11.159557034261525,
+      10.516208945773542,
+      11.41157594975084,
+      8.904329966753721,
+      10.323177906684577,
+      10.22525003645569
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 4.960134422518801,
+      "first_step_s": 0.49242716806475073,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback",
+      "step_wall_median_s": 0.4048392230179161,
+      "step_wall_p95_s": 0.41900698758545335,
+      "warmup_steps": 3,
+      "window_s": 8.064297575969249,
+      "window_steps": 20
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.09920268845037603,
+    "allocator_peak_mib": 182.1827802658081,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17881.3,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 82.0,
+     "foreign_sm_pct_mean": 53.6,
+     "samples": 10,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.4
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 4.960134422518801,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "throughput",
+    "num_envs": 2,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732,
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 10,
+    "reset_mean_ms": 10.099332395475358,
+    "reset_p95_ms": 11.298167437780648,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512,
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 20,
+    "vram_peak_mib": 998.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm",
+    "warmup_steps": 3,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "candidate",
+   "status": "COMPLETE",
+   "variant": {
+    "particle_contact_mode": "alias_free_v1"
+   },
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 5.084746619528443,
+    "outer": 5.084698341631962,
+    "ratio": 1.000009494741524
+   },
+   "dumps": [
+    {
+     "bytes": 1262,
+     "kind": "final_codes",
+     "path": "dumps/r0_final_codes.npz",
+     "sha256": "dc9e6920f20567eb8c649597da9513cc1b6e6403a9b2faa043fca0d66191e194"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G9",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 15.725626283092424,
+   "id": "perf_n2_02_C",
+   "mode": "throughput",
+   "num_envs": 2,
+   "outer": {
+    "env_steps": 40,
+    "env_steps_per_s": 5.084698341631962,
+    "num_envs": 2,
+    "seconds": 7.86674003303051,
+    "vector_steps": 20
+   },
+   "process_wall_s": 16.53,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.5428481500130147,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512,
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": [
+      0,
+      0
+     ],
+     "invalid_reason": [
+      0,
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      10.055384947918355,
+      9.595741983503103,
+      8.977461024187505,
+      8.873063023202121,
+      6.321449996903539,
+      1.297735027037561,
+      6.525999051518738,
+      8.947494905442,
+      8.772561908699572,
+      9.080977062694728
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 5.084746619528443,
+      "first_step_s": 0.48424450296442956,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback",
+      "step_wall_median_s": 0.3941629720502533,
+      "step_wall_p95_s": 0.4103670711047016,
+      "warmup_steps": 3,
+      "window_s": 7.866665341076441,
+      "window_steps": 20
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.10169493239056886,
+    "allocator_peak_mib": 182.1827802658081,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17760.777777777777,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 98.0,
+     "foreign_sm_pct_mean": 60.22222222222222,
+     "samples": 9,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.55555555555556
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 5.084746619528443,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "throughput",
+    "num_envs": 2,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732,
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 10,
+    "reset_mean_ms": 7.844786893110722,
+    "reset_p95_ms": 9.848545613931492,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512,
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 20,
+    "vram_peak_mib": 998.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm",
+    "warmup_steps": 3,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "candidate",
+   "status": "COMPLETE",
+   "variant": {
+    "particle_contact_mode": "alias_free_v1"
+   },
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  },
+  {
+   "clock": {
+    "consistent": true,
+    "inner": 3.6304745225311175,
+    "outer": 3.630455349150144,
+    "ratio": 1.000005281260649
+   },
+   "dumps": [
+    {
+     "bytes": 1262,
+     "kind": "final_codes",
+     "path": "dumps/r0_final_codes.npz",
+     "sha256": "dc9e6920f20567eb8c649597da9513cc1b6e6403a9b2faa043fca0d66191e194"
+    }
+   ],
+   "environment": {
+    "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+    "dirty": true,
+    "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+    "package_root_inside_checkout": true,
+    "python": "3.12.12"
+   },
+   "gate": "G9",
+   "gpu_sharing": "SHARED_GPU",
+   "harness_wall_s": 19.366933118901215,
+   "id": "perf_n2_03_B",
+   "mode": "throughput",
+   "num_envs": 2,
+   "outer": {
+    "env_steps": 40,
+    "env_steps_per_s": 3.630455349150144,
+    "num_envs": 2,
+    "seconds": 11.01790165505372,
+    "vector_steps": 20
+   },
+   "process_wall_s": 20.176,
+   "rc": 0,
+   "rounds": [
+    {
+     "build_wall_s": 1.59118806803599,
+     "device_hashgrids_after_build": 1,
+     "device_hashgrids_after_release": 0,
+     "env_seeds": [
+      512,
+      512
+     ],
+     "evaluate_2_candidate_reported": [],
+     "final_labelled": [
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      {
+       "0": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      }
+     ],
+     "guard_violations": null,
+     "invalid_reason": [
+      0,
+      0
+     ],
+     "l2_candidate_reported_status": null,
+     "particle_contact_mode": null,
+     "reset_ms": [
+      9.431335027329624,
+      8.54793400503695,
+      8.654133998788893,
+      9.19242505915463,
+      8.438718970865011,
+      9.415099979378283,
+      8.349554962478578,
+      9.090821025893092,
+      8.656587917357683,
+      8.645841968245804
+     ],
+     "round": 0,
+     "samestate_rerun": null,
+     "timing": {
+      "env_steps_per_s": 3.6304745225311175,
+      "first_step_s": 0.6092689280631021,
+      "scope": "perf_counter from the warm_end mark (after a device synchronize) to the device synchronize before the episode_end mark; env.step_measured_edge incl. its strict int32 readback",
+      "step_wall_median_s": 0.5506907680537552,
+      "step_wall_p95_s": 0.57326015488361,
+      "warmup_steps": 3,
+      "window_s": 11.01784346695058,
+      "window_steps": 20
+     }
+    }
+   ],
+   "row": {
+    "aggregate_sim_time_per_wall": 0.07260949045062234,
+    "allocator_peak_mib": 166.41460704803467,
+    "boundary": "batched_headless",
+    "cameras": "none",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17765.153846153848,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 98.0,
+     "foreign_sm_pct_mean": 57.92307692307692,
+     "samples": 13,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.61538461538461
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 3.6304745225311175,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "material_dt_s": 0.0001,
+    "mode": "throughput",
+    "num_envs": 2,
+    "particles_per_env": 102732,
+    "particles_per_env_list": [
+     102732,
+     102732
+    ],
+    "physics_note": "the judge recomputes physics from the dumps; in-process values are candidate-reported",
+    "physics_verdict": "REPORTED_NOT_SCORED",
+    "recording": "none",
+    "reduced_fidelity": true,
+    "reset_count": 10,
+    "reset_mean_ms": 8.842245291452855,
+    "reset_p95_ms": 9.42402925575152,
+    "robot_dof": 0,
+    "round": 0,
+    "seeds": [
+     512,
+     512
+    ],
+    "substeps": 200,
+    "timed_steps": 20,
+    "vram_peak_mib": 936.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm",
+    "warmup_steps": 3,
+    "workload_id": "A"
+   },
+   "seeds": [
+    512
+   ],
+   "side": "baseline",
+   "status": "COMPLETE",
+   "variant": {},
+   "versions": {
+    "numpy": "2.3.1",
+    "torch": "2.11.0+cu128",
+    "warp": "1.17.0"
+   }
+  }
+ ],
+ "schema": "rcs_rl_p1_6_r0_evidence_v1",
+ "selection": "all",
+ "smoke_001": {
+  "failed_gates": [
+   "G9:n1:reset"
+  ],
+  "layers": {
+   "INTEGRITY": "PASS",
+   "PERFORMANCE": "FAIL",
+   "PHYSICS": "PASS"
+  },
+  "ratios": {
+   "1": 1.4739741386446792,
+   "2": 1.3840821576648086
+  },
+  "reset_finding": "reset p95 per process bimodal on the shared GPU1 (~1 ms or ~7 ms for all 10 resets of a process), independent of the variant: N=1 B 1.71 / C 7.09 ms (G9:n1:reset FAIL), N=2 B 7.43 / C 1.39 ms; smoke_002 on GPU0: all 8 runs 9.0-11.3 ms (PASS)",
+  "superseded_by": "smoke_002 (wider samestate samples, 400-step G4 replay covering the contact window; smoke_001 G4 replay had 0 contacts)"
+ },
+ "smoke_config_note": "smoke configs are NOT the contract: reference_variant {} (B = default frozen_v1), proposal alias_free_v1 (C), plan G4 samestate s512 N=1 400 steps + G6 episode s512 N=1 1200 steps x1, G9 N=1/2 W=3 K=20 (smoke_002: 2 pairs BCCB, primary N=2 needs 2/2 pairs > 1); thresholds and physics tolerances as acceptance_v1",
+ "task": "P1-6 R0: RCS perf acceptance harness, judge and acceptance_v1 (decision D-11)",
+ "verdict": {
+  "failed_gates": [],
+  "gates": [
+   {
+    "detail": "baseline failed 0, skipped 1",
+    "id": "G1",
+    "layer": "PHYSICS",
+    "status": "PASS",
+    "threshold": "0 failed; skips within the baseline's",
+    "value": {
+     "failed": 0,
+     "failed_ids": [],
+     "new_skips": [],
+     "skipped": 1,
+     "tests": 56
+    }
+   },
+   {
+    "detail": "1 env runs, checks ['impulse_k15', 'impulse_k32', 'impulse_k33', 'impulse_k34', 'impulse_k35', 'impulse_k36', 'impulse_k43', 'impulse_k60', 'impulse_k80', 'nonzero_sets_k15', 'nonzero_sets_k32', 'nonzero_sets_k33', 'nonzero_sets_k34', 'nonzero_sets_k35', 'nonzero_sets_k36', 'nonzero_sets_k43', 'nonzero_sets_k60', 'nonzero_sets_k80', 'replay_codes_e0', 'replay_contacts', 'replay_positions_e0', 'stats4_k15', 'stats4_k32', 'stats4_k33', 'stats4_k34', 'stats4_k35', 'stats4_k36', 'stats4_k43', 'stats4_k60', 'stats4_k80']",
+    "id": "G4",
+    "layer": "PHYSICS",
+    "status": "PASS",
+    "threshold": [
+     "impulse_k15",
+     "impulse_k32",
+     "impulse_k33",
+     "impulse_k34",
+     "impulse_k35",
+     "impulse_k36",
+     "impulse_k43",
+     "impulse_k60",
+     "impulse_k80",
+     "nonzero_sets_k15",
+     "nonzero_sets_k32",
+     "nonzero_sets_k33",
+     "nonzero_sets_k34",
+     "nonzero_sets_k35",
+     "nonzero_sets_k36",
+     "nonzero_sets_k43",
+     "nonzero_sets_k60",
+     "nonzero_sets_k80",
+     "replay_codes_e0",
+     "replay_contacts",
+     "replay_positions_e0",
+     "stats4_k15",
+     "stats4_k32",
+     "stats4_k33",
+     "stats4_k34",
+     "stats4_k35",
+     "stats4_k36",
+     "stats4_k43",
+     "stats4_k60",
+     "stats4_k80"
+    ],
+    "value": [
+     {
+      "checks": {
+       "impulse_k15": true,
+       "impulse_k32": true,
+       "impulse_k33": true,
+       "impulse_k34": true,
+       "impulse_k35": true,
+       "impulse_k36": true,
+       "impulse_k43": true,
+       "impulse_k60": true,
+       "impulse_k80": true,
+       "nonzero_sets_k15": true,
+       "nonzero_sets_k32": true,
+       "nonzero_sets_k33": true,
+       "nonzero_sets_k34": true,
+       "nonzero_sets_k35": true,
+       "nonzero_sets_k36": true,
+       "nonzero_sets_k43": true,
+       "nonzero_sets_k60": true,
+       "nonzero_sets_k80": true,
+       "replay_codes_e0": true,
+       "replay_contacts": true,
+       "replay_positions_e0": true,
+       "stats4_k15": true,
+       "stats4_k32": true,
+       "stats4_k33": true,
+       "stats4_k34": true,
+       "stats4_k35": true,
+       "stats4_k36": true,
+       "stats4_k43": true,
+       "stats4_k60": true,
+       "stats4_k80": true
+      },
+      "env": 0,
+      "run": "G4_samestate_candidate_r0",
+      "seed": 512,
+      "side": "candidate",
+      "values": {
+       "contacts_total": [
+        152501,
+        152525
+       ],
+       "replay_e0": {
+        "different_codes": 0,
+        "max_position_diff_m": 9.076902696270319e-06
+       }
+      }
+     }
+    ]
+   },
+   {
+    "detail": "2 env runs, checks ['codes_equal_native', 'contacts_vs_baseline', 'evaluator_2_frames', 'evaluator_series', 'invariants', 'labelled_equal_native', 'position_band']",
+    "id": "G6",
+    "layer": "PHYSICS",
+    "status": "PASS",
+    "threshold": [
+     "codes_equal_native",
+     "contacts_vs_baseline",
+     "evaluator_2_frames",
+     "evaluator_series",
+     "invariants",
+     "labelled_equal_native",
+     "position_band"
+    ],
+    "value": [
+     {
+      "checks": {
+       "codes_equal_native": true,
+       "contacts_vs_baseline": true,
+       "evaluator_2_frames": true,
+       "evaluator_series": true,
+       "invariants": true,
+       "labelled_equal_native": true,
+       "position_band": true
+      },
+      "env": 0,
+      "run": "G6_replay_baseline_r0",
+      "seed": 512,
+      "side": "baseline",
+      "values": {
+       "contacts_rel_diff_vs_baseline": 0.0,
+       "contacts_rel_tol": 0.01,
+       "contacts_total": 152484,
+       "different_code_particles": 0,
+       "digit_rewrites": 0,
+       "evaluator_2": "PASS",
+       "evaluator_series": "PASS",
+       "final_max_position_diff_m": 9.362121349573737e-06,
+       "finite": true,
+       "invalid_reason": 0,
+       "l2_reported_clean": true,
+       "max_position_diff_m_over_samples": 9.219544457292794e-06,
+       "position_band_m": [
+        1.4e-05,
+        3.9e-05
+       ],
+       "position_limit_m": 3.9e-05,
+       "steps": 1200
+      }
+     },
+     {
+      "checks": {
+       "codes_equal_native": true,
+       "contacts_vs_baseline": true,
+       "evaluator_2_frames": true,
+       "evaluator_series": true,
+       "invariants": true,
+       "labelled_equal_native": true,
+       "position_band": true
+      },
+      "env": 0,
+      "run": "G6_replay_candidate_r0",
+      "seed": 512,
+      "side": "candidate",
+      "values": {
+       "contacts_rel_diff_vs_baseline": 0.00022297421368799348,
+       "contacts_rel_tol": 0.01,
+       "contacts_total": 152518,
+       "different_code_particles": 0,
+       "digit_rewrites": 0,
+       "evaluator_2": "PASS",
+       "evaluator_series": "PASS",
+       "final_max_position_diff_m": 2.371467863884059e-05,
+       "finite": true,
+       "invalid_reason": 0,
+       "l2_reported_clean": true,
+       "max_position_diff_m_over_samples": 2.3790754506742082e-05,
+       "position_band_m": [
+        1.4e-05,
+        3.9e-05
+       ],
+       "position_limit_m": 3.9e-05,
+       "steps": 1200
+      }
+     }
+    ]
+   },
+   {
+    "detail": "candidate / baseline outer-clock env-steps/s per ABBA pair",
+    "id": "G9:n1",
+    "layer": "PERFORMANCE",
+    "status": "PASS",
+    "threshold": {
+     "median_min": 0.97
+    },
+    "value": {
+     "above_1": 2,
+     "median": 1.4652925818964753,
+     "pairs": [
+      1.462879591685099,
+      1.4677055721078516
+     ]
+    }
+   },
+   {
+    "detail": null,
+    "id": "G9:n1:vram",
+    "layer": "PERFORMANCE",
+    "status": "PASS",
+    "threshold": {
+     "max_mib": 1171.2,
+     "rule": "C <= 1.10 x B + 256 MiB (config)"
+    },
+    "value": {
+     "baseline_max": 832.0,
+     "candidate_max": 894.0,
+     "source": "nvidia_smi_process"
+    }
+   },
+   {
+    "detail": null,
+    "id": "G9:n1:reset",
+    "layer": "PERFORMANCE",
+    "status": "PASS",
+    "threshold": {
+     "max_ms": 14.819449220842216,
+     "rule": "median reset p95: C <= 1.25 x B + 2 ms (config)"
+    },
+    "value": {
+     "baseline_median": 10.255559376673773,
+     "candidate_median": 9.59311552287545
+    }
+   },
+   {
+    "detail": null,
+    "id": "G9:n1:work",
+    "layer": "PERFORMANCE",
+    "status": "PASS",
+    "threshold": "every run: W+K steps, final labelled counts = the first baseline run's",
+    "value": []
+   },
+   {
+    "detail": "candidate / baseline outer-clock env-steps/s per ABBA pair",
+    "id": "G9:n2",
+    "layer": "PERFORMANCE",
+    "status": "PASS",
+    "threshold": {
+     "median_min": 1.05,
+     "pairs_above_1_min": 2
+    },
+    "value": {
+     "above_1": 2,
+     "median": 1.38071558125622,
+     "pairs": [
+      1.3608635056695477,
+      1.4005676568428924
+     ]
+    }
+   },
+   {
+    "detail": null,
+    "id": "G9:n2:vram",
+    "layer": "PERFORMANCE",
+    "status": "PASS",
+    "threshold": {
+     "max_mib": 1285.6000000000001,
+     "rule": "C <= 1.10 x B + 256 MiB (config)"
+    },
+    "value": {
+     "baseline_max": 936.0,
+     "candidate_max": 998.0,
+     "source": "nvidia_smi_process"
+    }
+   },
+   {
+    "detail": null,
+    "id": "G9:n2:reset",
+    "layer": "PERFORMANCE",
+    "status": "PASS",
+    "threshold": {
+     "max_ms": 13.537962960574077,
+     "rule": "median reset p95: C <= 1.25 x B + 2 ms (config)"
+    },
+    "value": {
+     "baseline_median": 9.230370368459262,
+     "candidate_median": 10.57335652585607
+    }
+   },
+   {
+    "detail": null,
+    "id": "G9:n2:work",
+    "layer": "PERFORMANCE",
+    "status": "PASS",
+    "threshold": "every run: W+K steps, final labelled counts = the first baseline run's",
+    "value": []
+   },
+   {
+    "detail": "results, dumps (sha256), commits, package roots, harness bytes, variants, outer/inner clocks and GPUs consistent",
+    "id": "I-all",
+    "layer": "INTEGRITY",
+    "status": "PASS",
+    "threshold": null,
+    "value": null
+   }
+  ],
+  "judge": {
+   "checkout": "/home/ningan/RoboticCuttingSim-rl-r0",
+   "commit": "6b71363c7575b7492d24955f5482c33fddd14d01",
+   "cuda_visible_devices": "",
+   "interpreter": "/home/ningan/RoboticCuttingSim-rl-r0/.venv/bin/python",
+   "python": "3.12.12",
+   "sha256": "2ee21996b28344d45fa2f8c06258873cdc2a255898c26a496a4a2a9dfe6a1cb3",
+   "version": "judge_perf_acceptance_v1"
+  },
+  "layers": {
+   "INTEGRITY": "PASS",
+   "PERFORMANCE": "PASS",
+   "PHYSICS": "PASS"
+  },
+  "limitations": [
+   "VRAM peak and reset p95 are measured inside the process under test (candidate-reported, not independently verified); env-steps/s comes from the caller's outer clock and is cross-checked against the in-process value",
+   "intermediate Native-sample positions are dumped as int8 micrometre deltas to the Native sample (|error| <= 0.5 um, larger or non-finite deltas exact); final states are exact",
+   "the evaluator reference arrays (mass, reference positions, stencils) are taken from the WP-17 Native recording",
+   "samestate uses the baseline harness helpers (run_p1_3a.load_state / contact_stage) on the solver attributes x, v, code, impulse, stats_sum, stats_max, hash / particle_contact",
+   "workload A is reduced fidelity (ideal edge tracking, no robot dynamics, reaction not fed back)",
+   "G9 rows sharing labels ['SHARED_GPU']: absolute rows are not EXCLUSIVE_GPU; the paired ratios are relative (same GPU, same hold, interleaved)"
+  ],
+  "notes": [],
+  "ratios": {
+   "1": {
+    "above_1": 2,
+    "mean": 1.4652925818964753,
+    "median": 1.4652925818964753,
+    "pairs": [
+     1.462879591685099,
+     1.4677055721078516
+    ]
+   },
+   "2": {
+    "above_1": 2,
+    "mean": 1.38071558125622,
+    "median": 1.38071558125622,
+    "pairs": [
+     1.3608635056695477,
+     1.4005676568428924
+    ]
+   }
+  },
+  "rows": [
+   {
+    "aggregate_sim_time_per_wall": 0.057447371766394036,
+    "caller_gpu_label": "SHARED_GPU",
+    "caller_util_p50": 99.25,
+    "cameras": "none",
+    "clock": "outer (caller)",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17807.125,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 98.0,
+     "foreign_sm_pct_mean": 73.25,
+     "samples": 8,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.25
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 2.8723685883197017,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "in_process_env_steps_per_s": 2.8723944765949443,
+    "material_dt_s": 0.0001,
+    "num_envs": 1,
+    "order": 0,
+    "pair": 0,
+    "particles_per_env": 102732,
+    "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+    "recording": "none",
+    "reset_p95_ms": 9.24812969751656,
+    "robot_dof": 0,
+    "run": "perf_n1_00_B",
+    "side": "baseline",
+    "substeps": 200,
+    "vram_peak_mib": 832.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm"
+   },
+   {
+    "aggregate_sim_time_per_wall": 0.08403858775300459,
+    "caller_gpu_label": "SHARED_GPU",
+    "caller_util_p50": 99.2,
+    "cameras": "none",
+    "clock": "outer (caller)",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 17787.0,
+     "foreign_memory_mib_mean": 17646.0,
+     "foreign_processes_max": 12,
+     "foreign_sm_pct_max": 64.0,
+     "foreign_sm_pct_mean": 51.6,
+     "samples": 5,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.2
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 4.201929387650229,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "in_process_env_steps_per_s": 4.201987645146958,
+    "material_dt_s": 0.0001,
+    "num_envs": 1,
+    "order": 1,
+    "pair": 0,
+    "particles_per_env": 102732,
+    "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+    "recording": "none",
+    "reset_p95_ms": 10.03696410334669,
+    "robot_dof": 0,
+    "run": "perf_n1_01_C",
+    "side": "candidate",
+    "substeps": 200,
+    "vram_peak_mib": 894.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm"
+   },
+   {
+    "aggregate_sim_time_per_wall": 0.08427766174207604,
+    "caller_gpu_label": "SHARED_GPU",
+    "caller_util_p50": 98.6,
+    "cameras": "none",
+    "clock": "outer (caller)",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17810.4,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 97.0,
+     "foreign_sm_pct_mean": 51.6,
+     "samples": 5,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 99.0,
+     "total_util_pct_mean": 98.6
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 4.213883087103802,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "in_process_env_steps_per_s": 4.213937986445621,
+    "material_dt_s": 0.0001,
+    "num_envs": 1,
+    "order": 2,
+    "pair": 1,
+    "particles_per_env": 102732,
+    "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+    "recording": "none",
+    "reset_p95_ms": 9.14926694240421,
+    "robot_dof": 0,
+    "run": "perf_n1_02_C",
+    "side": "candidate",
+    "substeps": 200,
+    "vram_peak_mib": 894.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm"
+   },
+   {
+    "aggregate_sim_time_per_wall": 0.05742136797984648,
+    "caller_gpu_label": "SHARED_GPU",
+    "caller_util_p50": 99.375,
+    "cameras": "none",
+    "clock": "outer (caller)",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17892.875,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 70.0,
+     "foreign_sm_pct_mean": 48.375,
+     "samples": 8,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.375
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 2.8710683989923242,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "in_process_env_steps_per_s": 2.871092629150478,
+    "material_dt_s": 0.0001,
+    "num_envs": 1,
+    "order": 3,
+    "pair": 1,
+    "particles_per_env": 102732,
+    "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+    "recording": "none",
+    "reset_p95_ms": 11.262989055830985,
+    "robot_dof": 0,
+    "run": "perf_n1_03_B",
+    "side": "baseline",
+    "substeps": 200,
+    "vram_peak_mib": 832.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm"
+   },
+   {
+    "aggregate_sim_time_per_wall": 0.0728964762709494,
+    "caller_gpu_label": "SHARED_GPU",
+    "caller_util_p50": 99.53846153846153,
+    "cameras": "none",
+    "clock": "outer (caller)",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17838.153846153848,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 97.0,
+     "foreign_sm_pct_mean": 49.61538461538461,
+     "samples": 13,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.53846153846153
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 3.6448238135474704,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "in_process_env_steps_per_s": 3.6448408669023262,
+    "material_dt_s": 0.0001,
+    "num_envs": 2,
+    "order": 0,
+    "pair": 0,
+    "particles_per_env": 102732,
+    "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+    "recording": "none",
+    "reset_p95_ms": 9.036711481167004,
+    "robot_dof": 0,
+    "run": "perf_n2_00_B",
+    "side": "baseline",
+    "substeps": 200,
+    "vram_peak_mib": 936.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm"
+   },
+   {
+    "aggregate_sim_time_per_wall": 0.09920215424904122,
+    "caller_gpu_label": "SHARED_GPU",
+    "caller_util_p50": 99.4,
+    "cameras": "none",
+    "clock": "outer (caller)",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17881.3,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 82.0,
+     "foreign_sm_pct_mean": 53.6,
+     "samples": 10,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.4
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 4.960107712452061,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "in_process_env_steps_per_s": 4.960134422518801,
+    "material_dt_s": 0.0001,
+    "num_envs": 2,
+    "order": 1,
+    "pair": 0,
+    "particles_per_env": 102732,
+    "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+    "recording": "none",
+    "reset_p95_ms": 11.298167437780648,
+    "robot_dof": 0,
+    "run": "perf_n2_01_C",
+    "side": "candidate",
+    "substeps": 200,
+    "vram_peak_mib": 998.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm"
+   },
+   {
+    "aggregate_sim_time_per_wall": 0.10169396683263925,
+    "caller_gpu_label": "SHARED_GPU",
+    "caller_util_p50": 99.55555555555556,
+    "cameras": "none",
+    "clock": "outer (caller)",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17760.777777777777,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 98.0,
+     "foreign_sm_pct_mean": 60.22222222222222,
+     "samples": 9,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.55555555555556
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 5.084698341631962,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "in_process_env_steps_per_s": 5.084746619528443,
+    "material_dt_s": 0.0001,
+    "num_envs": 2,
+    "order": 2,
+    "pair": 1,
+    "particles_per_env": 102732,
+    "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+    "recording": "none",
+    "reset_p95_ms": 9.848545613931492,
+    "robot_dof": 0,
+    "run": "perf_n2_02_C",
+    "side": "candidate",
+    "substeps": 200,
+    "vram_peak_mib": 998.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm"
+   },
+   {
+    "aggregate_sim_time_per_wall": 0.07260910698300288,
+    "caller_gpu_label": "SHARED_GPU",
+    "caller_util_p50": 99.61538461538461,
+    "cameras": "none",
+    "clock": "outer (caller)",
+    "co_tenant": {
+     "baseline_total_util_pct_max": null,
+     "foreign_compute_pids": [
+      642659,
+      1143175
+     ],
+     "foreign_graphics_pids": [
+      5151,
+      1437794,
+      1437823,
+      1437853,
+      1437892,
+      1437938,
+      1437987,
+      1438033,
+      1438100,
+      1438144,
+      1438188
+     ],
+     "foreign_memory_mib_max": 18286.0,
+     "foreign_memory_mib_mean": 17765.153846153848,
+     "foreign_processes_max": 13,
+     "foreign_sm_pct_max": 98.0,
+     "foreign_sm_pct_mean": 57.92307692307692,
+     "samples": 13,
+     "sharing_reasons": [
+      "foreign_compute_process",
+      "foreign_graphics_process",
+      "foreign_sm_utilisation"
+     ],
+     "total_util_pct_max": 100.0,
+     "total_util_pct_mean": 99.61538461538461
+    },
+    "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+    "control_hz": 50.0,
+    "env_steps_per_s": 3.630455349150144,
+    "gpu": {
+     "cuda_ordinal": 0,
+     "gpu_driver": "570.211.01",
+     "gpu_index": 0,
+     "gpu_name": "NVIDIA GeForce RTX 5090",
+     "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+     "memory_total_mib": 32607.0,
+     "name": "NVIDIA GeForce RTX 5090",
+     "nvidia_smi_index": 0,
+     "total_mib": 32111.0625,
+     "uuid": null
+    },
+    "gpu_sharing": "SHARED_GPU",
+    "in_process_env_steps_per_s": 3.6304745225311175,
+    "material_dt_s": 0.0001,
+    "num_envs": 2,
+    "order": 3,
+    "pair": 1,
+    "particles_per_env": 102732,
+    "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+    "recording": "none",
+    "reset_p95_ms": 9.42402925575152,
+    "robot_dof": 0,
+    "run": "perf_n2_03_B",
+    "side": "baseline",
+    "substeps": 200,
+    "vram_peak_mib": 936.0,
+    "vram_source": "nvidia_smi_process",
+    "warm": "warm"
+   }
+  ],
+  "wall_s": 49.244306953041814
+ },
+ "workload": "A: WP-17 TRIM replay seed 512, 102,732 particles/env, 1 mm / 4 mm grid / 0.1 ms material dt / 200 substeps per 50 Hz control step, tlmpm_v7_2 law 8, handle + two measured pads, no cameras, no recording, 0 robot DOF, reduced_fidelity, warm (W=3) for throughput"
+}
