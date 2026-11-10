@@ -1,6 +1,6 @@
-"""RUBBER-PHYS protocol implementations (ADR 0023 §14.3; frozen protocols ``configs/rubber/rubber_phys_tests_v2.json`` and
-``rubber_phys_tests_v3.json``; v3 = P2-1 follow-up: static_stop_v3 for -02/-03/-05, the redesigned -07, the guard
-regression -12, see ADR 0023 §18).
+"""RUBBER-PHYS protocol implementations (ADR 0023 §14.3; frozen protocols
+``configs/rubber/rubber_phys_tests_v2.json`` and ``rubber_phys_tests_v3.json``; v3 = P2-1 follow-up:
+static_stop_v3 for -02/-03/-05, the redesigned -07, the guard regression -12, see ADR 0023 §18).
 
 Each ``case_*`` function runs one configuration in the single-env reference and returns a JSON-able dict of
 measurements (never a verdict); each ``evaluate_*`` function applies the pre-declared criteria of the frozen config to
@@ -534,6 +534,18 @@ def evaluate_07(result, cfg):
                                                     "energy_drift_rel": result["energy_drift_rel"],
                                                     "post_J_range": result["post_J_range"],
                                                     "invalid_flags": result["invalid_flags"]}
+
+
+def evaluate_static_v3(evaluator, results, cfg):
+    """v3 wrapper of evaluate_02/03/05: adds the declared validity condition (common.stable_step_guard.applies_to:
+    any invalid flag of a configuration FAILs it) to the unchanged v2 criteria."""
+    verdicts, measured = evaluator(results, cfg)
+    if cfg["version"] >= 3:
+        bad = sorted(r["label"] for r in results if r.get("invalid", 0) != 0)
+        verdicts["valid"] = _verdict(not bad)
+        measured = dict(measured, invalid_configurations=bad,
+                        stop_rules=sorted({r.get("stop_rule", "static_stop_v2") for r in results}))
+    return verdicts, measured
 
 
 # ----------------------------------------------------------------------------- RUBBER-PHYS-07 (v3) and -12

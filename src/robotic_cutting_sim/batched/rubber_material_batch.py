@@ -9,7 +9,7 @@ What ``LiveRubberMaterial.advance`` does for one env, for all N envs at once:
 3. a kernel converts the per-group reaction impulses to WORLD = strip-local wrenches ``wrench[N, G, 6]`` (force the
    material exerts on the group, averaged over the step); there is no robot feedback in P2-1 (the 20 ms delayed
    handoff of a robot coupling belongs to P2-4 / P2-6);
-4. fixed-order segmented diagnostics (``summary[N, 17]``, markers ``[N*K]``) and a validity kernel set the sticky
+4. fixed-order segmented diagnostics (``summary[N, 18]``, markers ``[N*K]``) and a validity kernel set the sticky
    ``invalid_reason[N]`` bits (``NONFINITE_STATE`` 1, ``RUBBER_J_DOMAIN`` 2, ``RUBBER_CFL_EXCEEDED`` 4 with the opt-in
    stable-step guard) and ``invalid_count[1]``; strict mode
    reads that one int and raises with env ids.
@@ -175,7 +175,8 @@ def _reset_traction_r(mask: wp.array(dtype=int), env_of_traction: wp.array(dtype
 @wp.kernel
 def _reset_envs_r(mask: wp.array(dtype=int), stage_params: wp.array2d(dtype=float), params: wp.array2d(dtype=float),
                   ncols: int, work: wp.array(dtype=wp.float64), violations: wp.array(dtype=int),
-                  cfl_violations: wp.array(dtype=int), invalid_reason: wp.array(dtype=int), step_count: wp.array(dtype=wp.int64),
+                  cfl_violations: wp.array(dtype=int), invalid_reason: wp.array(dtype=int),
+                  step_count: wp.array(dtype=wp.int64),
                   seed: wp.array(dtype=wp.int64), reset_seed: wp.array(dtype=wp.int64),
                   wrench: wp.array3d(dtype=wp.float64), G: int):
     e = wp.tid()
@@ -351,8 +352,8 @@ class BatchedRubberMaterial:
                                                                self.wrench])
             self.launch_diagnostics()
             self.invalid_count.zero_()
-            wp.launch(_validity_b, self.num_envs, [self.summary, s.violations, s.cfl_violations, self.wrench, self.G,
-                                                   self.invalid_reason, self.invalid_count, self.step_count])
+            wp.launch(_validity_b, self.num_envs, [self.summary, s.violations, s.cfl_violations, self.wrench,
+                                                   self.G, self.invalid_reason, self.invalid_count, self.step_count])
         if self.strict:
             self.check_valid()
 
@@ -453,8 +454,8 @@ class BatchedRubberMaterial:
                 wp.launch(_reset_traction_r, N*self.Gt, [self.reset_mask, self.env_of_traction, self.traction_counts,
                                                          self.stage_mass, s.traction_force, s.traction_mass])
             wp.launch(_reset_envs_r, N, [self.reset_mask, self.stage_params, s.params, cr.NUM_PARAMS, s.work,
-                                         s.violations, s.cfl_violations, self.invalid_reason, self.step_count, self.seed,
-                                         self.reset_seed, self.wrench, self.G])
+                                         s.violations, s.cfl_violations, self.invalid_reason, self.step_count,
+                                         self.seed, self.reset_seed, self.wrench, self.G])
             if full:
                 s.index.zero_()
 

@@ -72,3 +72,15 @@ def test_guard_regression_case_reports_flag_steps():
     assert P.evaluate_12(fake, cfg)[0]["flag_before_nonfinite"] == "FAIL"
     fake.update(first_cfl_flag_step=None, first_nonfinite_step=None)
     assert P.evaluate_12(fake, cfg)[0]["flagged"] == "FAIL"
+
+
+def test_static_v3_evaluation_adds_the_declared_validity_condition():
+    cfg = P.load_config(P.CONFIG_V3)
+
+    def fake(results, cfg):
+        return {"x": "PASS"}, {}
+    ok = [{"label": "a", "invalid": 0, "stop_rule": "static_stop_v3"}, {"label": "b", "invalid": 0}]
+    assert P.evaluate_static_v3(fake, ok, cfg)[0] == {"x": "PASS", "valid": "PASS"}
+    verdicts, measured = P.evaluate_static_v3(fake, ok+[{"label": "c", "invalid": 4}], cfg)
+    assert verdicts["valid"] == "FAIL" and measured["invalid_configurations"] == ["c"]
+    assert P.evaluate_static_v3(fake, ok, P.load_config())[0] == {"x": "PASS"}       # v2: unchanged

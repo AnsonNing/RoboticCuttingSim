@@ -104,7 +104,7 @@ def _run_job(job, out_dir, protocol="v2"):
     return tid, label, result["status"], result["job_wall_s"]
 
 
-def _evaluate(out_dir, protocol="v2"):
+def _evaluate(out_dir, protocol="v2", summary_name="summary.json"):
     from robotic_cutting_sim import rubber_phys as P
     cfg = P.load_config(P.PROTOCOLS[protocol])
     v3 = cfg["version"] >= 3
@@ -126,7 +126,9 @@ def _evaluate(out_dir, protocol="v2"):
         errors = [r for r in rows if r["status"] != "OK"]
         ok_rows = [r for r in rows if r["status"] == "OK"]
         try:
-            if tid in evaluators:
+            if tid in evaluators and v3 and tid in ("02", "03", "05"):
+                verdicts, measured = P.evaluate_static_v3(evaluators[tid], ok_rows, cfg)
+            elif tid in evaluators:
                 verdicts, measured = evaluators[tid](ok_rows, cfg)
             elif tid == "04":
                 batched = None
@@ -154,7 +156,10 @@ def _evaluate(out_dir, protocol="v2"):
                                                         for e in errors],
                          "devices": sorted({r.get("device", "?") for r in ok_rows}),
                          "case_wall_s_total": sum(r["job_wall_s"] for r in rows)}
-    (Path(out_dir)/"summary.json").write_text(json.dumps(summary, indent=1, default=float))
+    target = Path(out_dir)/summary_name
+    if target.exists():
+        sys.exit(f"refusing to overwrite {target}")
+    target.write_text(json.dumps(summary, indent=1, default=float))
     return summary
 
 
@@ -166,9 +171,11 @@ def main():
     ap.add_argument("--out")
     ap.add_argument("--evaluate-only")
     ap.add_argument("--protocol", default="v2", choices=("v2", "v3"))
+    ap.add_argument("--summary-name", default="summary.json", help="evaluate-only output file (never overwritten)")
     args = ap.parse_args()
     if args.evaluate_only:
-        print(json.dumps({k: v["verdict"] for k, v in _evaluate(args.evaluate_only, args.protocol).items()}, indent=1))
+        print(json.dumps({k: v["verdict"] for k, v in _evaluate(args.evaluate_only, args.protocol,
+                                                                  args.summary_name).items()}, indent=1))
         return
     out = Path(args.out)
     if out.exists():
