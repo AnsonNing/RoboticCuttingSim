@@ -2,7 +2,7 @@
  "schema": "rcs_rl_ready_p1_1b_b2_v1",
  "work_package": "P1-1b follow-up: B2 physical-grasp failure",
  "report": "docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md (section 'B2 grasp follow-up')",
- "evidence_commit": "8b3b4b473b1e8a539c8e811e8964eb90057918f6",
+ "evidence_commit": "94966df524e2a18a70aae42965bb522ea40f0fec",
  "artifacts": "artifacts/rl_ready/p1_1b_b2",
  "native_wp17_grasp": {
   "512": {
@@ -3014,7 +3014,1518 @@
      21,
      22
     ]
+   ],
+   "note": "pinned worktree 41d9405 (no guard), strict; completed without SIGSEGV"
+  },
+  {
+   "run": "g2mat_b2point_n4_postguard_001",
+   "artifact": "artifacts/rl_ready/p1_1b_b2/g2mat_b2point_n4_postguard_001",
+   "probe": "g2",
+   "N": 4,
+   "tool_mount": "physical_grasp_v1",
+   "driver": "reference",
+   "material": "tlmpm_v7_2",
+   "scene_seeds": [
+    512,
+    512,
+    512,
+    512
+   ],
+   "use_cuda_graph": true,
+   "graph_captured": false,
+   "deterministic_mode": "not_guaranteed",
+   "strict_mode": false,
+   "reduced_fidelity": false,
+   "reasons": [],
+   "listed_differences": {
+    "rigid_engine": "newton_mjwarp (Native reference: physx_cpu)",
+    "grip_contact_profile": "legacy_point_contact"
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "vram_own_peak_mib": 1108.0,
+   "commit": {
+    "sha": "94966df524e2a18a70aae42965bb522ea40f0fec",
+    "tracked_src_or_scripts_modified": false,
+    "workload_b_sources_sha256": "660af37c1f2aa7539b0efff1f0e542f6f488f1052ca840829f14fcb7ac84f43e"
+   },
+   "grasp_initialization": {
+    "status": "PASS_PHYSICAL_PREGRASP",
+    "failed": {},
+    "rigid_settle_s": 2.0,
+    "window_s": 0.5,
+    "accumulators": [
+     [
+      26.0,
+      26.0,
+      0.0002249095996376127,
+      0.004429668188095093,
+      0.00012635021994356066,
+      0.002178346272557974,
+      6.487670907517895e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.0002249095996376127,
+      0.004429652355611324,
+      0.00012634370068553835,
+      0.002178328577429056,
+      6.487670907517895e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.00022490901756100357,
+      0.004429673310369253,
+      0.00012635556049644947,
+      0.0021783544216305017,
+      6.487670907517895e-05,
+      0.0
+     ],
+     [
+      26.0,
+      26.0,
+      0.00022490901756100357,
+      0.004429677966982126,
+      0.00012635441089514643,
+      0.0021783553529530764,
+      6.487670907517895e-05,
+      0.0
+     ]
+    ],
+    "hidden_attachment": false
+   },
+   "grasp_trace_summary": {
+    "max_slip_m": [
+     0.2906539738178253,
+     0.022090889513492584,
+     0.34259554743766785,
+     1252.18798828125
+    ],
+    "max_angle_rad": [
+     2.2937734127044678,
+     0.737614631652832,
+     1.9661732912063599,
+     3.141038417816162
+    ],
+    "final_status": [
+     2,
+     2,
+     2,
+     2
+    ],
+    "min_bilateral_fraction": [
+     0.0,
+     0.8999999761581421,
+     0.0,
+     0.0
+    ]
+   },
+   "termination_reason": [
+    6,
+    6,
+    6,
+    6
+   ],
+   "reward_fractions": {
+    "target_bond_progress_fraction": [
+     0.4418604651162791,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "off_target_bond_fraction": [
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "engagement": {
+    "max_material_force_n": [
+     0.5193765101225063,
+     0.0,
+     0.0,
+     0.0
+    ],
+    "reference_cut_steps": [
+     72,
+     72,
+     72,
+     72
+    ],
+    "material_invalid_reason": [
+     64,
+     64,
+     64,
+     64
+    ],
+    "material_receipt": {
+     "runtime": "rl_gpu_headless",
+     "version": "batched_cutting_material_v1",
+     "backend": "isaac_lab_newton",
+     "coupling": "isaac_lab_newton_measured_edge_and_pads_v1",
+     "material_coupled": true,
+     "device": "cuda:0",
+     "parity_mode": false,
+     "strict": false,
+     "graph": {
+      "substeps_per_graph": 200,
+      "capture_wall_s": 0.09518191497772932,
+      "mempool_enabled": true,
+      "mempool_used_before": 220328149,
+      "mempool_used_after": 220328149,
+      "allocated_during_capture_bytes": 0,
+      "allocated_during_capture_semantics": "net Warp mempool used-bytes reading after minus before capture; 0 = no net growth (transient allocations freed during capture are not visible)"
+     },
+     "pose_interpolation": "device_f64_slerp_v2",
+     "pose_interpolation_steps": {
+      "device": 1200,
+      "host_reference": 0,
+      "preset": 0
+     },
+     "pose_interpolation_kernel": "device_f64_slerp_v2",
+     "obstacle_box_updates": 0,
+     "control_dt_s": 0.02,
+     "feedback": true,
+     "obstacle_boxes": 3,
+     "layout": {
+      "layout_version": "rl_batch_layout_v1",
+      "num_envs": 4,
+      "particle_counts": [
+       102732,
+       102732,
+       102732,
+       102732
+      ],
+      "node_counts": [
+       7020,
+       7020,
+       7020,
+       7020
+      ],
+      "link_counts": [
+       821856,
+       821856,
+       821856,
+       821856
+      ],
+      "fixture_counts": [
+       1,
+       1,
+       1,
+       1
+      ],
+      "total_particles": 410928,
+      "total_nodes": 28080,
+      "slots_per_node": 8,
+      "trajectory_length": 201,
+      "segments": 120,
+      "boxes": 3,
+      "int32_guards": {
+       "particles_x8": 3287424,
+       "nodes_x_slots": 224640,
+       "link_entries": 3287424,
+       "limit": 2147483648
+      },
+      "constitutive_model": "log_strain_von_mises_plastic_v5",
+      "stats_split": {
+       "max": [
+        0,
+        3,
+        6
+       ],
+       "sum": [
+        1,
+        2,
+        4,
+        5
+       ]
+      },
+      "totals_split": {
+       "max": [
+        10,
+        11
+       ],
+       "sum": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+       ]
+      }
+     },
+     "solver": {
+      "solver": "tlmpm_v7_2_batch",
+      "base_solver": "tlmpm_v7_2",
+      "status": "EXPERIMENTAL_NOT_ACCEPTED",
+      "execution": "batched_flat_soa_env_kernels_v1",
+      "contact_execution": "skip_zero_reaction_atomics_v1",
+      "frontier_execution": "hoisted_interface_v1",
+      "particle_contact_hash": "warp_grouped_hashgrid",
+      "constitutive_model": {
+       "model_id": "log_strain_von_mises_plastic_v5",
+       "version": 1,
+       "param_names": [
+        "lam",
+        "mu",
+        "yield_stress"
+       ],
+       "per_particle_state": {
+        "Fpi": {
+         "dtype": "mat33f",
+         "initial": "identity"
+        },
+        "plastic": {
+         "dtype": "float",
+         "initial": "zero"
+        }
+       },
+       "source": "tlmpm_v5._stress (tlmpm_v5.py:77-99), per-env lam/mu/yield"
+      },
+      "source_sha256": {
+       "tlmpm_v7_2_batch.py": "da963a7977a12ec4bb051ec70874dd8bd7cdd9792c3f8963693f91abf157aa76",
+       "constitutive.py": "3c4db62f9586416d076070aadbec759697119986c9c30d162a9cac76fbd85162",
+       "layout.py": "56f38af9367685b63ba762242163013c462a72231f187e630b76cf3d54cfd59b"
+      },
+      "frozen_source_sha256": {
+       "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+       "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+       "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266",
+       "tlmpm_v7_1.py": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+       "tlmpm_v7_2.py": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+       "tlmpm_v7_2_contacts.py": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+       "tlmpm_v7_2_frontier.py": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6",
+       "fixture_contacts.py": "651cf168808b7e0bd5c1a75cc7e405f54470c056ee050a62f3d824212ba4b4e8",
+       "material_diagnostics.py": "57e48aa3c2ecec092d7079dd5c81be41d2d602b8d188097a7e6b3bc8695165db",
+       "live_material.py": "58466e5a1f974c3c433aace2895ad7577e93fb59e376ad4f508969bad86dffb7",
+       "coupled_robot.py": "040b7595cd329a523400ffdf86f16f057d6d2cc7ea242893dd4c21a640851316"
+      },
+      "device": "cuda:0",
+      "warp_version": "1.17.0"
+     },
+     "envs": [
+      {
+       "env": 0,
+       "particles": 102732,
+       "node_count": 7020,
+       "grid_dims": [
+        45,
+        13,
+        12
+       ],
+       "seed": 42,
+       "scene_key": "d06c01a6850a3d8800418e5e5282c88349447577a4150f2dbca2d998d50955ff",
+       "parameter_receipt": {
+        "source": "CuttingTaskSpec",
+        "requested": {
+         "density_kg_m3": 1500.0,
+         "young_modulus_pa": 50000.0,
+         "poisson_ratio": 0.3,
+         "yield_stress_pa": 1000.0,
+         "hardening_ratio": 0.0,
+         "friction": 0.3,
+         "failure_model": "experimental_edge_work_persistent_TLMPM",
+         "critical_stress_pa": null,
+         "fracture_energy_j_m2": 0.05,
+         "calibration": "provisional_uncalibrated"
+        },
+        "actual_backend_material": {
+         "dx": 0.004,
+         "dt": 0.0001,
+         "density": 1500.0,
+         "young": 50000.0,
+         "poisson": 0.3,
+         "yield_stress": 1000.0,
+         "pic": 0.05,
+         "contact_stiffness": 0.1,
+         "contact_friction": 0.3,
+         "particle_contact_stiffness": 0.05,
+         "contact_radius_scale": 0.9,
+         "cutting_energy": 0.05,
+         "sharpness": 0.8,
+         "blade_length": 0.04,
+         "blade_height": 0.0015,
+         "blade_half_width": 0.06,
+         "cuts": 1,
+         "floor": false,
+         "fixture_walls": false,
+         "tool": true,
+         "material_contact": true,
+         "gravity": [
+          0.0,
+          0.0,
+          -9.81
+         ]
+        },
+        "calibration": "provisional_uncalibrated",
+        "solver_coordinates": "static_workpiece_local",
+        "moving_workpiece_frame_supported": false,
+        "cutting_law": 8,
+        "solver": "tlmpm_v7_2",
+        "tool_profile": {
+         "profile_id": "ruler_knife_v2_y",
+         "edge_length_m": 0.12,
+         "blade_depth_m": 0.04,
+         "thickness_m": 0.0015,
+         "bevel": "double",
+         "bevel_included_angle_deg": 25.0,
+         "handle_half_extents_hand_m": [
+          0.012,
+          0.011,
+          0.03
+         ],
+         "blade_density_kg_m3": 7800.0,
+         "handle_density_kg_m3": 1100.0,
+         "blade_normal_hand_axis": "y",
+         "version": "tool_profile_v2",
+         "half_width_m": 0.06,
+         "bevel_length_m": 0.003383031377746543,
+         "cross_section_xz_m": [
+          [
+           0.0,
+           0.0
+          ],
+          [
+           -0.003383031377746543,
+           0.00075
+          ],
+          [
+           -0.04,
+           0.00075
+          ],
+          [
+           -0.04,
+           -0.00075
+          ],
+          [
+           -0.003383031377746543,
+           -0.00075
+          ]
+         ],
+         "status": "ENGINEERING_GEOMETRY_UNCALIBRATED",
+         "arrangement": "A_blade_normal_hand_y",
+         "grip": "end_held",
+         "edge_line_hand_axis": "+z",
+         "finger_contact_faces": "handle +/-y faces (hand finger closing axis)"
+        },
+        "slice_efficiency": 1.0,
+        "max_cuts": 2,
+        "obstacle_boxes_edge": [
+         [
+          [
+           -0.02800000086426735,
+           -0.09000000357627869,
+           -2.949029909160572e-17
+          ],
+          [
+           0.012000000104308128,
+           0.029999999329447746,
+           0.010999999940395355
+          ]
+         ],
+         [
+          [
+           -0.028024455532431602,
+           -0.09022417664527893,
+           -0.018535476177930832
+          ],
+          [
+           0.008786547929048538,
+           0.008288927376270294,
+           0.007600376382470131
+          ]
+         ],
+         [
+          [
+           -0.028024893254041672,
+           -0.09022293239831924,
+           0.018535787239670753
+          ],
+          [
+           0.008786547929048538,
+           0.008288927376270294,
+           0.007600376382470131
+          ]
+         ]
+        ],
+        "obstacle_reaction_recipients": [
+         null,
+         "/World/envs/env_0/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+         "/World/envs/env_0/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger"
+        ],
+        "solver_module": "robotic_cutting_sim.tlmpm_v7_2",
+        "law4_parameters": {
+         "band_h_m": 0.024,
+         "rear_b_back_m": 0.008,
+         "persist_b_persist_m": 0.008,
+         "theta_max_deg": 45.0,
+         "min_speed_m_s": 1e-05
+        },
+        "law4_reference": "docs/adr/0006-swept-band-cutting-law-4.md",
+        "law8_parameters": {
+         "lead_b_lead_m": 0.008,
+         "core_s_core_m": 0.004,
+         "theta_plow_deg": 15.0
+        },
+        "law8_reference": "docs/adr/0012-cutting-law-8-plow-gated-lead.md",
+        "code_encoding": "packed2",
+        "slots_per_node": 8,
+        "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
+        "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md",
+        "tlmpm_v7_2": {
+         "solver": "tlmpm_v7_2",
+         "status": "EXPERIMENTAL_NOT_ACCEPTED",
+         "position_update": "grid_musl_v1",
+         "cut_front": "finite_support_interface_rigid_chord_v2",
+         "diagnostic_accumulation": "float64",
+         "contact": "velocity_projection_tau_v1",
+         "contact_relaxation_s": 0.0002,
+         "work_bevel_depth_m": 0.0033830313477665186,
+         "edge_release_depth_m": 0.0005,
+         "edge_release_half_thickness_m": 0.00025,
+         "source_sha256": {
+          "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+          "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+          "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+         },
+         "shared_base_solver": "tlmpm_v7",
+         "candidate_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+         "link_completion_counts": {
+          "finite_link_events": 0,
+          "completed_side_digits": 0
+         },
+         "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+         "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+         "maximum_rotation_per_substep_rad": 0.0001,
+         "optimize_contacts": true,
+         "contact_execution": "skip_zero_reaction_atomics_v1",
+         "contact_source_sha256": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+         "optimize_frontier": true,
+         "frontier_execution": "hoisted_interface_v1",
+         "frontier_kernel": "robotic_cutting_sim.tlmpm_v7_2_frontier._complete_links",
+         "frontier_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+        }
+       },
+       "solver_receipt": {
+        "solver": "tlmpm_v7_2",
+        "status": "EXPERIMENTAL_NOT_ACCEPTED",
+        "position_update": "grid_musl_v1",
+        "cut_front": "finite_support_interface_rigid_chord_v2",
+        "diagnostic_accumulation": "float64",
+        "contact": "velocity_projection_tau_v1",
+        "contact_relaxation_s": 0.0002,
+        "work_bevel_depth_m": 0.0033830313477665186,
+        "edge_release_depth_m": 0.0005,
+        "edge_release_half_thickness_m": 0.00025,
+        "source_sha256": {
+         "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+         "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+         "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+        },
+        "shared_base_solver": "tlmpm_v7",
+        "candidate_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+        "link_completion_counts": {
+         "finite_link_events": 0,
+         "completed_side_digits": 0
+        },
+        "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+        "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+        "maximum_rotation_per_substep_rad": 0.0001,
+        "optimize_contacts": true,
+        "contact_execution": "skip_zero_reaction_atomics_v1",
+        "contact_source_sha256": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+        "optimize_frontier": true,
+        "frontier_execution": "hoisted_interface_v1",
+        "frontier_kernel": "robotic_cutting_sim.tlmpm_v7_2_frontier._complete_links",
+        "frontier_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+       },
+       "params": {
+        "lam": 28846.154296875,
+        "mu": 19230.76953125,
+        "yield_stress": 1000.0,
+        "contact_stiffness": 0.10000000149011612,
+        "contact_friction": 0.30000001192092896,
+        "cutting_energy": 0.05000000074505806,
+        "sharpness": 0.800000011920929,
+        "slice_efficiency": 1.0,
+        "particle_contact_stiffness": 0.05000000074505806
+       }
+      },
+      {
+       "env": 1,
+       "particles": 102732,
+       "node_count": 7020,
+       "grid_dims": [
+        45,
+        13,
+        12
+       ],
+       "seed": 42,
+       "scene_key": "d06c01a6850a3d8800418e5e5282c88349447577a4150f2dbca2d998d50955ff",
+       "parameter_receipt": {
+        "source": "CuttingTaskSpec",
+        "requested": {
+         "density_kg_m3": 1500.0,
+         "young_modulus_pa": 50000.0,
+         "poisson_ratio": 0.3,
+         "yield_stress_pa": 1000.0,
+         "hardening_ratio": 0.0,
+         "friction": 0.3,
+         "failure_model": "experimental_edge_work_persistent_TLMPM",
+         "critical_stress_pa": null,
+         "fracture_energy_j_m2": 0.05,
+         "calibration": "provisional_uncalibrated"
+        },
+        "actual_backend_material": {
+         "dx": 0.004,
+         "dt": 0.0001,
+         "density": 1500.0,
+         "young": 50000.0,
+         "poisson": 0.3,
+         "yield_stress": 1000.0,
+         "pic": 0.05,
+         "contact_stiffness": 0.1,
+         "contact_friction": 0.3,
+         "particle_contact_stiffness": 0.05,
+         "contact_radius_scale": 0.9,
+         "cutting_energy": 0.05,
+         "sharpness": 0.8,
+         "blade_length": 0.04,
+         "blade_height": 0.0015,
+         "blade_half_width": 0.06,
+         "cuts": 1,
+         "floor": false,
+         "fixture_walls": false,
+         "tool": true,
+         "material_contact": true,
+         "gravity": [
+          0.0,
+          0.0,
+          -9.81
+         ]
+        },
+        "calibration": "provisional_uncalibrated",
+        "solver_coordinates": "static_workpiece_local",
+        "moving_workpiece_frame_supported": false,
+        "cutting_law": 8,
+        "solver": "tlmpm_v7_2",
+        "tool_profile": {
+         "profile_id": "ruler_knife_v2_y",
+         "edge_length_m": 0.12,
+         "blade_depth_m": 0.04,
+         "thickness_m": 0.0015,
+         "bevel": "double",
+         "bevel_included_angle_deg": 25.0,
+         "handle_half_extents_hand_m": [
+          0.012,
+          0.011,
+          0.03
+         ],
+         "blade_density_kg_m3": 7800.0,
+         "handle_density_kg_m3": 1100.0,
+         "blade_normal_hand_axis": "y",
+         "version": "tool_profile_v2",
+         "half_width_m": 0.06,
+         "bevel_length_m": 0.003383031377746543,
+         "cross_section_xz_m": [
+          [
+           0.0,
+           0.0
+          ],
+          [
+           -0.003383031377746543,
+           0.00075
+          ],
+          [
+           -0.04,
+           0.00075
+          ],
+          [
+           -0.04,
+           -0.00075
+          ],
+          [
+           -0.003383031377746543,
+           -0.00075
+          ]
+         ],
+         "status": "ENGINEERING_GEOMETRY_UNCALIBRATED",
+         "arrangement": "A_blade_normal_hand_y",
+         "grip": "end_held",
+         "edge_line_hand_axis": "+z",
+         "finger_contact_faces": "handle +/-y faces (hand finger closing axis)"
+        },
+        "slice_efficiency": 1.0,
+        "max_cuts": 2,
+        "obstacle_boxes_edge": [
+         [
+          [
+           -0.02800000086426735,
+           -0.09000000357627869,
+           -2.949029909160572e-17
+          ],
+          [
+           0.012000000104308128,
+           0.029999999329447746,
+           0.010999999940395355
+          ]
+         ],
+         [
+          [
+           -0.028024455532431602,
+           -0.09022417664527893,
+           -0.01853547804057598
+          ],
+          [
+           0.008786547929048538,
+           0.008288927376270294,
+           0.007600376382470131
+          ]
+         ],
+         [
+          [
+           -0.028024893254041672,
+           -0.09022293239831924,
+           0.018535787239670753
+          ],
+          [
+           0.008786547929048538,
+           0.008288927376270294,
+           0.007600376382470131
+          ]
+         ]
+        ],
+        "obstacle_reaction_recipients": [
+         null,
+         "/World/envs/env_0/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+         "/World/envs/env_0/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger"
+        ],
+        "solver_module": "robotic_cutting_sim.tlmpm_v7_2",
+        "law4_parameters": {
+         "band_h_m": 0.024,
+         "rear_b_back_m": 0.008,
+         "persist_b_persist_m": 0.008,
+         "theta_max_deg": 45.0,
+         "min_speed_m_s": 1e-05
+        },
+        "law4_reference": "docs/adr/0006-swept-band-cutting-law-4.md",
+        "law8_parameters": {
+         "lead_b_lead_m": 0.008,
+         "core_s_core_m": 0.004,
+         "theta_plow_deg": 15.0
+        },
+        "law8_reference": "docs/adr/0012-cutting-law-8-plow-gated-lead.md",
+        "code_encoding": "packed2",
+        "slots_per_node": 8,
+        "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
+        "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md",
+        "tlmpm_v7_2": {
+         "solver": "tlmpm_v7_2",
+         "status": "EXPERIMENTAL_NOT_ACCEPTED",
+         "position_update": "grid_musl_v1",
+         "cut_front": "finite_support_interface_rigid_chord_v2",
+         "diagnostic_accumulation": "float64",
+         "contact": "velocity_projection_tau_v1",
+         "contact_relaxation_s": 0.0002,
+         "work_bevel_depth_m": 0.0033830313477665186,
+         "edge_release_depth_m": 0.0005,
+         "edge_release_half_thickness_m": 0.00025,
+         "source_sha256": {
+          "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+          "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+          "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+         },
+         "shared_base_solver": "tlmpm_v7",
+         "candidate_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+         "link_completion_counts": {
+          "finite_link_events": 0,
+          "completed_side_digits": 0
+         },
+         "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+         "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+         "maximum_rotation_per_substep_rad": 0.0001,
+         "optimize_contacts": true,
+         "contact_execution": "skip_zero_reaction_atomics_v1",
+         "contact_source_sha256": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+         "optimize_frontier": true,
+         "frontier_execution": "hoisted_interface_v1",
+         "frontier_kernel": "robotic_cutting_sim.tlmpm_v7_2_frontier._complete_links",
+         "frontier_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+        }
+       },
+       "solver_receipt": {
+        "solver": "tlmpm_v7_2",
+        "status": "EXPERIMENTAL_NOT_ACCEPTED",
+        "position_update": "grid_musl_v1",
+        "cut_front": "finite_support_interface_rigid_chord_v2",
+        "diagnostic_accumulation": "float64",
+        "contact": "velocity_projection_tau_v1",
+        "contact_relaxation_s": 0.0002,
+        "work_bevel_depth_m": 0.0033830313477665186,
+        "edge_release_depth_m": 0.0005,
+        "edge_release_half_thickness_m": 0.00025,
+        "source_sha256": {
+         "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+         "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+         "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+        },
+        "shared_base_solver": "tlmpm_v7",
+        "candidate_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+        "link_completion_counts": {
+         "finite_link_events": 0,
+         "completed_side_digits": 0
+        },
+        "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+        "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+        "maximum_rotation_per_substep_rad": 0.0001,
+        "optimize_contacts": true,
+        "contact_execution": "skip_zero_reaction_atomics_v1",
+        "contact_source_sha256": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+        "optimize_frontier": true,
+        "frontier_execution": "hoisted_interface_v1",
+        "frontier_kernel": "robotic_cutting_sim.tlmpm_v7_2_frontier._complete_links",
+        "frontier_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+       },
+       "params": {
+        "lam": 28846.154296875,
+        "mu": 19230.76953125,
+        "yield_stress": 1000.0,
+        "contact_stiffness": 0.10000000149011612,
+        "contact_friction": 0.30000001192092896,
+        "cutting_energy": 0.05000000074505806,
+        "sharpness": 0.800000011920929,
+        "slice_efficiency": 1.0,
+        "particle_contact_stiffness": 0.05000000074505806
+       }
+      },
+      {
+       "env": 2,
+       "particles": 102732,
+       "node_count": 7020,
+       "grid_dims": [
+        45,
+        13,
+        12
+       ],
+       "seed": 42,
+       "scene_key": "d06c01a6850a3d8800418e5e5282c88349447577a4150f2dbca2d998d50955ff",
+       "parameter_receipt": {
+        "source": "CuttingTaskSpec",
+        "requested": {
+         "density_kg_m3": 1500.0,
+         "young_modulus_pa": 50000.0,
+         "poisson_ratio": 0.3,
+         "yield_stress_pa": 1000.0,
+         "hardening_ratio": 0.0,
+         "friction": 0.3,
+         "failure_model": "experimental_edge_work_persistent_TLMPM",
+         "critical_stress_pa": null,
+         "fracture_energy_j_m2": 0.05,
+         "calibration": "provisional_uncalibrated"
+        },
+        "actual_backend_material": {
+         "dx": 0.004,
+         "dt": 0.0001,
+         "density": 1500.0,
+         "young": 50000.0,
+         "poisson": 0.3,
+         "yield_stress": 1000.0,
+         "pic": 0.05,
+         "contact_stiffness": 0.1,
+         "contact_friction": 0.3,
+         "particle_contact_stiffness": 0.05,
+         "contact_radius_scale": 0.9,
+         "cutting_energy": 0.05,
+         "sharpness": 0.8,
+         "blade_length": 0.04,
+         "blade_height": 0.0015,
+         "blade_half_width": 0.06,
+         "cuts": 1,
+         "floor": false,
+         "fixture_walls": false,
+         "tool": true,
+         "material_contact": true,
+         "gravity": [
+          0.0,
+          0.0,
+          -9.81
+         ]
+        },
+        "calibration": "provisional_uncalibrated",
+        "solver_coordinates": "static_workpiece_local",
+        "moving_workpiece_frame_supported": false,
+        "cutting_law": 8,
+        "solver": "tlmpm_v7_2",
+        "tool_profile": {
+         "profile_id": "ruler_knife_v2_y",
+         "edge_length_m": 0.12,
+         "blade_depth_m": 0.04,
+         "thickness_m": 0.0015,
+         "bevel": "double",
+         "bevel_included_angle_deg": 25.0,
+         "handle_half_extents_hand_m": [
+          0.012,
+          0.011,
+          0.03
+         ],
+         "blade_density_kg_m3": 7800.0,
+         "handle_density_kg_m3": 1100.0,
+         "blade_normal_hand_axis": "y",
+         "version": "tool_profile_v2",
+         "half_width_m": 0.06,
+         "bevel_length_m": 0.003383031377746543,
+         "cross_section_xz_m": [
+          [
+           0.0,
+           0.0
+          ],
+          [
+           -0.003383031377746543,
+           0.00075
+          ],
+          [
+           -0.04,
+           0.00075
+          ],
+          [
+           -0.04,
+           -0.00075
+          ],
+          [
+           -0.003383031377746543,
+           -0.00075
+          ]
+         ],
+         "status": "ENGINEERING_GEOMETRY_UNCALIBRATED",
+         "arrangement": "A_blade_normal_hand_y",
+         "grip": "end_held",
+         "edge_line_hand_axis": "+z",
+         "finger_contact_faces": "handle +/-y faces (hand finger closing axis)"
+        },
+        "slice_efficiency": 1.0,
+        "max_cuts": 2,
+        "obstacle_boxes_edge": [
+         [
+          [
+           -0.02800000086426735,
+           -0.09000000357627869,
+           -2.949029909160572e-17
+          ],
+          [
+           0.012000000104308128,
+           0.029999999329447746,
+           0.010999999940395355
+          ]
+         ],
+         [
+          [
+           -0.028024449944496155,
+           -0.09022417664527893,
+           -0.018535476177930832
+          ],
+          [
+           0.008786547929048538,
+           0.008288927376270294,
+           0.007600376382470131
+          ]
+         ],
+         [
+          [
+           -0.028024887666106224,
+           -0.09022293239831924,
+           0.018535787239670753
+          ],
+          [
+           0.008786547929048538,
+           0.008288927376270294,
+           0.007600376382470131
+          ]
+         ]
+        ],
+        "obstacle_reaction_recipients": [
+         null,
+         "/World/envs/env_0/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+         "/World/envs/env_0/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger"
+        ],
+        "solver_module": "robotic_cutting_sim.tlmpm_v7_2",
+        "law4_parameters": {
+         "band_h_m": 0.024,
+         "rear_b_back_m": 0.008,
+         "persist_b_persist_m": 0.008,
+         "theta_max_deg": 45.0,
+         "min_speed_m_s": 1e-05
+        },
+        "law4_reference": "docs/adr/0006-swept-band-cutting-law-4.md",
+        "law8_parameters": {
+         "lead_b_lead_m": 0.008,
+         "core_s_core_m": 0.004,
+         "theta_plow_deg": 15.0
+        },
+        "law8_reference": "docs/adr/0012-cutting-law-8-plow-gated-lead.md",
+        "code_encoding": "packed2",
+        "slots_per_node": 8,
+        "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
+        "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md",
+        "tlmpm_v7_2": {
+         "solver": "tlmpm_v7_2",
+         "status": "EXPERIMENTAL_NOT_ACCEPTED",
+         "position_update": "grid_musl_v1",
+         "cut_front": "finite_support_interface_rigid_chord_v2",
+         "diagnostic_accumulation": "float64",
+         "contact": "velocity_projection_tau_v1",
+         "contact_relaxation_s": 0.0002,
+         "work_bevel_depth_m": 0.0033830313477665186,
+         "edge_release_depth_m": 0.0005,
+         "edge_release_half_thickness_m": 0.00025,
+         "source_sha256": {
+          "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+          "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+          "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+         },
+         "shared_base_solver": "tlmpm_v7",
+         "candidate_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+         "link_completion_counts": {
+          "finite_link_events": 0,
+          "completed_side_digits": 0
+         },
+         "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+         "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+         "maximum_rotation_per_substep_rad": 0.0001,
+         "optimize_contacts": true,
+         "contact_execution": "skip_zero_reaction_atomics_v1",
+         "contact_source_sha256": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+         "optimize_frontier": true,
+         "frontier_execution": "hoisted_interface_v1",
+         "frontier_kernel": "robotic_cutting_sim.tlmpm_v7_2_frontier._complete_links",
+         "frontier_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+        }
+       },
+       "solver_receipt": {
+        "solver": "tlmpm_v7_2",
+        "status": "EXPERIMENTAL_NOT_ACCEPTED",
+        "position_update": "grid_musl_v1",
+        "cut_front": "finite_support_interface_rigid_chord_v2",
+        "diagnostic_accumulation": "float64",
+        "contact": "velocity_projection_tau_v1",
+        "contact_relaxation_s": 0.0002,
+        "work_bevel_depth_m": 0.0033830313477665186,
+        "edge_release_depth_m": 0.0005,
+        "edge_release_half_thickness_m": 0.00025,
+        "source_sha256": {
+         "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+         "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+         "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+        },
+        "shared_base_solver": "tlmpm_v7",
+        "candidate_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+        "link_completion_counts": {
+         "finite_link_events": 0,
+         "completed_side_digits": 0
+        },
+        "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+        "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+        "maximum_rotation_per_substep_rad": 0.0001,
+        "optimize_contacts": true,
+        "contact_execution": "skip_zero_reaction_atomics_v1",
+        "contact_source_sha256": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+        "optimize_frontier": true,
+        "frontier_execution": "hoisted_interface_v1",
+        "frontier_kernel": "robotic_cutting_sim.tlmpm_v7_2_frontier._complete_links",
+        "frontier_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+       },
+       "params": {
+        "lam": 28846.154296875,
+        "mu": 19230.76953125,
+        "yield_stress": 1000.0,
+        "contact_stiffness": 0.10000000149011612,
+        "contact_friction": 0.30000001192092896,
+        "cutting_energy": 0.05000000074505806,
+        "sharpness": 0.800000011920929,
+        "slice_efficiency": 1.0,
+        "particle_contact_stiffness": 0.05000000074505806
+       }
+      },
+      {
+       "env": 3,
+       "particles": 102732,
+       "node_count": 7020,
+       "grid_dims": [
+        45,
+        13,
+        12
+       ],
+       "seed": 42,
+       "scene_key": "d06c01a6850a3d8800418e5e5282c88349447577a4150f2dbca2d998d50955ff",
+       "parameter_receipt": {
+        "source": "CuttingTaskSpec",
+        "requested": {
+         "density_kg_m3": 1500.0,
+         "young_modulus_pa": 50000.0,
+         "poisson_ratio": 0.3,
+         "yield_stress_pa": 1000.0,
+         "hardening_ratio": 0.0,
+         "friction": 0.3,
+         "failure_model": "experimental_edge_work_persistent_TLMPM",
+         "critical_stress_pa": null,
+         "fracture_energy_j_m2": 0.05,
+         "calibration": "provisional_uncalibrated"
+        },
+        "actual_backend_material": {
+         "dx": 0.004,
+         "dt": 0.0001,
+         "density": 1500.0,
+         "young": 50000.0,
+         "poisson": 0.3,
+         "yield_stress": 1000.0,
+         "pic": 0.05,
+         "contact_stiffness": 0.1,
+         "contact_friction": 0.3,
+         "particle_contact_stiffness": 0.05,
+         "contact_radius_scale": 0.9,
+         "cutting_energy": 0.05,
+         "sharpness": 0.8,
+         "blade_length": 0.04,
+         "blade_height": 0.0015,
+         "blade_half_width": 0.06,
+         "cuts": 1,
+         "floor": false,
+         "fixture_walls": false,
+         "tool": true,
+         "material_contact": true,
+         "gravity": [
+          0.0,
+          0.0,
+          -9.81
+         ]
+        },
+        "calibration": "provisional_uncalibrated",
+        "solver_coordinates": "static_workpiece_local",
+        "moving_workpiece_frame_supported": false,
+        "cutting_law": 8,
+        "solver": "tlmpm_v7_2",
+        "tool_profile": {
+         "profile_id": "ruler_knife_v2_y",
+         "edge_length_m": 0.12,
+         "blade_depth_m": 0.04,
+         "thickness_m": 0.0015,
+         "bevel": "double",
+         "bevel_included_angle_deg": 25.0,
+         "handle_half_extents_hand_m": [
+          0.012,
+          0.011,
+          0.03
+         ],
+         "blade_density_kg_m3": 7800.0,
+         "handle_density_kg_m3": 1100.0,
+         "blade_normal_hand_axis": "y",
+         "version": "tool_profile_v2",
+         "half_width_m": 0.06,
+         "bevel_length_m": 0.003383031377746543,
+         "cross_section_xz_m": [
+          [
+           0.0,
+           0.0
+          ],
+          [
+           -0.003383031377746543,
+           0.00075
+          ],
+          [
+           -0.04,
+           0.00075
+          ],
+          [
+           -0.04,
+           -0.00075
+          ],
+          [
+           -0.003383031377746543,
+           -0.00075
+          ]
+         ],
+         "status": "ENGINEERING_GEOMETRY_UNCALIBRATED",
+         "arrangement": "A_blade_normal_hand_y",
+         "grip": "end_held",
+         "edge_line_hand_axis": "+z",
+         "finger_contact_faces": "handle +/-y faces (hand finger closing axis)"
+        },
+        "slice_efficiency": 1.0,
+        "max_cuts": 2,
+        "obstacle_boxes_edge": [
+         [
+          [
+           -0.02800000086426735,
+           -0.09000000357627869,
+           -2.949029909160572e-17
+          ],
+          [
+           0.012000000104308128,
+           0.029999999329447746,
+           0.010999999940395355
+          ]
+         ],
+         [
+          [
+           -0.028024449944496155,
+           -0.09022417664527893,
+           -0.018535476177930832
+          ],
+          [
+           0.008786547929048538,
+           0.008288927376270294,
+           0.007600376848131418
+          ]
+         ],
+         [
+          [
+           -0.028024887666106224,
+           -0.09022293239831924,
+           0.018535787239670753
+          ],
+          [
+           0.008786547929048538,
+           0.008288927376270294,
+           0.007600376848131418
+          ]
+         ]
+        ],
+        "obstacle_reaction_recipients": [
+         null,
+         "/World/envs/env_0/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_leftfinger",
+         "/World/envs/env_0/Franka_0/Geometry/panda_link0/panda_link1/panda_link2/panda_link3/panda_link4/panda_link5/panda_link6/panda_link7/panda_hand/panda_rightfinger"
+        ],
+        "solver_module": "robotic_cutting_sim.tlmpm_v7_2",
+        "law4_parameters": {
+         "band_h_m": 0.024,
+         "rear_b_back_m": 0.008,
+         "persist_b_persist_m": 0.008,
+         "theta_max_deg": 45.0,
+         "min_speed_m_s": 1e-05
+        },
+        "law4_reference": "docs/adr/0006-swept-band-cutting-law-4.md",
+        "law8_parameters": {
+         "lead_b_lead_m": 0.008,
+         "core_s_core_m": 0.004,
+         "theta_plow_deg": 15.0
+        },
+        "law8_reference": "docs/adr/0012-cutting-law-8-plow-gated-lead.md",
+        "code_encoding": "packed2",
+        "slots_per_node": 8,
+        "packed_digit_rule": "d_k = (code >> 2k) & 3; 0 unassigned, 1 negative, 2 positive",
+        "tlmpm_v5_reference": "docs/adr/0014-scalable-cut-history-sparse-logical-fields.md",
+        "tlmpm_v7_2": {
+         "solver": "tlmpm_v7_2",
+         "status": "EXPERIMENTAL_NOT_ACCEPTED",
+         "position_update": "grid_musl_v1",
+         "cut_front": "finite_support_interface_rigid_chord_v2",
+         "diagnostic_accumulation": "float64",
+         "contact": "velocity_projection_tau_v1",
+         "contact_relaxation_s": 0.0002,
+         "work_bevel_depth_m": 0.0033830313477665186,
+         "edge_release_depth_m": 0.0005,
+         "edge_release_half_thickness_m": 0.00025,
+         "source_sha256": {
+          "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+          "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+          "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+         },
+         "shared_base_solver": "tlmpm_v7",
+         "candidate_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+         "link_completion_counts": {
+          "finite_link_events": 0,
+          "completed_side_digits": 0
+         },
+         "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+         "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+         "maximum_rotation_per_substep_rad": 0.0001,
+         "optimize_contacts": true,
+         "contact_execution": "skip_zero_reaction_atomics_v1",
+         "contact_source_sha256": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+         "optimize_frontier": true,
+         "frontier_execution": "hoisted_interface_v1",
+         "frontier_kernel": "robotic_cutting_sim.tlmpm_v7_2_frontier._complete_links",
+         "frontier_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+        }
+       },
+       "solver_receipt": {
+        "solver": "tlmpm_v7_2",
+        "status": "EXPERIMENTAL_NOT_ACCEPTED",
+        "position_update": "grid_musl_v1",
+        "cut_front": "finite_support_interface_rigid_chord_v2",
+        "diagnostic_accumulation": "float64",
+        "contact": "velocity_projection_tau_v1",
+        "contact_relaxation_s": 0.0002,
+        "work_bevel_depth_m": 0.0033830313477665186,
+        "edge_release_depth_m": 0.0005,
+        "edge_release_half_thickness_m": 0.00025,
+        "source_sha256": {
+         "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+         "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+         "tlmpm_v7.py": "4c7a75f489f110b884fa36350608b501adc5ed2f77252f0777f725bf88fd7266"
+        },
+        "shared_base_solver": "tlmpm_v7",
+        "candidate_source_sha256": "052e2c448f62c9f0eedf3c405e2c30133ecd44112c90a0f148cdb31f4948f30e",
+        "link_completion_counts": {
+         "finite_link_events": 0,
+         "completed_side_digits": 0
+        },
+        "scope": "Experimental bounded rigid-transform chord sweep; same endpoint-work and finite-interface gates as v7_1 v1_2. No general rotational CCD or physical calibration; original v7 CUT profile unchanged.",
+        "parent_candidate_source_sha256": "7549044028308a32b7265257bbeaae2cd5ae3fab38fc79aec1ef11e4c63549f3",
+        "maximum_rotation_per_substep_rad": 0.0001,
+        "optimize_contacts": true,
+        "contact_execution": "skip_zero_reaction_atomics_v1",
+        "contact_source_sha256": "1e74476bd39180e86ad86bec40dd9728a0f3f7e2317f14cb9db10268705446d4",
+        "optimize_frontier": true,
+        "frontier_execution": "hoisted_interface_v1",
+        "frontier_kernel": "robotic_cutting_sim.tlmpm_v7_2_frontier._complete_links",
+        "frontier_source_sha256": "d2af0151c1f34f37bc80fdf7096d7f96d2d14127e11bc887408d8cd086d87fb6"
+       },
+       "params": {
+        "lam": 28846.154296875,
+        "mu": 19230.76953125,
+        "yield_stress": 1000.0,
+        "contact_stiffness": 0.10000000149011612,
+        "contact_friction": 0.30000001192092896,
+        "cutting_energy": 0.05000000074505806,
+        "sharpness": 0.800000011920929,
+        "slice_efficiency": 1.0,
+        "particle_contact_stiffness": 0.05000000074505806
+       }
+      }
+     ],
+     "material_fidelity_reasons": [
+      "pad_boxes_written_in_place_by_backend_each_control_step"
+     ],
+     "batched_source_sha256": {
+      "material_batch.py": "c007152773d207aca80458cc61c4956106bef58979d4898468bf39c68820daf7",
+      "pose_interp.py": "72f37952828a063035acfb57bdc19526b66e15278869c21842d9b2b5eda94d6d",
+      "diagnostics.py": "a8cf9e1058cd3ddcfcfe27f48d9689627d9b3df3e1fd550a44792e68ba01b48e",
+      "errors.py": "cf91bab08b3062a98b313d6ffab37bdcc4bf3fd6bd220234461b100506000663",
+      "layout.py": "56f38af9367685b63ba762242163013c462a72231f187e630b76cf3d54cfd59b",
+      "constitutive.py": "3c4db62f9586416d076070aadbec759697119986c9c30d162a9cac76fbd85162",
+      "tlmpm_v7_2_batch.py": "da963a7977a12ec4bb051ec70874dd8bd7cdd9792c3f8963693f91abf157aa76"
+     },
+     "calibration": "SIMULATOR_ONLY_UNCALIBRATED",
+     "memory_bytes": 197060620,
+     "build_wall_s": 2.2664867939893156,
+     "device_hashgrid_guard": "single_device_hashgrid_per_process_v1",
+     "input_domain": {
+      "version": "material_input_domain_v1",
+      "max_edge_distance_m": 1.5,
+      "max_edge_speed_m_s": 3.4,
+      "max_edge_angular_speed_rad_s": 5.0,
+      "max_box_center_m": 0.5,
+      "max_box_half_m": 0.25,
+      "on_violation": "INPUT_OUT_OF_DOMAIN; env inputs held (blade at last in-domain pose, zero twist, cut disarmed, pads at last in-domain boxes) until its reset"
+     }
+    }
+   },
+   "particles_per_env": [
+    102732,
+    102732,
+    102732,
+    102732
+   ],
+   "hashgrids": {
+    "all": [
+     {
+      "device": "cpu",
+      "created_by": "tlmpm_v5.py:798:__init__"
+     },
+     {
+      "device": "cpu",
+      "created_by": "tlmpm_v5.py:798:__init__"
+     },
+     {
+      "device": "cpu",
+      "created_by": "tlmpm_v5.py:798:__init__"
+     },
+     {
+      "device": "cpu",
+      "created_by": "tlmpm_v5.py:798:__init__"
+     },
+     {
+      "device": "cuda:0",
+      "created_by": "tlmpm_v7_2_batch.py:613:__init__"
+     }
+    ],
+    "cuda_count": 1,
+    "multi_grid_process": false,
+    "status": "SINGLE_DEVICE_GRID_OR_NONE"
+   },
+   "warm": {
+    "steps": 1199,
+    "step_wall_s_mean": 0.7815321685819715,
+    "step_wall_s_p50": 0.7959590560058132,
+    "step_wall_s_p95": 0.9269170223618858,
+    "env_steps_per_s": 5.118151447633544
+   },
+   "foreign_sm_pct": {
+    "max": 84.0,
+    "mean": 40.965408805031444,
+    "n": 954
+   },
+   "contact_solver": {
+    "profile": null,
+    "mjw_disableflags": 524288,
+    "nativeccd_disabled": false,
+    "box_box_collider": "gjk_epa_multicontact (MJWarp default)",
+    "impratio": 1.0,
+    "cone": 1
+   },
+   "grip_material": {
+    "coefficient": 0.6,
+    "torsional_coefficient_m": null,
+    "shapes": 16,
+    "profile": "legacy_point_contact"
+   },
+   "material_input_domain": {
+    "version": "material_input_domain_v1",
+    "max_edge_distance_m": 1.5,
+    "max_edge_speed_m_s": 3.4,
+    "max_edge_angular_speed_rad_s": 5.0,
+    "max_box_center_m": 0.5,
+    "max_box_half_m": 0.25,
+    "on_violation": "INPUT_OUT_OF_DOMAIN; env inputs held (blade at last in-domain pose, zero twist, cut disarmed, pads at last in-domain boxes) until its reset"
+   },
+   "monitor_status_counts": [
+    {
+     "0": 2,
+     "1": 78,
+     "2": 1120
+    },
+    {
+     "0": 2,
+     "1": 85,
+     "2": 1113
+    },
+    {
+     "0": 2,
+     "1": 321,
+     "2": 877
+    },
+    {
+     "0": 2,
+     "1": 38,
+     "2": 1160
+    }
+   ],
+   "non_holding_steps": [
+    [
+     1,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22
+    ],
+    [
+     1,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22
+    ],
+    [
+     1,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22
+    ],
+    [
+     1,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22
+    ]
    ]
+  },
+  {
+   "run": "g2mat_b2point_n4_preguard_001",
+   "status": "FAIL_NO_ROW",
+   "log_tail": [
+    "Fatal Python error: Segmentation fault",
+    "Current thread 0x00007ce135ff4740 (most recent call first):",
+    "  File \"/mnt/data/ningan/tmp/rcs_b2_run/.deps/isaaclab-venv/lib/python3.12/site-packages/warp/_src/context.py\", line 13593 in capture_launch",
+    "  File \"/mnt/data/ningan/tmp/rcs_b2_run/src/robotic_cutting_sim/batched/material_batch.py\", line 737 in advance",
+    "  File \"/mnt/data/ningan/tmp/rcs_b2_run/src/robotic_cutting_sim/rl/lab_batched_env.py\", line 452 in _get_dones",
+    "  File \"/home/ningan/RoboticCuttingSim/.deps/IsaacLab/source/isaaclab/isaaclab/envs/direct_rl_env.py\", line 423 in step",
+    "  File \"/mnt/data/ningan/tmp/rcs_b2_run/scripts/rl_ready/probe_lab_batched_gpu.py\", line 416 in main",
+    "  File \"/mnt/data/ningan/tmp/rcs_b2_run/scripts/rl_ready/probe_lab_batched_gpu.py\", line 543 in <module>",
+    "timeout: the monitored command dumped core",
+    "timeout: the monitored command dumped core"
+   ],
+   "note": "FAIL_NO_ROW: SIGSEGV in material_batch.advance -> wp.capture_launch after ~9.8 min (faulthandler stack in stdout.log); pinned worktree 41d9405 (no guard)"
   },
   {
    "run": "robot_b2grip_n2_001",

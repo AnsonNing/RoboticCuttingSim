@@ -391,7 +391,7 @@ MJWarp 3.12.0, Warp 1.17.0).
 | B2 settle gate, G4 ruler-knife setting, strict GPU builds, `mjwarp_grip_v1` | PASS 3 of 3 (point profile: 5 of 6 strict builds FAIL on angular speed; same root cause) |
 | B2 settle under deterministic `run_to_run`, `mjwarp_grip_v1` | PASS (point profile: tool ejected 1.43 m); B2 G1/G3 deterministic isolation not run |
 | Slip comparable to Native | NO: Native PhysX <= 0.93 um / 9.6e-5 rad; MJWarp with the profile 1.6 mm / 15 mrad (inside the monitor's 2 mm / pi/60 warning gates, three orders of magnitude above Native) |
-| Material crash after a lost grasp | Crash site recorded (material graph replay); SIGSEGV not reproduced on demand (pre-guard rerun of the N=1 crash configuration completed). The unbounded out-of-domain input after a lost grasp reproduced (particles flung, step time 0.6 -> 174 s on GPU, no flag) and FIXED with an env-local input-domain guard (`INPUT_OUT_OF_DOMAIN` + device-side hold): CPU tests incl. bitwise isolation PASS; GPU: flagged and held, crash configuration completes |
+| Material crash after a lost grasp | SIGSEGV reproduced without the guard (N=4 crash configuration, material graph replay `material_batch.advance -> capture_launch`; the N=1 rerun completed); with the guard the paired N=4 run completes with every lost env flagged and held. The unbounded out-of-domain input after a lost grasp reproduced (particles flung, step time 0.6 -> 174 s on GPU, no flag) and FIXED with an env-local input-domain guard (`INPUT_OUT_OF_DOMAIN` + device-side hold): CPU tests incl. bitwise isolation PASS; GPU: flagged and held, crash configuration completes |
 
 ## 1. Root cause
 
@@ -561,9 +561,20 @@ was lost at step 327 (the slip is chaotic: 36 in the post-guard run), the edge l
 (first at step 25, the manifold-collapse kick, edge angular speed up to 43 rad/s), the material took reactions up to
 3.1 N and set no flag. In both runs the first out-of-domain step is the kick that follows the manifold collapse, with
 the tool already 6.8 mm out of place. So the SIGSEGV of `g2mat_b2_n1_001` / `g2mat_b2_n4_001` is intermittent and
-was not reproduced on demand; its site is known (material graph replay), its trigger is not.
-A pre-guard rerun of the N=4 crash configuration (`g2mat_b2point_n4_preguard_001`) was queued last; see the update
-below if present.
+is intermittent at N=1; its site is the material graph replay.
+The N=4 crash configuration without the guard (`g2mat_b2point_n4_preguard_001`, pinned worktree `41d9405`, strict,
+reference driver, point profile) DID reproduce it: SIGSEGV after about 9.8 min of wall time (no row written; the
+faulthandler stack in its `stdout.log` is `probe_lab_batched_gpu.py:416 env.step -> lab_batched_env.py:452
+_get_dones -> material_batch.py:737 advance -> warp context.py:13593 capture_launch`, the same site as
+`g2mat_b2_n4_001`). The same N=4 configuration with the guard (`g2mat_b2point_n4_postguard_001`,
+clean commit `94966df`, training mode so the run continues after the flags): all 1200 steps complete, no crash
+(782 ms/step, `SHARED_GPU`). All four envs lose the grasp (steps 81 / 88 / 324 / 41); env 3's tool is thrown 1252 m
+out of the hand. The material flags each env `INPUT_OUT_OF_DOMAIN` at its first out-of-domain edge (steps 258 / 25 /
+25 / 35; edge angular speed up to 22 / 7 / 12 / 99 rad/s), holds its inputs (material reaction <= 0.52 N, 0 N in
+envs 1-3 that were flagged before contact) and the Lab env terminates them (reason 6 = MATERIAL_INVALID |
+GRASP_LOST). This is consistent with the crash being triggered by an ejected or violently swinging tool reaching the
+material graph, which the guard now stops before the graph; it is one paired N=4 attempt, not a proof that no other
+SIGSEGV path exists.
 
 **Fix (`material_input_domain_v1`, `material_batch.py`).** A device kernel after the pose interpolation and before
 the substep graph checks per env: edge within 1.5 m of the workpiece frame (Franka reach 0.855 m plus a base 0.47 m
@@ -625,9 +636,9 @@ PYTHONPATH=src .venv/bin/python scripts/rl_ready/probe_material_ood.py --device 
 - `mjwarp_grip_v1` changes two global MJWarp options of the B2 model. Its effect on contacts other than the grip
   (Franka self-collision, pads/handle against table and fixtures) was only observed through the TRIM rows (no other
   tool contact occurred), not tested separately. B1 is unaffected (the profile is refused there).
-- The SIGSEGV itself was never reproduced on demand; the crash site is the material graph replay. The guard removes
-  the out-of-domain inputs that preceded it and the step-time collapse, and the crash configuration now completes;
-  that the guard removes every SIGSEGV path is not proven.
+- The SIGSEGV reproduced once without the guard (N=4) and not at N=1; with the guard the paired N=4 run completes.
+  The exact faulting instruction inside the material graph was not isolated (no compute-sanitizer run); that the
+  guard removes every SIGSEGV path is not proven.
 - Not done with the profile: G1/G3 isolation in deterministic mode for B2 (now possible: the deterministic settle
   passes), G4 against the single Lab env (the frozen
   single env keeps the point profile), G5 replays of B2 inputs, an exclusive-GPU timing row, wiring

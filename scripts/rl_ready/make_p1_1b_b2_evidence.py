@@ -32,6 +32,9 @@ NOTES = {
                         "committed sources at a930a8c; the guard set no flag",
     "g2mat_b2point_n1_postguard_001": "tracked_src_or_scripts_modified true from an uncommitted evidence script "
                                       "(scripts/); workload_b_sources_sha256 660af37c... equals a930a8c",
+    "g2mat_b2point_n4_preguard_001": "FAIL_NO_ROW: SIGSEGV in material_batch.advance -> wp.capture_launch after "
+                                     "~9.8 min (faulthandler stack in stdout.log); pinned worktree 41d9405 (no guard)",
+    "g2mat_b2point_n1_preguard_001": "pinned worktree 41d9405 (no guard), strict; completed without SIGSEGV",
     "robot_b2grip_n2_001": "sources equal to commit 41d9405 (probe imported before that commit was made; src "
                            "unchanged from a03c23d)",
 }
@@ -46,7 +49,13 @@ def _log_tail(run, n=6):
     path = A/run/"stdout.log"
     if not path.is_file():
         return None
-    lines = [line for line in path.read_text(errors="replace").splitlines() if line.strip()]
+    lines = [line for line in path.read_text(errors="replace").splitlines()
+             if line.strip() and not line.startswith("Extension modules")]
+    if any("Fatal Python error" in line for line in lines):        # keep the faulthandler stack of a crash
+        start = next(i for i, line in enumerate(lines) if "Fatal Python error" in line)
+        crash = lines[start:]
+        current = next((i for i, line in enumerate(crash) if line.startswith("Current thread")), 0)
+        return [crash[0]]+crash[current:current+8]+lines[-1:]
     return lines[-n:]
 
 
