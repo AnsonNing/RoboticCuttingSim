@@ -224,7 +224,7 @@ def main():
     parser.add_argument("--restore-env", type=int, default=None, help="g3: env restored at --restore-step")
     parser.add_argument("--restore-step", type=int, default=10)
     parser.add_argument("--grip-profile", default="legacy_point_contact",
-                        choices=("legacy_point_contact", "finite_pad_patch_v3"))
+                        choices=("legacy_point_contact", "finite_pad_patch_v3", "mjwarp_grip_v1"))
     parser.add_argument("--non-strict", action="store_true", help="training mode: flag/terminate instead of raise")
     parser.add_argument("--inputs", nargs="*", default=())
     parser.add_argument("--out", required=True)

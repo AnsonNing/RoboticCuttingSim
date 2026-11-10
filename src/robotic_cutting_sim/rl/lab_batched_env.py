@@ -155,6 +155,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         o, N = self.options, self.num_envs
         self.model = NewtonManager.get_model()
         self.solver = self.sim.physics_manager._solver
+        self._apply_contact_solver_profile()
         self.robots = [self.scene[f"franka_{i}"] for i in range(2)]
         for robot in self.robots:
             for name, actuator in robot.cfg.actuators.items():
@@ -263,6 +264,46 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             self.grasp_slip = wp.zeros(N, dtype=float)
             self.grasp_angle = wp.zeros(N, dtype=float)
             self.grasp_status = wp.zeros(N, dtype=wp.int32)
+
+    def _apply_contact_solver_profile(self):
+        """Opt-in B2 ``mjwarp_grip_v1`` (``lab_scene.CONTACT_SOLVER_PROFILES``): set the MuJoCo-Warp disable bits of
+        the profile (``NATIVECCD``: box-box pairs use MuJoCo's ``box_box`` collider) on the built model, before the
+        first step and before any CUDA graph capture (Newton captures lazily on the first step), and check that
+        ``impratio`` (set in the solver cfg) reached the model. Other profiles: nothing changes; the receipt records
+        the model's actual flags either way."""
+        from isaaclab_newton.physics import NewtonManager
+        from mujoco_warp import DisableBit
+        profile = lab_scene.contact_solver_profile(self.options.grip_contact_profile) \
+            if self.options.tool_mount == "physical_grasp_v1" else None
+        opt = self.solver.mjw_model.opt
+        if profile is not None:
+            if NewtonManager._graph is not None:
+                raise RuntimeError("contact solver profile must be applied before the first CUDA graph capture")
+            for name in profile["mjwarp_disable_bits"]:
+                opt.disableflags = int(opt.disableflags) | int(getattr(DisableBit, name))
+            impratio = float(self.solver.mj_model.opt.impratio)
+            if impratio != float(profile["impratio"]):
+                raise RuntimeError(f"impratio {impratio} != profile {profile['impratio']}")
+        self.contact_solver_receipt = {
+            "profile": None if profile is None else profile["version"],
+            "mjw_disableflags": int(opt.disableflags),
+            "nativeccd_disabled": bool(int(opt.disableflags) & int(DisableBit.NATIVECCD)),
+            "box_box_collider": ("mujoco_box_box_primitive" if int(opt.disableflags) & int(DisableBit.NATIVECCD)
+                                 else "gjk_epa_multicontact (MJWarp default)"),
+            "impratio": float(self.solver.mj_model.opt.impratio), "cone": int(self.solver.mj_model.opt.cone)}
+
+    def _check_contact_solver_profile(self):
+        """Host int check (no device sync): the profile's disable bits are still on the live MuJoCo-Warp model
+        (a hard ``sim.reset`` would rebuild the solver without them)."""
+        from mujoco_warp import DisableBit
+        profile = lab_scene.contact_solver_profile(self.options.grip_contact_profile) \
+            if self.options.tool_mount == "physical_grasp_v1" else None
+        if profile is None:
+            return
+        flags = int(self.sim.physics_manager._solver.mjw_model.opt.disableflags)
+        for name in profile["mjwarp_disable_bits"]:
+            if not flags & int(getattr(DisableBit, name)):
+                raise RuntimeError(f"{profile['version']}: DisableBit.{name} missing on the live MuJoCo-Warp model")
 
     def _apply_grip_material(self):
         """``isaac_lab_env.set_grip_friction`` for every world (the single env applies it at each reset): sliding
@@ -562,6 +603,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         hand mount, 2 s settle of all worlds with per-world gates, then the per-slot snapshot; later calls restore
         the snapshot."""
         from isaaclab_newton.physics import NewtonManager
+        self._check_contact_solver_profile()
         if self.options.tool_mount == "physical_grasp_v1" and self.snapshot is not None:
             self.reset_envs(torch.ones(self.num_envs, dtype=torch.bool, device=self.device))
             self.scene.write_data_to_sim()
@@ -767,6 +809,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                 "dofs_per_world": int(model.joint_dof_count//self.num_envs),
                 "index_tables": {k: v.tolist() for k, v in self.tables.items()},
                 "rigid_reasons": {str(k): v for k, v in RIGID_REASONS.items()},
+                "contact_solver": getattr(self, "contact_solver_receipt", None),
                 "material_results": "NONE (robot-only)" if not self.coupling.material_coupled
                 else "SIMULATOR_ONLY_UNCALIBRATED"}
 
