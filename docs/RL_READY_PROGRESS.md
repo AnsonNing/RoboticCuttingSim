@@ -8,10 +8,21 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 ## 進行中
 
 - P1-1 core DONE; review fixes DONE (204 CPU tests PASS; `isaac_lab_newton` coupling + error codes added).
-- Running agents:
-  1. P1-2 integration + milestones (GPU1, `rcs_rl_runner/gpu1.lock`): M0, M1 N=4, L4, M2 N=1/8/16 COMPLETE;
-     single-env reference + nsys runs in progress → `artifacts/rl_ready/p1_2/`, report
-     `docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md`.
+- Running agents / state (2026-11-10 ~10:00 KST):
+  1. P1-2 DONE ([report](reports/rl_ready/P1_1_P1_2_MILESTONES.md), evidence `p1_2_milestones_001.json`, f0a544b):
+     `open_vector_env` (workload A, reduced fidelity: replayed edge, no robot). M0 s512/s15, M1 N=4 (staggered
+     partial resets, policy + replay envs), M2 N=8 ×3 episodes (24/24) and N=16 (16/16): final codes = Native,
+     frozen evaluator PASS, L2 every step, no leak. Matched-load throughput (co-tenant ~46 %, SHARED_GPU):
+     N=1 3.354 → N=8 4.849 (1.45×) → N=16 4.752 env-steps/s (1.42×); VRAM 834 / 1378 / 2064 MiB; partial reset
+     4–9 ms. Kernel time ~linear in N (one 103k-particle env already fills most of the GPU). L4 RUN_TO_RUN BLOCKED
+     (frozen `tlmpm_v5._particle_contacts` mixes add/max atomics). HashGrid audit: no P1-2 evidence run held >1
+     device grid; P1-1 `ab_timing_001` is INVALID_MULTI_GRID_PROCESS → its "≈1.9× at N=4" claim is withdrawn.
+     Guard `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` added (a24ac46).
+  - P1-3a merged into this branch (3682786; release() also frees the alias_free_v1 grid, new CPU test).
+  - Running now: xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786; P1-2b (isaac_lab_newton dispatch, `tasks=`,
+    `termination_reason`, full evaluation stream, per-env pose-bounds invalidation) in worktree
+    `/home/ningan/RoboticCuttingSim-rl-p12b`; B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
+    P1-5/P1-4 plan (parity matrix, CUT in the batched path); P1-6 R0 in `/home/ningan/RoboticCuttingSim-rl-r0`.
   2. P1-1b S0–S3 DONE ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md), evidence `p1_1b_s2_s3_001.json`, 78a211b):
      reward/evaluator wiring in the Lab batched env; G3 snapshot restore PASS; G5 L0 bitwise PASS, G5 L3 (frozen single
      replays reproduce batch final codes, both seeds) PASS; **S3 TRIM B1 (rigid mount, reduced fidelity) N=2/4 both
@@ -20,8 +31,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      B2 under RUN_TO_RUN BLOCKED; G4 B2 arm offset 3.5e-4 rad FAIL vs pre-set tolerance; material graph SIGSEGV after a
      lost grasp (edge leaves domain) → must become an invalid flag; CUT on `tlmpm_v7_2` NOT_RUN (CUT scenes use
      `tlmpm_v5`). HashGrid census: no P1-1b process held >1 device grid.
-  3. P1-3a DONE on branch `claude/rl-p1-3a` (worktree `/home/ningan/RoboticCuttingSim-rl-p13`, head 25c4fc1 after a
-     trial merge of this branch, no conflicts; merge here after the P1-2 chain ends). Opt-in
+  3. P1-3a DONE and merged (3682786; branch `claude/rl-p1-3a`, trial-merged tree: 2204 CPU + 113 Torch tests PASS). Opt-in
      `particle_contact_mode="alias_free_v1"` (C2 alias-free hash dims + C1 + speed guard with conditional-node
      fallback); default `frozen_v1` kernel source byte-identical. Contact stage −49…−51 %, full control step
      1.40–1.45× at N=1/4/8/16 (all SHARED_GPU); same-state contacts/impulses equal; full episodes N=1 (s512, s15) and
@@ -29,8 +39,8 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      **Warp 1.17 finding:** one static host hash-grid descriptor — a replayed graph uses the *last-built* grid, so any
      process holding 2+ `wp.HashGrid`s computes contacts on the wrong grid for all but the last-built one (probe
      `scripts/rl_ready/probe_hashgrid_descriptor.py`: 8,804,086 → 0 candidates). `alias_free_v1` is protected;
-     `frozen_v1` is still exposed. Multi-variant in-process A/B runs are INVALID; P1-2 and P1-1b agents are auditing
-     their runs for multi-grid processes (label `INVALID_MULTI_GRID_PROCESS`).
+     `frozen_v1` is now guarded at batch build. Multi-variant in-process A/B runs are INVALID
+     (`INVALID_MULTI_GRID_PROCESS`); P1-1b and P1-2 evidence audited clean.
   4. P1-6: design DONE in the external agentic optimizer repository (design doc + ADR + CPU scaffold, 35 tests);
      its thin adapter (worktree/proposal/bench/accept/PR/pin/receipt) is implemented there (CPU rehearsal against a
      fake RCS repo PASS, full CPU suite 781 passed; live GPU rehearsal and first pin NOT_RUN until R0 + Phase 1 merge).
@@ -42,7 +52,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      frozen evaluator checkout on dumped outputs), frozen `configs/rl_benchmark/acceptance_v1.json`.
      P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks, never the other project's `locks/gpu1.lock`.
 - Both GPUs shared with other projects: rows `SHARED_GPU`; formal rows rerun in an exclusive window.
-- Next: P1-1/P1-2 acceptance review → merge P1-3a → P1-1b with material → P1-4 long rollout → P1-5 parity matrix → P1-6.
+- Next: review fixes → merge P1-2b / B2 follow-up → P1-4 long rollout → P1-5 parity + CUT → R0 → Phase 1 review/PR/merge → first pin → P1-6 cycle.
 
 ## 待使用者決定
 
