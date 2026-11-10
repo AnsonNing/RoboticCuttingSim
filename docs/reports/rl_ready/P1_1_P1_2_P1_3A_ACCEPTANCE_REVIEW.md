@@ -669,7 +669,7 @@ passes):
   created before the module import are added by the construction-time gc scan.
 - On detection: a per-batch record (`receipt()["device_hashgrid"]["foreign"]`: first and last control step, steps
   flagged, max foreign live grids, foreign last builds), sticky for the batch's life and across `rebuild()`; for a
-  guarded batch also the sticky per-env bit `FOREIGN_DEVICE_HASHGRID = 128` in `invalid_reason` (so it appears in
+  guarded batch also the sticky per-env bit `FOREIGN_DEVICE_HASHGRID = 128` (value on the fix branch; **merge note:** 256 on the integration branch since the merge `f5178f5`, because the B2 follow-up's `INPUT_OUT_OF_DOMAIN` already took 128 — raw rows of the fix branch record 128) in `invalid_reason` (so it appears in
   `info["invalid_reason"]`, terminates the envs in training mode and raises `InvalidBatchEnvs` in strict mode). With
   `allow_multiple_device_hashgrids=True` only the record is written.
 - Limits: the refresh protects the batch's own graph. Another grid's graph (for example a frozen single

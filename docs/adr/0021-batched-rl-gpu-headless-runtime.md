@@ -890,6 +890,6 @@ tests/test_wp17_frontier.py tests/test_repo_naming.py`.
   batch's own grid on the host right before every launch (graph and eager) in both particle-contact modes
   (`DEVICE_HASHGRID_REFRESH = host_rebuild_before_every_launch_v1`; same build call as the substep; no kernel or graph
   change) and runs a step-time census without gc scan or device sync (`device_hashgrid_census_v1`). A foreign grid
-  sets the sticky per-env bit `FOREIGN_DEVICE_HASHGRID` (128) of a guarded batch and a per-batch receipt record
+  sets the sticky per-env bit `FOREIGN_DEVICE_HASHGRID` (128 on the review-fix branch `claude/rl-review-fix1`; **256 on the integration branch** since the merge `f5178f5`, because `INPUT_OUT_OF_DOMAIN` already uses 128 there; see `batched/material_batch.py` and the renumbering note in Phase 1 review finding 8) of a guarded batch and a per-batch receipt record
   (`receipt()["device_hashgrid"]`). The refresh protects the batch's own graph only; another grid's graph (e.g. a
   frozen single `LiveCuttingMaterial`) is not protected, so one device grid per process stays the rule.
