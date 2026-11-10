@@ -391,7 +391,7 @@ MJWarp 3.12.0, Warp 1.17.0).
 | B2 settle gate, G4 ruler-knife setting, strict GPU builds, `mjwarp_grip_v1` | PASS 3 of 3 (point profile: 5 of 6 strict builds FAIL on angular speed; same root cause) |
 | B2 settle under deterministic `run_to_run`, `mjwarp_grip_v1` | PASS (point profile: tool ejected 1.43 m); B2 G1/G3 deterministic isolation not run |
 | Slip comparable to Native | NO: Native PhysX <= 0.93 um / 9.6e-5 rad; MJWarp with the profile 1.6 mm / 15 mrad (inside the monitor's 2 mm / pi/60 warning gates, three orders of magnitude above Native) |
-| Material crash after a lost grasp | Crash site recorded (graph replay); the out-of-domain input that precedes it reproduced and FIXED with an env-local input-domain guard (`INPUT_OUT_OF_DOMAIN` + device-side hold); CPU tests incl. bitwise isolation PASS; GPU see section 4 |
+| Material crash after a lost grasp | Crash site recorded (material graph replay); SIGSEGV not reproduced on demand (pre-guard rerun of the N=1 crash configuration completed). The unbounded out-of-domain input after a lost grasp reproduced (particles flung, step time 0.6 -> 174 s on GPU, no flag) and FIXED with an env-local input-domain guard (`INPUT_OUT_OF_DOMAIN` + device-side hold): CPU tests incl. bitwise isolation PASS; GPU: flagged and held, crash configuration completes |
 
 ## 1. Root cause
 
@@ -555,8 +555,15 @@ mode (`--non-strict`) so the run continues after the flag: the edge leaves the d
 kicked tool, edge angular speed up to 6.7 rad/s), the env gets `INPUT_OUT_OF_DOMAIN` (material invalid reason 64,
 termination reason 6 = MATERIAL_INVALID | GRASP_LOST from step 100 on, grasp LOST at step 36), its material inputs
 are held (material reaction 0 N throughout), and all 1200 steps complete at 325 ms/step (p95 370 ms), `SHARED_GPU`,
-no crash. The same configuration without the guard (`g2mat_b2point_n1_preguard_001`, pinned worktree at `41d9405`,
-strict as the original rows) is queued to check whether the SIGSEGV reproduces; NOT_RUN at the time of writing.
+no crash. The same configuration without the guard (`g2mat_b2point_n1_preguard_001`, pinned worktree at `41d9405`, strict as
+the original rows) did NOT reproduce the SIGSEGV in this attempt: all 1200 steps completed (255 ms/step), the grasp
+was lost at step 327 (the slip is chaotic: 36 in the post-guard run), the edge left the input domain in 59 steps
+(first at step 25, the manifold-collapse kick, edge angular speed up to 43 rad/s), the material took reactions up to
+3.1 N and set no flag. In both runs the first out-of-domain step is the kick that follows the manifold collapse, with
+the tool already 6.8 mm out of place. So the SIGSEGV of `g2mat_b2_n1_001` / `g2mat_b2_n4_001` is intermittent and
+was not reproduced on demand; its site is known (material graph replay), its trigger is not.
+A pre-guard rerun of the N=4 crash configuration (`g2mat_b2point_n4_preguard_001`) was queued last; see the update
+below if present.
 
 **Fix (`material_input_domain_v1`, `material_batch.py`).** A device kernel after the pose interpolation and before
 the substep graph checks per env: edge within 1.5 m of the workpiece frame (Franka reach 0.855 m plus a base 0.47 m
