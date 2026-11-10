@@ -16,7 +16,7 @@ Evidence: [`docs/evidence/rl_ready/p1_3a_001.json`](../../evidence/rl_ready/p1_3
 | Kernel split, nsys graph-node trace, N=1/16, all sub-flags | contact kernel −68 % / −50 %; all kernels −35 % / −29 % (SHARED) |
 | End-to-end control-step wall, one variant per process, N=1/4/8/16 | **1.40–1.45× faster** (SHARED, 2 reps at N=1/16) |
 | Full episodes, alias_free_v1: N=1 s512, N=1 s15, N=4 (s512, s15, s512, s15); hardened code again N=1 s512 and s15 | final codes = Native, labels = Native, frozen evaluator PASS (2 and 121 frames), L2 PASS, 0 guard violations: **PASS** |
-| L3 position band vs Native (P1-0 single-env band) | ~~s512 inside everywhere; s15 outside in 3 of 4 s15 envs~~ **SUPERSEDED (review fix F2).** Strict band-v1 tally: s512 3 of 4 inside (`episode_512_15_512_15_001` env 0, 3.85294e-5 m, is above the v1 max 3.84649e-5 m); s15 **0 of 4** inside (8.34e-4, 8.20e-4, 5.98e-4 m above; 1.73e-4 m below). Band v1 is statistically unusable; band v2 classification in the acceptance review §7 |
+| L3 position band vs Native (P1-0 single-env band) | ~~s512 inside everywhere; s15 outside in 3 of 4 s15 envs~~ **SUPERSEDED (review fix F2).** Strict band-v1 tally: s512 3 of 4 inside (`episode_512_15_512_15_001` env 0, 3.85294e-5 m, is above the v1 max 3.84649e-5 m); s15 **0 of 4** inside (8.34e-4, 8.20e-4, 5.98e-4 m above; 1.73e-4 m below). Band v1 is statistically unusable. **Band v2: 8/8 envs WITHIN on both statistics → MET** (acceptance review §7.2) |
 | EXCLUSIVE_GPU timing, RUN_TO_RUN determinism, C3 | NOT_RUN |
 
 ## 1. What changed
