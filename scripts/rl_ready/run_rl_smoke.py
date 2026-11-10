@@ -65,7 +65,17 @@ def build_family(spec, cpu=False):
     if spec["task"] == "cut_v7_2_v1":
         return ConfiguredTaskFamily.from_cut_workload(N, env_seeds=tuple(spec["env_seeds"]), **extra)
     if spec["task"] == "seeded_trim":
-        return TaskFamily(scene_seeds=tuple(spec["scene_seeds"]), env_seeds=tuple(spec["env_seeds"]), **extra)
+        poses = None
+        if "recorded_command" in spec["drives"]:
+            # recorded commands are edge deltas encoded from the WP-17 measured reset edge: every env starts there
+            # (as P1-2 M1); the planner HOME is ~1.06 mm away and made the first S-TRIM run fail (preserved)
+            from robotic_cutting_sim.rl.policies_batched import load_recorded_commands
+            reset = {s: load_recorded_commands(ROOT / "artifacts/wp17/native_optimized_001" / f"seed_{s}"
+                                               / "box/env/recording/attempt_000")["reset_edge"]
+                     for s in set(spec["scene_seeds"])}
+            poses = tuple(tuple(map(float, reset[s])) for s in spec["scene_seeds"])
+        return TaskFamily(scene_seeds=tuple(spec["scene_seeds"]), env_seeds=tuple(spec["env_seeds"]),
+                          initial_edge_poses=poses, **extra)
     raise ValueError(spec["task"])
 
 
