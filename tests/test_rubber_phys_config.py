@@ -10,6 +10,7 @@ from robotic_cutting_sim.rubber_material import ROOT
 PINS = {
     "configs/rubber/rubber_phys_tests_v1.json": "22e2e5c0e2b3e30e70483b1d9cf64f2990ab5c6e6f81347e5a7c66f3345e8df9",
     "configs/rubber/rubber_record_v1.schema.json": "1a1a941e188a5261708f7b5403a7ddf6d6d519b5cf04ad05a78eba43b273d08a",
+    "configs/rubber/rubber_phys_tests_v2.json": "e4ff8502817458fe723295ead88d9531757b1cff5c771d5d8c352828bab83060",
 }
 
 
@@ -36,3 +37,14 @@ def test_workload_e_is_separate_from_phase1_workloads():
     placeholder = [w for w in phase1["workloads"] if w["id"] == "E"]
     assert len(placeholder) == 1 and placeholder[0]["phase"] == "Phase 2"
     assert e["workloads"][0]["calibration_status"] == "SIMULATOR_ONLY_UNCALIBRATED"
+
+
+def test_v2_differs_from_v1_only_in_the_initializer_stop_rule():
+    v1 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v1.json").read_text())
+    v2 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v2.json").read_text())
+    assert v2["supersedes"]["sha256"] == PINS["configs/rubber/rubber_phys_tests_v1.json"]
+    assert v1["tests"] == v2["tests"] and v1["p2_1_scope"] == v2["p2_1_scope"]
+    c1, c2 = dict(v1["common"]), dict(v2["common"])
+    s1, s2 = c1.pop("static_initializer"), c2.pop("static_initializer")
+    assert c1 == c2
+    assert {k for k in set(s1) | set(s2) if s1.get(k) != s2.get(k)} == {"stop", "stop_v1_status"}
