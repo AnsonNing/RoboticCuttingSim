@@ -10,7 +10,8 @@ What ``LiveRubberMaterial.advance`` does for one env, for all N envs at once:
    material exerts on the group, averaged over the step); there is no robot feedback in P2-1 (the 20 ms delayed
    handoff of a robot coupling belongs to P2-4 / P2-6);
 4. fixed-order segmented diagnostics (``summary[N, 17]``, markers ``[N*K]``) and a validity kernel set the sticky
-   ``invalid_reason[N]`` bits (``NONFINITE_STATE`` 1, ``RUBBER_J_DOMAIN`` 2) and ``invalid_count[1]``; strict mode
+   ``invalid_reason[N]`` bits (``NONFINITE_STATE`` 1, ``RUBBER_J_DOMAIN`` 2, ``RUBBER_CFL_EXCEEDED`` 4 with the opt-in
+   stable-step guard) and ``invalid_count[1]``; strict mode
    reads that one int and raises with env ids.
 
 ``reset(env_ids, seeds, materials)`` is a masked device reset (no allocation, no recapture) to the freshly packed state,
@@ -38,14 +39,17 @@ RUNTIME = "rl_gpu_headless"
 VERSION = "batched_rubber_material_v1"
 INVALID_NONFINITE_STATE = 1
 INVALID_RUBBER_J_DOMAIN = 2
-INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_RUBBER_J_DOMAIN: "RUBBER_J_DOMAIN"}
+INVALID_RUBBER_CFL_EXCEEDED = 4
+INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_RUBBER_J_DOMAIN: "RUBBER_J_DOMAIN",
+                   INVALID_RUBBER_CFL_EXCEEDED: "RUBBER_CFL_EXCEEDED"}
 DIAG_GROUPS = T.DIAG_GROUPS   # fixed reduction width shared with the single reference: same summation order
 DEFAULT_GRAPH_CHUNK = 500
 
 # vars()-complete reset classification (tests/test_rubber_batched.py)
 SOLVER_RESET_ARRAYS = ("x", "v", "x_start", "impulse", "stress", "F", "mass", "gm", "gp", "gj", "old", "new_v", "jbar",
                        "group_active", "group_q0", "group_q1", "group_b0", "group_b1", "group_A0", "group_A1",
-                       "reaction", "traction_force", "traction_mass", "work", "violations", "params")
+                       "reaction", "traction_force", "traction_mass", "work", "violations", "cfl_violations",
+                       "params")
 SOLVER_CONSTANT_ARRAYS = ("reference", "nodes", "weights", "gradients", "slot", "slot_code", "particle_traction",
                           "node_group", "node_mask", "node_X", "group_kind", "group_origin", "cell_node",
                           "cell_offsets", "cell_particles", "marker_offsets", "marker_particles", "plane", "box_c",
@@ -87,8 +91,9 @@ def _wrench_b(reaction: wp.array(dtype=wp.spatial_vectord), control_dt: wp.float
 
 @wp.kernel
 def _validity_b(summary: wp.array2d(dtype=wp.float64), violations: wp.array(dtype=int),
-                wrench: wp.array3d(dtype=wp.float64), G: int, invalid_reason: wp.array(dtype=int),
-                invalid_count: wp.array(dtype=int), step_count: wp.array(dtype=wp.int64)):
+                cfl_violations: wp.array(dtype=int), wrench: wp.array3d(dtype=wp.float64), G: int,
+                invalid_reason: wp.array(dtype=int), invalid_count: wp.array(dtype=int),
+                step_count: wp.array(dtype=wp.int64)):
     e = wp.tid()
     bits = invalid_reason[e]
     if summary[e, 0] != wp.float64(0.0):
@@ -99,6 +104,8 @@ def _validity_b(summary: wp.array2d(dtype=wp.float64), violations: wp.array(dtyp
                 bits = bits | 1
     if violations[e] > 0:
         bits = bits | 2
+    if cfl_violations[e] > 0:
+        bits = bits | 4
     invalid_reason[e] = bits
     step_count[e] = step_count[e]+wp.int64(1)
     if bits != 0:
@@ -168,7 +175,7 @@ def _reset_traction_r(mask: wp.array(dtype=int), env_of_traction: wp.array(dtype
 @wp.kernel
 def _reset_envs_r(mask: wp.array(dtype=int), stage_params: wp.array2d(dtype=float), params: wp.array2d(dtype=float),
                   ncols: int, work: wp.array(dtype=wp.float64), violations: wp.array(dtype=int),
-                  invalid_reason: wp.array(dtype=int), step_count: wp.array(dtype=wp.int64),
+                  cfl_violations: wp.array(dtype=int), invalid_reason: wp.array(dtype=int), step_count: wp.array(dtype=wp.int64),
                   seed: wp.array(dtype=wp.int64), reset_seed: wp.array(dtype=wp.int64),
                   wrench: wp.array3d(dtype=wp.float64), G: int):
     e = wp.tid()
@@ -177,6 +184,7 @@ def _reset_envs_r(mask: wp.array(dtype=int), stage_params: wp.array2d(dtype=floa
             params[e, k] = stage_params[e, k]
         work[e] = wp.float64(0.0)
         violations[e] = 0
+        cfl_violations[e] = 0
         invalid_reason[e] = 0
         step_count[e] = wp.int64(0)
         seed[e] = reset_seed[e]
@@ -238,7 +246,7 @@ class BatchedRubberMaterial:
             self.env_of_traction = wp.array(np.repeat(np.arange(N, dtype=np.int32), Gt1) if self.Gt
                                             else np.zeros(1, np.int32), dtype=int)
             self.traction_counts = wp.array(trac_counts, dtype=float)
-            self.pp = wp.zeros((N*DIAG_GROUPS, 8), dtype=wp.float64)
+            self.pp = wp.zeros((N*DIAG_GROUPS, 9), dtype=wp.float64)
             self.pc = wp.zeros((N*DIAG_GROUPS, 4), dtype=wp.float64)
             self.pn = wp.zeros((N*DIAG_GROUPS, 2), dtype=wp.float64)
             self.summary = wp.zeros((N, T.NDIAG), dtype=wp.float64)
@@ -343,7 +351,7 @@ class BatchedRubberMaterial:
                                                                self.wrench])
             self.launch_diagnostics()
             self.invalid_count.zero_()
-            wp.launch(_validity_b, self.num_envs, [self.summary, s.violations, self.wrench, self.G,
+            wp.launch(_validity_b, self.num_envs, [self.summary, s.violations, s.cfl_violations, self.wrench, self.G,
                                                    self.invalid_reason, self.invalid_count, self.step_count])
         if self.strict:
             self.check_valid()
@@ -353,7 +361,8 @@ class BatchedRubberMaterial:
         with wp.ScopedDevice(self.device):
             wp.launch(T.rc.cell_jbar, s.total_cells, [s.cell_node, s.cell_offsets, s.cell_particles, s.F, s.jbar])
             wp.launch(T.diag_particles, (N, DIAG_GROUPS), [s.x, s.v, s.F, s.mass, s.reference, s.gravity, s.volume,
-                                                           s.params, s.particle_offset, DIAG_GROUPS, self.pp])
+                                                           s.params, s.particle_offset, DIAG_GROUPS, s.nodes, s.jbar,
+                                                           s.dt/s.dx, self.pp])
             wp.launch(T.diag_cells, (N, DIAG_GROUPS), [s.jbar, s.cell_node, s.cell_offsets, s.cell_env_offset,
                                                        DIAG_GROUPS, s.params, s.volume, self.pc])
             wp.launch(T.diag_nodes, (N, DIAG_GROUPS), [s.gm, s.new_v, s.node_offset, DIAG_GROUPS, self.pn])
@@ -444,7 +453,7 @@ class BatchedRubberMaterial:
                 wp.launch(_reset_traction_r, N*self.Gt, [self.reset_mask, self.env_of_traction, self.traction_counts,
                                                          self.stage_mass, s.traction_force, s.traction_mass])
             wp.launch(_reset_envs_r, N, [self.reset_mask, self.stage_params, s.params, cr.NUM_PARAMS, s.work,
-                                         s.violations, self.invalid_reason, self.step_count, self.seed,
+                                         s.violations, s.cfl_violations, self.invalid_reason, self.step_count, self.seed,
                                          self.reset_seed, self.wrench, self.G])
             if full:
                 s.index.zero_()

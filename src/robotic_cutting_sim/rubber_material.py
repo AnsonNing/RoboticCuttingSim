@@ -193,14 +193,16 @@ class RubberRecipe:
                               friction_pad=pick("friction_pad", self.friction_pad, friction_pad),
                               friction_self=pick("friction_self", self.friction_self, friction_self))
 
-    def step_rule(self, dx, control_dt, *, mu_eq_max=None, density_min=None, beta=None, cfl=None):
-        """ADR §7 step rule: dt <= cfl dx / c_p,max with c_p,max over the declared randomisation range
-        (mu_eq max, density min; defaults: the recipe ranges), rounded down so that control_dt / dt is an integer."""
+    def step_rule(self, dx, control_dt, *, mu_eq_max=None, density_min=None, beta=None, cfl=None,
+                  deformation_reserve=1.0):
+        """ADR §7 step rule: dt <= cfl dx / (c_p,max r) with c_p,max over the declared randomisation range
+        (mu_eq max, density min; defaults: the recipe ranges) and the declared deformation reserve r >= 1 (ADR §7
+        amendment; 1 = the v1 rule), rounded down so that control_dt / dt is an integer."""
         cfl = self.cfl if cfl is None else float(cfl)
         mu_max = self.shear_modulus_eq.hi if mu_eq_max is None else float(mu_eq_max)
         rho_min = self.density.lo if density_min is None else float(density_min)
         return step_rule(dx, control_dt, mu0_max=self.mu0(mu_max), kappa_max=self.kappa(mu_max, beta),
-                         density_min=rho_min, cfl=cfl)
+                         density_min=rho_min, cfl=cfl, deformation_reserve=deformation_reserve)
 
     def prony_coefficients(self, dt):
         """Exact exponential-integrator coefficients (ADR §10) in float64: a_i = exp(-dt/tau_i),
@@ -260,20 +262,27 @@ def p_wave_speed(mu, kappa, rho):
     return math.sqrt((kappa+4*mu/3)/rho)
 
 
-def step_rule(dx, control_dt, *, mu0_max, kappa_max, density_min, cfl=0.5):
-    """dt = control_dt / ceil(control_dt / (cfl dx / c_p,max)); returns a receipt dict."""
+def step_rule(dx, control_dt, *, mu0_max, kappa_max, density_min, cfl=0.5, deformation_reserve=1.0):
+    """dt = control_dt / ceil(control_dt / (cfl dx / (c_p,max r))); returns a receipt dict.
+
+    ``deformation_reserve`` r >= 1 (ADR 0023 §7 amendment, P2-1 follow-up) declares the stiffening of the
+    reference-frame wave speed the scene is built for (r = 1: the v1 rule, unchanged dt). The deformed-state speed is
+    checked on the device by the opt-in stable-step guard; r only buys margin up front."""
     dx = _finite_positive(dx, "dx")
     control_dt = _finite_positive(control_dt, "control_dt")
     if not 0 < cfl <= 1.0:
         _refuse(f"cfl must be in (0, 1], got {cfl} (measured critical CFL 1.2-1.5, ADR §2 E2)")
+    r = float(deformation_reserve)
+    if not (math.isfinite(r) and r >= 1.0):
+        _refuse(f"deformation_reserve must be finite and >= 1, got {deformation_reserve}")
     c_p = p_wave_speed(mu0_max, kappa_max, density_min)
-    dt_max = cfl*dx/c_p
+    dt_max = cfl*dx/(c_p*r)
     substeps = int(math.ceil(control_dt/dt_max*(1-1e-12)))
     dt = control_dt/substeps
     return {"dx_m": dx, "control_dt_s": control_dt, "cfl_declared": cfl, "c_p_max_m_s": c_p, "dt_max_s": dt_max,
             "dt_s": dt, "substeps_per_control_step": substeps, "cfl_actual": dt*c_p/dx,
             "margin_to_measured_critical_1_2": 1.2/(dt*c_p/dx), "mu0_max_pa": mu0_max, "kappa_max_pa": kappa_max,
-            "density_min_kg_m3": density_min}
+            "density_min_kg_m3": density_min, "deformation_reserve": r}
 
 
 # ----------------------------------------------------------------------------- parsing

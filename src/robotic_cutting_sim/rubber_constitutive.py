@@ -16,6 +16,18 @@ so it stays finite for J <= 0. Valid domain J, Jbar in [lo, hi] (recipe ``j_doma
 the env. Only to keep the same substep finite, the evaluation uses J_eval = max(J, 0.05) in ``a`` and ``I1/(3J)`` and
 Jbar_eval = max(Jbar, 0.05) in ``p_bar``; the state itself is never repaired. There is no SVD and no singular-value
 clamp. Every function here is pure: the single and the batched kernels call the same code (structural L0 parity).
+
+Stable-step guard ``stable_step_guard_v1`` (ADR 0023 §7 amendment, P2-1 follow-up): TLMPM integrates with the
+REFERENCE gradients, so the explicit stability limit is set by the reference-frame acoustic tensor
+Q(N) = d(P N)/dw = a I + (p'(Jbar) + 5 a I1 / (9 J^2)) g g^T - 2 a / (3 J) (f g^T + g f^T), f = F N, g = cof F N
+(f . g = J). Its largest eigenvalue over unit N is bounded by
+    rho c_bound^2 = a + (p'(Jbar) + 5 a I1 / (9 J^2)) g_max^2 + 2 a / (3 J) (s_max g_max - J),
+    g_max = J / s_min = sqrt(lambda_max(cof^T cof)),  s_max = sqrt(lambda_max(F^T F)),  p'(J) = kappa/2 (1 + 1/J^2)
+(Weyl; Jbar in place of J, which bounds the cell-averaged volumetric term). At F = I it is kappa + 8 mu / 3 (exact:
+kappa + 4 mu / 3, ratio of speeds 1.031 at beta 20); in uniaxial compression it tracks the exact discrete operator
+within 1-6 % (scripts/rubber/p2_1_followup/stability_spectrum.py). ``cfl_effective`` = dt c_bound / dx per particle;
+the solver counts a violation when it exceeds the declared limit (default 1.0, below the measured critical CFL 1.2-1.5
+of ADR E2). Float32 evaluation (a stability bound, not a stress); the same J floors as the stress.
 """
 import numpy as np
 import warp as wp
@@ -25,6 +37,8 @@ wp.set_module_options({"enable_backward": False})
 MODEL_ID = "neo_hookean_jbar_v1"
 MODEL_VERSION = 1
 J_EVAL_FLOOR = 0.05          # finite-evaluation floor only (ADR §5); never a state repair
+STABLE_STEP_GUARD_ID = "stable_step_guard_v1"
+STABLE_STEP_GUARD_DEFAULT_LIMIT = 1.0
 
 
 @wp.func
@@ -83,6 +97,55 @@ def vol_energy_density(jbar: wp.float64, kappa32: float):
     return wp.float64(0.25)*wp.float64(kappa32)*(jb*jb-wp.float64(1.0)-wp.float64(2.0)*wp.log(jb))
 
 
+# ----------------------------------------------------------------------------- stable-step guard (float32)
+
+@wp.func
+def cofactor32(f: wp.mat33):
+    """cof F = J F^-T from cross products of the columns (float32, finite for any F)."""
+    c0 = wp.cross(wp.vec3(f[0, 1], f[1, 1], f[2, 1]), wp.vec3(f[0, 2], f[1, 2], f[2, 2]))
+    c1 = wp.cross(wp.vec3(f[0, 2], f[1, 2], f[2, 2]), wp.vec3(f[0, 0], f[1, 0], f[2, 0]))
+    c2 = wp.cross(wp.vec3(f[0, 0], f[1, 0], f[2, 0]), wp.vec3(f[0, 1], f[1, 1], f[2, 1]))
+    return wp.mat33(c0[0], c1[0], c2[0], c0[1], c1[1], c2[1], c0[2], c1[2], c2[2])
+
+
+@wp.func
+def sym3_max_eig(s: wp.mat33):
+    """Largest eigenvalue of a symmetric 3x3 matrix (trigonometric closed form; never above q + 2p, the mean plus
+    twice the root-mean-square deviation, which bounds every eigenvalue)."""
+    q = (s[0, 0]+s[1, 1]+s[2, 2])/3.0
+    d0 = s[0, 0]-q
+    d1 = s[1, 1]-q
+    d2 = s[2, 2]-q
+    p2 = d0*d0+d1*d1+d2*d2+2.0*(s[0, 1]*s[0, 1]+s[0, 2]*s[0, 2]+s[1, 2]*s[1, 2])
+    out = q
+    if p2 > 0.0:
+        p = wp.sqrt(p2/6.0)
+        b = (s-q*wp.identity(n=3, dtype=float))*(1.0/p)
+        r = wp.clamp(0.5*wp.determinant(b), -1.0, 1.0)
+        out = q+2.0*p*wp.cos(wp.acos(r)/3.0)
+    return out
+
+
+@wp.func
+def wave_modulus_bound(f: wp.mat33, jbar: wp.float64, mu: float, kappa: float):
+    """Upper bound of rho c^2 of the reference-frame acoustic tensor over all directions (module docstring)."""
+    j = wp.max(wp.determinant(f), float(J_EVAL_FLOOR))
+    jb = wp.max(float(jbar), float(J_EVAL_FLOOR))
+    a = mu*wp.pow(j, -2.0/3.0)
+    i1 = wp.ddot(f, f)
+    c = cofactor32(f)
+    g2 = wp.max(sym3_max_eig(wp.transpose(c)*c), 0.0)
+    smax = wp.sqrt(wp.max(sym3_max_eig(wp.transpose(f)*f), 0.0))
+    pp = 0.5*kappa*(1.0+1.0/(jb*jb))
+    return a+(pp+5.0*a*i1/(9.0*j*j))*g2+2.0*a/(3.0*j)*wp.max(smax*wp.sqrt(g2)-j, 0.0)
+
+
+@wp.func
+def cfl_effective(f: wp.mat33, jbar: wp.float64, mu: float, kappa: float, rho: float, dt_over_dx: float):
+    """dt c_bound / dx of one particle (NaN for a non-finite F, so a ``not (c <= limit)`` test counts it)."""
+    return dt_over_dx*wp.sqrt(wave_modulus_bound(f, jbar, mu, kappa)/rho)
+
+
 # ----------------------------------------------------------------------------- kernels shared by single and batch
 
 @wp.kernel
@@ -106,6 +169,38 @@ def _pk1_points(F: wp.array(dtype=wp.mat33), jbar: wp.array(dtype=wp.float64), m
     i = wp.tid()
     stress[i] = nh_jbar_pk1(F[i], jbar[i], mu, kappa)
     valid[i] = int(in_domain(det_d(F[i]), lo, hi) and in_domain(jbar[i], lo, hi))
+
+
+@wp.kernel
+def _cfl_points(F: wp.array(dtype=wp.mat33), jbar: wp.array(dtype=wp.float64), mu: float, kappa: float, rho: float,
+                dt_over_dx: float, out: wp.array(dtype=float)):
+    """Test/diagnostic helper: cfl_effective for independent (F, Jbar) pairs."""
+    i = wp.tid()
+    out[i] = cfl_effective(F[i], jbar[i], mu, kappa, rho, dt_over_dx)
+
+
+def evaluate_cfl_effective(F, jbar, mu, kappa, rho, dt_over_dx, device="cpu"):
+    """Host helper: the guard's per-particle dt c_bound / dx through the Warp function (tests, diagnostics)."""
+    F = np.ascontiguousarray(np.asarray(F, np.float32).reshape(-1, 3, 3))
+    jb = np.ascontiguousarray(np.asarray(jbar, np.float64).reshape(-1))
+    with wp.ScopedDevice(device):
+        out = wp.zeros(len(F), dtype=float)
+        wp.launch(_cfl_points, len(F), [wp.array(F, dtype=wp.mat33), wp.array(jb, dtype=wp.float64), float(mu),
+                                        float(kappa), float(rho), float(dt_over_dx), out])
+        return out.numpy()
+
+
+def wave_modulus_bound_np(F, mu, kappa, jbar=None):
+    """float64 numpy reference of ``wave_modulus_bound`` (same floors)."""
+    F = np.asarray(F, np.float64)
+    J = np.linalg.det(F)
+    j = max(J, J_EVAL_FLOOR)
+    jb = max(J if jbar is None else float(jbar), J_EVAL_FLOOR)
+    s = np.linalg.svd(F, compute_uv=False)
+    a = mu*j**(-2/3)
+    g = abs(J)/s[-1]
+    pp = kappa/2*(1+1/jb**2)
+    return a+(pp+5*a*np.sum(F*F)/(9*j*j))*g*g+2*a/(3*j)*max(s[0]*g-j, 0.0)
 
 
 def evaluate_pk1(F, jbar, mu, kappa, j_domain=(0.2, 5.0), device="cpu"):

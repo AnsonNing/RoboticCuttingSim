@@ -10,6 +10,8 @@ One substep (17 launches, ADR §13):
 1.  x_start <- x
 2.  J-bar pass ``rubber_constitutive.cell_jbar`` (cell CSR gather, float64, deterministic)
 3.  stress pass ``_stress``: P = PK1(F, Jbar_cell); J / Jbar outside the domain counts a violation (sticky flag)
+3a. (opt-in ``stable_step_guard``, ADR 0023 §7 amendment) ``_cfl_guard``: dt c_bound(F, Jbar) / dx above the declared
+    limit counts a violation (sticky ``RUBBER_CFL_EXCEEDED`` in the runtime); off by default (v1 launch sequence)
 4.  ``_loads``: impulse = traction + table / fixture contacts (frozen ``_contact_impulse``) [+ initializer damping]
 5.  zero grid; frozen ``tlmpm_v5._p2g``; frozen ``tlmpm_v5._grid_update`` (S = 1, slot tables constant 0)
 6.  ``_bc`` (reaction pass): nodal Dirichlet groups set the masked velocity components to the position-exact
@@ -30,7 +32,8 @@ import warp as wp
 
 from . import tlmpm_v5 as v5
 from . import rubber_constitutive as rc
-from .rubber_constitutive import det_d, in_domain, nh_jbar_pk1, iso_energy_density, vol_energy_density
+from .rubber_constitutive import (cfl_effective, det_d, in_domain, nh_jbar_pk1, iso_energy_density,
+                                  vol_energy_density)
 from .tlmpm_v6 import _grid_positions
 
 wp.set_module_options({"enable_backward": False})
@@ -41,7 +44,7 @@ ADR = "docs/adr/0023-rubber-material-v1.md"
 GROUP_RIGID, GROUP_AFFINE = 0, 1
 DIAG_COLUMNS = ("nonfinite", "J_min", "J_max", "volume_ratio", "Jbar_min", "Jbar_max", "frac_cells_jbar_dev_gt_0_05",
                 "elastic_iso", "elastic_vol", "elastic", "kinetic_particle", "kinetic_grid", "gravity",
-                "max_speed_m_s", "cells", "particles", "max_grid_speed_m_s")
+                "max_speed_m_s", "cells", "particles", "max_grid_speed_m_s", "cfl_eff_max")
 NDIAG = len(DIAG_COLUMNS)
 DIAG_GROUPS = 64
 _HERE = Path(__file__).resolve().parent
@@ -128,6 +131,18 @@ def _stress(F: wp.array(dtype=wp.mat33), nodes: wp.array2d(dtype=int), jbar: wp.
 
 
 @wp.kernel
+def _cfl_guard(F: wp.array(dtype=wp.mat33), nodes: wp.array2d(dtype=int), jbar: wp.array(dtype=wp.float64),
+               mass: wp.array(dtype=float), mu: float, kappa: float, volume: float, dt_over_dx: float, limit: float,
+               cfl_violations: wp.array(dtype=int)):
+    """Stable-step guard (opt-in): count particles whose dt c_bound / dx exceeds ``limit`` (or is not finite).
+    Read-only on the state; the atomic touches the counter only on a violation."""
+    p = wp.tid()
+    c = cfl_effective(F[p], jbar[nodes[p, 0]], mu, kappa, mass[p]/volume, dt_over_dx)
+    if not (c <= limit):
+        wp.atomic_add(cfl_violations, 0, 1)
+
+
+@wp.kernel
 def _loads(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), mass: wp.array(dtype=float),
            impulse: wp.array(dtype=wp.vec3), particle_traction: wp.array(dtype=int),
            traction_force: wp.array(dtype=wp.vec3), traction_mass: wp.array(dtype=float), dt: float, damping: float,
@@ -178,9 +193,11 @@ def _bc(node_group: wp.array(dtype=int), node_mask: wp.array(dtype=int), node_X:
 def diag_particles(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), F: wp.array(dtype=wp.mat33),
                    mass: wp.array(dtype=float), reference: wp.array(dtype=wp.vec3), gravity: wp.vec3, volume: float,
                    dparams: wp.array2d(dtype=float), particle_offset: wp.array(dtype=int), groups: int,
+                   nodes: wp.array2d(dtype=int), jbar: wp.array(dtype=wp.float64), dt_over_dx: float,
                    partials: wp.array2d(dtype=wp.float64)):
     """Thread (e, g) strides over env e's particles: nonfinite, J min/max/sum, isochoric energy, particle KE,
-    gravity potential relative to the reference, max speed (float64, fixed order: deterministic on any device)."""
+    gravity potential relative to the reference, max speed, max dt c_bound / dx of the stable-step guard (end of the
+    control step; float64 accumulation, fixed order: deterministic on any device)."""
     e, grp = wp.tid()
     nonfinite = wp.float64(0.0)
     jmin = wp.float64(1.0e30)
@@ -190,7 +207,9 @@ def diag_particles(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), F: wp
     ke = wp.float64(0.0)
     egrav = wp.float64(0.0)
     vmax = wp.float64(0.0)
+    cflmax = wp.float64(0.0)
     mu = dparams[e, 0]
+    kappa = dparams[e, 1]
     vol = wp.float64(volume)
     g = wp.vec3d(gravity)
     for p in range(particle_offset[e]+grp, particle_offset[e+1], groups):
@@ -213,6 +232,8 @@ def diag_particles(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), F: wp
             ke += wp.float64(0.5)*m*wp.dot(vd, vd)
             egrav -= m*wp.dot(g, wp.vec3d(xp)-wp.vec3d(reference[p]))
             vmax = wp.max(vmax, wp.sqrt(wp.dot(vd, vd)))
+            cflmax = wp.max(cflmax, wp.float64(cfl_effective(fp, jbar[nodes[p, 0]], mu, kappa, mass[p]/volume,
+                                                             dt_over_dx)))
         else:
             nonfinite = wp.float64(1.0)
     row = e*groups+grp
@@ -224,6 +245,7 @@ def diag_particles(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), F: wp
     partials[row, 5] = ke
     partials[row, 6] = egrav
     partials[row, 7] = vmax
+    partials[row, 8] = cflmax
 
 
 @wp.kernel
@@ -279,6 +301,7 @@ def diag_combine(pp: wp.array2d(dtype=wp.float64), pc: wp.array2d(dtype=wp.float
     ke = wp.float64(0.0)
     egrav = wp.float64(0.0)
     vmax = wp.float64(0.0)
+    cflmax = wp.float64(0.0)
     for k in range(gp_):
         r = e*gp_+k
         nonfinite = wp.max(nonfinite, pp[r, 0])
@@ -289,6 +312,7 @@ def diag_combine(pp: wp.array2d(dtype=wp.float64), pc: wp.array2d(dtype=wp.float
         ke += pp[r, 5]
         egrav += pp[r, 6]
         vmax = wp.max(vmax, pp[r, 7])
+        cflmax = wp.max(cflmax, pp[r, 8])
     jbmin = wp.float64(1.0e30)
     jbmax = wp.float64(-1.0e30)
     evol = wp.float64(0.0)
@@ -323,6 +347,7 @@ def diag_combine(pp: wp.array2d(dtype=wp.float64), pc: wp.array2d(dtype=wp.float
     summary[e, 14] = cells
     summary[e, 15] = n
     summary[e, 16] = vgrid
+    summary[e, 17] = cflmax
 
 
 @wp.kernel
@@ -355,7 +380,7 @@ class SegmentedRubberDiagnostics:
         self.gp = self.gc = self.gn = DIAG_GROUPS
         N = len(particle_counts)
         with wp.ScopedDevice(d):
-            self.pp = wp.zeros((N*self.gp, 8), dtype=wp.float64)
+            self.pp = wp.zeros((N*self.gp, 9), dtype=wp.float64)
             self.pc = wp.zeros((N*self.gc, 4), dtype=wp.float64)
             self.pn = wp.zeros((N*self.gn, 2), dtype=wp.float64)
             self.summary = wp.zeros((N, NDIAG), dtype=wp.float64)
@@ -368,7 +393,8 @@ class SegmentedRubberDiagnostics:
         with wp.ScopedDevice(s.device):
             wp.launch(rc.cell_jbar, s.cells, [s.cell_node, s.cell_offsets, s.cell_particles, s.F, s.jbar])
             wp.launch(diag_particles, (N, self.gp), [s.x, s.v, s.F, s.mass, s.reference, s.gravity, s.volume,
-                                                     s.dparams, s.particle_offset, self.gp, self.pp])
+                                                     s.dparams, s.particle_offset, self.gp, s.nodes, s.jbar,
+                                                     s.dt/s.dx, self.pp])
             wp.launch(diag_cells, (N, self.gc), [s.jbar, s.cell_node, s.cell_offsets, s.cell_env_offset, self.gc,
                                                  s.dparams, s.volume, self.pc])
             wp.launch(diag_nodes, (N, self.gn), [s.gm, s.new_v, s.node_offset, self.gn, self.pn])
@@ -391,14 +417,16 @@ class TLMPMRubber:
     ``scene``: :class:`rubber_scene.RubberStripScene`; ``material``: :class:`rubber_material.MaterialValues`;
     ``dt`` material time step; ``substeps``: substeps per control step (the group interpolation parameter is
     index / substeps). ``table_plane`` (unit normal, offset; inward normal) and ``fixture_boxes`` ([B, 2, 3]
-    centres, half extents) enable contacts with friction ``material.friction_table`` (P2-4 validates them)."""
+    centres, half extents) enable contacts with friction ``material.friction_table`` (P2-4 validates them).
+    ``stable_step_guard``: None (off, the v1 launch sequence) or the limit of dt c_bound / dx (ADR 0023 §7 amendment;
+    ``rubber_constitutive.STABLE_STEP_GUARD_DEFAULT_LIMIT`` = 1.0); violations are counted in ``cfl_violations``."""
     solver_name = SOLVER_NAME
     status = STATUS
     num_envs = 1
 
     def __init__(self, scene, material, dt, *, substeps=1, gravity=(0.0, 0.0, -9.81), device="cpu", pic=0.0,
                  j_domain=(0.2, 5.0), contact_stiffness=0.1, contact_radius_scale=0.9, table_plane=None,
-                 fixture_boxes=None):
+                 fixture_boxes=None, stable_step_guard=None):
         from .rubber_material import mass_per_particle
         if pic != 0.0:
             raise ValueError("tlmpm_rubber_v1 refuses pic != 0: rubber runs pure FLIP (ADR 0023 §2 E3, D4)")
@@ -410,6 +438,11 @@ class TLMPMRubber:
         lo, hi = map(float, j_domain)
         if not 0 < lo < 1 < hi:
             raise ValueError("j_domain must satisfy 0 < lo < 1 < hi")
+        if stable_step_guard is not None:
+            stable_step_guard = float(stable_step_guard)
+            if not (np.isfinite(stable_step_guard) and stable_step_guard > 0):
+                raise ValueError("stable_step_guard must be None (off) or a positive finite CFL limit")
+        self.cfl_guard_limit = stable_step_guard
         wp.init()
         self.scene, self.material, self.device = scene, material, str(wp.get_device(device))
         self.dt, self.substeps, self.pic = dt, int(substeps), 0.0
@@ -490,6 +523,7 @@ class TLMPMRubber:
             self.box_h = wp.array(boxes[:, 1].copy() if len(boxes) else np.ones((1, 3), np.float32), dtype=wp.vec3)
             self.index = wp.zeros(1, dtype=int)
             self.violations = wp.zeros(1, dtype=int)
+            self.cfl_violations = wp.zeros(1, dtype=int)
             self.dparams = wp.array(np.array([[material.mu0, material.kappa]], np.float64).astype(np.float32),
                                     dtype=float)
             self.particle_offset = wp.array(np.array([0, self.n], np.int32), dtype=int)
@@ -558,6 +592,10 @@ class TLMPMRubber:
             wp.launch(_stress, n, [self.F, self.nodes, self.jbar, self.stress, self.material.mu0,
                                    self.material.kappa, wp.float64(self.j_domain[0]), wp.float64(self.j_domain[1]),
                                    self.violations])
+            if self.cfl_guard_limit is not None:
+                wp.launch(_cfl_guard, n, [self.F, self.nodes, self.jbar, self.mass, self.material.mu0,
+                                          self.material.kappa, self.volume, dt/self.dx, self.cfl_guard_limit,
+                                          self.cfl_violations])
             wp.launch(_loads, n, [self.x, self.v, self.mass, self.impulse, self.particle_traction, self.traction_force,
                                   self.traction_mass, dt, self.damping_rate, self.radius, self.contact_stiffness,
                                   self.material.friction_table, self.use_plane, self.plane, self.boxes, self.box_c,
@@ -608,8 +646,8 @@ class TLMPMRubber:
         with wp.ScopedDevice(self.device):
             wp.copy(self.x, self.reference)
             for a in (self.v, self.x_start, self.stress, self.impulse, self.gm, self.gp, self.gj, self.old,
-                      self.new_v, self.reaction, self.work, self.index, self.violations, self.traction_force,
-                      self.group_b0, self.group_b1):
+                      self.new_v, self.reaction, self.work, self.index, self.violations, self.cfl_violations,
+                      self.traction_force, self.group_b0, self.group_b1):
                 a.zero_()
             self.F.assign(np.tile(np.eye(3, dtype=np.float32), (self.n, 1, 1)))
             self.jbar.fill_(1.0)
@@ -668,4 +706,7 @@ class TLMPMRubber:
                 "fixture_boxes": self.boxes, "stiffness_fraction": self.contact_stiffness, "radius_m": self.radius,
                 "status": "implemented, validated in P2-4 (RUBBER-CONT)"},
                 "damping_rate": self.damping_rate, "frozen_kernels": list(FROZEN_KERNELS),
+                "stable_step_guard": (None if self.cfl_guard_limit is None else
+                                      {"id": rc.STABLE_STEP_GUARD_ID, "limit": self.cfl_guard_limit,
+                                       "quantity": "max_p dt c_bound(F_p, Jbar) / dx, every substep"}),
                 "source_sha256": source_sha256(), "device": self.device, "warp_version": wp.config.version}

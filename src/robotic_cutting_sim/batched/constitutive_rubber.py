@@ -17,7 +17,7 @@ import math
 import numpy as np
 import warp as wp
 
-from ..rubber_constitutive import MODEL_ID, MODEL_VERSION, cell_jbar, det_d, in_domain, nh_jbar_pk1
+from ..rubber_constitutive import MODEL_ID, MODEL_VERSION, cell_jbar, cfl_effective, det_d, in_domain, nh_jbar_pk1
 from .errors import UnsupportedBatchConfiguration
 
 RUBBER_PARAM_NAMES = ("mu0", "kappa", "density", "friction_table", "friction_pad", "friction_self")
@@ -63,6 +63,18 @@ def _stress_b(F: wp.array(dtype=wp.mat33), nodes: wp.array2d(dtype=int), jbar: w
     stress[p] = nh_jbar_pk1(f, jb, params[e, P_MU], params[e, P_KAPPA])
 
 
+@wp.kernel
+def _cfl_guard_b(F: wp.array(dtype=wp.mat33), nodes: wp.array2d(dtype=int), jbar: wp.array(dtype=wp.float64),
+                 mass: wp.array(dtype=float), params: wp.array2d(dtype=float), env_of_particle: wp.array(dtype=int),
+                 volume: float, dt_over_dx: float, limit: float, cfl_violations: wp.array(dtype=int)):
+    """``tlmpm_rubber_v1._cfl_guard`` with mu0, kappa of the particle's env and a per-env counter."""
+    p = wp.tid()
+    e = env_of_particle[p]
+    c = cfl_effective(F[p], jbar[nodes[p, 0]], params[e, P_MU], params[e, P_KAPPA], mass[p]/volume, dt_over_dx)
+    if not (c <= limit):
+        wp.atomic_add(cfl_violations, e, 1)
+
+
 @dataclass(frozen=True)
 class RubberConstitutiveModel:
     model_id: str
@@ -80,6 +92,13 @@ class RubberConstitutiveModel:
                                                       solver.params, solver.env_of_particle,
                                                       wp.float64(solver.j_domain[0]), wp.float64(solver.j_domain[1]),
                                                       solver.violations], device=solver.device)
+
+    def launch_guard(self, solver):
+        """Opt-in stable-step guard pass (after the stress pass; reads F and the J-bar of this substep)."""
+        wp.launch(_cfl_guard_b, solver.total_particles, [solver.F, solver.nodes, solver.jbar, solver.mass,
+                                                         solver.params, solver.env_of_particle, solver.volume,
+                                                         solver.dt/solver.dx, solver.cfl_guard_limit,
+                                                         solver.cfl_violations], device=solver.device)
 
     def receipt(self):
         return {"model_id": self.model_id, "version": self.version, "param_names": list(self.param_names),

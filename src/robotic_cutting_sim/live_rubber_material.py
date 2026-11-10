@@ -9,8 +9,9 @@ On CUDA the substeps of a control step run as CUDA graphs of ``graph_chunk`` sub
 ``substeps // chunk`` times plus one remainder graph; the device substep index carries across replays, so the group
 interpolation is continuous. On CPU the substeps run eagerly (same launches). No host work between chunks.
 
-After each control step: segmented diagnostics, the sticky validity flags (``NONFINITE_STATE``, ``RUBBER_J_DOMAIN``;
-strict mode raises ``RubberInvalidState``, training mode only records) and, if ``record=True``, one
+After each control step: segmented diagnostics, the sticky validity flags (``NONFINITE_STATE``, ``RUBBER_J_DOMAIN``,
+``RUBBER_CFL_EXCEEDED`` with the opt-in ``stable_step_guard``; strict mode raises ``RubberInvalidState``, training mode
+only records) and, if ``record=True``, one
 ``rcs_rubber_record_v1`` step record. The coupling surface for P2-6 Native hosting is ``reset()`` /
 ``advance(motions) -> wrench``. Material status: ``SIMULATOR_ONLY_UNCALIBRATED``.
 """
@@ -27,7 +28,9 @@ from .tlmpm_rubber_v1 import DIAG_COLUMNS, SOLVER_NAME, STATUS, TLMPMRubber
 RECORD_SCHEMA = "rcs_rubber_record_v1"
 INVALID_NONFINITE_STATE = 1
 INVALID_RUBBER_J_DOMAIN = 2
-INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_RUBBER_J_DOMAIN: "RUBBER_J_DOMAIN"}
+INVALID_RUBBER_CFL_EXCEEDED = 4
+INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_RUBBER_J_DOMAIN: "RUBBER_J_DOMAIN",
+                   INVALID_RUBBER_CFL_EXCEEDED: "RUBBER_CFL_EXCEEDED"}
 DEFAULT_GRAPH_CHUNK = 500
 
 
@@ -43,11 +46,15 @@ def decode_reason(value):
 
 class LiveRubberMaterial:
     """See the module docstring. ``material`` defaults to the recipe nominal values; ``step_material`` (default:
-    ``material``) gives the c_p,max of the step rule (a batch passes its randomisation maxima)."""
+    ``material``) gives the c_p,max of the step rule (a batch passes its randomisation maxima).
+    ``stable_step_guard`` (None = off, the v1 behaviour; a float = the limit of dt c_bound / dx, recommended
+    ``rubber_constitutive.STABLE_STEP_GUARD_DEFAULT_LIMIT``) and ``deformation_reserve`` (>= 1, divides dt; 1 = v1)
+    are the ADR 0023 §7 amendment options."""
 
     def __init__(self, spec, *, recipe=None, material=None, control_dt=0.02, cfl=None, substeps=None,
                  step_material=None, gravity=(0.0, 0.0, -9.81), device="cpu", graph_chunk=DEFAULT_GRAPH_CHUNK,
-                 capture_graph=None, record=False, strict=True, table_plane=None, fixture_boxes=None):
+                 capture_graph=None, record=False, strict=True, table_plane=None, fixture_boxes=None,
+                 stable_step_guard=None, deformation_reserve=1.0):
         start = time.perf_counter()
         self.recipe = rm.load_recipe() if recipe is None else recipe
         self.material = self.recipe.nominal() if material is None else material
@@ -57,7 +64,7 @@ class LiveRubberMaterial:
         cfl = self.recipe.cfl if cfl is None else float(cfl)
         sm = self.material if step_material is None else step_material
         self.step_rule = rm.step_rule(self.scene.dx, self.control_dt, mu0_max=sm.mu0, kappa_max=sm.kappa,
-                                      density_min=sm.density, cfl=cfl)
+                                      density_min=sm.density, cfl=cfl, deformation_reserve=deformation_reserve)
         if substeps is not None:
             substeps = int(substeps)
             if substeps < self.step_rule["substeps_per_control_step"]:
@@ -72,7 +79,7 @@ class LiveRubberMaterial:
                                   device=device, j_domain=self.recipe.j_domain,
                                   contact_stiffness=self.recipe.contact_stiffness_fraction,
                                   contact_radius_scale=self.recipe.contact_radius_scale, table_plane=table_plane,
-                                  fixture_boxes=fixture_boxes)
+                                  fixture_boxes=fixture_boxes, stable_step_guard=stable_step_guard)
         self.device = self.solver.device
         self.strict, self.record = bool(strict), bool(record)
         self.capture_graph = wp.get_device(self.device).is_cuda if capture_graph is None else bool(capture_graph)
@@ -83,6 +90,7 @@ class LiveRubberMaterial:
         self.invalid_reason = 0
         self.records = []
         self._last_violations = 0
+        self._last_cfl_violations = 0
         self.total_mass = float(self.solver.mass_value)*self.scene.n
         if self.capture_graph:
             self._capture()
@@ -128,6 +136,7 @@ class LiveRubberMaterial:
         self.step_count = 0
         self.invalid_reason = 0
         self._last_violations = 0
+        self._last_cfl_violations = 0
         self.records = [self.header()] if self.record else []
         return self.receipt_short()
 
@@ -153,9 +162,14 @@ class LiveRubberMaterial:
             self.invalid_reason |= INVALID_NONFINITE_STATE
         if violations > 0:
             self.invalid_reason |= INVALID_RUBBER_J_DOMAIN
+        cfl_violations = int(s.cfl_violations.numpy()[0])
+        step_cfl_violations = cfl_violations-self._last_cfl_violations
+        self._last_cfl_violations = cfl_violations
+        if cfl_violations > 0:
+            self.invalid_reason |= INVALID_RUBBER_CFL_EXCEEDED
         self.last_diagnostics = diag
         if self.record:
-            self.records.append(self.step_record(diag, wrench, step_violations))
+            self.records.append(self.step_record(diag, wrench, step_violations, step_cfl_violations))
         if self.strict and self.invalid_reason:
             raise RubberInvalidState(decode_reason(self.invalid_reason), self.step_count)
         return wrench
@@ -173,7 +187,7 @@ class LiveRubberMaterial:
                 "groups": [{"name": g["name"], "kind": g["kind"], "nodes": int(g["nodes"])} for g in sc.groups],
                 "traction_groups": [dict(t) for t in sc.traction_groups]}
 
-    def step_record(self, diag, wrench, step_violations):
+    def step_record(self, diag, wrench, step_violations, step_cfl_violations=0):
         s = self.solver
         work = float(s.work.numpy()[0])
         energies = {"kinetic_particle": diag["kinetic_particle"], "kinetic_grid": diag["kinetic_grid"],
@@ -189,7 +203,9 @@ class LiveRubberMaterial:
                 "bc_active": s.group_active.numpy()[:s.G].tolist(),
                 "traction_n": s.traction_force.numpy()[:s.Gt].tolist(), "invalid_reason": int(self.invalid_reason),
                 "invalid_flags": decode_reason(self.invalid_reason), "j_domain_violations": int(step_violations),
-                "max_speed_m_s": diag["max_speed_m_s"], "nonfinite": bool(diag["nonfinite"] != 0.0)}
+                "max_speed_m_s": diag["max_speed_m_s"], "nonfinite": bool(diag["nonfinite"] != 0.0),
+                "stable_step": {"cfl_eff_max_end_of_step": diag["cfl_eff_max"], "guard_limit": s.cfl_guard_limit,
+                                "guard_violations_step": int(step_cfl_violations)}}
 
     # ------------------------------------------------------------------ queries
 
@@ -204,7 +220,8 @@ class LiveRubberMaterial:
                 "recipe": self.recipe.receipt(), "scene": self.scene.receipt(), "step_rule": self.step_rule,
                 "control_dt_s": self.control_dt, "graph": self.capture_receipt, "strict": self.strict,
                 "calibration_status": self.recipe.calibration_status, "memory_bytes": self.solver.memory_bytes(),
-                "build_wall_s": self.build_wall_s, "invalid_reason": decode_reason(self.invalid_reason)}
+                "build_wall_s": self.build_wall_s, "invalid_reason": decode_reason(self.invalid_reason),
+                "stable_step_guard": self.solver.solver_receipt()["stable_step_guard"]}
 
 
 # ----------------------------------------------------------------------------- record validation (RUBBER-PHYS-09)

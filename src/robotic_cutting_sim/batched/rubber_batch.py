@@ -119,6 +119,7 @@ class BatchedTLMPMRubber:
         self.substeps, self.gravity_tuple = u["substeps"], u["gravity"]
         self.gravity = wp.vec3(*u["gravity"])
         self.pic, self.j_domain = 0.0, u["j_domain"]
+        self.cfl_guard_limit = u["stable_step_guard"]
         self.radius, self.contact_stiffness = u["radius"], u["contact_stiffness"]
         self.G, self.Gt, self.boxes, self.use_plane = u["G"], u["Gt"], u["boxes"], u["use_plane"]
         self.markers_per_env = u["markers"]
@@ -133,6 +134,7 @@ class BatchedTLMPMRubber:
                 setattr(self, name, wp.array(h[name], dtype=self._DTYPES[name]))
             self.work = wp.zeros(self.num_envs, dtype=wp.float64)
             self.violations = wp.zeros(self.num_envs, dtype=int)
+            self.cfl_violations = wp.zeros(self.num_envs, dtype=int)
             self.index = wp.zeros(1, dtype=int)
         for module in (v5.__name__, "robotic_cutting_sim.tlmpm_v6", rc.__name__, "robotic_cutting_sim.tlmpm_rubber_v1",
                        cr.__name__, __name__):
@@ -144,6 +146,8 @@ class BatchedTLMPMRubber:
         with wp.ScopedDevice(self.device):
             wp.copy(self.x_start, self.x)
             self.model.launch_stress(self)
+            if self.cfl_guard_limit is not None:
+                self.model.launch_guard(self)
             wp.launch(_loads_b, n, [self.x, self.v, self.mass, self.impulse, self.particle_traction,
                                     self.traction_force, self.traction_mass, dt, self.radius, self.contact_stiffness,
                                     self.params, self.use_plane, self.plane, self.boxes, self.box_c, self.box_h,
@@ -209,6 +213,7 @@ class BatchedTLMPMRubber:
         out["cell_offsets"] = self.cell_offsets.numpy()[c0:c1+1]-np.int32(p0)
         out["work"] = self.work.numpy()[e:e+1].copy()
         out["violations"] = self.violations.numpy()[e:e+1].copy()
+        out["cfl_violations"] = self.cfl_violations.numpy()[e:e+1].copy()
         out["index"] = self.index.numpy().copy()
         out["params"] = self.params.numpy()[e].copy()
         return out
@@ -217,4 +222,6 @@ class BatchedTLMPMRubber:
         return {"solver": SOLVER_NAME, "base_solver": BASE_SOLVER, "status": STATUS,
                 "execution": "batched_flat_soa_env_kernels_v1", "constitutive_model": self.model.receipt(),
                 "dt_s": self.dt, "dx_m": self.dx, "substeps_per_control_step": self.substeps, "pic": 0.0,
+                "stable_step_guard": (None if self.cfl_guard_limit is None else
+                                      {"id": rc.STABLE_STEP_GUARD_ID, "limit": self.cfl_guard_limit}),
                 "source_sha256": source_sha256(), "device": self.device, "warp_version": wp.config.version}

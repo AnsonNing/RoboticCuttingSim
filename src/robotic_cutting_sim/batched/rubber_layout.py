@@ -94,7 +94,8 @@ def uniform_signature(live):
             "pic": float(s.pic), "j_domain": tuple(s.j_domain), "radius": float(s.radius),
             "contact_stiffness": float(s.contact_stiffness), "G": int(s.G), "Gt": int(s.Gt),
             "group_kinds": tuple(g["kind"] for g in live.scene.groups), "boxes": int(s.boxes),
-            "use_plane": int(s.use_plane), "markers": len(live.scene.marker_offsets)-1}
+            "use_plane": int(s.use_plane), "markers": len(live.scene.marker_offsets)-1,
+            "stable_step_guard": s.cfl_guard_limit}
 
 
 def pack_rubber(lives, *, constitutive_model=cr.DEFAULT_MODEL_ID):
