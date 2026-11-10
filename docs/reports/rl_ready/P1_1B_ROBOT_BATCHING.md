@@ -364,3 +364,245 @@ MuJoCo-Warp and Isaac Lab construct none (grep of `.deps/isaaclab-venv/.../mujoc
 
 So no P1-1b process held two CUDA grids and no run is labelled `INVALID_MULTI_GRID_PROCESS`. Every probe now
 records its grid census in its row, and the G5 band combiner refuses a multi-grid input.
+
+---
+
+# B2 grasp follow-up (2026-11-10, branch `claude/rl-b2-grasp`)
+
+Evidence: `docs/evidence/rl_ready/p1_1b_b2_001.json` (assembled by `scripts/rl_ready/make_p1_1b_b2_evidence.py`
+from `artifacts/rl_ready/p1_1b_b2/`; raw outputs not committed). New probes: `scripts/rl_ready/probe_lab_b2_grasp.py`
+(robot-only B2 diagnosis: every MuJoCo-Warp tool contact per control step with its geoms, depth, tool-frame
+position, contact-frame force and elliptic-cone usage, hand-frame slip/rotation, finger q, tool/hand velocity;
+eager stepping, host reads every step, labelled DIAGNOSTIC, not a timing row) and `scripts/rl_ready/probe_material_ood.py`
+(material only, out-of-domain inputs on top of recorded S3 inputs). GPU rows: physical GPU0 under the RCS flock,
+`CUDA_VISIBLE_DEVICES=0`, all `SHARED_GPU` (other projects' processes and other RCS agents' jobs). CPU rows: Warp-CPU
+MJWarp (`cpu_test_mode`) in the Isaac Lab venv. Same software as above (Isaac Lab 3.0 kit-less, Newton 1.6.1,
+MJWarp 3.12.0, Warp 1.17.0).
+
+## Status
+
+| Check | Status |
+| --- | --- |
+| Root cause of the B2 grasp loss | FOUND, measured on CPU and GPU: MJWarp box-box contact manifold collapse between the finger pads and the handle |
+| Opt-in versioned profile `mjwarp_grip_v1` (MuJoCo `box_box` collider + `impratio` 10) | IMPLEMENTED; default (B1, point profile) and existing profiles unchanged |
+| Robot-only recorded TRIM sequence, N=2 (seeds 512, 15), GPU, graph, strict, `mjwarp_grip_v1` | PASS: grasp held (HOLDING 1196/1200 steps per env, max slip 1.51 / 1.59 mm, max rotation 14.1 / 15.2 mrad) |
+| S3 TRIM B2 N=2 (seeds 512, 15) with material, frozen evaluator, `mjwarp_grip_v1` | PASS in both envs, no termination |
+| Slip comparable to Native | NO: Native PhysX <= 0.93 um / 9.6e-5 rad; MJWarp with the profile 1.6 mm / 15 mrad (inside the monitor's 2 mm / pi/60 warning gates, three orders of magnitude above Native) |
+| Material crash after a lost grasp | Crash site recorded (graph replay); the out-of-domain input that precedes it reproduced and FIXED with an env-local input-domain guard (`INPUT_OUT_OF_DOMAIN` + device-side hold); CPU tests incl. bitwise isolation PASS; GPU see section 4 |
+
+## 1. Root cause
+
+**Native reference** (WP-17 recordings of seeds 512 and 15, the S3 command source): the PhysX contact sensor
+reports 8 tool contacts (4 per finger pad, at the corners of the pad overlap) and the grasp monitor is HOLDING in
+all 1200 steps, slip <= 0.72 / 0.93 um, rotation <= 7.4e-5 / 9.6e-5 rad.
+
+**MJWarp, default point profile** (`diag_cpu_point_001`, `diag_gpu_point_001`: N=1, seed 512, recorded commands,
+robot only, 250 steps). Both finger pads and the tool handle are boxes (pad half extents 8.8 x 7.6 x 8.2 mm, handle
+12 x 11 x 30 mm); condim 3, mu 0.6, solref (0.01, 1), solimp (0.99, 0.995, 0.01, 0.5, 2); tool 88.6 g with its
+centre of mass 55 mm down the blade; elliptic cones, impratio 1, 50 iterations, 2 ms substeps. Per control step:
+
+- Steps 1-21: 4 contacts per pad at the pad corners, 18 N normal force per pad, cone usage 0.03-0.06, depth 0.09 mm,
+  finger q 10.97 mm (handle half thickness 11 mm). The friction capacity (2 x 0.6 x 18 N = 21.6 N) is 25 x the tool
+  weight (0.87 N): neither the friction coefficient nor the 20 N finger force limit is the problem.
+- From step 22 (0.33 rad into the HOME -> skim reorientation, commanded 0.785 rad/s and 40 mm/s, the Native
+  commands) the manifold drops to 2, from step 26 to 1-2 contacts per pad, on diagonally opposite pad edges (left
+  pad at tool x = +9 mm, right pad at x = -8 mm). Every remaining contact is on the friction-cone boundary (usage 1.0),
+  the reported depth jumps from 0.09 to 2.25 mm, the fingers close 1.9 mm (GPU: down to 6.3 mm, the pads 4.7 mm
+  inside the handle), and the tool is kicked (16.7 rad/s at step 26 while the hand turns at 0.7 rad/s). It then
+  slides 13.9 mm (GPU 14.7 mm) along the handle axis and twists 50-70 mrad (GPU up to 0.38 rad) about the pad normal,
+  and keeps chattering after the motion stops (7-41 rad/s with the hand at rest). The pads had 4 contacts in only
+  9 % of the 250 steps. CPU and GPU agree.
+
+**Why.** MuJoCo-Warp 3.12.0 sends BOX-BOX pairs to the general convex narrowphase (GJK/EPA plus multicontact
+polygon clipping) unless `DisableBit.NATIVECCD` is set (`mujoco_warp/_src/collision_driver.py:78`, `_narrowphase`
+lines 866-870). That path writes ONE EPA depth and ONE EPA normal frame to every manifold point
+(`collision_convex.py`: `frame = make_frame(witness1[0] - witness2[0])`, then `for i in range(ncollision):
+write_contact(..., dist, ..., frame, ...)`). For two near-parallel faces under a slight roll it yields 1-2 points on
+one edge of each pad, all with the deepest depth; the squeeze becomes a couple about the handle axis, the points
+flip between edges and the solver sees deep, saturated, alternating contacts. MuJoCo's dedicated `box_box` collider
+(`collision_primitive_core.py:589`, selected when NATIVECCD is disabled) returns up to 8 points with per-point depth
+and normal; with it the same run keeps 4 contacts per pad in 99.8 % of the steps, cone usage 0.07-0.4, finger q
+10.96 mm and tool angular speed <= 0.75 rad/s (`diag_cpu_noccd_001`).
+
+**Remaining creep -> impratio.** With the `box_box` collider alone the tool still turns slowly about the pad normal
+at rest (+1 mrad at step 100 to +33 mrad at step 250, about 10 mrad/s, at cone usage 0.07-0.1): creep of MuJoCo's
+regularized (soft) friction under the 16 mN m gravity torque. `impratio` 10 (MuJoCo's documented elliptic-cone
+setting that makes friction constraints harder than normal ones "without increasing the actual friction
+coefficient") removes it: rotation <= 12.5 mrad over 400 steps, recovering to 1-4 mrad at rest
+(`diag_cpu_noccd_imp10_001`); impratio 100 gives no further gain (`diag_cpu_noccd_imp100_001`).
+
+**Candidates measured** (CPU, seed 512, robot only):
+
+| Run | Contacts per pad (mean, min) | Max slip | Max rotation | Monitor |
+| --- | --- | --- | --- | --- |
+| `diag_cpu_point_001` point profile (default) | 2.08, 1 | 13.9 mm | 71 mrad (GPU 379 mrad) | SLIPPING from step 26 |
+| `diag_cpu_patch_001` `finite_pad_patch_v3` (condim 4, torsional mu r) | 1.75, 1 | 23.6 mm | 425 mrad | LOST at step 77 |
+| `diag_cpu_impratio10_001` impratio 10 only | 3.07, 1 | 12.7 mm | 508 mrad | SLIPPING |
+| `diag_cpu_noccd_001` NATIVECCD off only | 4.0, 4 | 1.0 mm | 33 mrad, creeping | HOLDING (2 one-step flags) |
+| `diag_cpu_noccd_imp10_001` NATIVECCD off + impratio 10 (= `mjwarp_grip_v1`) | 3.99, 2 | 1.04 mm | 12.5 mrad | HOLDING (2 one-step flags) |
+| `diag_cpu_noccd_imp100_001` NATIVECCD off + impratio 100 | 3.93, 2 | 1.05 mm | 12.8 mrad | HOLDING (2 one-step flags) |
+
+Torsional friction (condim 4, the patch profile) does not help: it acts on the collapsed manifold. Pyramidal cones
+were not tried (the configured elliptic cone was kept). Not varied, so not claimed either way: solref/solimp, finger
+drive stiffness and force limit, contact margin/gap (Newton zeroes box margins for NATIVECCD compatibility; gap
+1 mm), tool mass/inertia, solver iterations, substep length. The reorientation uses the Native command sequence; no
+slower motion was needed.
+
+## 2. Profile `mjwarp_grip_v1` (opt-in, versioned)
+
+`lab_scene.CONTACT_SOLVER_PROFILES["mjwarp_grip_v1"]`, selected with
+`BatchedLabOptions(tool_mount="physical_grasp_v1", grip_contact_profile="mjwarp_grip_v1")` (probes:
+`--grip-profile mjwarp_grip_v1`; B1 refuses it with `UNSUPPORTED_TOOL_MOUNT`). Authoring is exactly the point profile
+(same USD, geometry, mass, friction 0.6, condim 3, solref/solimp, finger drive 2000 N/m / 20 N). Two MuJoCo-Warp
+contact-solver options change:
+
+- `DisableBit.NATIVECCD` on the built MJWarp model: box-box pairs use MuJoCo's `box_box` collider. Newton exposes no
+  option for it, so `IsaacLabBatchedCuttingEnv._apply_contact_solver_profile` sets it during bind, before the first
+  step and before any CUDA graph capture (it refuses if a graph exists), and `reset()` re-checks it on the live model;
+- `impratio = 10` in the solver cfg.
+
+Both are global options of the B2 MuJoCo model: they also apply to the pads or handle against the static table and
+fixture boxes and to every elliptic contact. `env.receipt()["contact_solver"]` reads the flags back from the live
+model; `fidelity()["listed_differences"]["contact_solver_profile"]` lists the profile. It is not a weld, does not
+raise friction and does not slow the motion; it selects a per-point contact model and harder friction
+regularization, and is not a calibrated grip (`physical_calibration: NOT_VALIDATED`).
+
+## 3. Results with the profile
+
+**Robot only** (`robot_b2grip_n2_001`, GPU, graph captured, strict, N=2, seeds 512 / 15, recorded WP-17 commands,
+1200 steps): settle PASS in both worlds; HOLDING in 1196 of 1200 steps per env, the four single-step SLIPPING flags
+being step 1, step 103 (end of the reorientation) and two cut-phase velocity transitions, each a one-substep loss of
+bilateral contact; max slip 1.51 / 1.59 mm, max rotation 14.1 / 15.2 mrad; 33 ms/step. The CPU run of the same
+sequence (`diag_cpu_noccd_imp10_n2_full_001`) agrees to three digits. The slip comes from impulsive changes of the
+commanded velocity (0.67 mm transient at the motion start, 0.3-0.5 mm at the cut-phase transitions) and slow creep
+at rest (about 0.01 mm/s); Native shows neither.
+
+**S3 TRIM B2 with material** (`s3_b2grip_n2_001`, GPU, strict, N=2, seeds 512 / 15, `tlmpm_v7_2` law 8 at
+1 mm / 4 mm / 0.1 ms, 102,732 / 103,898 particles, feedback on, recorded commands, frozen evaluator per env at the end):
+
+| Run | env (seed) | Labelled | Verdict | Components | Largest substrate share | Detached | Removed | Residual height |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Native WP-17 | 512 | 37,958 | PASS | 2 | 1.0 | 0.0 | 1.0 | 0.0 |
+| Native WP-17 | 15 | 85,786 | PASS | 3 | 1.0 | 0.0 | 1.0 / 1.0 | 0.0 / 0.0 |
+| s3_b1_n2_001 (B1, reduced fidelity) | 512 / 15 | 33,740 / 80,986 | PASS / PASS | 2 / 3 | 1.0 | 0.0 | 1.0 | 0.0 |
+| s3_b2_n2_001 (B2 point profile, earlier) | 512 / 15 | 0 / 36,760 | FAIL / FAIL | 1 / 1 | 1.0 | 0.0 | 0.0 | 5.4 / 5.0-7.3 mm |
+| **s3_b2grip_n2_001 (B2 `mjwarp_grip_v1`)** | 0 (512) | 38,220 | **PASS** | 2 | 1.0 | 0.0 | 1.0 | 0.0 |
+| **s3_b2grip_n2_001 (B2 `mjwarp_grip_v1`)** | 1 (15) | 81,034 | **PASS** | 3 | 1.0 | 0.0 | 1.0 / 1.0 | 0.0 / 0.0 |
+
+- Grasp during the cut: HOLDING in 1196/1200 steps per env, max slip 1.51 / 1.59 mm, max rotation 14.0 / 15.1 mrad;
+  termination reason 0 in both envs; no material or rigid flag; reward progress 1.0 / 1.0, off-target 0 / 0.
+- Edge tracking of the recorded targets max 6.7 / 6.3 mm; material reaction up to 0.16 / 0.06 N.
+- 511 ms/step mean (p50 353 ms, 3.9 env-steps/s), `SHARED_GPU` (foreign SM 32 % mean), own VRAM peak 976 MiB, one
+  CUDA HashGrid. `graph_captured` reads false because the Newton graph is dropped when the material attaches and
+  recaptured on the next step (as in the earlier B2 rows).
+- Descriptive only: the closed-loop MJWarp robot differs from Native PhysX; B2 labels 0.7 % more (seed 512) and 5.5 %
+  fewer (seed 15) particles than Native; no equivalence claim. G5 replays of these B2 inputs were not run.
+- Provenance: this row ran in the main worktree after the material guard of section 4 was written but before it was
+  committed (row `commit.tracked_src_or_scripts_modified: true`); its `workload_b_sources_sha256` (660af37c...) equals
+  the digest of the committed sources at `a930a8c`. The guard set no flag (the recorded inputs peak at 0.19 m/s and
+  1.17 rad/s).
+
+**S3 N=4 with the profile** (`s3_b2grip_n4_001`, seeds 512 / 15 / 512 / 15): NOT_RUN at the time of writing
+(queued on GPU0 behind other RCS jobs; see the update below if present).
+
+**Settle reliability and deterministic mode with the profile** (the S2 findings "settle fails the angular-speed gate
+in 5/6 strict batched builds" and "B2 under `run_to_run` ejects the tool"): with the profile the TRIM settle
+accumulators drop from max tool angular speed 2.2e-3 to 1.8e-4 rad/s and rotation drift from 4.4 to 0.38 mrad
+(CPU, `prof_cpu_mjwarp_grip_v1_001` against `diag_cpu_point_001`). The GPU repeats on the G4 ruler-knife task
+(`g4_settle_b2grip_00{1,2,3}`, strict) and the deterministic-mode build (`g0_det_b2grip_n1_001`) are NOT_RUN at the
+time of writing (queued; see the update below if present).
+
+## 4. Material crash after a lost grasp
+
+**Recorded crash site.** `g2mat_b2_n4_001` (reference driver, point profile, grasp lost) died with SIGSEGV in
+`BatchedCuttingMaterial.advance -> wp.capture_launch(self.graph)` (`material_batch.py:683` at `b1673df`), i.e. in the
+replay of the 200-substep material graph; `g2mat_b2_n1_001` and the crashed patch build left no stack. Between the
+robot and that graph only finiteness of the pose and positivity of the boxes was checked.
+
+**What reaches the material after a lost grasp.** The recorded S3 B2 point-profile inputs (`s3_b2_n2_001`) reach
+6.7 / 8.7 rad/s and 0.59 m/s edge speed after the loss (B1: 0.9 rad/s, 0.17 m/s). Nothing bounded the edge: a 1e7 m
+edge jump of one env on top of real S3 inputs (`probe_material_ood.py --scenario huge`) flings that env's particles
+to ~1e7 m and its pending wrench to 9e8 N (fed back to the robot), sets no invalid bit, and the step time grows
+without bound: CPU 3.2 -> 6 -> 21 -> 31 s per step (`ood_cpu_huge_001`), GPU 0.6 -> 174 s per step at the default
+1 mm spacing (`ood_gpu_huge_preguard_001`, killed by the operator after that step). By code reading (Warp
+`native/hashgrid.h`: `hash_grid_index` clamps out-of-range cells) far-flung particles share hash cells, so the
+particle-contact query degenerates towards all-pairs; this matches the earlier aborted `s3_b2patch_n2_003` whose
+step rate collapsed. These pre-guard probe rows started from the recorded initial edge, so their first step also
+jumped to the step-150 edge (harmless there: the edge was above the material); later rows start from step 149.
+
+**The crash configuration with the guard.** `g2mat_b2point_n1_postguard_001` repeats the crashed `g2mat_b2_n1_001`
+configuration (B2 point profile, reference driver, material, N=1, 1200 steps; GPU, graph) with the guard, in training
+mode (`--non-strict`) so the run continues after the flag: the edge leaves the domain at about step 19 (the
+kicked tool, edge angular speed up to 6.7 rad/s), the env gets `INPUT_OUT_OF_DOMAIN` (material invalid reason 64,
+termination reason 6 = MATERIAL_INVALID | GRASP_LOST from step 100 on, grasp LOST at step 36), its material inputs
+are held (material reaction 0 N throughout), and all 1200 steps complete at 325 ms/step (p95 370 ms), `SHARED_GPU`,
+no crash. The same configuration without the guard (`g2mat_b2point_n1_preguard_001`, pinned worktree at `41d9405`,
+strict as the original rows) is queued to check whether the SIGSEGV reproduces; NOT_RUN at the time of writing.
+
+**Fix (`material_input_domain_v1`, `material_batch.py`).** A device kernel after the pose interpolation and before
+the substep graph checks per env: edge within 1.5 m of the workpiece frame (Franka reach 0.855 m plus a base 0.47 m
+from the workcell origin), per-control-step edge speed <= 3.4 m/s and <= 5 rad/s (twice the Franka Panda Cartesian
+limits of 1.7 m/s and 2.5 rad/s), pad-box centres within 0.5 m of the edge and half extents in (0, 0.25] m (measured:
+0.096 m, 0.03 m). A violation sets `INPUT_OUT_OF_DOMAIN` (bit 64, sticky until reset; strict mode raises
+`InvalidBatchEnvs`, the Lab env terminates with `MATERIAL_INVALID`) and, as for an invalid measured pose or invalid
+boxes, HOLDS that env's substep inputs from then on: blade at its last in-domain substep pose with zero twist, cut
+disarmed, pads at the last in-domain boxes. Everything runs on the device (no host sync, no recapture, graph-safe);
+an in-domain env only records its hold state, so its solver inputs and results are bitwise unchanged; `reset_masked`
+restores the hold state. Offline check of the recorded inputs: B1 S3 and B2 `mjwarp_grip_v1` S3 never leave the
+domain; the B2 point-profile S3 envs would have been flagged at steps 113 and 177 (grasp lost at 177/181).
+
+- CPU tests `tests/test_batched_input_domain.py` (4 PASS): a 1e7 m teleport and a 5 m/s swing of env 1 set only env
+  1's bit, hold its inputs (particles finite, |x| < 0.2 m), env 0 stays bitwise equal to a batch that never saw the
+  bad input in every step, the hold persists when the input returns to range, a masked reset clears it; an oversized
+  pad box is replaced by the last in-domain boxes; strict mode raises with env 1 / `INPUT_OUT_OF_DOMAIN`.
+- Probe rows: `ood_cpu_{none,huge,sweep,spin}_postguard_002` (CPU, real S3 inputs, isolation against a clean batch):
+  only the bad env is flagged, from the bad step on, particles unmoved, step time unchanged, env 0 bitwise equal to
+  the clean batch in every step. `ood_gpu_huge_postguard_001` (GPU, graph, 1 mm): env 1 flagged at the bad step,
+  particles unmoved, 0.25-0.28 s/step (pre-guard 174 s). (`ood_cpu_*_postguard_001` are superseded: they started from
+  the recorded initial edge, whose jump to step 150 the guard correctly flagged in both envs.)
+- Existing suites with the guard: batched material (parity, isolation, partial-reset coverage over `vars()`,
+  coupling, layout, HashGrid guard, frozen sources) 147 PASS; workload A vector env (Isaac Sim venv, CPU) 16 PASS,
+  1 skipped.
+
+## 5. Tests and commands
+
+- `.venv`: `tests/test_batched_input_domain.py` 4 PASS (81 s); batched material suites 147 PASS (326 s);
+  `tests/test_rl_lab_grip_profile.py` 1 PASS + 1 skipped (Lab part NOT_RUN there); lab scene/kernels/IK/rigid
+  isolation 42 PASS; `tests/test_repo_naming.py` PASS.
+- Isaac Lab venv (D-09 overlay): `tests/test_rl_lab_grip_profile.py` 2 PASS (58 s: the profile reaches the model,
+  4-point pads in >= 95 % of 150 reorientation steps, slip < 2 mm and rotation < pi/60, and the default point
+  profile collapses to <= 2 points and slides > 5 mm); workload B Lab suites 52 PASS (183 s).
+- Isaac Sim venv: `tests/test_vector_env_api.py tests/test_vector_env_gpu_stream.py tests/test_rl_policies_batched.py`
+  16 PASS, 1 skipped (CPU).
+
+```
+# diagnosis (CPU; GPU: --device cuda --gpu-index 0 under the flock)
+CUDA_VISIBLE_DEVICES='' TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src .deps/isaaclab-venv/bin/python \
+  scripts/rl_ready/probe_lab_b2_grasp.py --device cpu --scene-seeds 512 --steps 250 --non-strict \
+  [--grip-profile mjwarp_grip_v1] [--solver-set impratio=10] [--mjw-disable NATIVECCD] --out artifacts/rl_ready/p1_1b_b2/<run>
+# S3 / robot-only rows
+CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock \
+  .deps/isaaclab-venv/bin/python scripts/rl_ready/probe_lab_batched_gpu.py --probe g2 --num-envs 2 \
+  --tool-mount physical_grasp_v1 --grip-profile mjwarp_grip_v1 [--material tlmpm_v7_2 --evaluate --record-inputs] \
+  --driver recorded --scene-seeds 512 15 --steps 1200 --gpu-index 0 --out artifacts/rl_ready/p1_1b_b2/<run>
+# material input domain
+PYTHONPATH=src .venv/bin/python scripts/rl_ready/probe_material_ood.py --device cpu --scenario huge --steps 5 \
+  --isolation --out artifacts/rl_ready/p1_1b_b2/<run>
+```
+
+## 6. Open
+
+- Native-level grasp stiffness is not reached: 1.5 mm / 15 mrad against Native's 1 um / 1e-4 rad. The remaining
+  slip comes from impulsive commanded-velocity changes and slow soft-friction creep. Not tried: solref/solimp of the
+  pad-handle pair, finger drive gains, smoothing the velocity feed-forward (that would change the action contract),
+  MuJoCo's noslip solver (not implemented in MJWarp 3.12).
+- `mjwarp_grip_v1` changes two global MJWarp options of the B2 model. Its effect on contacts other than the grip
+  (Franka self-collision, pads/handle against table and fixtures) was only observed through the TRIM rows (no other
+  tool contact occurred), not tested separately. B1 is unaffected (the profile is refused there).
+- The SIGSEGV itself was never reproduced on demand; the crash site is the material graph replay. The guard removes
+  the out-of-domain inputs that preceded it and the step-time collapse, and the crash configuration now completes;
+  that the guard removes every SIGSEGV path is not proven.
+- Not done with the profile: G1/G3 isolation in deterministic mode for B2, G4 against the single Lab env (the frozen
+  single env keeps the point profile), G5 replays of B2 inputs, an exclusive-GPU timing row, wiring
+  `grip_contact_profile` through `rl.vector_env.open_vector_env`. ADR 0022 is not updated here (§5.1 table would list
+  the profile as a B2 option).
