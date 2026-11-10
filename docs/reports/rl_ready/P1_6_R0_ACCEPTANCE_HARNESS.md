@@ -176,5 +176,8 @@ contact totals differ by 0.51 %, a 2× margin only, and G7 has one baseline run 
   run is the external caller's T10 GPU rehearsal. `EXCLUSIVE_GPU` rows: NOT_RUN.
 - VRAM peak and reset p95 are measured inside the process under test (candidate-reported); only env-steps/s has an
   outer clock.
-- G1 runs the whole `tests/` in `.venv`: 44 min 26 s on this host (timeout raised to 7200 s per suite; the caller
-  runs both sides sequentially, in parallel with the GPU blocks).
+- G1 runs the whole `tests/` in `.venv`: at `5ea4ce4` (+ the 0.02 contact floor) **2243 passed, 25 skipped,
+  6 xfailed, 0 failed in 2576 s (42 min 56 s)** (`artifacts/rl_ready/p1_6_r0/full_cpu_suite_002.{log,xml}`); the
+  timeout is 7200 s per suite (the caller runs both sides sequentially, in parallel with the GPU blocks). An earlier
+  run (`full_cpu_suite_001`) had 10 failures, all in `test_perf_acceptance.py`, caused by editing the config and
+  judge while that run was in progress (module collected before the change); preserved, not a code failure.
