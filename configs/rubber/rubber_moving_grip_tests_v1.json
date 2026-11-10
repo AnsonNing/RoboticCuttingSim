@@ -1,0 +1,95 @@
+{
+ "schema": "rcs_rubber_moving_grip_tests_v1",
+ "id": "rubber_moving_grip_tests_v1",
+ "version": 1,
+ "adr": "docs/adr/0023-rubber-material-v1.md section 21.1",
+ "status": "FROZEN_AT_COMMIT (declared before its formal run; SHA-256 pinned in tests/test_rubber_p2_3_protocols.py; a change is v2)",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (numerical verification of the energy books of a moving Dirichlet grip; no material data)",
+ "purpose": "Prerequisite of every P2-3 test with moving grips (RUBBER-VISC hysteresis, energy balance): a moving F8 projected grip must close its energy books with the kick-average constraint work (constraint_work kick_average_v1), in the single-env reference and byte-wise in the batched path.",
+ "provenance": {
+  "diagnostic_before_declaration": "artifacts/rl_ready/p2_3/moving_clamp_diag_001 (scene S1 only, both profiles, CFL 0.5 / 0.25, control 100 / 25 us): kick-average residual max 0.38 % (linear) / 0.23 % (smootherstep) of S at CFL 0.5, halved at CFL 0.25; v1 end-velocity residual -19.2 % / -1.6 %, dt-independent",
+  "seen_before_declaration": ["S1"],
+  "unseen_before_declaration": ["S2", "S3"]
+ },
+ "common": {
+  "solver": "tlmpm_rubber_v1 (single-env reference: LiveRubberMaterial; batched: BatchedRubberMaterial)",
+  "model": "neo_hookean_jbar_v1",
+  "options": {"dirichlet": "consistent_mass_projection_v1", "constraint_work": "kick_average_v1", "state_precision": "f64_shadow_v1", "traction_work": "particle_velocity_v1 (no traction group in these scenes)"},
+  "stable_step_guard": 1.0,
+  "deformation_reserve": 1.0,
+  "bulk_ratio_beta": 20.0,
+  "pic": 0.0,
+  "particles_per_cell_axis": 2,
+  "cfl_set": [0.5, 0.25],
+  "cfl_note": "CFL 0.5 = the step rule's substep count; CFL 0.25 = twice that substep count at the same control interval (LiveRubberMaterial substeps override)",
+  "artificial_damping": "none",
+  "device": "cpu (Warp CPU device)",
+  "profiles": {
+   "linear": "s(tau) = tau",
+   "smootherstep": "s(tau) = tau^3 (10 - 15 tau + 6 tau^2)"
+  },
+  "schedule_rule": "control step k (0-based) of a ramp of n steps ends at tau = (k + 1) / n; the group pose at the END of the control step is pose(s(tau)); within a control step the solver interpolates the pose linearly in the substep index (slerp for the rotation), so the prescribed velocity is constant within a control step",
+  "energy": "E_mech = Psi + KE_particle + E_grav (segmented diagnostics, end of every control step; E_grav relative to the reference state); W = solver work (kick-average constraint work); start from rest at the reference: E_mech(0) = W(0) = 0",
+  "residual": "r(t) = (E_mech(t) - W(t)) / S, S = max over the control-step ends of (Psi + KE_particle)",
+  "v1_accounting_reported": "r_v1(t) = (E_mech(t) - W_v1(t)) / S with W_v1 = work_end_velocity (the tlmpm_rubber_v1 end-velocity constraint work of the same run); reported, not scored"
+ },
+ "scenes": {
+  "S1": {
+   "label": "cantilever lift + roll (the diagnostic scene)",
+   "case": "A", "L_m": 0.012, "W_m": 0.003, "t_m": 0.003, "n_t": 2, "mu_pa": 4.0e5, "rho_kg_m3": 1150.0,
+   "gravity_m_s2": [0.0, 0.0, -9.81], "control_dt_s": 1.0e-4,
+   "grip0": {"rotation_rotvec_rad": [0.15, 0.0, 0.0], "translation_m": [0.0, 0.0, 0.001]},
+   "phases": [{"kind": "ramp", "steps": 60}, {"kind": "hold", "steps": 60}],
+   "hold_window": "the final hold phase",
+   "l0_env1": {"L_m": 0.009, "mu_scale": 1.5, "rho_kg_m3": 1050.0, "amplitude_scale": 0.7},
+   "fidelity_note": "n_t 2 (reduced_fidelity: coarse_thickness_resolution); a numerics test of the constraint, not a bending observable"
+  },
+  "S2": {
+   "label": "wide cantilever lift + yaw (in-plane bending), n_t 3",
+   "case": "A", "L_m": 0.024, "W_m": 0.006, "t_m": 0.003, "n_t": 3, "mu_pa": 6.0e5, "rho_kg_m3": 1100.0,
+   "gravity_m_s2": [0.0, 0.0, -9.81], "control_dt_s": 2.0e-4,
+   "grip0": {"rotation_rotvec_rad": [0.0, 0.0, 0.1], "translation_m": [0.0, 0.0005, 0.002]},
+   "phases": [{"kind": "ramp", "steps": 40}, {"kind": "hold", "steps": 40}],
+   "hold_window": "the final hold phase",
+   "l0_env1": {"L_m": 0.018, "mu_scale": 1.5, "rho_kg_m3": 1050.0, "amplitude_scale": 0.7}
+  },
+  "S3": {
+   "label": "two-grip axial load-unload to lambda 1.2 (hysteresis-shaped, elastic), n_t 3",
+   "case": "C", "end_mask": "x", "L_m": 0.030, "W_m": 0.006, "t_m": 0.003, "n_t": 3, "mu_pa": 4.0e5,
+   "rho_kg_m3": 1150.0, "gravity_m_s2": [0.0, 0.0, 0.0], "control_dt_s": 2.0e-4,
+   "grip0": "holds (identity)",
+   "grip1": {"translation_m_per_unit_s": [0.006, 0.0, 0.0], "note": "0.2 L: lambda 1 -> 1.2 -> 1"},
+   "phases": [{"kind": "ramp", "steps": 40}, {"kind": "hold", "steps": 10}, {"kind": "ramp_down", "steps": 40},
+              {"kind": "hold", "steps": 20}],
+   "ramp_down": "s = 1 - profile(tau)",
+   "hold_window": "the final hold phase (20 steps)",
+   "l0_env1": {"L_m": 0.024, "mu_scale": 1.5, "rho_kg_m3": 1050.0, "amplitude_scale": 0.7}
+  }
+ },
+ "tests": {
+  "RUBBER-GRIP-01": {
+   "name": "energy books of a moving projected grip close (kick-average constraint work)",
+   "runs": "every scene x profile at CFL 0.5",
+   "criteria": "M = max_t |r(t)| <= m_max and |H| <= h_max, H = mean of r over the scene's hold window",
+   "thresholds": {"m_max": 0.01, "h_max": 0.002},
+   "rationale": "the remaining residual is the bounded O(dt) energy error of symplectic Euler ((dt/2) f . g; diagnostic S1 0.23-0.38 % of S); the v1 end-velocity accounting is off by 1.6-19 % in S1 (dt-independent)"
+  },
+  "RUBBER-GRIP-02": {
+   "name": "first-order consistency of the residual (numerical error, not a bookkeeping bias)",
+   "runs": "every scene x profile at CFL 0.5 and 0.25",
+   "criteria": "M(CFL 0.25) <= ratio_max * M(CFL 0.5), or M(CFL 0.25) <= floor",
+   "thresholds": {"ratio_max": 0.65, "floor": 1.0e-4},
+   "rationale": "symplectic-Euler energy error is O(dt) (ratio 0.5; diagnostic 0.49-0.50); a quadrature bias at velocity discontinuities is dt-independent (ratio ~1)"
+  },
+  "RUBBER-GRIP-03": {
+   "name": "validity",
+   "runs": "every run of -01, -02 and -04",
+   "criteria": "invalid_reason == 0 at every control step (no NONFINITE_STATE, RUBBER_J_DOMAIN, RUBBER_CFL_EXCEEDED)"
+  },
+  "RUBBER-GRIP-04": {
+   "name": "batched L0 byte-wise",
+   "runs": "per scene: BatchedRubberMaterial of N = 2 (env 0 = the scene, env 1 = l0_env1: other length, mu x 1.5, rho 1050, motion amplitude x 0.7; smootherstep; both built with step_material = env 1's material) on the Warp CPU device (parity_mode) against two single-env references built identically",
+   "criteria": "after every control step of the whole schedule: every solver array of both envs (particle, node, group, traction, cell CSR, index, work, violations, cfl_violations and every option array including work_end_velocity, F64, x64 and the projection rows / blocks / inverses / scratch), the segmented diagnostics, markers and wrenches are byte-identical (same dtype, shape and raw bytes) to the single references"
+  }
+ }
+}
