@@ -35,7 +35,9 @@ TRACTION_ARRAYS = ("traction_force", "traction_mass")
 # must agree (uniform signature).
 BATCHED_OPTIONS = {"dirichlet": ("lumped_v1", "consistent_mass_projection_v1"),
                    "traction_work": ("particle_velocity_v1", "grid_displacement_v1"),
-                   "state_precision": ("float32_v1", "f64_shadow_v1")}
+                   "state_precision": ("float32_v1", "f64_shadow_v1"),
+                   # ADR 0023 §21.1 (bookkeeping of the F8 projection; rubber_constraint_work.TLMPMRubberCW)
+                   "constraint_work": ("end_velocity_v1", "kick_average_v1")}
 SHADOW_ARRAYS = ("F64", "x64")                                      # per particle (f64_shadow_v1)
 PROJECTION_ROW_ARRAYS = ("proj_row_node", "proj_row_comp", "proj_row_group", "proj_row_block", "proj_row_local",
                          "proj_rhs", "proj_vpresc", "proj_mu")     # per constrained (node, component) row
@@ -84,21 +86,28 @@ class PackedRubberBatch:
 
 def _validate(live):
     from ..live_rubber_material import LiveRubberMaterial
+    from ..rubber_constraint_work import TLMPMRubberCW
     from ..tlmpm_rubber_v1 import TLMPMRubber
     if not isinstance(live, LiveRubberMaterial):
         raise TypeError("pack_rubber takes LiveRubberMaterial instances (single-env references)")
     s = live.solver
-    if type(s) is not TLMPMRubber:
+    if type(s) not in (TLMPMRubber, TLMPMRubberCW):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"{type(s).__name__}; only {SOLVER}")
     if s.device != "cpu":
         raise ValueError("pack_rubber reads single solvers built on the Warp CPU device (ADR 0021 §3.4)")
-    options = {"dirichlet": s.dirichlet, "traction_work": s.traction_work, "state_precision": s.state_precision}
+    options = {"dirichlet": s.dirichlet, "traction_work": s.traction_work, "state_precision": s.state_precision,
+               "constraint_work": constraint_work_of(s)}
     for key, value in options.items():
         if value not in BATCHED_OPTIONS[key]:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"{key}={value!r} has no batched execution")
     if (live.step_count != 0 or int(s.index.numpy()[0]) != 0 or not np.array_equal(s.x.numpy(), s.reference.numpy())
             or np.abs(s.v.numpy()).max() != 0.0 or s.damping_rate != 0.0):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SINGLE_ENV_STATE", "pack takes fresh, unstepped reset states")
+
+
+def constraint_work_of(solver):
+    """``constraint_work`` of a single reference (the frozen ``TLMPMRubber`` has the v1 accounting)."""
+    return getattr(solver, "constraint_work", "end_velocity_v1")
 
 
 def uniform_signature(live):
@@ -110,7 +119,8 @@ def uniform_signature(live):
             "group_kinds": tuple(g["kind"] for g in live.scene.groups), "boxes": int(s.boxes),
             "use_plane": int(s.use_plane), "markers": len(live.scene.marker_offsets)-1,
             "stable_step_guard": s.cfl_guard_limit, "dirichlet": s.dirichlet, "traction_work": s.traction_work,
-            "state_precision": s.state_precision, "projection_rows_nonzero": bool(getattr(s, "proj_rows", 0))}
+            "state_precision": s.state_precision, "projection_rows_nonzero": bool(getattr(s, "proj_rows", 0)),
+            "constraint_work": constraint_work_of(s)}
 
 
 def pack_rubber(lives, *, constitutive_model=cr.DEFAULT_MODEL_ID):

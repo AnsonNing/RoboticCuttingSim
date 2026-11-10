@@ -18,7 +18,11 @@ were built with; they must agree; the defaults add no array and no launch):
 - ``traction_work="grid_displacement_v1"`` (F9): ``_traction_work_grid_b`` (per-env work); the v1 accumulation goes to
   a discarded per-env ``work_scratch`` as in the single solver;
 - ``state_precision="f64_shadow_v1"`` (F10): the single solver's ``_deformation_f64`` / ``_positions_f64`` UNCHANGED
-  over flat float64 shadows ``F64`` / ``x64``.
+  over flat float64 shadows ``F64`` / ``x64``;
+- ``constraint_work="kick_average_v1"`` (ADR 0023 §21.1, bookkeeping of F8): ``_proj_reaction_b``'s end-velocity work
+  goes to the per-env ``work_end_velocity`` (reported) and ``rubber_constraint_work.proj_work_kick_average`` (the
+  single solver's kernel, UNCHANGED, target ``env_of_group[g]``) accumulates Lambda . (g_n + v_presc) / 2 into
+  ``work``. No state array changes.
 
 BC launch (``bc_launch``, ADR 0023 §20.2): ``all_nodes_v1`` is the P2-1/P2-2 launch (``_bc_b`` over every node,
 group maps evaluated per node); ``constrained_list_v1`` launches the same body over the packed list of constrained
@@ -37,6 +41,7 @@ import warp as wp
 
 from .. import tlmpm_v5 as v5
 from .. import rubber_constitutive as rc
+from .. import rubber_constraint_work as rcw
 from ..tlmpm_rubber_v1 import (GROUP_RIGID, _deformation_f64, _positions_f64, _proj_particles, _proj_rhs, _proj_solve, apply_mask,
                                bc_reaction, bc_work, contact_load, group_target)
 from ..tlmpm_v6 import _grid_positions
@@ -62,7 +67,8 @@ def source_sha256():
            for name in ("rubber_batch.py", "rubber_layout.py", "constitutive_rubber.py", "rubber_material_batch.py")}
     pkg = here.parent
     out.update({name: hashlib.sha256((pkg/name).read_bytes()).hexdigest()
-                for name in ("tlmpm_rubber_v1.py", "rubber_constitutive.py", "tlmpm_v5.py", "tlmpm_v6.py")})
+                for name in ("tlmpm_rubber_v1.py", "rubber_constitutive.py", "tlmpm_v5.py", "tlmpm_v6.py",
+                             "rubber_constraint_work.py")})
     return out
 
 
@@ -269,7 +275,7 @@ class BatchedTLMPMRubber:
         "group_b0": wp.vec3d, "group_b1": wp.vec3d, "group_A0": wp.mat33d, "group_A1": wp.mat33d,
         "reaction": wp.spatial_vectord, "plane": wp.vec4, "bc_nodes": int,
         # option arrays (ADR 0023 §20)
-        "F64": wp.mat33d, "x64": wp.vec3d, "reference64": wp.vec3d,
+        "F64": wp.mat33d, "x64": wp.vec3d, "reference64": wp.vec3d, "work_end_velocity": wp.float64,
         **dict.fromkeys(("proj_row_node", "proj_row_comp", "proj_row_group", "proj_row_block", "proj_row_local",
                          "proj_block_offset", "proj_block_size", "proj_inv_offset", "env_of_row"), int),
         **dict.fromkeys(("proj_inv", "proj_rhs", "proj_vpresc", "proj_mu", "proj_mu_node"), wp.float64),
@@ -287,7 +293,9 @@ class BatchedTLMPMRubber:
         u = packed.uniform
         self.dirichlet, self.traction_work, self.state_precision = (u["dirichlet"], u["traction_work"],
                                                                     u["state_precision"])
+        self.constraint_work = u["constraint_work"]
         self.projection = self.dirichlet == "consistent_mass_projection_v1" and u["projection_rows_nonzero"]
+        self.kick_average = self.constraint_work != rcw.DEFAULT_CONSTRAINT_WORK
         self.num_envs = packed.num_envs
         self.total_particles, self.total_nodes, self.total_cells = (packed.total_particles, packed.total_nodes,
                                                                     packed.total_cells)
@@ -316,6 +324,8 @@ class BatchedTLMPMRubber:
                 setattr(self, name, wp.array(h[name], dtype=self._DTYPES[name]))
             if self.traction_work == "grid_displacement_v1":
                 self.work_scratch = wp.zeros(self.num_envs, dtype=wp.float64)   # the v1 accumulation (discarded)
+            if self.kick_average:
+                self.work_end_velocity = wp.zeros(self.num_envs, dtype=wp.float64)   # v1 constraint work (reported)
             self.work = wp.zeros(self.num_envs, dtype=wp.float64)
             if self.bc_launch == "motion_table_v1" and self.G:
                 # group maps at every substep boundary of the control step (recomputed by prepare_motion_table)
@@ -325,7 +335,7 @@ class BatchedTLMPMRubber:
             self.cfl_violations = wp.zeros(self.num_envs, dtype=int)
             self.index = wp.zeros(1, dtype=int)
         for module in (v5.__name__, "robotic_cutting_sim.tlmpm_v6", rc.__name__, "robotic_cutting_sim.tlmpm_rubber_v1",
-                       cr.__name__, __name__):
+                       cr.__name__, __name__) + ((rcw.__name__,) if self.kick_average else ()):
             wp.load_module(module=module, device=self.device)
 
     def step(self):
@@ -389,7 +399,12 @@ class BatchedTLMPMRubber:
         wp.launch(_proj_particles, self.total_particles, [self.v, self.nodes, self.weights, self.proj_mu_node])
         wp.launch(_proj_reaction_b, r, [self.proj_row_node, self.proj_row_comp, self.proj_row_group, self.node_X,
                                         self.gm, self.proj_mu, self.proj_vpresc, self.index, self.substeps]
-                  + groups + [self.group_origin, self.reaction, self.work, self.env_of_group])
+                  + groups + [self.group_origin, self.reaction,
+                              self.work_end_velocity if self.kick_average else self.work, self.env_of_group])
+        if self.kick_average:
+            wp.launch(rcw.proj_work_kick_average, r, [self.proj_row_node, self.proj_row_comp, self.proj_row_group,
+                                                      self.group_active, self.gm, self.proj_mu, self.proj_vpresc,
+                                                      self.old, self.env_of_group, self.work])
 
     def prepare_motion_table(self):
         """``motion_table_v1``: evaluate the group maps of the current control step (call after the group motions
@@ -466,6 +481,8 @@ class BatchedTLMPMRubber:
         out["params"] = self.params.numpy()[e].copy()
         if self.traction_work == "grid_displacement_v1":
             out["work_scratch"] = self.work_scratch.numpy()[e:e+1].copy()
+        if self.kick_average:
+            out["work_end_velocity"] = self.work_end_velocity.numpy()[e:e+1].copy()
         if self.state_precision == "f64_shadow_v1":
             out["F64"] = self.F64.numpy()[p0:p1].copy()
             out["x64"] = self.x64.numpy()[p0:p1].copy()
@@ -483,7 +500,8 @@ class BatchedTLMPMRubber:
 
     def options_receipt(self):
         return {"dirichlet": self.dirichlet, "traction_work": self.traction_work,
-                "state_precision": self.state_precision, "projection_rows": self.proj_rows,
+                "state_precision": self.state_precision, "constraint_work": self.constraint_work,
+                "projection_rows": self.proj_rows,
                 "bc_launch": self.bc_launch, "bc_nodes": self.bc_node_count, "adr": "ADR 0023 §20"}
 
     def solver_receipt(self):

@@ -183,7 +183,9 @@ def test_l1_perturbation_isolation_with_options():
 
 
 def test_reset_classification_is_vars_complete_with_options():
-    batch = rmb.BatchedRubberMaterial([_live(ALL)], device="cpu", parity_mode=True)
+    # every option on, including the ADR 0023 §21.1 bookkeeping option (its array is in the option tables)
+    batch = rmb.BatchedRubberMaterial([_live({**ALL, "constraint_work": "kick_average_v1"})], device="cpu",
+                                      parity_mode=True)
     names = set(batch.solver.device_arrays())
     declared = set(rmb.SOLVER_RESET_ARRAYS+rmb.SOLVER_CONSTANT_ARRAYS+rmb.SOLVER_SHARED_ARRAYS)
     declared |= set(rmb.SOLVER_RECOMPUTED_ARRAYS)          # default bc_launch motion_table_v1

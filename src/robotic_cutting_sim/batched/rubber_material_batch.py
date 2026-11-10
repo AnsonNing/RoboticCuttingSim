@@ -66,8 +66,9 @@ SOLVER_SHARED_ARRAYS = ("index",)
 SOLVER_RECOMPUTED_ARRAYS = ("motion_M", "motion_b")      # bc_launch motion_table_v1: every control step
 # option arrays (exist only when the lives were built with the option; ADR 0023 §20)
 OPTION_RESET_ARRAYS = {"state_precision": ("F64", "x64"), "traction_work": ("work_scratch",),
-                       "dirichlet": ("proj_rhs", "proj_vpresc", "proj_mu", "proj_mu_node", "proj_inv")}
-OPTION_CONSTANT_ARRAYS = {"state_precision": ("reference64",), "traction_work": (),
+                       "dirichlet": ("proj_rhs", "proj_vpresc", "proj_mu", "proj_mu_node", "proj_inv"),
+                       "constraint_work": ("work_end_velocity",)}
+OPTION_CONSTANT_ARRAYS = {"state_precision": ("reference64",), "traction_work": (), "constraint_work": (),
                           "dirichlet": ("proj_row_node", "proj_row_comp", "proj_row_group", "proj_row_block",
                                         "proj_row_local", "proj_block_offset", "proj_block_size", "proj_inv_offset",
                                         "env_of_row")}
@@ -550,6 +551,8 @@ class BatchedRubberMaterial:
                 wp.launch(_reset_proj_nodes_r, s.total_nodes, [self.reset_mask, s.env_of_node, s.proj_mu_node])
             if s.traction_work == "grid_displacement_v1":
                 wp.launch(_reset_scratch_work_r, N, [self.reset_mask, s.work_scratch])
+            if s.kick_average:
+                wp.launch(_reset_scratch_work_r, N, [self.reset_mask, s.work_end_velocity])
             if full:
                 s.index.zero_()
 
