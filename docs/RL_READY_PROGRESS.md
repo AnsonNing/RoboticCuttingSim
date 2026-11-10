@@ -32,12 +32,14 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   - Running now: xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786; P1-2b (isaac_lab_newton dispatch, `tasks=`,
     `termination_reason`, full evaluation stream, per-env pose-bounds invalidation) in worktree
     `/home/ningan/RoboticCuttingSim-rl-p12b`; B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
-    P1-6 R0 DONE on `claude/rl-p1-6-r0` (d1d3aa5; [report](https://github.com/AnsonNing/RoboticCuttingSim/blob/claude/rl-p1-6-r0/docs/reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
+    P1-6 R0 DONE and merged here (87cfa3b; [report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
     `run_perf_acceptance.py` (one material per child process), `judge_perf_acceptance.py`, `acceptance_v1.json`,
     local runner; GPU smoke default vs `alias_free_v1`: PHYSICS/PERFORMANCE/INTEGRITY PASS, ratios 1.361 (N=1) /
     1.369 (N=2) SHARED_GPU; external adapter drove the harness cleanly; full CPU suite 2243 passed. Decision: reset-p95
     gate on a shared GPU → WARN up to 1.25·B + 10 ms (bimodal 1 vs 7 ms reset latency on the shared GPU), strict
-    1.25·B + 2 ms on an exclusive GPU — amended in acceptance_v1 before it enters any baseline; P1-5 plan DONE (30b8a67) → CUT groundwork (T5.1, T5.3–T5.6,
+    1.25·B + 2 ms on an exclusive GPU — amended in acceptance_v1 (214ac11) before it enters any baseline; re-judge of
+    smoke_001/003: PASS ×3 (evidence `p1_6_r0_003.json`). acceptance_v1 freezes when it enters the Phase 1 merge on
+    `main`; until then the position-band input may still be pointed at band v2 (descriptive). P1-5 plan DONE (30b8a67) → CUT groundwork (T5.1, T5.3–T5.6,
     T5.8) in `/home/ningan/RoboticCuttingSim-rl-p15` and P1-4 supervisor/ledger + N=8 long run (T4.1, T4.3, T4.4) in
     `/home/ningan/RoboticCuttingSim-rl-p14`. Parity matrix today: 4 PASS, 8 PARTIAL, 1 UNSUPPORTED (cameras),
     2 NOT_RUN (CUT, RL smoke).
