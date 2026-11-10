@@ -13,16 +13,18 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   Franka USD tests and OpenBLAS-kernel-specific pose-interpolation comparisons are NOT_RUN where their inputs are
   absent; narrow xhigh review PASS). `acceptance_v1` frozen at `40c94c7` (D-11). Status
   **`MERGED_RCS_PENDING_OPTIMIZER_SYNC`** until the first descriptor pin in the external agentic optimizer repository.
-- **Next:** PR #13 = follow-up `claude/rl-p1-followup` (xhigh review PASS_WITH_LIMITATIONS, GO with conditions:
-  `acceptance_v2` with the G9 window moved to start at tool contact (steps 229–400), findings 3/4/10/12 fixes, CI
-  concurrency; merge `main`, CI green) → merge → pin `rcs_rl_vector_v1` at that merge in the external repository
-  (frozen checkout, smoke, its PR, SYNCED receipt) → first P1-6 optimizer cycle under `acceptance_v2` → RCS PR →
-  merge → new pin → SYNCED.
-- **Phase 2 (rubber, D-12):** P2-0..P2-2 merged here (232e65b, reviewed 3a43d1b). On rubber branches, unreviewed:
-  batched F8/F9/F10 + `motion_table_v1` (`claude/rl-rubber`), moving-clamp `constraint_work` (RUBBER-GRIP PASS) and
-  P2-3 viscoelasticity (`claude/rl-rubber-p23`; v2 protocol: all RUBBER-VISC PASS), protocol v5 runs in progress
-  (`claude/rl-rubber-v5`). Next: merge sub-branches → xhigh review since 3a43d1b → P2-4 contact/friction → P2-5 → P2-6.
-  Status `SIMULATOR_ONLY_UNCALIBRATED`. Details in "Phase 2 (rubber) detail" below.
+- **Next:** PR #13 (follow-up `claude/rl-p1-followup`: `acceptance_v2` with G9 timing steps 229–400 = all s512 tool
+  contact, `G9:window` gate on tool contacts and labels, findings 3/4/10/12, CI concurrency; xhigh review
+  PASS_WITH_LIMITATIONS + re-review PASS; CI running) → merge → pin `rcs_rl_vector_v1` at that merge in the external
+  repository (adapter under xhigh review; frozen checkout, smoke, its PR, sync receipt SYNCED) → first P1-6 optimizer
+  cycle under `acceptance_v2` → RCS PR → merge → new pin → SYNCED.
+- **Phase 2 (rubber, D-12):** merged here: P2-0..P2-2 (232e65b) and the P2-3 prerequisites + moving-clamp accounting +
+  P2-3 viscoelasticity (86c5681; xhigh review of 3a43d1b..025ecaf: prerequisites PASS_WITH_LIMITATIONS, moving clamp
+  PASS, P2-3 PASS_WITH_LIMITATIONS — visc v2 = post-hoc measurement correction). Running: R1 fix (stale
+  `motion_table_v1` on direct steps) on `claude/rl-rubber-p23`; protocol v5 (last CPU refinement job, ETA ~07:00–08:00
+  KST) on `claude/rl-rubber-v5`; P2-4 contact/friction design + protocol on `claude/rl-rubber-p24`. Then P2-5
+  calibration interface (no real data → numerical validation only), P2-6 RL-ready rubber acceptance, Phase 2 review,
+  its own PR. Status `SIMULATOR_ONLY_UNCALIBRATED`. Details in "Phase 2 (rubber) detail" below.
 
 ## 待使用者決定
 
