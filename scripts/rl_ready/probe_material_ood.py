@@ -42,7 +42,7 @@ def _commit():
         return None
 
 
-def build(seeds, spacing, device, strict=False):
+def build(seeds, spacing, device, strict=False, start=0):
     from robotic_cutting_sim.batched import layout
     from robotic_cutting_sim.batched.material_batch import BatchedCuttingMaterial
     from robotic_cutting_sim.coupled_robot import CouplingConfig
@@ -58,8 +58,16 @@ def build(seeds, spacing, device, strict=False):
                                 device="cpu", feedback=True)
         m = LiveCuttingMaterial(config, task=task, max_cuts=task.max_cuts, cutting_law=task.cutting_law,
                                 solver=task.solver_module, v7_2_optimizations=True)
-        m.configure_pad_obstacles(np.asarray(rec["initial_boxes"][e % 2], np.float32), [None, "left", "right"])
-        specs.append(layout.EnvSpec(m, np.asarray(rec["initial_edge"][e % 2], float), 42, task.config_sha256))
+        # the batch starts at the recorded state of step start-1 (else the first step would jump to step `start`)
+        if start > 0:
+            B = rec["box_centers"].shape[1]//2
+            boxes = np.stack([rec["box_centers"][start-1].reshape(2, B, 3)[e % 2],
+                              rec["box_halves"][start-1].reshape(2, B, 3)[e % 2]], 1)
+            edge = rec["edge"][start-1, e % 2]
+        else:
+            boxes, edge = rec["initial_boxes"][e % 2], rec["initial_edge"][e % 2]
+        m.configure_pad_obstacles(np.asarray(boxes, np.float32), [None, "left", "right"])
+        specs.append(layout.EnvSpec(m, np.asarray(edge, float), 42, task.config_sha256))
     return BatchedCuttingMaterial(specs, device=device, parity_mode=device == "cpu", strict=strict,
                                   backend="isaac_lab_newton")
 
@@ -115,15 +123,16 @@ def main():
         wp.config.mode = "debug"
     device = "cpu" if cpu else "cuda:0"
     spacing = None if args.default_spacing else args.spacing
-    row = {"probe": "material_ood", "device": device, "scenario": args.scenario, "seeds": args.seeds,
+    row = {"probe": "material_ood", "initial_state": "recorded edge/boxes of step start-1 (since 2026-11-10 10:30; "
+           "earlier rows started from the recorded initial edge, so their first step jumped to step `start`)", "device": device, "scenario": args.scenario, "seeds": args.seeds,
            "spacing": spacing, "bad_env": args.bad_env, "bad_from": args.bad_from, "start": args.start,
            "commit": _commit(), "command": " ".join(sys.argv), "inputs": INPUTS, "steps": []}
     rec = np.load(INPUTS)
     N = len(args.seeds)
     t0 = time.perf_counter()
-    batches = {"run": build(args.seeds, spacing, device)}
+    batches = {"run": build(args.seeds, spacing, device, start=args.start)}
     if args.isolation:
-        batches["clean"] = build(args.seeds, spacing, device) if cpu else None
+        batches["clean"] = build(args.seeds, spacing, device, start=args.start) if cpu else None
     row["build_s"] = time.perf_counter()-t0
     row["particles"] = [int(x) for x in batches["run"].packed.particle_counts]
     row["graph"] = batches["run"].graph is not None
