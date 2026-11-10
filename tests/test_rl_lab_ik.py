@@ -11,6 +11,8 @@ import numpy as np
 import pytest
 import warp as wp
 
+pytest.importorskip("pxr", reason="needs OpenUSD (pxr): .venv or Lab venv; NOT_RUN in the Torch venv")
+
 from robotic_cutting_sim.batched import lab_scene
 from robotic_cutting_sim.batched.robot_ik import IK_OK, IK_UNREACHABLE, BatchedEdgeIK, ik_rejection_status_code
 

@@ -11,6 +11,8 @@ from functools import lru_cache
 
 import numpy as np
 import pytest
+pytest.importorskip("pxr", reason="needs OpenUSD (pxr): .venv or Lab venv; NOT_RUN in the Torch venv")
+
 from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
 from robotic_cutting_sim.batched import lab_scene

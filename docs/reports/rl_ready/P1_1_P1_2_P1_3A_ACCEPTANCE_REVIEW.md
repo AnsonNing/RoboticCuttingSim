@@ -550,3 +550,269 @@ Results are quoted in §3.1 and F5.
    - build a batch, then a frozen single `LiveCuttingMaterial` on CUDA;
    - count the batch's contact candidates and `stats[4]` before and after;
    - repeat with the proposed default-path guard, to show the hazard is closed.
+
+## 7. Review fixes (2480dc2)
+
+Branch `claude/rl-review-fix1`, from 2480dc2. Each finding, its fix and the commits are listed in §7.8. Raw output: `artifacts/rl_ready/review_fix1/` (not committed). Evidence:
+`docs/evidence/rl_ready/review_fix1_001.json`.
+
+### 7.1 F2 — position band v2, pre-declared before any reference run
+
+Declared in `configs/rl_benchmark/position_band_v2.json` (schema `rcs_rl_position_band_method_v2`) and committed
+before the first band-v2 reference run. The old band (`position_band_v1_p1_0`, [min, max] of 4 runs) and every
+status derived from it are kept and marked superseded; nothing is deleted.
+
+- **Metric (unchanged):** `max_position_diff_m_over_time`, the max over the 121 Native samples of the max particle
+  distance between the replay and Native WORLD positions, full 1200-step WP-17 replay.
+- **Reference sample:** at least 10 frozen single-env (`LiveCuttingMaterial`) headless replays per seed (512, 15), one
+  process each (`run_baseline.py --mode replay --warm-resets 0`), two chains on GPU 0 and GPU 1, each alternating the
+  seeds. Every COMPLETE run counts; none is dropped for its value. P1-0, `p1_2_single_ref_s512_001` and all batched
+  runs are held out and only re-classified.
+- **Tolerance:** one-sided log-normal prediction bound `U = exp(mean(ln m) + k·sd(ln m))`,
+  `k = t(0.99, n−1)·sqrt(1 + 1/n)`, nominal **false-reject rate 1 % per run** (assumptions: exchangeable runs,
+  ln m normal). Shapiro–Wilk on ln m is reported; if p < 0.01 the bound falls back to the reference maximum (nominal
+  false-reject rate 1/(n+1)), labelled `fallback_empirical_max`. The lower bound `exp(mean − k·sd)` is descriptive
+  only: a run below it is `BELOW_REFERENCE` (closer to Native than the frozen spread), never a failure.
+- **Per-run classes:** `WITHIN` (≤ U), `OUTSIDE` (> U), `INVALID_PROCESS`, `NO_POSITION_DATA`, `NOT_APPLICABLE`.
+- **Per run set:** `MET` if the number of OUTSIDE runs r ≤ c(n), the smallest c with P[Bin(n, 0.01) > c] ≤ 0.05
+  (c = 0 for n ≤ 5, c = 1 for 6 ≤ n ≤ 35); else `NOT_MET`.
+- **Scope:** a statistical regression check of GPU float-atomic spread against Native, not a physical tolerance.
+  Final codes, labelled counts and the frozen evaluator stay independent criteria.
+- **Amendment 1** (committed 4d39747, after the reference processes had started but before any reference
+  `final_max_position_diff_m` value was read; only one `max_position_diff_m_over_time` value had been printed): the
+  P1-6 acceptance judge compares the **final** max position difference at step 1200 with
+  `position_band_m[<seed>].high`, so `final_max_position_diff_m` becomes a second scored statistic with the same
+  reference runs and the same rule. After derivation the method file carries `position_band_m =
+  {"512": {"high_m": U}, "15": {"high_m": U}}` for that statistic (the judge's format) plus the band of both
+  statistics; the method digest excludes these derived keys. `acceptance_v1.json` is not changed here.
+
+### 7.2 F2 — band v2 values and re-classification
+
+**Reference runs** (`artifacts/rl_ready/review_fix1/band_v2_s{512,15}_g{0,1}_00{1..5}`): 20 processes,
+`run_baseline.py --mode replay --warm-resets 0 --out-root artifacts/rl_ready/review_fix1`, frozen single
+`LiveCuttingMaterial` (tlmpm_v7_2, law 8, one 200-substep CUDA graph), 102,732 / 103,898 particles, 50 Hz, 0.1 ms,
+no cameras, no recording. GPU 1 chain 10:39–11:32, GPU 0 chain 11:03–11:57 (RTX 5090, driver 570.211.01), each
+under its `rcs_rl_runner` lock, wall 224–343 s per process. Every run is COMPLETE, 1200 steps, invariants PASS and
+final codes equal Native; none was rejected. All are **SHARED_GPU** (≥ 1 foreign compute process in every run; that
+does not affect the positions, only time). Chain scripts: `artifacts/rl_ready/review_fix1/band_v2_chain.sh`.
+
+| statistic | seed | n | reference range (m) | geometric mean (m) | sd(ln m) | k | Shapiro–Wilk p | **upper U (m)** | lower (descriptive) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| max over time (primary) | 512 | 10 | 9.55e-6 – 4.79e-5 | 2.49e-5 | 0.547 | 2.959 | 0.48 | **1.254e-4** | 4.94e-6 |
+| max over time (primary) | 15 | 10 | 6.90e-5 – 8.57e-4 | 1.76e-4 | 0.911 | 2.959 | 0.09 | **2.601e-3** | 1.19e-5 |
+| final max (judge, amendment 1) | 512 | 10 | 9.55e-6 – 4.79e-5 | 2.49e-5 | 0.547 | 2.959 | 0.48 | **1.254e-4** | 4.94e-6 |
+| final max (judge, amendment 1) | 15 | 10 | 4.52e-5 – 1.69e-4 | 7.54e-5 | 0.404 | 2.959 | 0.61 | **2.493e-4** | 2.28e-5 |
+
+Both statistics use the parametric bound (no Shapiro fallback); nominal false-reject rate 1 % per run. For seed 512
+the max over time is reached at the final sample in every run, so the two statistics coincide. The 20 frozen single
+runs themselves span 5× (s512) and 12× (s15): **the v1 range of 4 runs covered only part of the frozen spread** (of the
+20 new frozen single runs, which are by construction conforming, 4/10 (s512) and 9/10 (s15) fall outside v1 on the
+max over time, 4/10 and 5/10 on the final max). The s15 max-over-time
+band is wide (U ≈ 15× the geometric mean), so it detects only gross deviations; the final-max band is 3.3× the
+geometric mean. Files: `configs/rl_benchmark/position_band_v2.json` (method + `position_band_m` for the judge, read
+successfully by the integration branch's `rl.perf_acceptance.load_position_band`),
+`configs/rl_benchmark/position_band_v2_reference.json` (values, runs, method digest), consumer
+`robotic_cutting_sim.rl.position_band`.
+
+**Re-classification of every earlier run** (`artifacts/rl_ready/review_fix1/band_v2_classification_001.json`; v1 =
+the superseded P1-0 [min, max]; v2 classes as declared):
+
+| run | env | seed | max over time (m) | v1 | **v2** | final max (m) | v1 (final) | **v2 (final)** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| P1-0 `replay_s512_001` | 0 | 512 | 3.84e-5 | inside | WITHIN | 3.84e-5 | inside | WITHIN |
+| P1-0 `band_replay_s512_001` | 0 | 512 | 2.41e-5 | inside | WITHIN | 2.41e-5 | inside | WITHIN |
+| P1-0 `band_replay_s512_002` | 0 | 512 | 3.85e-5 | inside | WITHIN | 3.85e-5 | inside | WITHIN |
+| P1-0 `band_replay_s512_003` | 0 | 512 | 1.39e-5 | inside | WITHIN | 1.39e-5 | inside | WITHIN |
+| P1-0 `p1_2_single_ref_s512_001` | 0 | 512 | 2.39e-5 | inside | WITHIN | 2.39e-5 | inside | WITHIN |
+| P1-0 `replay_s15_001` | 0 | 15 | 4.62e-4 | inside | WITHIN | 1.18e-4 | inside | WITHIN |
+| P1-0 `band_replay_s15_001` | 0 | 15 | 2.23e-4 | inside | WITHIN | 6.27e-5 | inside | WITHIN |
+| P1-0 `band_replay_s15_002` | 0 | 15 | 3.90e-4 | inside | WITHIN | 9.13e-5 | inside | WITHIN |
+| P1-0 `band_replay_s15_003` | 0 | 15 | 1.96e-4 | inside | WITHIN | 1.09e-4 | inside | WITHIN |
+| P1-2 `m0_s512_001` (pre-fix) | 0 | 512 | 2.24e-5 | inside | WITHIN | 2.24e-5 | inside | WITHIN |
+| P1-2 `m0_s512_postfix_001` | 0 | 512 | 3.853e-5 | **above** | WITHIN | 3.853e-5 | above | WITHIN |
+| P1-2 `m0_s15_001` (pre-fix) | 0 | 15 | 6.50e-4 | **above** | WITHIN | 1.37e-4 | above | WITHIN |
+| P1-2 `m0_s15_postfix_001` | 0 | 15 | 1.87e-4 | **below** | WITHIN | 7.05e-5 | inside | WITHIN |
+| P1-3a `episode_solo_512_001` | 0 | 512 | 2.49e-5 | inside | WITHIN | 2.49e-5 | inside | WITHIN |
+| P1-3a `episode_solo_15_001` | 0 | 15 | 8.34e-4 | **above** | WITHIN | 1.74e-4 | above | WITHIN |
+| P1-3a `episode_512_15_512_15_001` | 0 | 512 | 3.853e-5 | **above** | WITHIN | 3.853e-5 | above | WITHIN |
+| P1-3a `episode_512_15_512_15_001` | 1 | 15 | 1.73e-4 | **below** | WITHIN | 7.93e-5 | inside | WITHIN |
+| P1-3a `episode_512_15_512_15_001` | 2 | 512 | 2.31e-5 | inside | WITHIN | 2.31e-5 | inside | WITHIN |
+| P1-3a `episode_512_15_512_15_001` | 3 | 15 | 8.20e-4 | **above** | WITHIN | 1.80e-4 | above | WITHIN |
+| P1-3a `hardened_episode_512_001` | 0 | 512 | 1.58e-5 | inside | WITHIN | 1.58e-5 | inside | WITHIN |
+| P1-3a `hardened_episode_15_001` | 0 | 15 | 5.98e-4 | **above** | WITHIN | 1.33e-4 | above | WITHIN |
+| P1-3a `episode_512_001` (alias / frozen halves) | 0 | 512 | 3.68e-5 / 2.45e-5 | inside | INVALID_PROCESS | same | inside | INVALID_PROCESS |
+| P1-3a `episode_15_001` (alias / frozen halves) | 0 | 15 | 1.56e-3 / 1.99e-2 | above | INVALID_PROCESS | 5.85e-4 / 1.99e-2 | above | INVALID_PROCESS |
+
+Not scored: P1-0 `smoke_replay_s512_001` and `coldcache_replay_s512_001` (20 steps, NOT_APPLICABLE), P1-2
+`smoke_m0_001` (NOT_APPLICABLE); M1 replay envs (4) and all 42 M2 episodes recorded no Native position comparison
+(NO_POSITION_DATA; their final codes equal Native); the M1 policy-driven envs (4) are not Native replays
+(NOT_APPLICABLE). The two INVALID multi-grid processes are not scored (their frozen half, 1.99e-2 m, would be
+OUTSIDE both statistics).
+
+**Run-set verdicts (both statistics identical):** P1-0 frozen single 9/9 WITHIN → MET (held-out check of the band);
+**P1-2 M0 4/4 WITHIN → MET**; **P1-3a alias_free_v1 8/8 WITHIN → MET**; P1-2 M1/M2 NO_SCORED_RUNS. Corrected
+statuses replace "3 of 4 inside" (M0) and "s15 outside in 3 of 4" (P1-3a): the strict v1 tallies were 1/4 (M0), s512
+3/4 and s15 0/4 (P1-3a), and v1 is superseded. Corrections are additive in the reports and in the
+`corrections_review_fix1` blocks of `p1_0_baseline_001.json`, `p1_2_milestones_001.json` and `p1_3a_001.json`.
+
+### 7.3 F1 — default-path descriptor refresh and step-time census
+
+**Fix** (`batched/material_batch.py`; no kernel source, no graph content changed; the `_particle_contacts_b` pin
+passes):
+- `advance()` calls `refresh_device_hashgrid()` right before the graph launch **and** before the eager substeps, in
+  both particle-contact modes. `frozen_v1` rebuilds `solver.hash` on the host with the identical call of its substep
+  (`build(x, 2.4·r, groups=env_of_particle)`); `alias_free_v1` keeps `restore_descriptor`. Label
+  `DEVICE_HASHGRID_REFRESH = host_rebuild_before_every_launch_v1`, counted in `receipt()["device_hashgrid"]`.
+- Step-time census `device_hashgrid_census_v1`: `wp.HashGrid.__init__`/`build` are wrapped once per process with pure
+  bookkeeping (weak registry of grids, weak reference to the grid of the last host `build`). `advance()` checks, with
+  no gc scan and no device read, whether another counted grid is alive or was the last one built on the host. Grids
+  created before the module import are added by the construction-time gc scan.
+- On detection: a per-batch record (`receipt()["device_hashgrid"]["foreign"]`: first and last control step, steps
+  flagged, max foreign live grids, foreign last builds), sticky for the batch's life and across `rebuild()`; for a
+  guarded batch also the sticky per-env bit `FOREIGN_DEVICE_HASHGRID = 128` in `invalid_reason` (so it appears in
+  `info["invalid_reason"]`, terminates the envs in training mode and raises `InvalidBatchEnvs` in strict mode). With
+  `allow_multiple_device_hashgrids=True` only the record is written.
+- Limits: the refresh protects the batch's own graph. Another grid's graph (for example a frozen single
+  `LiveCuttingMaterial` built later) now replays the batch's descriptor, so one device grid per process stays the
+  rule; the census marks such a process. `vector_env`'s full-reset re-check is unchanged (not this branch's file).
+
+**GPU measurements** (`artifacts/rl_ready/review_fix1/`, `probe_hashgrid_descriptor.py`, `.deps/isaacsim-venv`, Warp
+1.17.0, RTX 5090 GPU 0, driver 570.211.01, **SHARED_GPU**: foreign SM mean 50–71 %, 2–3 foreign compute processes,
+one process per variant, commits da34452 / a7521d2 (identical library code), clean tree):
+
+- *Cost of the refresh* (`refresh_cost_n{1,16}_{on,off}_00{1,2}`, protocol of the P1-3a solo runs: `frozen_v1`,
+  replay steps 3–14 after 2 warm-up steps, env k seed 512 / 15 alternating, 102,732 / 103,898 particles per env,
+  50 Hz, 0.1 ms / 200 substeps, no cameras, no recording, warm; `off` = refresh replaced by a no-op, i.e. the pre-fix
+  path):
+
+  | N | on: step median (s) | off: step median (s) | refresh host wall per call | refresh GPU time per call (CUDA events) |
+  | --- | --- | --- | --- | --- |
+  | 1 | 0.4337 / 0.3368 | 0.3353 / 0.3298 | 0.093 ms (max 0.15) | 0.12 ms |
+  | 16 | 3.8133 / 3.8324 | 3.8208 / 3.8350 | 0.090–0.094 ms (max 0.12) | 0.25 ms |
+
+  The refresh costs 0.12 ms (N=1) / 0.25 ms (N=16) of GPU time per control step, 0.04 % / 0.007 % of the step; the
+  step medians do not resolve it (N=16: on −0.1 % vs off; N=1: `on_002` +1.3 %, `on_001` is a co-tenant outlier with
+  the same minimum, 0.303 s vs 0.300–0.304 s). Matches P1-3a's "no measurable cost". Host blocking (review note N3):
+  with an idle stream the call returns in 0.09 ms; issued while the batch graph still runs (`f1_*_002`
+  `refresh_while_graph_runs`, N=4) it blocks the host for 13.9–14.2 ms (one outlier 326–361 ms under a 98 % SM
+  co-tenant) while the graph still had ≥ 560 ms to run: a partial host wait (the build's pageable host-to-device
+  copy / scratch allocation), not a device synchronisation. In training mode (no per-step readback) the host can
+  therefore wait ~14 ms at the next `advance()` while the GPU stays busy; not measured end to end in training mode.
+- *When a replay reads the descriptor* (`replay_race_001.json`): a graph [64 ms spin kernel, A.build, query on A]
+  was launched and grid B built on the host 0.05 ms later while the spin kernel still ran: the replay still used
+  A's descriptor (8,804,086 candidates = eager). The static is read at **launch**, so a foreign host build during an
+  asynchronous replay does not corrupt it; the refresh right before `capture_launch` is sufficient.
+- *Batch + foreign grid* (`f1_clean_002`, `f1_foreign_002`, `f1_compare_002.json`; GPU 0, 18:18–18:20, SHARED_GPU,
+  foreign SM mean 50–61 %, 3 foreign compute processes; `frozen_v1`, `open_vector_env(4, strict=False)`, 4 copies of
+  seed 15 with the recorded Native state of sample 43 (t = 8.6 s), 4 × 103,898 particles, one control step = one
+  200-substep graph replay). Two processes: *clean* (one device grid) and *foreign* (after the batch, a
+  `HashGrid(64, 64, 32)` — a frozen single material's dims — is built on 20,000 points 5 m away, and built again
+  right before the step, so it is the last host build):
+
+  | comparison | candidates per env (mirrored graph) | contacts `stats[4]` per env | non-zero impulse particles | impulse max rel. diff | codes | invalid bit |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | clean vs clean-equivalent first step of the foreign process (no foreign grid yet) | 8,633,748 = 8,633,748 | 18,807 = 18,807 | 20,748 = 20,748, same set | 5.12e-5 | equal | 0 |
+  | clean vs **foreign grid present, refresh on (fixed path)** | **8,633,748 = 8,633,748** | **18,807 = 18,807** | **20,748 = 20,748, same set** | **5.15e-5** | **equal** | **128 (FOREIGN_DEVICE_HASHGRID) in all 4 envs** |
+  | clean vs foreign grid present, refresh disabled (pre-fix path) | 8,633,748 → **483,678** | 18,807 → **0** | 20,748 → 20,480 | 1.0 | equal (one step) | 128 |
+
+  With the refresh the batch's contacts match the clean process: identical candidate counts, contact counts and
+  non-zero impulse sets, codes equal; the impulse values differ by 5.15e-5 relative, the same as between the two
+  clean steps (5.12e-5, GPU float-atomic order over 200 substeps), and `stats[6]` (max overlap) differs in both
+  comparisons for the same reason. The compare script's automatic verdict `protected_matches_clean` reads **False**
+  only because its impulse threshold (1e-6) was set for a single contact stage, not for a 200-substep step; judged
+  against the measured clean-vs-clean spread the result is **PASS**. Without the refresh the hazard is reproduced
+  (0 contacts, 483,678 candidates from the foreign descriptor), so the probe is not vacuous. The receipt records
+  `FOREIGN_DEVICE_HASHGRID_OBSERVED` (first control step 12, 1 foreign live grid, foreign last host build).
+
+**CPU tests** (`tests/test_batched_hashgrid_guard.py`, monkeypatched predicates, 9 new): refresh precedes the launch
+on the graph path (fake `capture_launch`) and the eager path, for `frozen_v1` and `alias_free_v1`; after a foreign
+grid is built later, the grid last built on the host at launch time is still the batch's own; the bit, the strict
+raise, reset clearing and the sticky record; no gc scan and no array read during the census; opt-out records
+without the bit; sticky across `rebuild()`; host grids without the predicates are not censused (refresh still
+counted). The full CPU parity suites pass with the refresh in place (§7.6).
+
+### 7.4 F3 / F4 — M2 throughput over matched windows and the right baseline
+
+Recomputed from the raw `steps.npz` (`make_review_fix1_evidence.py`):
+
+| round | N=1 [0:150] | N=8 [0:150] | N=8 / N=1 | N=1 [0:100] | N=16 [0:100] | N=16 / N=1 | reported before |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 (matched co-tenant 46–47 %) | 3.475 | 4.850 | **1.40×** | 3.469 | 4.752 | **1.37×** | 1.45× / 1.42× |
+| 2 (confounded, not claimed) | 3.473 | 6.199 | 1.79× | 3.469 | 7.038 | 2.03× | 1.85× / 2.10× |
+
+Against the ADR's baseline (sequential frozen single envs): batched N=1 / frozen single = 5.091 / 5.630 = 0.904
+(full s512 episodes, co-tenant 24 %), so the gain over the frozen single env is ≈ **1.24–1.26×**, inferred, not
+measured in one alternation round, and below the ADR's 1.3× lower estimate (risk #6). Corrected in the milestones
+report (status table, §6, §7), `p1_2_milestones_001.json` (`corrections_review_fix1`) and the ADR notes.
+
+### 7.5 F6, F8, F9, F10 and notes
+
+- **F6.** `p1_3a_001.json` gains `corrections_review_fix1`: failure 1 ("no end-to-end gain") WITHDRAWN (from
+  INVALID multi-grid runs; valid solo runs give 1.40–1.45×), failure 2 SUPERSEDED (the frozen "control" was the
+  INVALID `episode_15_001`; s15 is 4 of 4 outside v1), `not_run` corrected (most rows 1 foreign compute process).
+  ADR 0021 carries the withdrawal inline at the "≈1.9× at N=4" sentence.
+- **F8.** Milestones report: M1 "PASS (CPU bitwise L1; GPU outcome-level only; L4 BLOCKED)", status table, §8 and the
+  evidence correction block.
+- **F9.** particles/env filled in the P1-2 rows (M0 102,732 / 103,898; M1 103,315 mean) and the P1-3a episode rows
+  (102,732 / 103,898 / 103,315 mean for the mixed N=4), in the reports and the evidence correction blocks.
+- **F10.** `tests/test_rl_lab_{scene_usd,ik,kernels,rigid_isolation}.py` call `pytest.importorskip("pxr")` at module
+  level; the Torch-venv command now collects and reports them as skipped (NOT_RUN). They still run in `.venv` (40
+  passed) and the Isaac Lab venv.
+- **N5.** `tests/test_batched_frozen_sources.py` pins `goals.py`, `policy_env.py`, `control.py`, `scene_config.py`,
+  `tlmpm.py`…`tlmpm_v4.py` at their f242881^ content (the diff since then is empty).
+- **N6.** The construction-time gc scan suppresses the harmless torch `FutureWarning`. The exception-class point
+  (`UnsupportedBatchConfiguration` vs `UnsupportedVectorConfiguration`) is in `vector_env.py`, not changed here.
+- **N3.** Measured in §7.3 (refresh while the graph runs).
+- Not changed here (other owners): F5 and F7 (`rl/vector_env.py`, `run_p1_3a.py`, P1-2b agent); N8, N9 (vector env).
+
+### 7.6 Tests run for these fixes (CPU)
+
+```bash
+CUDA_VISIBLE_DEVICES= TMPDIR=/mnt/data/ningan/tmp .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_batched_*.py \
+    tests/test_wp17_frontier.py tests/test_rl_position_band.py tests/test_rl_lab_ik.py tests/test_rl_lab_kernels.py \
+    tests/test_rl_lab_rigid_isolation.py tests/test_rl_lab_scene_usd.py tests/test_repo_naming.py
+# 297 passed in 561.02 s   -> PASS (incl. 9 new guard tests, 8 new frozen-source pins, 14 band-v2 tests, 40 Lab tests)
+CUDA_VISIBLE_DEVICES= TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src \
+    .deps/isaacsim-venv/bin/python -m pytest -q -rs -p no:cacheprovider tests/test_vector_env_api.py tests/test_rl_*.py \
+    tests/test_batched_pose_interp.py tests/test_batched_hashgrid_guard.py tests/test_repo_naming.py
+# 174 passed, 5 skipped in 117.13 s   -> PASS; the 5 skips are NOT_RUN (test_rl_lab_env needs Isaac Lab; the four
+# test_rl_lab_* files need pxr) - the F10 command now completes instead of stopping at collection
+```
+
+The first Torch-venv run of the final tree had 1 failure (`test_reference_file_matches_the_declared_method`: SciPy
+1.17 in the Torch venv vs 1.18 in `.venv` differ in the last bits of the re-derived band); fixed by a relative
+tolerance of 1e-6 (511545f), rerun above. The earlier `.venv` run before the band reference existed: 254 passed,
+1 skipped (NOT_RUN: reference not derived yet).
+
+### 7.7 Failed or preserved runs
+
+- The first rerun waiter of `f1_chain2.sh` died on a shell syntax error in the chain script before running anything;
+  fixed and requeued (blocking waiter on `gpu0.lock`).
+- `f1_clean_001`, `f1_foreign_001`: FAIL, the probe captured its count graph on the Torch stream ("Warp error:
+  unknown stream"); fixed in a7521d2, preserved, rerun as `_002`.
+- A first F1 chain start on GPU 0 at 12:12 skipped every job (4.9 GB free < 7 GB): no process ran.
+- The band-chain and first F1-chain logs print `rc` of the `date` substitution, not of the job; job status was
+  checked from each `result.json` (all band runs COMPLETE).
+
+### 7.8 Per-finding status
+
+| Finding | Status | Fix | Commits |
+| --- | --- | --- | --- |
+| F1 MAJOR default-path grid hazard | **FIXED** (CPU tests PASS; GPU cost and launch-time semantics measured; batch + foreign-grid probe PASS: contacts equal to a clean process, hazard reproduced without the refresh) | host rebuild of the own grid before every launch + step-time census, sticky bit 128, receipt | 5503122, a7521d2, 1f7d39f |
+| F2 MAJOR position band | **FIXED** (band v2 pre-declared, derived from 20 runs; every earlier run re-classified; statuses corrected, v1 kept as superseded) | `position_band_v2.json` (+ judge view), `position_band_v2_reference.json`, `rl.position_band` | 1b3eaa1, 03394d2, 4d39747, 5beb8df, da34452, 511545f, 0a26b5f |
+| F3 MINOR mismatched windows | **FIXED** (1.40× / 1.37×) | report, ADR, evidence corrections | 0a26b5f, 1f7d39f |
+| F4 MINOR wrong baseline | **FIXED** (≈1.24–1.26× over the frozen single env, inferred, below the ADR estimate) | report, ADR, evidence corrections | 0a26b5f, 1f7d39f |
+| F5 MINOR autoreset + evaluate | NOT_MINE (P1-2b agent, `rl/vector_env.py`) | — | — |
+| F6 MINOR stale text | **FIXED** | `p1_3a_001.json` corrections block; ADR inline withdrawal | 0a26b5f, 1f7d39f |
+| F7 MINOR multi-variant commands | NOT_MINE (P1-2b agent, `run_p1_3a.py`) | — | — |
+| F8 MINOR M1 bit-identity CPU-only | **RECORDED** (note) | milestones report status, §8; evidence correction | 0a26b5f, 1f7d39f |
+| F9 MINOR particles/env | **FIXED** | reports and evidence correction blocks | 0a26b5f, 1f7d39f |
+| F10 MINOR Torch-venv collection | **FIXED** | module-level `importorskip("pxr")` | c35375e |
+| N3 refresh sync | measured: 0.09 ms host on an idle stream; a 14 ms partial host wait when issued behind a running graph (no device sync) | — | 1f7d39f |
+| N5 frozen pins | **FIXED** | 8 more pins | c35375e |
+| N6 FutureWarning | **FIXED** (warning); exception class NOT_MINE (vector env) | `live_device_hashgrids` | 5503122 |
+| N1, N2, N4, N7, N8, N9, N10 | not acted on (no cheap change in these files; N8/N9 belong to the vector env) | — | — |
+
+Still open: EXCLUSIVE_GPU rows (every number here is SHARED_GPU), L4 RUN_TO_RUN (BLOCKED), a measured
+`single_env_headless` row inside an alternation round (F4 is inferred), and Native confirmation of the policy-driven
+episodes.

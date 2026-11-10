@@ -29,6 +29,17 @@ PINS = {
     "multi_cut_evaluation.py": "260c68ba5d503bae70eef77598fa9f723ce745ad2b25701387e276f588b3d5b0",
     "demo_evaluation.py": "e1a52457c476cb0b48ad6235f70f02f106be720de7a119d59498577e8d045767",
     "seeded_trim.py": "ed1a89228259ac558b8ebe70b995180299ac8534296a01660cd5bd8adf0046c1",
+    # Review note N5 (2480dc2 review): the evaluator path (``evaluate()`` runs ``goals.evaluate_goal`` via
+    # ``scene_config``), the policy/control surface and the pre-v5 solvers. Pinned at their f242881^ content (the
+    # RL-ready start; ``git diff f242881^ 2480dc2`` is empty for these files).
+    "goals.py": "c2cb544a0dee129d71054c0df3266601fbc6e75b41e94c6a00a735812bba8602",
+    "policy_env.py": "70c13aab61a1c23b2d68d8096da932f45416b9bb7eae067da36ac2ef1dd8f039",
+    "control.py": "040c567b29c4d912db6da2faa33ccd46777eadeaa78b5791115c10995ee51b71",
+    "scene_config.py": "ff32062a24a6b972ec1918bba41cc691a7bcc964b79be5b9c99f30ef8bce79ee",
+    "tlmpm.py": "a39c151cb8122a739b18991699527d2557219b5945d7e44be5ca50fd6e7ff7fe",
+    "tlmpm_v2.py": "b2946e95dcb70492d1e06f210681788ced6e5f54fdf343aa31cd69ca85ff66b0",
+    "tlmpm_v3.py": "9073036b0a86076ae44ad268a91427a4ce20c32133f8759d67595bd4836a6b1a",
+    "tlmpm_v4.py": "cb8985ebbfe530be741025f009400622f6b72cdceacf239f952612c91c2eaea9",
 }
 
 
