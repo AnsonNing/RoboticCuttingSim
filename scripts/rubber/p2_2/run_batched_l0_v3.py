@@ -46,10 +46,18 @@ def schedule(case, cfg, P, T_ax):
     return dtc, ramped, out
 
 
+MODE = {"value": "equal_nan"}
+
+
 def same(a, b):
-    """Bitwise identity (byte comparison: NaN at the same place with the same payload is equal; array_equal is not)."""
+    """``equal_nan`` (the L0 definition of tests/test_rubber_batched.py, np.array_equal, plus NaN at the same places):
+    +0.0 == -0.0. ``bytes``: byte-wise identity (also distinguishes the sign of zero and NaN payloads)."""
     a, b = np.ascontiguousarray(a), np.ascontiguousarray(b)
-    return a.shape == b.shape and a.dtype == b.dtype and a.tobytes() == b.tobytes()
+    if a.shape != b.shape or a.dtype != b.dtype:
+        return False
+    if MODE["value"] == "bytes":
+        return a.tobytes() == b.tobytes()
+    return bool(np.array_equal(a, b, equal_nan=a.dtype.kind == "f"))
 
 
 def compare(batch, e, live, names):
@@ -113,6 +121,7 @@ def main():
     dtc, ramped, sched = schedule(args.case, cfg, P, T_ax)
     N, G = args.copies, live.solver.G
     first_mismatch, hold_force, steps = None, None, 0
+    found = {"first_mismatch": None, "first_byte_mismatch": None}
     t0 = time.perf_counter()
     for phase, lam, release, frac in sched:
         motions, traction, b_kw = None, None, {}
@@ -135,18 +144,22 @@ def main():
         steps += 1
         if phase == "stretch":
             hold_force = float(-np.asarray(w)[1, 0])
-        if first_mismatch is None:
-            for e in range(N):
-                bad = compare(batch, e, live, names)
-                if bad is not None:
-                    first_mismatch = {"step": steps, "env": e, "array": bad, "phase": phase}
-                    break
+        for mode, store in (("equal_nan", "first_mismatch"), ("bytes", "first_byte_mismatch")):
+            if found[store] is None:
+                MODE["value"] = mode
+                for e in range(N):
+                    bad = compare(batch, e, live, names)
+                    if bad is not None:
+                        found[store] = {"step": steps, "env": e, "array": bad, "phase": phase}
+                        break
+        first_mismatch = found["first_mismatch"]
     res = {"label": "F4 batched L0 (CPU bitwise) of a v3 case", "case": args.case, "protocol": "rubber_phys_tests_v3",
            "copies": N, "control_steps": steps, "control_interval_s": dtc, "substeps": live.substeps, "dt_s": live.dt,
            "particles_per_env": live.scene.n, "stable_step_guard": P.guard_limit(cfg),
            "bitwise_equal_every_step": first_mismatch is None, "first_mismatch": first_mismatch,
+           "first_byte_mismatch": found["first_byte_mismatch"],
            "single_invalid": int(live.invalid_reason), "batched_invalid": batch.invalid_reason.numpy().tolist(),
-           "commit_at_start": commit, "comparison": "byte-wise (tobytes) per array",
+           "commit_at_start": commit, "comparison": "np.array_equal with equal_nan (L0 definition; +0.0 == -0.0); byte-wise mismatch reported separately",
            "wall_s": time.perf_counter()-t0}
     (out/"l0.json").write_text(json.dumps(res, indent=1, default=float))
     print(json.dumps(res, default=float))
