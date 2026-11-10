@@ -251,13 +251,14 @@ def test_mixed_options_are_refused():
         rmb.BatchedRubberMaterial([_live({})], device="cpu", parity_mode=True, bc_launch="nope")
 
 
+@pytest.mark.parametrize("launch", ["constrained_list_v1", "motion_table_v1"])
 @pytest.mark.parametrize("options", [{}, ALL], ids=["defaults", "F8_F9_F10"])
-def test_constrained_list_bc_launch_equals_all_node_launch(options):
+def test_bc_launch_variants_equal_the_all_node_launch(options, launch):
     kws = [dict(case="C"), dict(case="C", L=0.009, mu=6e5, rho=1050.0)]
     a = rmb.BatchedRubberMaterial([_live(options, **kw) for kw in kws], device="cpu", parity_mode=True,
                                   bc_launch="all_nodes_v1")
     b = rmb.BatchedRubberMaterial([_live(options, **kw) for kw in kws], device="cpu", parity_mode=True,
-                                  bc_launch="constrained_list_v1")
+                                  bc_launch=launch)
     assert b.solver.bc_node_count < b.solver.total_nodes
     for k in range(3):
         tr, force = _inputs(k, 2, 2)
@@ -270,3 +271,11 @@ def test_constrained_list_bc_launch_equals_all_node_launch(options):
                 assert np.array_equal(sa[name], sb[name]), (k, e, name)
         assert np.array_equal(a.wrench.numpy(), b.wrench.numpy()) and np.array_equal(a.summary.numpy(),
                                                                                      b.summary.numpy())
+    for m in (a, b):                              # direct substeps past the control step (beyond the motion table)
+        m.solver.step()
+        m.solver.step()
+    for e in range(2):
+        sa, sb = a.solver.snapshot(e), b.solver.snapshot(e)
+        assert int(sa["index"][0]) > a.solver.substeps
+        for name in sa:
+            assert np.array_equal(sa[name], sb[name]), ("past", e, name)

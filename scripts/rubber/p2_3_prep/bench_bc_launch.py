@@ -4,7 +4,8 @@
         PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/rubber/p2_3_prep/bench_bc_launch.py \
         --out artifacts/rl_ready/p2_3_prep/<id>
 
-Workload E batch (N = 4 by default, v1 options, guard 1.0, eager; no graph). Per round, in an order rotated every round:
+Workload E batch (N = 4 by default, v1 options, guard 1.0, eager; no graph). Per round, in an order rotated every round
+(``motion_table_v1`` and its once-per-control-step table build added in bench_002):
 the BC pair of one substep (record 1 then record 0) with ``_bc_b`` over every node, the same pair with ``_bc_list_b``
 over the constrained-node list, and a one-thread kernel (``tlmpm_v5._advance`` on a scratch counter) as the
 launch / scheduling floor. GPU execution time per launch from CUDA activity timing (``wp.timing_begin``); medians and
@@ -63,7 +64,9 @@ def main():
             "co_tenant_before": gpu_sample(), "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     lives = [LiveRubberMaterial(spec, control_dt=wl["control_dt_s"], device="cpu", step_material=step_mat,
                                 stable_step_guard=1.0) for _ in range(args.N)]
-    batch = BatchedRubberMaterial(lives, device=args.device, strict=False, capture_graph=False)
+    # built with motion_table_v1 so that its table exists; the launch variant is switched per call below
+    batch = BatchedRubberMaterial(lives, device=args.device, strict=False, capture_graph=False,
+                                  bc_launch="motion_table_v1")
     s = batch.solver
     batch.begin_control_step()
     R = np.tile(Rotation.from_rotvec([0.0, 0.05, 0.0]).as_matrix(), (args.N, 1, 1, 1))
@@ -79,15 +82,20 @@ def main():
     def floor():
         wp.launch(v5._advance, 1, [counter], device=args.device)
 
+    def table():
+        s.bc_launch = "motion_table_v1"
+        s.prepare_motion_table()
+
     labels = {"all_nodes_v1": lambda: pair("all_nodes_v1"), "constrained_list_v1": lambda: pair("constrained_list_v1"),
-              "one_thread_x2": lambda: (floor(), floor())}
+              "motion_table_v1": lambda: pair("motion_table_v1"), "one_thread_x2": lambda: (floor(), floor()),
+              "motion_table_build_per_control_step": table}
     for fn in labels.values():                         # warm-up (module load, first launch)
         fn()
     wp.synchronize_device(args.device)
     per = defaultdict(list)
     order = list(labels)
     for r in range(args.rounds):
-        rot = order[r % 3:]+order[:r % 3]
+        rot = order[r % len(order):]+order[:r % len(order)]
         for name in rot:
             wp.synchronize_device(args.device)
             wp.timing_begin()
@@ -109,7 +117,11 @@ def main():
     result = {"N": args.N, "particles_per_env": int(batch.packed.particle_counts[0]),
               "nodes_total": s.total_nodes, "bc_nodes_total": s.bc_node_count, "substeps_per_control_step": s.substeps,
               "material_dt_s": s.dt, "control_hz": 50, "cameras": "none", "recording": "none", "graph": "none (eager)",
-              "activity_timing": stats, "wall_ms_per_pair_chain": chain}
+              "activity_timing": stats, "wall_ms_per_pair_chain": chain,
+              "motion_table_amortised_gpu_ms_per_substep":
+                  stats["motion_table_build_per_control_step"]["gpu_ms_per_pair_median"]/s.substeps,
+              "note": "pair = the two BC launches of one substep (record 1, record 0); the table build runs once per "
+                      "control step"}
     meta["co_tenant_after"] = gpu_sample()
     meta["finished"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     others = [a for x in (meta["co_tenant_before"], meta["co_tenant_after"]) for a in x["apps"]

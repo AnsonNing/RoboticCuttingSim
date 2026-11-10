@@ -63,6 +63,7 @@ SOLVER_CONSTANT_ARRAYS = ("reference", "nodes", "weights", "gradients", "slot", 
                           "cell_env_offset")
 SOLVER_CONSTANT_ARRAYS += ("bc_nodes",)
 SOLVER_SHARED_ARRAYS = ("index",)
+SOLVER_RECOMPUTED_ARRAYS = ("motion_M", "motion_b")      # bc_launch motion_table_v1: every control step
 # option arrays (exist only when the lives were built with the option; ADR 0023 §20)
 OPTION_RESET_ARRAYS = {"state_precision": ("F64", "x64"), "traction_work": ("work_scratch",),
                        "dirichlet": ("proj_rhs", "proj_vpresc", "proj_mu", "proj_mu_node", "proj_inv")}
@@ -306,6 +307,7 @@ class BatchedRubberMaterial:
             self.marker_v = wp.zeros(N*self.K, dtype=wp.vec3d)
         for module in (__name__, T.__name__):
             wp.load_module(module=module, device=device)
+        s.prepare_motion_table()
         self.graph_chunk = max(1, min(int(graph_chunk), s.substeps))
         self.graphs = None
         self.capture_receipt = None
@@ -394,6 +396,7 @@ class BatchedRubberMaterial:
             s.group_A1.assign(np.asarray(affine, float).reshape(N*G, 3, 3))
         if active is not None:
             s.group_active.assign(np.asarray(active, np.int32).reshape(N*G))
+        s.prepare_motion_table()
 
     def set_traction(self, forces):
         self.solver.traction_force.assign(np.asarray(forces, np.float32).reshape(-1, 3))

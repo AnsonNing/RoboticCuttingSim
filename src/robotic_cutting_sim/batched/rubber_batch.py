@@ -33,7 +33,7 @@ import warp as wp
 
 from .. import tlmpm_v5 as v5
 from .. import rubber_constitutive as rc
-from ..tlmpm_rubber_v1 import (_deformation_f64, _positions_f64, _proj_particles, _proj_rhs, _proj_solve, apply_mask,
+from ..tlmpm_rubber_v1 import (GROUP_RIGID, _deformation_f64, _positions_f64, _proj_particles, _proj_rhs, _proj_solve, apply_mask,
                                bc_reaction, bc_work, contact_load, group_target)
 from ..tlmpm_v6 import _grid_positions
 from . import constitutive_rubber as cr
@@ -47,7 +47,7 @@ wp.set_module_options({"enable_backward": False})
 SOLVER_NAME = "tlmpm_rubber_v1_batch"
 BASE_SOLVER = "tlmpm_rubber_v1"
 STATUS = "EXPERIMENTAL_NOT_ACCEPTED"
-BC_LAUNCHES = ("constrained_list_v1", "all_nodes_v1")
+BC_LAUNCHES = ("constrained_list_v1", "all_nodes_v1", "motion_table_v1")
 DEFAULT_BC_LAUNCH = "constrained_list_v1"
 _HERE = Path(__file__).resolve()
 
@@ -153,6 +153,65 @@ def _bc_list_b(bc_nodes: wp.array(dtype=int), node_group: wp.array(dtype=int), n
 
 
 @wp.kernel
+def _motion_table_b(substeps: int, kind: wp.array(dtype=int), q0: wp.array(dtype=wp.quatd),
+                    q1: wp.array(dtype=wp.quatd), b0: wp.array(dtype=wp.vec3d), b1: wp.array(dtype=wp.vec3d),
+                    A0: wp.array(dtype=wp.mat33d), A1: wp.array(dtype=wp.mat33d),
+                    table_M: wp.array2d(dtype=wp.mat33d), table_b: wp.array2d(dtype=wp.vec3d)):
+    """Group maps at s = k / substeps for every substep boundary k of the control step (``group_target`` without the
+    final M X + b, same statements): one thread per (k, group), once per control step."""
+    k, g = wp.tid()
+    s = wp.float64(k)/wp.float64(substeps)
+    b = b0[g]+s*(b1[g]-b0[g])
+    M = A0[g]+s*(A1[g]-A0[g])
+    if kind[g] == GROUP_RIGID:
+        M = wp.quat_to_matrix(wp.quat_slerp(q0[g], q1[g], s))
+    table_M[k, g] = M
+    table_b[k, g] = b
+
+
+@wp.kernel
+def _bc_table_b(bc_nodes: wp.array(dtype=int), node_group: wp.array(dtype=int), node_mask: wp.array(dtype=int),
+                node_X: wp.array(dtype=wp.vec3d), gm: wp.array(dtype=float), new_v: wp.array(dtype=wp.vec3),
+                index: wp.array(dtype=int), substeps: int, dt: wp.float64, kind: wp.array(dtype=int),
+                active: wp.array(dtype=int), q0: wp.array(dtype=wp.quatd), q1: wp.array(dtype=wp.quatd),
+                b0: wp.array(dtype=wp.vec3d), b1: wp.array(dtype=wp.vec3d), A0: wp.array(dtype=wp.mat33d),
+                A1: wp.array(dtype=wp.mat33d), origin: wp.array(dtype=wp.vec3d),
+                reaction: wp.array(dtype=wp.spatial_vectord), work: wp.array(dtype=wp.float64),
+                env_of_group: wp.array(dtype=int), record: int, table_M: wp.array2d(dtype=wp.mat33d),
+                table_b: wp.array2d(dtype=wp.vec3d)):
+    """``_bc_b`` over the constrained-node list with the group maps read from the control step's motion table
+    (``bc_launch="motion_table_v1"``); beyond the table (index + 1 > substeps: direct ``solver.step()`` calls past
+    the control step) the maps are evaluated directly, as in ``_bc_b``."""
+    i = bc_nodes[wp.tid()]
+    g = node_group[i]
+    if g >= 0:
+        if active[g] != 0:
+            k = index[0]
+            X = node_X[i]
+            x0 = wp.vec3d()
+            x1 = wp.vec3d()
+            o1 = wp.vec3d()
+            if k+1 <= substeps:
+                x0 = table_M[k, g]*X+table_b[k, g]
+                x1 = table_M[k+1, g]*X+table_b[k+1, g]
+                if record != 0:
+                    o1 = table_M[k+1, g]*origin[g]+table_b[k+1, g]
+            else:
+                s0 = wp.float64(k)/wp.float64(substeps)
+                s1 = wp.float64(k+1)/wp.float64(substeps)
+                x0 = group_target(kind[g], q0[g], q1[g], b0[g], b1[g], A0[g], A1[g], s0, X)
+                x1 = group_target(kind[g], q0[g], q1[g], b0[g], b1[g], A0[g], A1[g], s1, X)
+                if record != 0:
+                    o1 = group_target(kind[g], q0[g], q1[g], b0[g], b1[g], A0[g], A1[g], s1, origin[g])
+            v = new_v[i]
+            vn = apply_mask(v, (x1-x0)/dt, node_mask[i])
+            new_v[i] = vn
+            if record != 0:
+                wp.atomic_add(reaction, g, bc_reaction(gm[i], v, vn, x1, o1))
+                wp.atomic_add(work, env_of_group[g], bc_work(gm[i], v, vn))
+
+
+@wp.kernel
 def _proj_reaction_b(row_node: wp.array(dtype=int), row_comp: wp.array(dtype=int), row_group: wp.array(dtype=int),
                      node_X: wp.array(dtype=wp.vec3d), gm: wp.array(dtype=float), mu: wp.array(dtype=wp.float64),
                      vpresc: wp.array(dtype=wp.float64), index: wp.array(dtype=int), substeps: int,
@@ -254,6 +313,10 @@ class BatchedTLMPMRubber:
             if self.traction_work == "grid_displacement_v1":
                 self.work_scratch = wp.zeros(self.num_envs, dtype=wp.float64)   # the v1 accumulation (discarded)
             self.work = wp.zeros(self.num_envs, dtype=wp.float64)
+            if self.bc_launch == "motion_table_v1" and self.G:
+                # group maps at every substep boundary of the control step (recomputed by prepare_motion_table)
+                self.motion_M = wp.zeros((self.substeps+1, self.num_envs*self.G), dtype=wp.mat33d)
+                self.motion_b = wp.zeros((self.substeps+1, self.num_envs*self.G), dtype=wp.vec3d)
             self.violations = wp.zeros(self.num_envs, dtype=int)
             self.cfl_violations = wp.zeros(self.num_envs, dtype=int)
             self.index = wp.zeros(1, dtype=int)
@@ -324,8 +387,25 @@ class BatchedTLMPMRubber:
                                         self.gm, self.proj_mu, self.proj_vpresc, self.index, self.substeps]
                   + groups + [self.group_origin, self.reaction, self.work, self.env_of_group])
 
+    def prepare_motion_table(self):
+        """``motion_table_v1``: evaluate the group maps of the current control step (call after the group motions
+        of the step are written; ``BatchedRubberMaterial.set_group_motions`` does)."""
+        if self.bc_launch == "motion_table_v1" and self.G:
+            wp.launch(_motion_table_b, (self.substeps+1, self.num_envs*self.G),
+                      [self.substeps, self.group_kind, self.group_q0, self.group_q1, self.group_b0, self.group_b1,
+                       self.group_A0, self.group_A1, self.motion_M, self.motion_b], device=self.device)
+
     def _launch_bc(self, record):
         if self.G == 0:
+            return
+        if self.bc_launch == "motion_table_v1":
+            if self.bc_node_count:
+                wp.launch(_bc_table_b, self.bc_node_count,
+                          [self.bc_nodes, self.node_group, self.node_mask, self.node_X, self.gm, self.new_v,
+                           self.index, self.substeps, wp.float64(self.dt), self.group_kind, self.group_active,
+                           self.group_q0, self.group_q1, self.group_b0, self.group_b1, self.group_A0, self.group_A1,
+                           self.group_origin, self.reaction, self.work, self.env_of_group, record, self.motion_M,
+                           self.motion_b], device=self.device)
             return
         if self.bc_launch == "constrained_list_v1":
             if self.bc_node_count:
