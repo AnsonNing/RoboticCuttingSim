@@ -47,10 +47,12 @@ def evaluations_pass(episodes):
     return all(e["evaluation"]["verdict"] == "PASS" for e in episodes) if episodes else False
 
 
-def m2_row(data, workload):
+def m2_row(data, workload, throughput_only=False):
     g = gpu(data)
     t = data["timing"]
     verdict = "PASS" if data["l2"]["status"] == "PASS" and evaluations_pass(data["episodes"]) else "FAIL"
+    if throughput_only:
+        verdict = "REPORTED_NOT_SCORED"
     return BenchmarkRow(
         boundary="batched_headless", workload_id=workload, num_envs=data["num_envs"],
         particles_per_env=particles(data), control_hz=50., material_dt_s=1e-4, substeps_per_control_step=200,
@@ -62,7 +64,9 @@ def m2_row(data, workload):
         source_commit=data["_manifest"]["git_head"], source=data["_run"],
         notes=f"{REDUCED}; replay drive (recorded measured edge + pads); {t['global_steps']} batch steps, "
               f"{len(data['episodes'])} full episodes evaluated; per-step device sync for timing; reset = masked "
-              f"partial reset (host call); L2 every {data['l2'].get('update_every_steps')} step(s)")
+              f"partial reset (host call); L2 every {data['l2'].get('update_every_steps')} step(s)"
+              + ("; THROUGHPUT ALTERNATION window (partial episode, no evaluation; audits only)" if throughput_only
+                 else ""))
 
 
 def cold_row(data, workload):
@@ -148,11 +152,11 @@ def nsys_summary(run):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--m0", nargs="*", default=[])
-    parser.add_argument("--m1")
+    parser.add_argument("--m1", nargs="*", default=[])
     parser.add_argument("--l4")
     parser.add_argument("--m2", nargs="*", default=[])
     parser.add_argument("--single")
-    parser.add_argument("--ab", nargs="*", default=[])
+    parser.add_argument("--alt", nargs="*", default=[], help="m2 throughput-alternation runs (one batch per process)")
     parser.add_argument("--prefix-runs", nargs="*", default=[], help="pre-review-fix runs kept with their commit")
     parser.add_argument("--nsys", nargs="*", default=[])
     parser.add_argument("--extra", type=Path, help="JSON with hand-written statuses/notes merged into the evidence")
@@ -168,9 +172,9 @@ def main():
                                                        "wall_s", "telemetry")}
         if d["status"] == "COMPLETE":
             rows.append(m0_row(d))
-    if args.m1:
-        d = load(args.m1)
-        evidence["runs"][args.m1] = {k: d.get(k) for k in ("status", "error", "seeds", "drive", "payload_check", "l2",
+    for m1 in args.m1:
+        d = load(m1)
+        evidence["runs"][m1] = {k: d.get(k) for k in ("status", "error", "seeds", "drive", "payload_check", "l2",
                                                            "episodes", "partial_resets", "recorded_command_policy",
                                                            "timing", "receipt_fidelity", "mempool_high_bytes",
                                                            "peak_rss_mib", "wall_s", "telemetry")}
@@ -203,10 +207,28 @@ def main():
                                                                "wall_s", "telemetry")}
         if d["status"] == "COMPLETE":
             rows.append(single_row(d))
-    for run in args.ab:
+    alt = {}
+    for run in args.alt:
         d = load(run)
-        evidence["runs"][run] = {k: d.get(k) for k in ("status", "error", "sizes", "block", "rounds", "per_n",
-                                                       "ratio_vs_smallest", "scope", "wall_s", "telemetry")}
+        alt[run] = d
+        evidence["runs"][run] = {k: d.get(k) for k in ("status", "error", "num_envs", "seeds", "l2", "timing",
+                                                       "memory", "peak_rss_mib", "wall_s", "telemetry",
+                                                       "stopped_at_max_global_steps")}
+        if d["status"] == "COMPLETE":
+            rows.append(m2_row(d, "A-replay-" + "/".join(f"s{s}" for s in sorted(set(d["seeds"]))), True))
+    if alt:
+        rounds = {}
+        for run, d in alt.items():
+            rounds.setdefault(run.split("_n")[0], {})[d["num_envs"]] = dict(
+                run=run, env_steps_per_s=d["timing"]["env_steps_per_s"], step_median_s=d["timing"]["step_median_s"],
+                foreign_sm_mean=(d["telemetry"].get("foreign_sm_pct") or {}).get("mean"))
+        for r in rounds.values():
+            base = r.get(1, {}).get("env_steps_per_s")
+            for v in r.values():
+                v["ratio_vs_n1_same_round"] = None if not base else v["env_steps_per_s"] / base
+        evidence["throughput_alternation"] = dict(rounds=rounds, scope=(
+            "separate processes (one batch, one device HashGrid each), alternated N=1/8/16 within each round, "
+            "same venv/GPU; replay drive; partial windows (300/150/100 steps); SHARED_GPU"))
     evidence["prefix_runs"] = list(args.prefix_runs)
     for run, entry in evidence["runs"].items():
         root = P12 if (P12 / run).exists() else ROOT / "artifacts" / "rl_ready"

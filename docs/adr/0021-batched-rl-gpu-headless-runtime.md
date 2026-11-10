@@ -861,3 +861,13 @@ tests/test_wp17_frontier.py tests/test_repo_naming.py`.
   backend over every array. Not done here: the `factory(N, device)` in `rl/lab_batched_env.py` that builds specs
   from the Lab task, and any GPU run of the coupled loop.
 
+- **Device HashGrid guard (after the P1-3a finding).** Warp 1.17.0 replays every CUDA graph with the
+  descriptor of the device grid built last on the host. `BatchedCuttingMaterial` now refuses a second live CUDA
+  `wp.HashGrid` in the process (`UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS`, gc scan at construction; own grid exempt
+  on `rebuild()`; `release()`; opt-out `allow_multiple_device_hashgrids=True` for diagnostics; no kernel change).
+  `VectorCuttingEnv` re-checks on full reset and releases its grid on close. Audit: no P1-2 evidence process held
+  two device grids; the P1-1 interleaved A/B `artifacts/rl_ready/p1_1/ab_timing_001` (single + N=1 + N=4 graphs
+  in one process) is INVALID_MULTI_GRID_PROCESS and its "≈1.9× at N=4" smoke timing above is withdrawn.
+- **Milestones** (`docs/reports/rl_ready/P1_1_P1_2_MILESTONES.md`): M0/M1/M2 physics PASS (final codes equal Native
+  in every replayed episode, 4 + 2 + 40), L4 BLOCKED (frozen `tlmpm_v5._particle_contacts` mixes add/max atomics),
+  throughput ~1.4× at N=8–16 over N=1 at matched co-tenant load (SHARED_GPU, one batch per process).
