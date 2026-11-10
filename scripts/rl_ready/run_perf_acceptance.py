@@ -10,7 +10,12 @@ cameras, no recording, no robot DOF, ``reduced_fidelity`` (ideal edge tracking).
 
     PYTHONPATH=<checkout>/src .deps/isaacsim-venv/bin/python scripts/rl_ready/run_perf_acceptance.py \\
         --variant-json V.json --mode throughput|episode|samestate|profile --num-envs N --seeds 512[,15] \\
-        --warmup-steps W --steps K [--device cuda:0] [--gpu-uuid UUID | --gpu-index I] [--wp17 DIR] --out DIR
+        --warmup-steps W --steps K [--device cuda:0] [--gpu-uuid UUID | --gpu-index I] [--wp17 DIR] \\
+        [--config configs/rl_benchmark/acceptance_v2.json] --out DIR
+
+``--config`` is optional provenance only (default: none, the ``acceptance_v1`` behaviour): the harness never reads
+its workload from a config (the caller passes W / K / N / seeds of the plan entry or G9 block); when given, the
+config is validated and its path, version and sha256 are recorded in ``result.json`` (``acceptance_config``).
 
 Modes (W + K <= 1200 control steps; the timed window is the K steps after the W warm-up steps):
 
@@ -21,6 +26,9 @@ Modes (W + K <= 1200 control steps; the timed window is the K steps after the W 
 * ``samestate``: per seed, the recorded Native state of each ``SAMESTATE_SAMPLES`` sample written into the batch
   and the contact stage run alone twice (impulse, stats); then a W + K step replay from reset (contacts, final).
 * ``profile``: as throughput, the K timed steps inside ``cudaProfilerStart/Stop`` (for an external nsys).
+
+Every round records ``step_walls_s`` (the in-process wall of every one of the W + K steps, warm-up included,
+candidate-reported) so that the judge can report per-phase speed (``acceptance_v2`` ``performance.phases``).
 
 Seeds: one batch per round (``perf_acceptance.plan_rounds``); every round runs in its own child process (the
 parent only samples GPU telemetry and assembles ``result.json``), so each process builds exactly one material and
@@ -83,6 +91,8 @@ def parse_args(argv=None):
     g.add_argument("--gpu-uuid")
     g.add_argument("--gpu-index", type=int)
     p.add_argument("--wp17", default=None, help="WP-17 record tree: DIR/<record>/seed_<s>/ (default artifacts/wp17)")
+    p.add_argument("--config", default=None,
+                   help="optional acceptance config (provenance only: validated, path/version/sha256 recorded)")
     p.add_argument("--out", required=True)
     # internal: the parent runs every round in its own child process (one material per process)
     p.add_argument("--child-round", type=int, default=None, help=argparse.SUPPRESS)
@@ -95,6 +105,14 @@ def parse_args(argv=None):
         p.error(f"--seeds/--num-envs: {error}")
     if args.warmup_steps < 0 or args.steps < 1 or args.warmup_steps + args.steps > PA.EPISODE_STEPS:
         p.error(f"need warmup_steps >= 0, steps >= 1, warmup_steps + steps <= {PA.EPISODE_STEPS}")
+    args.acceptance_config = None
+    if args.config is not None and args.child_round is None:
+        try:
+            cfg = PA.load_config(args.config)
+        except (OSError, ValueError) as error:
+            p.error(f"--config: {error}")
+        args.acceptance_config = dict(path=str(args.config), version=cfg.get("version"),
+                                      sha256=PA.sha256_file(args.config))
     return args
 
 
@@ -383,6 +401,7 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
         res["dumps"] = dumps
         if mode == "profile":
             res["profile_step_walls_s"] = walls[W:].tolist()
+        res["step_walls_s"] = [round(float(x), 7) for x in walls]   # every step incl. warm-up (per-phase report)
     return res
 
 
@@ -564,6 +583,8 @@ def main(argv=None):
                 seeds=args.seed_list, warmup_steps=args.warmup_steps, steps=args.steps,
                 variant_json=str(args.variant_json), workload=WORKLOAD,
                 timing_note="in-process timing; the caller's outer clock on the marks is the reference")
+    if args.acceptance_config is not None:
+        base["acceptance_config"] = args.acceptance_config
     status, code, error, data = "ERROR", None, None, {}
     try:
         base["environment"] = environment(args)

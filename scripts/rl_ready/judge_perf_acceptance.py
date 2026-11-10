@@ -4,7 +4,7 @@
 Runs once per acceptance, CPU only, in its own process, from the frozen baseline (evaluator) checkout:
 
     CUDA_VISIBLE_DEVICES= PYTHONPATH=<evaluator>/src <python> scripts/rl_ready/judge_perf_acceptance.py \\
-        --config configs/rl_benchmark/acceptance_v1.json --manifest MANIFEST.json --out DIR
+        --config configs/rl_benchmark/acceptance_v2.json --manifest MANIFEST.json --out DIR
 
 Reads the manifest (``rcs_perf_accept_manifest_v1``), every run's ``result.json`` and dumps, the WP-17 Native
 records and the caller's outer clock; writes only ``DIR/verdict.json`` (``rcs_perf_verdict_v1``). Physics is
@@ -23,7 +23,17 @@ recomputed from the dumps with this checkout's code (never the candidate's ``eva
   equal, positions within tolerance, contact totals within tolerance;
 * G1 / G2: the CPU suites (0 failed, no skip beyond the baseline's in the same environment);
 * G9: per N the candidate / baseline outer-clock env-steps/s of each ABBA pair, VRAM peak, reset p95, the same work
-  (final labelled counts) and the inner/outer clock agreement.
+  (final labelled counts) and the inner/outer clock agreement;
+* ``G9:window`` (only when the config declares ``performance.window_check``, ``acceptance_v2``): the G9 timed window
+  must hold tool-material contact and cutting. Measured on the episode dumps of the listed plan entries (G6 / G7: the
+  same variants replaying the G9 seeds from reset, with per-step contact counts and the Native-sample codes): in
+  every such env the window has >= ``min_contact_steps`` steps with non-zero particle contacts and >=
+  ``min_new_labels`` new labelled particles;
+* ``performance.phases`` (only with ``performance.phases``): per-phase median in-process step walls per side and
+  their ratio from the G9 runs' ``step_walls_s`` (candidate-reported, descriptive, never a gate).
+
+The config path is the required ``--config`` (``acceptance_v1.json`` and ``acceptance_v2.json`` are both judged by
+this file; v1 has neither optional block and is judged exactly as before).
 
 Layers PHYSICS / PERFORMANCE / INTEGRITY are PASS / FAIL / BLOCKED / NOT_RUN; an integrity problem also sets the layer
 it invalidates (candidate side: FAIL; baseline side or caller: BLOCKED). Exit 0 whenever ``verdict.json`` was
@@ -142,6 +152,8 @@ class Judge:
         self.cfg, self.cfg_path, self.man, self.manifest_path = cfg, Path(cfg_path), manifest, Path(manifest_path)
         self.known_harness = list(known_harness or [])
         self.gates, self.rows, self.notes, self.warnings = [], [], [], []
+        self.episode_rows = []          # recomputed episode envs without dump problems (G9:window)
+        self.phase_report = {}
         self.band, self.band_error = None, None
         try:   # the band file is a swappable input of this (evaluator) checkout
             self.band = PA.load_position_band(ROOT, cfg["physics"]["position_band"])
@@ -406,6 +418,8 @@ class Judge:
             out["checks"]["evaluator_2_frames"] = False
             out["checks"]["evaluator_series"] = False
         out["values"]["contacts_total"] = int(np.sum(a["contacts"]))
+        out["series"] = dict(contacts=np.asarray(a["contacts"], np.int64).reshape(-1),
+                             labelled_at_step={int(st): int(np.count_nonzero(codes[i])) for i, st in enumerate(ss)})
         # candidate-reported L2 vs the recomputation
         rnd = next((r for r in v["result"].get("rounds") or [] if r.get("round") == d.get("round")), {})
         l2 = rnd.get("l2_candidate_reported") or {}
@@ -440,6 +454,7 @@ class Judge:
                     self.integrity(f"I-dumps:{v['id']}:e{row['env']}", v["side"], [layer],
                                    "; ".join(row["problems"]), run=v["id"])
                 envs.append(row)
+        self.episode_rows += [dict(r, plan_id=e["id"]) for r in envs if not r["problems"]]
         if any(r["problems"] for r in envs):
             bad_c = any(r["problems"] for r in envs if r["side"] == "candidate")
             self.gate(gid, layer, "FAIL" if bad_c else "BLOCKED", plan_id=e["id"],
@@ -678,7 +693,73 @@ class Judge:
                                      for c in r.get("final_step_count") or [])]
             self.gate(f"G9:n{n}:work", "PERFORMANCE", "FAIL" if differ else "PASS", value=differ,
                 threshold="every run: W+K steps, final labelled counts = the first baseline run's")
+            if perf.get("phases"):
+                self.phase_report[str(n)] = self.phases(views, perf["phases"], expect["warmup_steps"] + steps)
         return ratios
+
+    def phases(self, views, phases, steps):
+        """Descriptive per-phase speed of the G9 runs at one N from the harness's in-process ``step_walls_s``
+        (candidate-reported): per run the median step wall of each phase, per side the median over runs, and
+        baseline / candidate (> 1: the candidate is faster in that phase). Never a gate."""
+        out = {}
+        for name, (first, last) in phases.items():
+            if last > steps:
+                out[name] = dict(steps=[first, last], status="NOT_RUN", detail=f"phase beyond the {steps} run steps")
+                continue
+            per = {"baseline": [], "candidate": []}
+            for v in views:
+                walls = [r.get("step_walls_s") for r in v["result"].get("rounds") or []]
+                if len(walls) != 1 or not isinstance(walls[0], list) or len(walls[0]) != steps:
+                    continue
+                per[v["side"]].append(float(np.median(walls[0][first - 1:last])))
+            if not per["baseline"] or not per["candidate"]:
+                out[name] = dict(steps=[first, last], status="NOT_RUN",
+                                 detail="no step_walls_s in the results (harness before acceptance_v2)")
+                continue
+            b, c = statistics.median(per["baseline"]), statistics.median(per["candidate"])
+            out[name] = dict(steps=[first, last], baseline_median_step_s=b, candidate_median_step_s=c,
+                             speed_ratio_c_over_b=b / c if c > 0 else None, runs=per, status="REPORTED")
+        return out
+
+    def window_gate(self):
+        """``G9:window`` (config ``performance.window_check``): the G9 timed window holds contact and cutting in every
+        episode env of the listed plans for the G9 seeds (see the module docstring)."""
+        perf = self.cfg["performance"]
+        check = perf.get("window_check")
+        if not check:
+            return
+        windows = sorted(set(PA.g9_windows(perf).values()))
+        seeds = {int(s) for s in perf["seeds"]}
+        rows = [r for r in self.episode_rows if r["plan_id"] in check["plans"] and r["seed"] in seeds]
+        threshold = dict(windows=[list(w) for w in windows], min_contact_steps=check["min_contact_steps"],
+                         min_new_labels=check["min_new_labels"], plans=check["plans"], seeds=sorted(seeds))
+        if not any(r["side"] == "candidate" for r in rows) or not any(r["side"] == "baseline" for r in rows):
+            self.gate("G9:window", "PERFORMANCE", "BLOCKED", threshold=threshold,
+                      detail="no usable episode dumps of the window_check plans on both sides")
+            return
+        checked = []
+        for r in rows:
+            contacts, labels = r["series"]["contacts"], r["series"]["labelled_at_step"]
+            vals, ok = [], True
+            for first, last in windows:
+                steps_with = int(np.count_nonzero(contacts[first - 1:last])) if len(contacts) >= last else None
+                before = [s for s in labels if s <= first - 1]
+                after = [s for s in labels if s <= last]
+                new = (labels[max(after)] - (labels[max(before)] if before else 0)) if after else None
+                vals.append(dict(window=[first, last], contact_steps=steps_with, new_labels=new,
+                                 contacts_total=int(contacts[first - 1:last].sum()) if steps_with is not None else None,
+                                 label_steps=[max(before) if before else 0, max(after) if after else None]))
+                ok = ok and steps_with is not None and new is not None and steps_with >= check["min_contact_steps"] \
+                    and new >= check["min_new_labels"]
+            checked.append(dict(run=r["run"], side=r["side"], seed=r["seed"], env=r["env"], plan_id=r["plan_id"],
+                                checks={"window_contact_and_cutting": ok}, values={"windows": vals}))
+        c_bad = [x for x in checked if x["side"] == "candidate" and not x["checks"]["window_contact_and_cutting"]]
+        b_bad = [x for x in checked if x["side"] == "baseline" and not x["checks"]["window_contact_and_cutting"]]
+        status = "BLOCKED" if b_bad else "FAIL" if c_bad else "PASS"
+        bad = b_bad or c_bad
+        self.gate("G9:window", "PERFORMANCE", status, value=checked, threshold=threshold,
+                  detail="; ".join(f"{x['run']}:s{x['seed']}e{x['env']} {x['values']['windows']}" for x in bad)[:600]
+                  or f"{len(checked)} episode envs: the G9 window holds contact and cutting")
 
     def reset_gate(self, n, rb, rc, sharing):
         """``G9:n<N>:reset`` on the per-side medians of reset p95 over every ABBA process at N. Both sides
@@ -752,6 +833,7 @@ class Judge:
             self.cpu_gates()
             self.plan_gates()
             ratios = self.performance_gates()
+            self.window_gate()
         integrity_checked = not any(g["layer"] == "INTEGRITY" for g in self.gates)
         if integrity_checked:
             self.gate("I-all", "INTEGRITY", "PASS", detail="results, dumps (sha256), commits, package roots, "
@@ -759,6 +841,11 @@ class Judge:
         layers = self.layers()
         shared = sorted({r.get("gpu_sharing") or "UNKNOWN" for r in self.rows})
         limitations = list(LIMITATIONS)
+        if self.cfg["performance"].get("window_check"):
+            limitations.append("G9:window is measured on the episode-mode runs of the window_check plans (same "
+                               "variants, same seeds, replay from reset), not inside the G9 throughput processes")
+        if self.cfg["performance"].get("phases"):
+            limitations.append("performance.phases are in-process step walls (candidate-reported), descriptive only")
         if "EXCLUSIVE_GPU" not in shared or len(shared) > 1:
             limitations.append(f"G9 rows sharing labels {shared}: absolute rows are not EXCLUSIVE_GPU; the paired "
                                "ratios are relative (same GPU, same hold, interleaved)")
@@ -771,7 +858,8 @@ class Judge:
                     baseline=self.man.get("baseline"), candidate=self.man.get("candidate"),
                     layers=layers, gates=self.gates, failed_gates=sorted({g["id"] for g in self.gates
                                                                          if g["status"] == "FAIL"}),
-                    performance=dict(ratios=ratios), rows=self.rows, notes=self.notes, warnings=self.warnings,
+                    performance=dict(ratios=ratios, **({"phases": self.phase_report} if self.phase_report else {})),
+                    rows=self.rows, notes=self.notes, warnings=self.warnings,
                     position_band=self.band or dict(error=self.band_error, **self.cfg["physics"]["position_band"]),
                     limitations=limitations,
                     wall_s=time.perf_counter() - T0, peak_rss_mib=peak_rss_mib())
