@@ -139,9 +139,11 @@ class FakeBackend:
 
     name = "fake"
     builds = 0          # process-wide, like the trim backend's census hooks
+    live = 0            # open fake materials (one "device grid" each)
 
     def __init__(self, run, *, info_style="legacy", strict=False, step_s=0., particles=32):
         FakeBackend.builds += 1
+        FakeBackend.live += 1
         self.N, self.drives = run["num_envs"], [e["drive"] for e in run["envs"]]
         self.scene_seeds = [e["scene_seed"] for e in run["envs"]]
         self.episode_steps, self.info_style, self.strict = run["episode_steps"], info_style, strict
@@ -231,12 +233,24 @@ class FakeBackend:
         return None
 
     def memory(self, census=False):
+        out = FakeBackend.process_memory(census)
+        out["hashgrid_device_inits"] += self.extra_inits
+        if census:
+            out["live_device_hashgrids"] += self.extra_inits
+        return out
+
+    @staticmethod
+    def process_memory(census=False):
         out = dict(S.proc_status() or {}, mempool_current_bytes=None, mempool_high_bytes=None,
                    torch_allocated_bytes=None, torch_reserved_bytes=None, graph_captures=FakeBackend.builds,
-                   hashgrid_device_inits=FakeBackend.builds + self.extra_inits, warp_modules=3)
+                   hashgrid_device_inits=FakeBackend.builds, warp_modules=3)
         if census:
-            out["live_device_hashgrids"] = self.grids
+            out["live_device_hashgrids"] = FakeBackend.live
         return out
+
+    @staticmethod
+    def process_own_vram_mib(gpu_index):
+        return None
 
     def inject_nan(self, e):
         self.x[e, 0] = np.nan
@@ -270,8 +284,7 @@ class FakeBackend:
                     different_code_particles=int(np.count_nonzero(self.codes[e] != self._pattern(k))),
                     max_position_diff_m=0., labelled=int(np.count_nonzero(self.codes[e])))
 
-    def own_vram_mib(self, gpu_index):
-        return None
+
 
     def inject_infra(self, e):
         self.infra[e] = 1
@@ -280,6 +293,8 @@ class FakeBackend:
         raise RuntimeError("device_oom needs the trim backend")
 
     def close(self):
+        if self.grids:
+            FakeBackend.live -= 1
         self.grids = 0          # the material releases its grid
 
 
@@ -470,15 +485,22 @@ class TrimBackend:
                     mass_bitwise_constant=row["mass_bitwise_constant"])
 
     def memory(self, census=False):
-        torch, wp = self.torch, self.wp
+        return TrimBackend.process_memory(census)
+
+    @staticmethod
+    def process_memory(census=False):
+        """Process-level memory and census (no reference to any env: usable after close)."""
+        import torch
+        import warp as wp
         from warp._src import context as wctx
+        hooks = census_hooks()
         out = dict(S.proc_status() or {},
                    mempool_current_bytes=int(wp.get_mempool_used_mem_current("cuda:0")),
                    mempool_high_bytes=int(wp.get_mempool_used_mem_high("cuda:0")),
                    torch_allocated_bytes=int(torch.cuda.memory_allocated()),
                    torch_reserved_bytes=int(torch.cuda.memory_reserved()),
-                   graph_captures=int(self.capture_count[0]),
-                   hashgrid_device_inits=sum(1 for g in self.hashgrids if g["device"].startswith("cuda")),
+                   graph_captures=int(hooks["captures"][0]),
+                   hashgrid_device_inits=sum(1 for g in hooks["hashgrids"] if g["device"].startswith("cuda")),
                    warp_modules=len(wctx.user_modules))
         if census:
             from robotic_cutting_sim.batched.material_batch import live_device_hashgrids
@@ -595,7 +617,8 @@ class TrimBackend:
             snap["codes"] != codes)), max_position_diff_m=float(np.abs(snap["positions"] - np.asarray(
                 native["positions"][i])).max()), labelled=int(np.count_nonzero(snap["codes"])))
 
-    def own_vram_mib(self, gpu_index):
+    @staticmethod
+    def process_own_vram_mib(gpu_index):
         if gpu_index is None:
             return None
         from robotic_cutting_sim.rl.telemetry import take_sample, process_tree
@@ -811,6 +834,8 @@ def reset_stress(backend, run, cadence, numerical_invalid, ledger, faults, *, ma
         walls.append(time.perf_counter() - t)
         gstep += 1
         seg_steps += 1
+        if gstep == 1:
+            ledger.write("adapter", source=status.source, infra_key=status.infra_key, info_keys=status.extra_keys)
         if progress is not None:
             progress["global_step"] = gstep
         faults.after_step(gstep, backend)
@@ -916,22 +941,22 @@ def rebuild_cycles(make_backend, run, ledger, faults, *, gpu_index=None, progres
                              median_step_s=float(np.median(walls)), walls_s=[round(w, 6) for w in walls[-5:]])
         l2 = backend.l2_take(list(range(backend.N)))
         terminated = [int(e) for e in np.flatnonzero(status.terminated)]
+        probe_memory, probe_vram = type(backend).process_memory, type(backend).process_own_vram_mib
         t = time.perf_counter()
         backend.close()
         close_s = time.perf_counter() - t
-        own_before = backend.own_vram_mib(gpu_index)
-        memory_fn = backend.memory
-        del backend
+        del backend                      # no bound method or other reference may keep the closed env alive
         gc.collect()
-        after = memory_fn(census=True)
+        after = probe_memory(census=True)
+        own_after = probe_vram(gpu_index)
         row = dict(cycle=c, build_s=build_s, close_s=close_s, steps=len(walls), median_step_s=float(np.median(walls)),
                    l2_pass=all(v.get("status") == "PASS" for v in l2.values()), terminated_envs=terminated,
                    live_device_hashgrids_open=open_census.get("live_device_hashgrids"),
                    live_device_hashgrids_after_close=after.get("live_device_hashgrids"),
-                   own_vram_mib_after_close=own_before)
+                   own_vram_mib_after_close=own_after)
         rows.append(row)
         ledger.write("cycle", **row)
-        ledger.write("sample", kind="post_close", global_step=c, cycle=c, own_vram_mib=own_before, **after)
+        ledger.write("sample", kind="post_close", global_step=c, cycle=c, own_vram_mib=own_after, **after)
     return dict(cycles=len(rows), rows=rows)
 
 
