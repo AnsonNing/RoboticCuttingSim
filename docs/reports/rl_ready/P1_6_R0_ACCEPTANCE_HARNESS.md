@@ -11,7 +11,7 @@ note (flags, marks, result / verdict / config keys and exit codes copied from th
 | --- | --- |
 | R0a harness `scripts/rl_ready/run_perf_acceptance.py` (`perf_acceptance_v1`), 4 modes | DONE |
 | R0b judge `scripts/rl_ready/judge_perf_acceptance.py` (`judge_perf_acceptance_v1`) | DONE |
-| R0c config `configs/rl_benchmark/acceptance_v1.json` (`rcs_perf_acceptance_v1`), decision D-11 | DONE (frozen from its first commit) |
+| R0c config `configs/rl_benchmark/acceptance_v1.json` (`rcs_perf_acceptance_v1`), decision D-11 | DONE. Correction (Phase 1 acceptance review, finding 2): not frozen from its first commit. It was amended in place four times before any baseline or candidate (`5ea4ce4` position rule descriptive; `3c2642a` `contact_total_rel_tol` 0.01 → 0.02 after smoke_003; `214ac11` shared-GPU reset p95 FAIL → WARN after smoke_001 failed on reset; `ac3f6c6` band pointer → band v2); two of these loosened a gate after the data had been seen. It freezes at the Phase 1 merge into `main` with sha256 `3592d9408f314c3d2825171361b8ec640534c60577bb6216a10c4f2b22897bf4` (merge commit recorded in D-11 after the merge). The in-file "Frozen once committed" is historically inaccurate and superseded by the D-11 record. Any later change, including the G9 contact-window fix (finding 1), is `acceptance_v2`; `acceptance_v1` must not be used for a P1-6 acceptance. |
 | Shared pieces `src/robotic_cutting_sim/rl/perf_acceptance.py` (marks, rounds, variant check, codec, config check) | DONE |
 | Local runner `scripts/rl_ready/run_perf_acceptance_local.py` (RCS runs an acceptance without the optimizer) | DONE |
 | CPU tests `tests/test_perf_acceptance.py` | PASS: `.venv` 39 passed, 1 skipped (Torch-only) in 0.4 s; Torch venv (D-09 overlay) 40 passed in 32.9 s |
