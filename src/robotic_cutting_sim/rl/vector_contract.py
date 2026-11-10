@@ -19,10 +19,13 @@ STEP_INFO = {"step_count": "int64", "action_status": "int32", "invalid_reason": 
              "severed_substrate_bonds": "int64", "invalid_penalty_applied": "bool"}
 # step info keys computed from oracle state (material solver validity / codes, simulator validity): a deployable
 # policy must never consume them (review finding 12). Both backends list them in env.metadata["privileged_info_keys"]
-# (``input_guard_reason`` only with the guard, ``rigid_reason`` on workload B).
+# (``input_guard_reason`` only with the guard, ``rigid_reason`` on workload B; ``autoreset`` / ``terminal_captured``
+# only with ``autoreset="same_step"``: they are the done flags derived from the oracle termination, follow-up review
+# finding 6). The contract checks every privileged key that a step's info actually carries.
 PRIVILEGED_INFO_KEYS = ("invalid_reason", "termination_reason", "progress_delta", "off_target_delta",
                         "target_bond_progress_fraction", "off_target_bond_fraction", "severed_target_bonds",
-                        "severed_substrate_bonds", "invalid_penalty_applied", "input_guard_reason", "rigid_reason")
+                        "severed_substrate_bonds", "invalid_penalty_applied", "input_guard_reason", "rigid_reason",
+                        "autoreset", "terminal_captured")
 RECEIPT_KEYS = ("version", "api_revision", "runtime", "backend", "num_envs", "termination", "input_guard",
                 "evaluation_stream", "evaluation_mode", "fidelity", "observation", "action_spec", "reward", "tasks",
                 "episode", "versions", "calibration", "success_source", "terminal_capture")
@@ -118,6 +121,8 @@ def check_vector_env_contract(env, *, steps=3, reset_ids=(1,), reset_step=1, see
         _check(bool(torch.isfinite(reward).all()), "reward finite")
         _check_tensor(terminated, (N,), "bool", device, "terminated")
         _check_tensor(truncated, (N,), "bool", device, "truncated")
+        _check(set(info) & set(PRIVILEGED_INFO_KEYS) <= set(env.metadata["privileged_info_keys"]),
+               f"metadata labels every privileged key of step {k}'s info")
         for key, dtype in STEP_INFO.items():
             _check(key in info, f"step info has {key!r}")
             _check_tensor(info[key], (N,), dtype, device, f"step info[{key!r}]")

@@ -25,3 +25,27 @@ def test_load_rollout_refuses_unknown_schemas(tmp_path):
     (tmp_path / "manifest.json").write_text('{"schema": "rcs_rl_rollout_v9"}')
     with pytest.raises(ValueError, match="rcs_rl_rollout_v1 / rcs_rl_rollout_v2"):
         R.load_rollout(tmp_path)
+
+
+def test_privileged_info_keys_include_the_oracle_done_flags():
+    """Follow-up review finding 6: ``info["autoreset"]`` / ``info["terminal_captured"]`` are the done flags derived
+    from the oracle ``termination_reason``; they are labelled with the other oracle-derived info keys."""
+    from robotic_cutting_sim.rl.vector_contract import PRIVILEGED_INFO_KEYS, STEP_INFO
+    assert {"autoreset", "terminal_captured", "invalid_reason", "termination_reason"} <= set(PRIVILEGED_INFO_KEYS)
+    assert len(set(PRIVILEGED_INFO_KEYS)) == len(PRIVILEGED_INFO_KEYS)
+    assert {"step_count", "seed", "episode", "drive", "action_status"}.isdisjoint(PRIVILEGED_INFO_KEYS)
+    assert set(STEP_INFO) - set(PRIVILEGED_INFO_KEYS) == {"step_count", "action_status", "cut_digit", "action_clamped",
+                                                          "action_out_of_box", "drive", "seed", "episode"}
+
+
+def test_vector_env_info_keys_are_all_classified():
+    """Every key ``VectorCuttingEnv.step`` writes into ``info`` is either a contract key or a labelled privileged key
+    (source scan, CPU)."""
+    import re
+    from pathlib import Path
+    from robotic_cutting_sim.rl import vector_env
+    from robotic_cutting_sim.rl.vector_contract import PRIVILEGED_INFO_KEYS, STEP_INFO
+    written = set(re.findall(r'info\["(\w+)"\] = ', Path(vector_env.__file__).read_text()))
+    assert {"autoreset", "terminal_captured", "final_obs", "input_guard_reason"} <= written
+    unlabelled = written - set(STEP_INFO) - set(PRIVILEGED_INFO_KEYS) - {"final_obs"}   # final_obs: the policy obs
+    assert not unlabelled, unlabelled
