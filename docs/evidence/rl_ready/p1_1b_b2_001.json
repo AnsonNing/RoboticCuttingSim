@@ -2,7 +2,7 @@
  "schema": "rcs_rl_ready_p1_1b_b2_v1",
  "work_package": "P1-1b follow-up: B2 physical-grasp failure",
  "report": "docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md (section 'B2 grasp follow-up')",
- "evidence_commit": "8b1cc20a7e0126e07ac14676f0b59dc8cae39622",
+ "evidence_commit": "a6c5f96daad6289204a0cc3817e6479d077c088c",
  "artifacts": "artifacts/rl_ready/p1_1b_b2",
  "native_wp17_grasp": {
   "512": {
@@ -1512,6 +1512,212 @@
    "fraction_steps_4_contacts_per_pad": 0.988,
    "fraction_steps_le_2_contacts_per_pad": 0.008,
    "max_tool_angular_speed_rad_s": 0.7510541243959439
+  },
+  {
+   "run": "settle_cpu_trim01r_grip_001",
+   "artifact": "artifacts/rl_ready/p1_1b_b2/settle_cpu_trim01r_grip_001",
+   "label": "DIAGNOSTIC (eager, host reads every step; not a timing row)",
+   "device": "cpu",
+   "N": 1,
+   "scene_seeds": [
+    512
+   ],
+   "steps_completed": 25,
+   "grip_profile": "mjwarp_grip_v1",
+   "diagnostic_solver_overrides": {},
+   "contact_solver": {
+    "profile": "mjwarp_grip_v1",
+    "mjw_disableflags": 655360,
+    "nativeccd_disabled": true,
+    "box_box_collider": "mujoco_box_box_primitive",
+    "impratio": 10.0,
+    "cone": 1
+   },
+   "settle": "PASS_PHYSICAL_PREGRASP",
+   "settle_accumulators": [
+    [
+     26.0,
+     26.0,
+     0.0004617034865077585,
+     0.0003593084402382374,
+     6.69255132379476e-06,
+     5.016097566112876e-05,
+     4.8440630052937195e-05,
+     0.0
+    ]
+   ],
+   "error": null,
+   "termination_reason": [
+    0
+   ],
+   "max_slip_m": [
+    1.5022670068841211e-05
+   ],
+   "max_rotation_rad": [
+    7.729427754968481e-05
+   ],
+   "slip_at_step": {
+    "20": [
+     1.8492176108730825e-06
+    ]
+   },
+   "rotation_at_step": {
+    "20": [
+     4.893723220255883e-06
+    ]
+   },
+   "first_lost_step": [
+    null
+   ],
+   "final_monitor_status": [
+    0.0
+   ],
+   "mean_contacts_left_pad": [
+    4.0
+   ],
+   "min_contacts_left_pad": [
+    4.0
+   ],
+   "mean_contacts_right_pad": [
+    4.0
+   ],
+   "min_contacts_right_pad": [
+    4.0
+   ],
+   "max_cone_usage_left": [
+    0.035692014248187916
+   ],
+   "finger_q_range_m": [
+    [
+     [
+      0.010968179441988468,
+      0.010983369313180447
+     ]
+    ],
+    [
+     [
+      0.010968920774757862,
+      0.010984109714627266
+     ]
+    ]
+   ],
+   "commit": {
+    "sha": "e1b66345ebc58e1f5ebb7c10cf7c14032ab60f33",
+    "tracked_src_or_scripts_modified": true
+   },
+   "command": "scripts/rl_ready/probe_lab_b2_grasp.py --device cpu --non-strict --contacts-every 10 --out artifacts/rl_ready/p1_1b_b2/settle_cpu_trim01r_grip_001 --registered-task TRIM-01-R --initial-from artifacts/rl_ready/p1_1b/g4_single_005 --driver hold --steps 25 --grip-profile mjwarp_grip_v1",
+   "gpu_sharing": null,
+   "monitor_status_counts": [
+    {
+     "0": 25
+    }
+   ],
+   "fraction_steps_4_contacts_per_pad": 1.0,
+   "fraction_steps_le_2_contacts_per_pad": 0.0,
+   "max_tool_angular_speed_rad_s": 0.06561081504665142
+  },
+  {
+   "run": "settle_cpu_trim01r_point_001",
+   "artifact": "artifacts/rl_ready/p1_1b_b2/settle_cpu_trim01r_point_001",
+   "label": "DIAGNOSTIC (eager, host reads every step; not a timing row)",
+   "device": "cpu",
+   "N": 1,
+   "scene_seeds": [
+    512
+   ],
+   "steps_completed": 25,
+   "grip_profile": "legacy_point_contact",
+   "diagnostic_solver_overrides": {},
+   "contact_solver": {
+    "profile": null,
+    "mjw_disableflags": 524288,
+    "nativeccd_disabled": false,
+    "box_box_collider": "gjk_epa_multicontact (MJWarp default)",
+    "impratio": 1.0,
+    "cone": 1
+   },
+   "settle": "FAIL_PHYSICAL_PREGRASP",
+   "settle_accumulators": [
+    [
+     26.0,
+     26.0,
+     0.0001852989080362022,
+     0.001916475361213088,
+     0.018047142773866653,
+     1.1648048162460327,
+     0.00011414159234846011,
+     0.0
+    ]
+   ],
+   "error": null,
+   "termination_reason": [
+    1
+   ],
+   "max_slip_m": [
+    0.00014156395417949872
+   ],
+   "max_rotation_rad": [
+    0.003268729348084438
+   ],
+   "slip_at_step": {
+    "20": [
+     0.00011262629188959933
+    ]
+   },
+   "rotation_at_step": {
+    "20": [
+     0.00026673918461298483
+    ]
+   },
+   "first_lost_step": [
+    null
+   ],
+   "final_monitor_status": [
+    0.0
+   ],
+   "mean_contacts_left_pad": [
+    3.92
+   ],
+   "min_contacts_left_pad": [
+    2.0
+   ],
+   "mean_contacts_right_pad": [
+    3.92
+   ],
+   "min_contacts_right_pad": [
+    2.0
+   ],
+   "max_cone_usage_left": [
+    1.0000000189797789
+   ],
+   "finger_q_range_m": [
+    [
+     [
+      0.010940584354102612,
+      0.010957479476928711
+     ]
+    ],
+    [
+     [
+      0.010982789099216461,
+      0.01099801529198885
+     ]
+    ]
+   ],
+   "commit": {
+    "sha": "e1b66345ebc58e1f5ebb7c10cf7c14032ab60f33",
+    "tracked_src_or_scripts_modified": true
+   },
+   "command": "scripts/rl_ready/probe_lab_b2_grasp.py --device cpu --non-strict --contacts-every 10 --out artifacts/rl_ready/p1_1b_b2/settle_cpu_trim01r_point_001 --registered-task TRIM-01-R --initial-from artifacts/rl_ready/p1_1b/g4_single_005 --driver hold --steps 25",
+   "gpu_sharing": null,
+   "monitor_status_counts": [
+    {
+     "0": 25
+    }
+   ],
+   "fraction_steps_4_contacts_per_pad": 0.96,
+   "fraction_steps_le_2_contacts_per_pad": 0.04,
+   "max_tool_angular_speed_rad_s": 1.1671012223089503
   }
  ],
  "lab_rows": [
@@ -2094,7 +2300,8 @@
      22,
      23
     ]
-   ]
+   ],
+   "note": "tracked_src_or_scripts_modified true from an uncommitted evidence script (scripts/); workload_b_sources_sha256 660af37c... equals a930a8c"
   },
   {
    "run": "robot_b2grip_n2_001",

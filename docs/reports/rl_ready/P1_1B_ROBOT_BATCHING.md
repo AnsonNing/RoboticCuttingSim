@@ -506,9 +506,14 @@ at rest (about 0.01 mm/s); Native shows neither.
 (queued on GPU0 behind other RCS jobs; see the update below if present).
 
 **Settle reliability and deterministic mode with the profile** (the S2 findings "settle fails the angular-speed gate
-in 5/6 strict batched builds" and "B2 under `run_to_run` ejects the tool"): with the profile the TRIM settle
-accumulators drop from max tool angular speed 2.2e-3 to 1.8e-4 rad/s and rotation drift from 4.4 to 0.38 mrad
-(CPU, `prof_cpu_mjwarp_grip_v1_001` against `diag_cpu_point_001`). The GPU repeats on the G4 ruler-knife task
+in 5/6 strict batched builds" and "B2 under `run_to_run` ejects the tool"). The G4 setting (registered `TRIM-01-R`,
+ruler knife, HOME = the settled q of `g4_single_005`, hold driver; `probe_lab_b2_grasp.py --registered-task`) on CPU:
+the point profile FAILS the settle gate on the tool's angular speed, 1.16 rad/s against 0.2 rad/s
+(`settle_cpu_trim01r_point_001`, the same value as the GPU row `g4_batched_ns_003`), with the pad manifold dropping to
+2 points; with `mjwarp_grip_v1` the settle PASSES with 5e-5 rad/s, rotation drift 0.36 mrad and 4 points per pad in
+every step (`settle_cpu_trim01r_grip_001`). On the seeded TRIM tool the settle accumulators drop from 2.2e-3 to
+1.8e-4 rad/s and from 4.4 to 0.38 mrad (`diag_cpu_point_001` against `prof_cpu_mjwarp_grip_v1_001`). So the S2 settle
+flakiness has the same root cause. The GPU repeats on the G4 ruler-knife task
 (`g4_settle_b2grip_00{1,2,3}`, strict) and the deterministic-mode build (`g0_det_b2grip_n1_001`) are NOT_RUN at the
 time of writing (queued; see the update below if present).
 

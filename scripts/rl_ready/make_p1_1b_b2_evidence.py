@@ -30,6 +30,8 @@ NOTES = {
     "s3_b2grip_n2_001": "ran in the main worktree with the material guard written but not yet committed "
                         "(tracked_src_or_scripts_modified true); workload_b_sources_sha256 660af37c... equals the "
                         "committed sources at a930a8c; the guard set no flag",
+    "g2mat_b2point_n1_postguard_001": "tracked_src_or_scripts_modified true from an uncommitted evidence script "
+                                      "(scripts/); workload_b_sources_sha256 660af37c... equals a930a8c",
     "robot_b2grip_n2_001": "sources equal to commit 41d9405 (probe imported before that commit was made; src "
                            "unchanged from a03c23d)",
 }
@@ -165,7 +167,7 @@ def main():
     evidence = {"schema": "rcs_rl_ready_p1_1b_b2_v1", "work_package": "P1-1b follow-up: B2 physical-grasp failure",
                 "report": "docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md (section 'B2 grasp follow-up')",
                 "evidence_commit": sha, "artifacts": str(A), "native_wp17_grasp": native_reference(),
-                "diagnosis": [diag_row(r) for r in runs if r.startswith(("diag_", "prof_"))],
+                "diagnosis": [diag_row(r) for r in runs if r.startswith(("diag_", "prof_", "settle_"))],
                 "lab_rows": [lab_row(r) for r in runs if r.startswith(("robot_", "s3_", "g2mat_", "g0_"))],
                 "settle_repeats": [g4_row(r) for r in runs if r.startswith("g4_")],
                 "material_input_domain": [ood_row(r) for r in runs if r.startswith("ood_")],
