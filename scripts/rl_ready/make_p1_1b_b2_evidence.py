@@ -17,6 +17,24 @@ A = Path("artifacts/rl_ready/p1_1b_b2")
 NATIVE = "artifacts/wp17/native_optimized_001/seed_{seed}/box/env/recording/attempt_000/actions.jsonl"
 
 
+NOTES = {
+    "ood_gpu_huge_preguard_001": "KILLED by the operator after step i=2 (174 s/step against 0.6 s; step-rate collapse "
+                                 "reproduced, no SIGSEGV); pre-guard code (src of 41d9405); first step jumped from the "
+                                 "recorded initial edge to step 150 (probe start fixed in da32413)",
+    "ood_cpu_none_001": "pre-guard; first step jumped from the recorded initial edge to step 150",
+    "ood_cpu_far_001": "pre-guard; first step jumped from the recorded initial edge to step 150",
+    "ood_cpu_huge_001": "pre-guard; first step jumped from the recorded initial edge to step 150",
+    "ood_cpu_huge_postguard_001": "SUPERSEDED by _002: started from the recorded initial edge; the guard flagged that "
+                                  "jump to step 150 in both envs (probe artefact, fixed in da32413)",
+    "ood_cpu_sweep_postguard_001": "SUPERSEDED by _002 (same probe-start artefact)",
+    "s3_b2grip_n2_001": "ran in the main worktree with the material guard written but not yet committed "
+                        "(tracked_src_or_scripts_modified true); workload_b_sources_sha256 660af37c... equals the "
+                        "committed sources at a930a8c; the guard set no flag",
+    "robot_b2grip_n2_001": "sources equal to commit 41d9405 (probe imported before that commit was made; src "
+                           "unchanged from a03c23d)",
+}
+
+
 def _load(run):
     path = A/run/"row.json"
     return json.loads(path.read_text()) if path.is_file() else None
@@ -156,6 +174,10 @@ def main():
     evidence["source_sha256"] = {str(f): hashlib.sha256(f.read_bytes()).hexdigest() for f in
                                  (src/"batched/lab_scene.py", src/"batched/material_batch.py",
                                   src/"rl/lab_batched_env.py")}
+    for section in ("diagnosis", "lab_rows", "settle_repeats", "material_input_domain"):
+        for row in evidence[section]:
+            if row["run"] in NOTES:
+                row["note"] = NOTES[row["run"]]
     Path(args.out).write_text(json.dumps(evidence, indent=1, default=str)+"\n")
     print(f"wrote {args.out}: {len(evidence['diagnosis'])} diagnosis, {len(evidence['lab_rows'])} lab, "
           f"{len(evidence['material_input_domain'])} material-domain rows")
