@@ -1469,3 +1469,26 @@ transfer's small-kL expansion and E* round trip). (4) Formal runner `run_visc_v2
 
 **21.7.5 What v2 does not establish.** No calibration (synthetic Prony sets). The finite-strain model form stays
 −0.4 % against the small-strain E*. The 32 Hz E″ phase residual (21.7.1) stays open. No GPU strip/cantilever run.
+
+**21.7.6 Results of `rubber_visc_tests_v2`** (formal run `visc_v2_001`, commit `889a782`, clean tree, Warp 1.17.0 CPU,
+16 workers, 00:24:25–00:44:57 KST; evidence `docs/evidence/rl_ready/p2_3_visco_002.json`; details: report §8).
+
+- **Validity `dynamics_identity_with_v1`: PASS.** All 14 jobs reproduce every recorded `visc_v1_001` column except
+  `branch_work` byte-for-byte (full length, or the v1 prefix of the longer 16 / 32 Hz runs). Their left-point W_b equals
+  the v1 `branch_work` byte-for-byte: the energy option moves no dynamics. 0 invalid flags, 0 guard violations, 0
+  negative D increments.
+- **RUBBER-VISC-03: PASS.** De-embedded E′ is −0.402, −0.402, −0.403, −0.404, −0.401, −0.414 % (1 … 32 Hz; limit 1 %).
+  E″ is −0.435 … −0.867 % (3 %), the loss per cycle −0.397 … −0.434 % (3 %), and grip 0 vs grip 1 ≤ 0.003 % (0.2 %).
+  The fit on 1 / 4 / 16 Hz gives τ₁ −3.4 %, τ₂ −0.29 %, g₁ +1.1 %, g₂ +0.07 %. Held-out 2 / 8 / 32 Hz: E′ +0.04 /
+  +0.03 / −0.10 % (1 %), E″ +0.04 / −0.26 / +1.90 % (4 %). Block 1.3e-7 / 1.4e-7. On the same series, without
+  de-embedding the 32 Hz E′ is −1.87 %, and with the v1 estimator −2.54 % (= v1).
+- **RUBBER-VISC-05: PASS.** max |B_N|/S_N is 0.002 … 0.007 % on the strips, 0.035 % on the creep run and
+  0.012 / 0.006 / 0.003 % on the cantilever at ×1 / ×2 / ×4. The v1 left-point books on the same runs are
+  2.576 / 1.054 / 0.474 % (= v1). 16 Hz ×2 / ×1 = 0.48. Cycle books are within ±0.008 % (left-point at 1 Hz: +1.166 %
+  = v1). ΔD/ΔW_b − 1 is −0.39 … −0.41 %. The g = 0 control is 0.020 %.
+- **Observation (DIAGNOSTIC, after the run, not scored).** E″ falls with rate while E′ and the loss do not. The
+  control-step wrench average is centred dt/2 before the declared stamp; re-stamped, the same data give E″ −0.39 …
+  −0.42 % at every rate, equal to E′ and the loss. The stamp is kept (no change after a result); a later protocol may
+  adopt it.
+- CPU suites (rubber + batched, commit `bc52a2d`): 397 passed, 0 skipped with `CUDA_VISIBLE_DEVICES=''` and with `=0`.
+  Material status: `SIMULATOR_ONLY_UNCALIBRATED`. The v1 FAILs remain the v1 results. Independent rcs-review: NOT_RUN.
