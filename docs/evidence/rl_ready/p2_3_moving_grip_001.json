@@ -1,0 +1,317 @@
+{
+ "schema": "rcs_evidence_v1",
+ "id": "p2_3_moving_grip_001",
+ "adr": "docs/adr/0023-rubber-material-v1.md section 21.1",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "diagnostic": {
+  "label": "DIAGNOSTIC (moving-clamp energy books; not a protocol result)",
+  "artifact": "artifacts/rl_ready/p2_3/moving_clamp_diag_001",
+  "commit": "87c3696e07fe332667b61627cf8f3f4bf2d8e75a",
+  "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=src .venv/bin/python scripts/rubber/p2_3/diag_moving_clamp_energy.py --out artifacts/rl_ready/p2_3/moving_clamp_diag_001",
+  "versions": {
+   "python": "3.12.12",
+   "warp": "1.17.0",
+   "numpy": "2.5.4"
+  },
+  "rows": [
+   {
+    "variant": "step_lumped_c100us_x1",
+    "substeps": 12,
+    "work_end_end_residual_rel": -0.22132206562946172,
+    "work_kick_end_residual_rel": -0.04239184584222056,
+    "work_kick_max_abs_residual_rel": 0.04239184584222056,
+    "work_start_end_residual_rel": 0.13653837394501178,
+    "max_kinetic_jaw_rel": 0.07650203726864725
+   },
+   {
+    "variant": "step_proj_c100us_x1",
+    "substeps": 12,
+    "work_end_end_residual_rel": -0.19238965009570858,
+    "work_kick_end_residual_rel": -5.8639815788778725e-05,
+    "work_kick_max_abs_residual_rel": 0.0038394268207022327,
+    "work_start_end_residual_rel": 0.1922723704641329,
+    "max_kinetic_jaw_rel": 0.07546332325498957
+   },
+   {
+    "variant": "step_projf64_c100us_x1",
+    "substeps": 12,
+    "work_end_end_residual_rel": -0.19239378270056104,
+    "work_kick_end_residual_rel": -6.314027061630661e-05,
+    "work_kick_max_abs_residual_rel": 0.0038394334192525547,
+    "work_start_end_residual_rel": 0.19226750215932142,
+    "max_kinetic_jaw_rel": 0.07546315746857671
+   },
+   {
+    "variant": "step_projf64_c100us_x2",
+    "substeps": 24,
+    "work_end_end_residual_rel": -0.19184121484703798,
+    "work_kick_end_residual_rel": -3.873397846194284e-05,
+    "work_kick_max_abs_residual_rel": 0.0018896508289004542,
+    "work_start_end_residual_rel": 0.191763746890114,
+    "max_kinetic_jaw_rel": 0.07542085472877327
+   },
+   {
+    "variant": "step_projf64_c25us_x1",
+    "substeps": 3,
+    "work_end_end_residual_rel": -0.19239356553155224,
+    "work_kick_end_residual_rel": -6.291650490291759e-05,
+    "work_kick_max_abs_residual_rel": 0.003860283727946312,
+    "work_start_end_residual_rel": 0.19226773252174376,
+    "max_kinetic_jaw_rel": 0.07771098661097747
+   },
+   {
+    "variant": "step_lumped_c25us_x1",
+    "substeps": 3,
+    "work_end_end_residual_rel": -0.2210869174597079,
+    "work_kick_end_residual_rel": -0.0423513576773496,
+    "work_kick_max_abs_residual_rel": 0.0423513576773496,
+    "work_start_end_residual_rel": 0.13638420210500188,
+    "max_kinetic_jaw_rel": 0.07857410756232676
+   },
+   {
+    "variant": "smooth_lumped_c100us_x1",
+    "substeps": 12,
+    "work_end_end_residual_rel": -0.01588890717873245,
+    "work_kick_end_residual_rel": -0.0032730843308483044,
+    "work_kick_max_abs_residual_rel": 0.006650235752100084,
+    "work_start_end_residual_rel": 0.009342738517038618,
+    "max_kinetic_jaw_rel": 0.15247221939088176
+   },
+   {
+    "variant": "smooth_proj_c100us_x1",
+    "substeps": 12,
+    "work_end_end_residual_rel": -0.01623759697483501,
+    "work_kick_end_residual_rel": 0.001873337799532744,
+    "work_kick_max_abs_residual_rel": 0.002273127118372848,
+    "work_start_end_residual_rel": 0.019984272573904772,
+    "max_kinetic_jaw_rel": 0.15242714288965548
+   },
+   {
+    "variant": "smooth_projf64_c100us_x1",
+    "substeps": 12,
+    "work_end_end_residual_rel": -0.016239819428208943,
+    "work_kick_end_residual_rel": 0.001870752457179887,
+    "work_kick_max_abs_residual_rel": 0.0022711272717885317,
+    "work_start_end_residual_rel": 0.019981324342572666,
+    "max_kinetic_jaw_rel": 0.15242796004629228
+   },
+   {
+    "variant": "smooth_projf64_c100us_x2",
+    "substeps": 24,
+    "work_end_end_residual_rel": -0.01662254042421534,
+    "work_kick_end_residual_rel": 0.0009334171770203745,
+    "work_kick_max_abs_residual_rel": 0.0011345337108622535,
+    "work_start_end_residual_rel": 0.01848937477825481,
+    "max_kinetic_jaw_rel": 0.1523609887648374
+   },
+   {
+    "variant": "smooth_projf64_c25us_x1",
+    "substeps": 3,
+    "work_end_end_residual_rel": -0.003537410082212673,
+    "work_kick_end_residual_rel": 0.0018781275649111177,
+    "work_kick_max_abs_residual_rel": 0.0022809899353334008,
+    "work_start_end_residual_rel": 0.0072936652120337295,
+    "max_kinetic_jaw_rel": 0.1531905551619451
+   },
+   {
+    "variant": "smooth_lumped_c25us_x1",
+    "substeps": 3,
+    "work_end_end_residual_rel": -0.003303826273640645,
+    "work_kick_end_residual_rel": -0.002210608416559558,
+    "work_kick_max_abs_residual_rel": 0.005607029817655996,
+    "work_start_end_residual_rel": -0.0011173905594796492,
+    "max_kinetic_jaw_rel": 0.15322689024912084
+   }
+  ]
+ },
+ "root_cause": "constraint work of the F8 projected grip booked at the end-of-substep prescribed velocity; the work conjugate to the discrete kinetic energy of the constrained symplectic-Euler step is the kick average Lambda . (g_n + v_presc)/2; error 1/2 dv . m_eff dv per prescribed-velocity discontinuity (every control-step boundary)",
+ "fix": {
+  "option": "constraint_work=kick_average_v1 (bookkeeping only; requires dirichlet=consistent_mass_projection_v1)",
+  "module": "src/robotic_cutting_sim/rubber_constraint_work.py",
+  "commit": "59fca99"
+ },
+ "protocol": {
+  "file": "configs/rubber/rubber_moving_grip_tests_v1.json",
+  "sha256": "ff14f39dc750fcf095a1a84ba8c7a48d3f0721a27b08062e6e03680eab7678bc",
+  "declared_commit": "ea32f2a"
+ },
+ "smoke": {
+  "artifact": "artifacts/rl_ready/p2_3/moving_grip_v1_smoke_001",
+  "label": "SMOKE (runner check; not a result)",
+  "commit": "ea32f2a62790fcf0e117596c7b3968bf2472182a"
+ },
+ "formal": {
+  "artifact": "artifacts/rl_ready/p2_3/moving_grip_v1_001",
+  "commit": "ea32f2a62790fcf0e117596c7b3968bf2472182a",
+  "dirty_tree": false,
+  "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=src .venv/bin/python scripts/rubber/p2_3/run_moving_grip_v1.py --out artifacts/rl_ready/p2_3/moving_grip_v1_001 --workers 15",
+  "start": "2026-11-10 22:08:38 KST",
+  "end": "2026-11-10 22:09:34 KST",
+  "device": "cpu",
+  "workers": 15,
+  "versions": {
+   "python": "3.12.12",
+   "warp": "1.17.0",
+   "numpy": "2.5.4"
+  },
+  "verdicts": {
+   "RUBBER-GRIP-01": "PASS",
+   "RUBBER-GRIP-02": "PASS",
+   "RUBBER-GRIP-03": "PASS",
+   "RUBBER-GRIP-04": "PASS"
+  },
+  "grip01": [
+   {
+    "scene": "S1",
+    "profile": "linear",
+    "M": 0.0038394334192563147,
+    "H": 0.0003314794490534971,
+    "M_v1": 0.19514900384666445,
+    "H_v1": -0.19199915760019778,
+    "end_residual_v1": -0.19239378270056173,
+    "pass": true
+   },
+   {
+    "scene": "S1",
+    "profile": "smootherstep",
+    "M": 0.002271127271793015,
+    "H": 0.00036866558290294234,
+    "M_v1": 0.020278120437957358,
+    "H_v1": -0.017741899956471623,
+    "end_residual_v1": -0.016239819428213214,
+    "pass": true
+   },
+   {
+    "scene": "S2",
+    "profile": "linear",
+    "M": 0.000937364014930481,
+    "H": 6.433488250972644e-05,
+    "M_v1": 0.04192812311461315,
+    "H_v1": -0.04092642490127027,
+    "end_residual_v1": -0.040446472678991284,
+    "pass": true
+   },
+   {
+    "scene": "S2",
+    "profile": "smootherstep",
+    "M": 0.0005690100385252869,
+    "H": 1.860542623740619e-05,
+    "M_v1": 0.007754591987595583,
+    "H_v1": -0.007177489676090385,
+    "end_residual_v1": -0.006754932539840138,
+    "pass": true
+   },
+   {
+    "scene": "S3",
+    "profile": "linear",
+    "M": 0.0006984810669441814,
+    "H": 6.194080919094195e-05,
+    "M_v1": 0.0005481822352088762,
+    "H_v1": -0.00027456185209455745,
+    "end_residual_v1": -0.00016557931978710276,
+    "pass": true
+   },
+   {
+    "scene": "S3",
+    "profile": "smootherstep",
+    "M": 0.0008783527032015675,
+    "H": 4.5767429717730153e-05,
+    "M_v1": 0.0015404199206180862,
+    "H_v1": 0.0014960573370404666,
+    "end_residual_v1": 0.0014999722804974634,
+    "pass": true
+   }
+  ],
+  "grip02": [
+   {
+    "scene": "S1",
+    "profile": "linear",
+    "M_cfl05": 0.0038394334192563147,
+    "M_cfl025": 0.001889650828913794,
+    "ratio": 0.4921691881506342,
+    "ratio_v1_reported": 0.9902271820509464,
+    "pass": true
+   },
+   {
+    "scene": "S1",
+    "profile": "smootherstep",
+    "M_cfl05": 0.002271127271793015,
+    "M_cfl025": 0.001134533710879113,
+    "ratio": 0.49954651373783143,
+    "ratio_v1_reported": 0.9192158045667562,
+    "pass": true
+   },
+   {
+    "scene": "S2",
+    "profile": "linear",
+    "M_cfl05": 0.000937364014930481,
+    "M_cfl025": 0.0004900867015401984,
+    "ratio": 0.5228349859115782,
+    "ratio_v1_reported": 0.9865033242878141,
+    "pass": true
+   },
+   {
+    "scene": "S2",
+    "profile": "smootherstep",
+    "M_cfl05": 0.0005690100385252869,
+    "M_cfl025": 0.00028483065800946904,
+    "ratio": 0.500572289985726,
+    "ratio_v1_reported": 0.9496869297439106,
+    "pass": true
+   },
+   {
+    "scene": "S3",
+    "profile": "linear",
+    "M_cfl05": 0.0006984810669441814,
+    "M_cfl025": 0.00034406382585405314,
+    "ratio": 0.4925886214200689,
+    "ratio_v1_reported": 1.9963880616711407,
+    "pass": true
+   },
+   {
+    "scene": "S3",
+    "profile": "smootherstep",
+    "M_cfl05": 0.0008783527032015675,
+    "M_cfl025": 0.0004346974035793355,
+    "ratio": 0.49490074089244257,
+    "ratio_v1_reported": 0.4078050853430534,
+    "pass": true
+   }
+  ],
+  "grip04": [
+   {
+    "scene": "S1",
+    "byte_identical_every_step": true,
+    "first_mismatch": null,
+    "control_steps": 120
+   },
+   {
+    "scene": "S2",
+    "byte_identical_every_step": true,
+    "first_mismatch": null,
+    "control_steps": 80
+   },
+   {
+    "scene": "S3",
+    "byte_identical_every_step": true,
+    "first_mismatch": null,
+    "control_steps": 110
+   }
+  ]
+ },
+ "not_run": [
+  "GPU execution of kick_average_v1 (no GPU job; CPU L0 byte-wise only)"
+ ],
+ "frozen_unchanged": {
+  "src/robotic_cutting_sim/tlmpm_rubber_v1.py": "28fc5189e26170db9bb80aa2895143835ec55a0d9db66c77dfba5222defbc8d5",
+  "src/robotic_cutting_sim/rubber_constitutive.py": "c12cc77e36dd076be725fca1aa8ab5a6e94c7d8e3f412ee487b1067aece4b869"
+ },
+ "cpu_tests": {
+  "artifact": "artifacts/rl_ready/p2_3/cpu_tests_001",
+  "commit": "edfd555",
+  "command": "PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py tests/test_rl_policies_batched.py tests/test_repo_naming.py",
+  "CUDA_VISIBLE_DEVICES=''": "337 passed, 4 skipped (708 s)",
+  "CUDA_VISIBLE_DEVICES=0": "337 passed, 4 skipped (690 s)",
+  "skips": "test_rl_policies_batched.py: torch not installed in .venv (2), WP-17 recordings absent (2): NOT_RUN, not passes"
+ }
+}

@@ -8,7 +8,8 @@ sequence (the existing L0 / v1 tests cover it); these tests check the options th
 - ``traction_work="grid_displacement_v1"``: the accumulated work equals sum_p f_t (m_p / M_t) . (x_end - x_start);
 - ``state_precision="f64_shadow_v1"``: x and F are the float32 roundings of float64 shadows that reproduce the
   float32 path to float32 precision; reset restores the shadows;
-- the batched path refuses lives built with a non-default option (no batched execution yet).
+- the batched path packs lives built with an option (ADR 0023 §20; its L0 / L1 tests are in
+  ``test_rubber_batched_options.py``).
 """
 import math
 
@@ -127,8 +128,12 @@ def test_f64_shadow_tracks_the_float32_path_and_resets():
     assert np.array_equal(sa.x64.numpy(), a.scene.X.astype(np.float64))
 
 
-def test_batched_path_refuses_the_opt_in_options():
+def test_batched_path_packs_the_opt_in_options():
+    """Until ADR 0023 §20 the batch refused these lives (UNSUPPORTED_SOLVER); it now runs them batched."""
     for kw in ({"dirichlet": "consistent_mass_projection_v1"}, {"state_precision": "f64_shadow_v1"},
                {"traction_work": "grid_displacement_v1"}):
-        with pytest.raises(UnsupportedBatchConfiguration):
-            pack_rubber([_cantilever(**kw)])
+        packed = pack_rubber([_cantilever(**kw)])
+        for key, value in kw.items():
+            assert packed.uniform[key] == value
+    with pytest.raises(UnsupportedBatchConfiguration, match="UNSUPPORTED_NONUNIFORM_BATCH"):
+        pack_rubber([_cantilever(), _cantilever(dirichlet="consistent_mass_projection_v1")])
