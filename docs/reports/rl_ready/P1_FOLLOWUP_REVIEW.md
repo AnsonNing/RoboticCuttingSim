@@ -433,3 +433,196 @@ The naming test was run after `git add` of this file (see the commit).
 **No-go** for a P1-6 acceptance under `acceptance_v2` before it is merged into `main` (its freeze point).
 
 **Follow-ups, not blocking:** findings 5–7.
+
+## Re-review of 994c679..0f50d76 (2026-11-11)
+
+**Commit reviewed: `0f50d76`**, read-only, detached in `/home/ningan/RoboticCuttingSim-rl-fureview`. This is the
+short re-review of the re-declared G9 window that §8 condition 3 (b) requires.
+
+**Scope:**
+- `4943d75`: window re-declared, plus harness, judge, `perf_acceptance.py` and tests;
+- `e902a61` (CI), `27e5a4f` (README), `259a9e2` (privileged keys);
+- `f91145f`, `4c57994`, `0f50d76` (documentation and evidence).
+
+The merges `6d9a531` and `4f2aa16` bring `6ddca19` / `c292cf2` / `d3d9dee` / `40c94c7`. Their files equal `main`:
+`git diff 40c94c7 0f50d76 -- tests/test_batched_pose_interp.py docs/reports/rl_ready/P1_PARITY_MATRIX.md` is empty.
+
+### R.1 Verdict
+
+**PASS.** The re-declared window, the gate and the fixes for findings 1–7 hold. No BLOCKER, MAJOR or MINOR finding.
+The findings below are LOW or INFO and are documentation only. The follow-up as a whole stays PASS_WITH_LIMITATIONS,
+with the limitation list in R.5.
+
+### R.2 What I verified
+
+**Window, from raw data.** I re-read the slots from the WP-17 Native `actions.jsonl`
+(`privileged_diagnostics.material_contact_statistics`) and from the dumps of `gpu_window_check_002`.
+
+| s512 | Native | GPU re-check e0 / e1 (`4943d75`, clean, N=2, `SHARED_GPU`) |
+| --- | --- | --- |
+| tool contact (slot 1) | 229–366, 101 steps, total 308,600; none before 229 or after 366 | 101 / 101 steps in 229–400; the same non-zero set as Native; totals 308,502 / 308,718; per-step \|Δ\| ≤ 19 / 24 |
+| particle contact (slot 4) | 315–364, 49 steps | 49 / 49 steps; the same set |
+| labels (samples every 10 steps) | | 0 at 220 and 250, 1,978 at 260, 37,958 from 380; 0 → 37,958 in the window |
+| `invalid_reason` | | 0 / 0 |
+
+- The dump sha256s match `p1_followup_002.json`.
+- W=228 is the largest warm-up without tool contact: step 229 has 153 contacts.
+- The minimums are 80 of 101 steps (79 %) and 30,000 of 37,958 labels (79 %). They were committed in `4943d75`
+  (01:12:19) before the re-check ran (result 01:13, records commit `4943d75`, `dirty: false`).
+- s15 (not gated) has 131 tool-contact and 79 particle-contact steps in 229–400.
+
+**Gate code:**
+- The judge counts slot-1 steps and new labels per s512 env of `G6_replay` / `G7_batched` (`judge_perf_acceptance.py:728-773`).
+- A dump without `tool_contacts` gives `None` and cannot pass. Particle contacts are reported only.
+- `performance.window_check` must have exactly its three keys (`perf_acceptance.py:364`).
+- The harness reads slot 4 and slot 1 from one `stats_sum` host read per step, in episode and samestate modes only
+  (`run_perf_acceptance.py:309, 329, 412-416`). Throughput (G9) reads no statistics.
+
+**Pins:**
+- `acceptance_v2.json` = `b66ace29…`, as pinned. The file at `994c679` was `a008dd38…`.
+- `acceptance_v1.json` = `3592d940…`, byte-identical at `40c94c7` and `0f50d76`, and pinned.
+- Band pins are unchanged.
+
+**Cost and budget:**
+- W+K = 228+172 = 400 = 320+80, so the per-run cost is unchanged.
+- G9 = 6 × 52 s + 6 × 487 s = 3,234 s = 53.9 min, of which N=1 is 9.6 %.
+- With the two measured factors 1.033 / 1.061: about 1.69–1.75 GPU-h exclusive, which fits 2.5 h up to ×1.48 / ×1.43
+  co-tenant slowdown. The G9 N=16 lock hold is 50.3–51.7 min.
+- The figures are honest. The N=16 factor is unmeasured, and the config's budget text quotes only the first factor.
+  The report says both.
+
+**Statistical design:** a key-by-key diff `a008dd38…` → `b66ace29…` changes only:
+- `warmup_steps` / `steps`;
+- `window_check` (`min_contact_steps` 40 → `min_tool_contact_steps` 80; `min_new_labels` 10,000 → 30,000);
+- `phases`;
+- the W/K of `baseline_measure`;
+- the text of `description`, `design.*` and `thresholds.rules`.
+
+`num_envs`, `primary_num_envs`, `pairs`, `order`, seeds, every threshold, the plan, physics, `frozen_paths`, dev limits
+and timeouts are unchanged.
+
+**Findings of my review:**
+
+| Finding | Status | Where |
+| --- | --- | --- |
+| 1 | Fixed. Option (b) taken; the wording is corrected. | D-14; `P1_FOLLOWUP.md` status row and §1.1; judge docstring `:27-33`; `perf_acceptance.py:9-13` |
+| 2 | Fixed. Trade-off text replaces "stricter". | config `design.statistics`, D-14, report §1.2 |
+| 3 | Fixed. | 9.6 %; no `steps_by_num_envs` (§1.5); D-14 budget revision; GPU time only and CPU suites stated; N=2 `SHARED_GPU` factor caveat |
+| 4 | Fixed. | `6ddca19` / `c292cf2` / `d3d9dee` / `40c94c7` are ancestors of `0f50d76` |
+| 5 | Fixed. | `.github/workflows/tests.yml:6` `cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}` |
+| 6 | Fixed. | Keys added (`vector_contract.py:25-28`). Both backends publish the tuple as metadata (`vector_env.py:642`, `lab_vector_env.py:293`). The contract now checks every privileged key a step's info carries (`:124-125`). The source-scan test classifies every `info[...]` key. |
+| 7 | Fixed. | README `:243-247`, `:289-294`; progress U2 on the integration branch (`3ba98de`; see R.3 item 4) |
+
+**Frozen code:** `git diff 994c679..0f50d76` is empty over:
+- the `frozen_paths` of both configs;
+- `batched/`, `rl/replay.py`, `rl/benchmark.py`, `rl/telemetry.py`;
+- `profiling.py`, `physical_tool.py`, `grasp_monitor.py`.
+
+Under `configs/` only `acceptance_v2.json` changed. Under `src/` only `rl/perf_acceptance.py` (docstring, key name,
+exact key set) and `rl/vector_contract.py` changed.
+
+### R.3 Findings (most severe first)
+
+1. **LOW: off-by-one numbers in descriptive text.**
+   - Native and the GPU dumps have no tool contact at 237–257 and 259–274 (19 contacts at 258, resuming at 275). s15
+     has tool contact 230–517 and particle contact 322–843 (Native; 322–846 in the `smoke_003` replay).
+   - The pinned config's `design.window` (`acceptance_v2.json:44`) and `P1_FOLLOWUP.md:49,55` say instead:
+     - gaps 237–256 and 259–273;
+     - s15 tool contact 229–516 and particle contact 321–842.
+   - The test fixture `TOOL_CONTACT_S512` (`tests/test_perf_acceptance.py:426-428, 459`) uses the same gaps: 103
+     synthetic steps against Native's 101.
+   - `p1_followup_002.json` has the correct values.
+   - No gate reads these numbers. The s512 first and last steps, the counts and the minimums are correct.
+   - **Recommendation:** do not re-pin, because the GPU re-check ran with `b66ace29…`. Correct the report and add a
+     one-sentence erratum to D-14, as D-11 does for v1's in-file text. Fixing the test comment is optional.
+     Documentation only, no re-review.
+2. **LOW: D-14 and the freeze record.**
+   - D-14 says "freeze commit `40c94c7` (… as recorded in D-11)", and `P1_FOLLOWUP.md` §1.4 says the same.
+   - On this branch and on `main`, D-11 (`RL_READY_PLAN.md:194`) still reads "merge commit: _to be recorded_".
+   - The record exists only on `claude/rl-ready-rubber-physics` (`36b8947`).
+   - **Recommendation:** carry that D-11 sentence into this branch before PR #13, so that `main` records the freeze
+     commit. Documentation only.
+3. **INFO: spike range.**
+   - "2.4–3.0× step walls in both GPU checks" (`P1_FOLLOWUP.md:64, 449`) holds for check 002 at 255–257 and 274–275.
+   - Against the 21–228 approach median, check 001 shows 3.3–3.8× at 255–257 and 2.0× at 258; check 002 shows 1.7×
+     at 258.
+   - The cause stays unexplained; the steps are timed now.
+4. **INFO: progress U2.** On the integration branch it still says "window being finalised to start at tool contact".
+   It should name 229–400 after PR #13 (the coordinator's file).
+
+### R.4 Tests run by this re-review (CPU only; GPU1 never used)
+
+```bash
+cd /home/ningan/RoboticCuttingSim-rl-fureview   # detached at 0f50d76
+SEL="tests/test_acceptance_frozen.py tests/test_perf_acceptance.py tests/test_rl_rollout_roles.py \
+  tests/test_batched_pose_interp.py tests/test_vector_env_contract.py tests/test_vector_env_p12b.py \
+  tests/test_rl_configured_family.py tests/test_vector_env_api.py tests/test_rl_smoke.py tests/test_repo_naming.py"
+CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q -p no:cacheprovider -rs $SEL
+# 127 passed, 6 skipped in 2.1 s -> PASS (skips: Torch modules, NOT_RUN in .venv)
+flock -w 900 /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 \
+  .venv/bin/python -m pytest -q -p no:cacheprovider -rs $SEL
+# 127 passed, 6 skipped in 2.3 s -> PASS (identical skip set)
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaacsim-venv/bin/python \
+  -m pytest -q -p no:cacheprovider -rs tests/test_perf_acceptance.py tests/test_acceptance_frozen.py \
+  tests/test_rl_rollout_roles.py tests/test_vector_env_contract.py tests/test_vector_env_p12b.py \
+  tests/test_rl_configured_family.py tests/test_vector_env_api.py tests/test_rl_smoke.py tests/test_batched_pose_interp.py
+# 162 passed, 3 skipped in 655 s -> PASS (NOT_RUN: workload B contract needs the Lab venv (2); WP-12 Demo 1 recording (1))
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaaclab-venv/bin/python \
+  -m pytest -q -p no:cacheprovider -rs tests/test_vector_env_contract.py tests/test_rl_rollout_roles.py
+# 9 passed in 29.5 s -> PASS (both backends under the new per-step privileged-key check)
+```
+
+**Not run:** the full suites and any GPU job. CPU re-derivations from the Native `actions.jsonl` and the
+`gpu_window_check_002` / `smoke_003` dumps used scratch scripts only.
+
+The naming test was run after `git add` of this file (see the commit).
+
+**GitHub CI:**
+- `0f50d76`, push run 42862490783: **completed, success**. 2470 passed, 58 skipped, 6 xfailed, 0 failed, in 4,863 s (17:12–18:36 UTC). The earlier runs took about 56–60 min. I waited for this run so that my push would not cancel it.
+- `4943d75`, `f91145f` and `4c57994`: cancelled by the next push to the branch, which is the intended concurrency
+  behaviour.
+- PR #13 is not open yet, so there is no `pull_request` run.
+
+### R.5 PR #13 limitation list (replaces §7)
+
+1. **`acceptance_v2` is declared, not exercised.**
+   - No full acceptance has run.
+   - GPU time is an estimate: about 1.69–1.75 GPU-h exclusive, plus about 50 min of CPU suites per side.
+   - The contact-phase cost at N=16 is unmeasured.
+   - v2 freezes at its merge into `main`; any later change is `acceptance_v3`.
+2. **What G9 times.**
+   - Steps 229–400 of the s512 replay, at every N.
+   - All tool contact (101 steps), all particle contact (49), all labelling (0 → 37,958) and 34 post-contact steps.
+   - The approach (1–228) is untimed.
+   - One seed; s15 is not timed.
+   - The cutting-onset spikes (255–258, 274–275, about 1.7–3.8×) are unexplained and are timed.
+3. **What `G9:window` checks.**
+   - It runs on the G6/G7 episode processes (N=1 and N=4), not inside the G9 throughput processes (N 1/16).
+   - It requires ≥ 80 tool-contact steps (slot 1) and ≥ 30,000 new labels. Particle contacts are reported only.
+   - It needs dumps from this branch's harness. Earlier outputs need `--known-harness` (finding 8).
+4. **Statistics.**
+   - 3 pairs, N {1, 16}: a trade-off, not stricter than v1 (finding 2).
+   - The N=1 floor rests on 3 pairs of 172 steps.
+   - N=8, and every N other than 1 and 16, is not gated.
+   - Run on an `EXCLUSIVE_GPU` where possible.
+5. **Candidate-reported values.** VRAM peak, reset p95 and `performance.phases`. The phases are descriptive.
+6. **`acceptance_v1`.**
+   - Frozen at `3592d940…`, at the PR #12 merge `40c94c7`, and never used.
+   - Its N=1 work gate would fail at random (finding 9).
+7. **The external adapter** passes no `--config` and has not been switched to v2. That is the other agent's change.
+8. **`rcs_rl_rollout_v2` is opt-in.** Declared runs keep v1. `autoreset` / `terminal_captured` are now labelled
+   privileged.
+9. **B2 test coverage** is unchanged: the latch is tested on Warp CPU with test-only injection. G1/G3, G4 and G5 with
+   the profile are NOT_RUN.
+10. **The pinned v2 text has off-by-one gap and s15 ranges** (R.3 item 1), unless the erratum is recorded.
+11. **Not addressed:** findings 5–9 and 11 of the Phase 1 review.
+
+### R.6 Go / no-go
+
+**GO for PR #13**, under these conditions:
+1. CI is green on the PR head.
+2. The PR body carries R.5, or a faithful equivalent, and links this report and `P1_FOLLOWUP.md`.
+
+Recommended before the merge, documentation only, no re-review: R.3 items 1 and 2.
+
+**No-go** for a P1-6 acceptance under `acceptance_v2` before its merge into `main` (its freeze point).
