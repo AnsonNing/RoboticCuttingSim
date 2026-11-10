@@ -29,9 +29,17 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
     misreported. Fixes: findings 1–4, 6, 8–10 in worktree `/home/ningan/RoboticCuttingSim-rl-fix1` (grid refresh
     before each launch, pre-declared position band v2 with ≥10 replays/seed, matched-window throughput, stale text);
     findings 5 (autoreset → evaluate) and 7 (diagnostics opt-out) folded into P1-2b.
-  - Running now: xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786; P1-2b (isaac_lab_newton dispatch, `tasks=`,
-    `termination_reason`, full evaluation stream, per-env pose-bounds invalidation) in worktree
-    `/home/ningan/RoboticCuttingSim-rl-p12b`; B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
+  - **P1-2b DONE and merged (6e1e544)** ([section in milestones report](reports/rl_ready/P1_1_P1_2_MILESTONES.md),
+    evidence `p1_2b_001.json`): `open_vector_env(backend="isaac_lab_newton")` (same contract as workload A via
+    `rl/vector_contract.py`; cameras / same-step autoreset / CPU refused with codes), per-env `tasks=` (512 + 15 in one
+    batch, both backends), `termination_reason` bits (1 rigid, 2 material, 4 grasp lost, 8 IK streak, 16 truncated,
+    32 input guard, 64 infrastructure) + `VectorEnvInfrastructureError` + `classify_process_exit`, opt-in device
+    evaluation stream (121 samples at the Native cadence, ~350 MB/env), input guard (0 trips over 6 recorded legitimate
+    episodes), review F5 (`terminal_capture`, `evaluate(episode="last_completed")`, autoreset envs refused) and F7
+    (diagnostics-only `allow_multiple_device_hashgrids`). Tests: CPU 286 / Torch 123 / Isaac Lab 53 passed. GPU smoke
+    N=2 tasks=[512,15], SHARED_GPU: workload A contract PASS (4.25 env-steps/s), B1 contract PASS (4.89) — API smoke,
+    no cutting in 50 steps.
+  - Running now: B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
     P1-6 R0 DONE and merged here (87cfa3b; [report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
     `run_perf_acceptance.py` (one material per child process), `judge_perf_acceptance.py`, `acceptance_v1.json`,
     local runner; GPU smoke default vs `alias_free_v1`: PHYSICS/PERFORMANCE/INTEGRITY PASS, ratios 1.361 (N=1) /
