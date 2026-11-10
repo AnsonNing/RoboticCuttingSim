@@ -56,8 +56,10 @@ wp.set_module_options({"enable_backward": False})
 
 PENALTY_LAW = "grid_node_penalty_coulomb_v1"           # node penalty + Coulomb spring-slider (ADR 0023 §22.1)
 PROJECTION_LAW = "grid_node_coulomb_v1"                 # node velocity-level projection (ADR 0023 §22.1)
-CONTACT_LAW = PENALTY_LAW
-CONTACT_LAWS = (PENALTY_LAW, PROJECTION_LAW)
+PENALTY_LAW_V2 = "grid_node_penalty_coulomb_v2"        # v1 with the dashpots on the realised node velocity (§22.9)
+CONTACT_LAW = PENALTY_LAW                               # default: v1 (v2 is opt-in)
+CONTACT_LAWS = (PENALTY_LAW, PROJECTION_LAW, PENALTY_LAW_V2)
+PENALTY_LAWS = (PENALTY_LAW, PENALTY_LAW_V2)
 CONTACT_WORK = "kick_average_v1"
 FRAME_FIXTURE, FRAME_PAD = 0, 1
 FRAME_KINDS = {"fixture": FRAME_FIXTURE, "pad": FRAME_PAD}
@@ -162,14 +164,18 @@ class ContactSpec:
         return boxes[:, 0].copy(), boxes[:, 1].copy()
 
     def receipt(self):
+        rule = ("c = 2 zeta sqrt(k m_I) on the node's predicted (post-force) relative velocity; "
+                "tangential inside the Coulomb cap, normal with F_n >= 0") if self.law == PENALTY_LAW else (
+                "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after "
+                "the P2G grid update, minus the obstacle velocity; ADR 0023 §22.9); tangential inside the Coulomb cap, "
+                "normal with F_n >= 0")
         params = ({"normal_stiffness": float(self.normal_stiffness),
                    "tangential_stiffness": float(self.tangential_stiffness),
                    "damping_ratio": float(self.damping_ratio),
                    "normal_damping_ratio": float(self.normal_damping_ratio),
-                   "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's predicted (post-force) relative velocity; "
-                                   "tangential inside the Coulomb cap, normal with F_n >= 0",
+                   "damping_rule": rule,
                    "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)"}
-                  if self.law == PENALTY_LAW else {"penetration_recovery": float(self.penetration_recovery)})
+                  if self.law in PENALTY_LAWS else {"penetration_recovery": float(self.penetration_recovery)})
         return {"law": self.law, "work": self.work, **params,
                 "planes": self.plane_array().tolist(),
                 "frames": [{"name": f.name, "kind": f.kind, "origin": list(map(float, f.origin)),
@@ -517,6 +523,187 @@ def node_penalty_contact(gm: wp.array(dtype=float), new_v: wp.array(dtype=wp.vec
 
 
 @wp.kernel
+def node_penalty_contact_v2(gm: wp.array(dtype=float), new_v: wp.array(dtype=wp.vec3), old: wp.array(dtype=wp.vec3),
+                         node_X: wp.array(dtype=wp.vec3d), node_u: wp.array(dtype=wp.vec3d),
+                         node_group: wp.array(dtype=int), group_active: wp.array(dtype=int),
+                         env_of_node: wp.array(dtype=int), fric: wp.array2d(dtype=float), col_table: int,
+                         col_pad: int, P: int, planes: wp.array(dtype=wp.vec4d), F: int, B: int,
+                         frame_kind: wp.array(dtype=int), frame_active: wp.array(dtype=int),
+                         fq0: wp.array(dtype=wp.quatd), fq1: wp.array(dtype=wp.quatd), fb0: wp.array(dtype=wp.vec3d),
+                         fb1: wp.array(dtype=wp.vec3d), forigin: wp.array(dtype=wp.vec3d),
+                         box_c: wp.array(dtype=wp.vec3d), box_h: wp.array(dtype=wp.vec3d), index: wp.array(dtype=int),
+                         substeps: int, dt: wp.float64, kn_frac: wp.float64, kt_frac: wp.float64,
+                         zeta: wp.float64, zeta_n: wp.float64, xi: wp.array(dtype=wp.vec3d),
+                         obst: wp.array(dtype=int),
+                         vobs: wp.array(dtype=wp.vec3d), jn_out: wp.array(dtype=wp.vec3d),
+                         jt_out: wp.array(dtype=wp.vec3d),
+                         plane_reaction: wp.array(dtype=wp.spatial_vectord),
+                         box_reaction: wp.array(dtype=wp.spatial_vectord), work: wp.array2d(dtype=wp.float64),
+                         pen_max: wp.array(dtype=wp.float64), counts: wp.array2d(dtype=int)):
+    """``grid_node_penalty_coulomb_v2`` (ADR 0023 §22.9): ``node_penalty_contact`` (v1, unchanged above) with ONE change:
+    both dashpots and the tangential trial act on the node's REALISED velocity g_n = ``old`` after the P2G grid update
+    (= B pi_n, the drift velocity with which the node moved in the previous substep, i.e. the realised rate of its
+    gap), relative to the obstacle velocity, instead of the predicted lumped velocity v* = ``new_v`` (= M_l^-1 pi_n +
+    dt f / m_I). The impulse still enters the kick (``new_v`` += J / m_I) and the work is the same kick-paired
+    ``kick_average_v1``. Why (X1 diagnostics, ``scripts/rubber/p2_4/diag_contact_x1.py``): under the TLMPM drift
+    metric B the v1 dashpot is not dissipative for the face's grid-scale modes -- a frictionless elastic block at rest
+    keeps a self-excited contact rattle (27 % of the bottom nodes in contact per substep, vibration energy ~100x the
+    static elastic energy, net POSITIVE normal contact work) -- while with g_n it settles (all nodes in contact).
+    At a static fixed point g_n = 0, so the spring alone carries the load: delta_I = F_I / k_n.
+
+    Normal: every obstacle the node penetrates (gap < 0 at the start of the substep) pushes with the conservative
+    penalty force k_n (-gap) n, k_n = kappa_n m_I / dt^2 (potential 1/2 k_n gap^2). Tangential: one Coulomb
+    spring-slider per node on its deepest obstacle, elongation ``xi`` (world vector, the relative tangential
+    displacement since the anchor; projected on the current tangent plane), force -k_t xi capped at mu |F_n| (slip:
+    the anchor slides, xi is scaled back onto the cap; the Coulomb dissipation mu |F_n| (|xi_trial| - |xi_cap|) is
+    booked). A node that leaves contact or changes obstacle releases its anchor. The impulse dt (F_n + F_t) enters the
+    kick (P2G-pass grid velocity). ``vobs`` keeps the obstacle velocity at the node for the slider update after the
+    drift (``slider_update``)."""
+    i = wp.tid()
+    zero3 = wp.vec3d()
+    jn_out[i] = zero3
+    jt_out[i] = zero3
+    m = gm[i]
+    if m <= 1.0e-15:
+        xi[i] = zero3
+        obst[i] = -1
+        return
+    grp = node_group[i]
+    if grp >= 0:
+        if group_active[grp] != 0:
+            xi[i] = zero3
+            obst[i] = -1
+            return
+    e = env_of_node[i]
+    x = node_X[i]+node_u[i]
+    md = wp.float64(m)
+    kn = kn_frac*md/(dt*dt)
+    kt = kt_frac*md/(dt*dt)
+    two = wp.float64(2.0)
+    cn = two*zeta_n*wp.sqrt(kn*md)
+    ct = two*zeta*wp.sqrt(kt*md)
+    vstar = wp.vec3d(old[i])                     # v2: the realised (drift) velocity, not the predicted new_v
+    zero = wp.float64(0.0)
+    Jn = wp.vec3d()
+    best = int(-1)
+    best_pen = zero
+    best_n = wp.vec3d()
+    best_vo = wp.vec3d()
+    best_fn = zero
+    best_mu = zero
+    best_lever = wp.vec3d()
+    mu_table = wp.float64(fric[e, col_table])
+    mu_pad = wp.float64(fric[e, col_pad])
+    for k in range(P):
+        n, gap = plane_hit(planes[e*P+k], x)
+        if gap < zero:
+            wp.atomic_max(pen_max, e, -gap)
+            vn = wp.dot(vstar, n)
+            fn = wp.max(kn*(-gap)-cn*vn, zero)
+            if cn > zero:
+                wp.atomic_add(work, e, 5, dt*wp.min(cn*vn*vn, fn*wp.abs(vn)))
+            jn = (dt*fn)*n
+            Jn += jn
+            tau = wp.cross(x, jn)
+            wp.atomic_add(plane_reaction, e*P+k, wp.spatial_vectord(jn[0], jn[1], jn[2], tau[0], tau[1], tau[2]))
+            if -gap > best_pen:
+                best = k
+                best_pen = -gap
+                best_n = n
+                best_vo = zero3
+                best_fn = fn
+                best_mu = mu_table
+                best_lever = x
+    if F > 0:
+        s0 = wp.float64(index[0])/wp.float64(substeps)
+        s1 = wp.float64(index[0]+1)/wp.float64(substeps)
+        for f in range(F):
+            r = e*F+f
+            if frame_active[r] != 0:
+                R0 = frame_rotation(fq0[r], fq1[r], s0)
+                c0 = fb0[r]+s0*(fb1[r]-fb0[r])
+                R1 = frame_rotation(fq0[r], fq1[r], s1)
+                c1 = fb0[r]+s1*(fb1[r]-fb0[r])
+                Xh = wp.transpose(R0)*(x-c0)
+                v_obs = (R1*Xh+c1-x)/dt
+                o1 = R1*forigin[r]+c1
+                mu = mu_table
+                if frame_kind[r] == FRAME_PAD:
+                    mu = mu_pad
+                for b in range(B):
+                    rb = r*B+b
+                    nl, gap = box_sdf_d(Xh-box_c[rb], box_h[rb])
+                    if gap < zero:
+                        wp.atomic_max(pen_max, e, -gap)
+                        n = R0*nl
+                        vn = wp.dot(vstar-v_obs, n)
+                        fn = wp.max(kn*(-gap)-cn*vn, zero)
+                        if cn > zero:
+                            wp.atomic_add(work, e, 5, dt*wp.min(cn*vn*vn, fn*wp.abs(vn)))
+                        jn = (dt*fn)*n
+                        Jn += jn
+                        tau = wp.cross(x-o1, jn)
+                        wp.atomic_add(box_reaction, rb, wp.spatial_vectord(jn[0], jn[1], jn[2], tau[0], tau[1],
+                                                                           tau[2]))
+                        wp.atomic_add(work, e, 2, wp.dot(jn, v_obs))
+                        if -gap > best_pen:
+                            best = P+rb-e*F*B
+                            best_pen = -gap
+                            best_n = n
+                            best_vo = v_obs
+                            best_fn = fn
+                            best_mu = mu
+                            best_lever = x-o1
+    Jt = wp.vec3d()
+    if best >= 0:
+        xt = wp.vec3d()
+        if obst[i] == best:
+            xt = xi[i]
+        xt = xt-wp.dot(xt, best_n)*best_n
+        vr = vstar-best_vo
+        vt = vr-wp.dot(vr, best_n)*best_n
+        Ft = -kt*xt-ct*vt
+        Lf = wp.length(Ft)
+        capf = best_mu*best_fn
+        state = STATE_STICK
+        if Lf > capf:
+            Ft_new = wp.vec3d()
+            if Lf > zero:
+                Ft_new = Ft*(capf/Lf)
+            xt_new = Ft_new/(-kt)
+            wp.atomic_add(work, e, 4, capf*wp.length(xt-xt_new))
+            xt = xt_new
+            Ft = Ft_new
+            state = STATE_SLIP
+        elif ct > zero:
+            wp.atomic_add(work, e, 5, dt*ct*wp.dot(vt, vt))
+        Jt = dt*Ft
+        xi[i] = xt
+        obst[i] = best
+        vobs[i] = best_vo
+        tau = wp.cross(best_lever, Jt)
+        sv = wp.spatial_vectord(Jt[0], Jt[1], Jt[2], tau[0], tau[1], tau[2])
+        if best < P:
+            wp.atomic_add(plane_reaction, e*P+best, sv)
+        else:
+            wp.atomic_add(box_reaction, e*F*B+best-P, sv)
+        wp.atomic_add(work, e, 3, wp.dot(Jt, best_vo))
+        wp.atomic_add(counts, e, 0, 1)
+        wp.atomic_add(counts, e, state, 1)
+        v = wp.vec3d(new_v[i])+(Jn+Jt)/md
+        new_v[i] = wp.vec3(v)
+        jn_out[i] = Jn
+        jt_out[i] = Jt
+        o = wp.vec3d(old[i])
+        half = wp.float64(0.5)
+        wp.atomic_add(work, e, 0, half*wp.dot(Jn, o))
+        wp.atomic_add(work, e, 1, half*wp.dot(Jt, o))
+    else:
+        xi[i] = zero3
+        obst[i] = -1
+
+
+@wp.kernel
 def slider_update(xi: wp.array(dtype=wp.vec3d), obst: wp.array(dtype=int), vobs: wp.array(dtype=wp.vec3d),
                   new_v: wp.array(dtype=wp.vec3), dt: wp.float64):
     """Spring-slider elongation after the drift: xi += dt (v_I - v_obs) for nodes in contact (projected onto the
@@ -648,6 +835,8 @@ def host_coulomb_projection(v, v_obs, n, gap, dt, beta, mu):
     return dvn, -(mu*dvn/st)*vt, STATE_SLIP
 
 
-__all__ = ["ContactSpec", "ContactFrame", "node_contact", "node_penalty_contact", "slider_update", "contact_energy", "contact_work_end", "node_displacement", "box_sdf_d",
-           "coulomb_projection", "CONTACT_LAW", "CONTACT_WORK", "WORK_COLUMNS", "COUNT_COLUMNS", "FRAME_KINDS",
+__all__ = ["ContactSpec", "ContactFrame", "node_contact", "node_penalty_contact", "node_penalty_contact_v2",
+           "slider_update", "contact_energy", "contact_work_end", "node_displacement", "box_sdf_d",
+           "coulomb_projection", "CONTACT_LAW", "CONTACT_LAWS", "PENALTY_LAW", "PENALTY_LAW_V2", "PENALTY_LAWS",
+           "CONTACT_WORK", "WORK_COLUMNS", "COUNT_COLUMNS", "FRAME_KINDS",
            "host_box_sdf", "host_coulomb_projection"]

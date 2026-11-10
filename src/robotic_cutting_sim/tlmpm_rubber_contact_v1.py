@@ -1,4 +1,6 @@
-"""Single-env rubber solver with contact ``TLMPMRubberContact`` (law ``grid_node_coulomb_v1``; ADR 0023 §22; P2-4).
+"""Single-env rubber solver with contact ``TLMPMRubberContact`` (laws ``grid_node_penalty_coulomb_v1`` (default),
+``grid_node_penalty_coulomb_v2`` (opt-in, ADR 0023 §22.9) and the rejected projection ``grid_node_coulomb_v1``;
+ADR 0023 §22; P2-4).
 
 Status ``EXPERIMENTAL_NOT_ACCEPTED``; material ``SIMULATOR_ONLY_UNCALIBRATED``. Opt-in: ``LiveRubberMaterial`` builds it
 only when a ``rubber_contact.ContactSpec`` is passed; without one the elastic / visco solver classes are built
@@ -70,7 +72,8 @@ class TLMPMRubberContact(TLMPMRubberVisco):
         P, F, B = contact.P, contact.F, contact.B
         self.ct_P, self.ct_F, self.ct_B = P, F, B
         self.ct_beta = float(contact.penetration_recovery)
-        self.ct_penalty = contact.law == rct.PENALTY_LAW
+        self.ct_penalty = contact.law in rct.PENALTY_LAWS
+        self.ct_law = contact.law                    # scalar: selects the kick kernel (v1 / v2 penalty, projection)
         self.ct_kn, self.ct_kt = float(contact.normal_stiffness), float(contact.tangential_stiffness)
         self.ct_zeta = float(contact.damping_ratio)
         self.ct_zeta_n = float(contact.normal_damping_ratio)
@@ -139,7 +142,10 @@ class TLMPMRubberContact(TLMPMRubberVisco):
 
     def _launch_contact(self):
         if self.ct_penalty:
-            wp.launch(rct.node_penalty_contact, self.node_count,
+            # grid_node_penalty_coulomb_v1 (default) or _v2 (ADR 0023 §22.9: same arguments, dashpots on the realised
+            # node velocity); one source for the single and the batched solver
+            kernel = rct.node_penalty_contact_v2 if self.ct_law == rct.PENALTY_LAW_V2 else rct.node_penalty_contact
+            wp.launch(kernel, self.node_count,
                       [self.gm, self.new_v, self.old, self.node_X, self.ct_node_u, self.node_group, self.group_active,
                        self.ct_env_of_node, self.ct_fric, 0, 1, self.ct_P, self.ct_planes, self.ct_F, self.ct_B,
                        self.ct_fkind, self.ct_factive, self.ct_fq0, self.ct_fq1, self.ct_fb0, self.ct_fb1,
