@@ -1346,3 +1346,28 @@ not in this list.
   visco follows the v4 L3 rule if declared later.
 - Float64 throughput on consumer GPUs (21.2.9) may motivate `visco_precision f32_v1`, only with its own declared test.
 - `rubber_generic_visco_v1` values are provisional literature-typical magnitudes; no calibration claim.
+
+### 21.6 Results of `rubber_visc_tests_v1` (amendment, 2026-11-10, rcs-impl; details: `docs/reports/rl_ready/P2_3_RUBBER_VISCO.md`)
+
+Implementation R3.1–R3.6 as designed in §21.2 (`efff788`, `fc3d23e`, `555d6fb`); `tlmpm_rubber_v1.py` and
+`rubber_constitutive.py` unchanged. Gate R3.5 (`visc_tangent_check_001`, `fc3d23e`): 2400 states, max ratio **0.9910**
+→ RUBBER-VISC-08b **PASS**; the PSD premise of the isochoric material part is false (min eigenvalue −1.26e5 Pa),
+the bound holds through the elastic W bound's margin (0.9 %). Formal CPU run `visc_v1_001` (`555d6fb`, clean, Warp
+1.17.0 CPU, 20 min): **-01, -02, -04, -06, -07, -08, -09 PASS; -03 FAIL; -05 FAIL**; every configuration valid.
+
+- **-03 FAIL** (E′ −1.04 % at 16 Hz, −2.54 % at 32 Hz > 1 %; held-out 32 Hz E′ +1.82 % > 1 %; identification (b),
+  loss, E″, block (e) pass). Root cause is the declared error budget, not the material. The finite-strain model form
+  is −0.40 % at every rate. Drive-end inertia of the grip-1 reaction is −(3/8)ρω²L²/E = −1.48 % at 32 Hz, not the
+  budgeted (f/f_ax)² 0.4 %; it is confirmed by the grip-0 / grip-1 difference, −1.96 % observed vs −1.97 % predicted.
+  Fourier leakage of the declared estimator at non-integer samples per period is −0.25 / −0.69 % (16 / 32 Hz).
+  Their sum reproduces the observed bias within 0.03 %.
+- **-05 FAIL** (cantilever |B_N| 2.58 / 1.05 / 0.47 % of S_N at ×1/×2/×4 > 0.5 %; 1 Hz cycle books +1.17 % > 0.5 %;
+  strip/creep books ≤ 0.21 %, (b) and (d) pass). Root cause: the declared left-point branch work
+  W_b = Σ pb_n:ΔF_n is not conjugate to the discrete kinetic energy. The kick pairs P_n with (ΔF_{n−1} + ΔF_n)/2, and
+  the difference −½Σ ΔQ:ΔF is secular for a Maxwell branch, of relative size ≈ dt·ω²·τ/2 for high-frequency content.
+  DIAGNOSTIC `visc_diag_cantilever_books_002` (`0555131`): the kick-paired W_kp = Σ pb_n:(ΔF_{n−1} + ΔF_n)/2 closes the
+  same runs to ≤ 0.021 % without drift (elastic control 0.04 %). The claim of §21.2.7 that the left-point W_b closes
+  "at any strain up to the O(dt) symplectic error" is withdrawn.
+- Thresholds and the v1 protocol are unchanged and the v1 FAILs stay the v1 results. A v2 (estimator / inertia budget
+  for -03; `visco_energy = branch_work_kick_average_v2` for -05) must be declared before its run; that decision belongs
+  to rcs-xhigh. VISC-10 GPU cost rows: report §4.
