@@ -1,0 +1,1228 @@
+"""Batched cutting material for ``rl_gpu_headless`` (ADR 0021 §6-7): graph, coupling, wrench, validity, reset.
+
+``BatchedCuttingMaterial`` owns one ``BatchedTLMPMv7_2`` and does, for all N envs at once, what
+``LiveCuttingMaterial.advance`` does for one (``live_material.py:318-376``):
+
+1. per-substep LOCAL tool poses/twists ``[N, T]`` and cut digits are written in place into the solver's
+   arrays -- by the device ``pose_interp`` kernel (production) or, in ``parity_mode``, from the frozen
+   SciPy ``interpolate_measured_poses`` (the L0 input path), or by the caller directly;
+2. ``index``, ``reaction``, ``box_reactions`` and ``stats`` are zeroed;
+3. one CUDA graph (captured once per batch shape) replays the 200 substeps; on CPU the substeps run eagerly;
+   right before either, the batch's own HashGrid is rebuilt on the host (``refresh_device_hashgrid``, Warp 1.17
+   static-descriptor hazard, review fix F1) after a step-time census of other device grids;
+4. a kernel converts ``reaction[N]`` and ``box_reactions[N*B]`` to world wrenches: the 20 ms delayed handoff
+   keeps ``pending_wrench[N,6]`` (applied in the next interval) and ``applied_previous[N,6]``, pad wrenches
+   ``pad_wrench[N,B,6]`` (rows of non-recipient boxes stay zero);
+5. a segmented per-env diagnostics reduction and a validity kernel set ``invalid_reason[N]`` (bit flags,
+   sticky until reset) and ``invalid_count[1]``; strict mode reads that one int32 and raises with env ids.
+
+``reset(env_ids)`` is a masked device reset (no allocation, no recapture) to the exact freshly packed
+state. A geometry change on partial reset is refused; ``rebuild(specs)`` repacks and recaptures.
+"""
+import functools
+import hashlib
+import time
+import weakref
+from pathlib import Path
+
+import numpy as np
+import warp as wp
+
+from . import constitutive, layout, particle_contacts
+from .diagnostics import SegmentedDiagnostics
+from .errors import UnsupportedBatchConfiguration
+from .pose_interp import _fma, _mul
+from .tlmpm_v7_2_batch import BatchedTLMPMv7_2
+
+RUNTIME = "rl_gpu_headless"
+MATERIAL_BATCH_VERSION = "batched_cutting_material_v1"
+BACKEND = "kinematic_ideal_tracking_batched"
+LAB_BACKEND = "isaac_lab_newton"
+BACKENDS = (BACKEND, LAB_BACKEND)
+# Receipt label of the coupling per backend. The backend changes validation and labels only, never physics:
+# both run the same pose_interp -> 200-substep graph -> wrench path on the measured edge pose they are given.
+COUPLING_LABELS = {BACKEND: "kinematic_ideal_tracking_measured_edge",
+                   LAB_BACKEND: "isaac_lab_newton_measured_edge_and_pads_v1"}
+INVALID_NONFINITE_STATE = 1
+INVALID_SLOT_OVERFLOW = 2
+INVALID_POSE = 4
+INVALID_CUT_DIGIT = 8
+INVALID_NONFINITE_WRENCH = 16
+INVALID_OBSTACLE_BOXES = 32
+# alias_free_v1 only (P1-3a): the particle-contact speed certificate failed in some substep (frozen fallback ran
+# for that env in "fallback" mode; no parity claim in "flag" mode).
+INVALID_CONTACT_SPEED_GUARD = 64
+# P1-1b B2 follow-up (material_input_domain_v1). Was 64 on branch claude/rl-b2-grasp; moved to 128 at the merge
+# into the integration branch because P1-3a already uses 64 (raw rows of that branch record 64).
+INVALID_INPUT_DOMAIN = 128
+# Review fix F1 (device_hashgrid_census_v1): another CUDA wp.HashGrid was alive, or built on the host, when this
+# batch launched a control step. The batch's own physics is protected by the descriptor refresh before every
+# launch; the bit marks the process as multi-grid (unsupported; another grid's graph may replay this batch's
+# descriptor). Set for every env of a guarded batch (not with allow_multiple_device_hashgrids=True). Was 128 on
+# branch claude/rl-review-fix1; moved to 256 at the merge because INPUT_OUT_OF_DOMAIN already uses 128.
+INVALID_FOREIGN_DEVICE_HASHGRID = 256
+INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_SLOT_OVERFLOW: "SLOT_OVERFLOW",
+                   INVALID_POSE: "INVALID_MEASURED_POSE", INVALID_CUT_DIGIT: "INVALID_CUT_DIGIT",
+                   INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH", INVALID_OBSTACLE_BOXES: "INVALID_OBSTACLE_BOXES",
+                   INVALID_CONTACT_SPEED_GUARD: "CONTACT_SPEED_GUARD", INVALID_INPUT_DOMAIN: "INPUT_OUT_OF_DOMAIN",
+                   INVALID_FOREIGN_DEVICE_HASHGRID: "FOREIGN_DEVICE_HASHGRID"}
+# Valid domain of the rigid-tool input of one control step (P1-1b B2 follow-up). An edge pose or pad box outside it
+# (a lost grasp swinging or ejecting the tool, a teleport, a non-finite or oversized box) gets INPUT_OUT_OF_DOMAIN
+# and, like an invalid measured pose or invalid boxes, from then on until its reset the env's substep inputs are
+# HELD: blade at the last in-domain substep pose with zero twist, cut disarmed, pads at the last in-domain boxes.
+# The hold is written on the device before the substep graph (no host sync, no recapture); other envs are not
+# touched. Limits: the edge within 1.5 m of the workpiece frame origin (the Franka reach of 0.855 m from a base
+# 0.47 m from the workcell origin is under 1.33 m); per-control-step edge speed below twice the Franka Panda
+# Cartesian limits (1.7 m/s, 2.5 rad/s); pad box centres within 0.5 m of the edge and half extents in (0, 0.25] m
+# (the measured pads: 0.096 m / 0.03 m). Measured S3 inputs: B1 0.17 m/s, 0.9 rad/s; B2 after a lost grasp
+# 0.59 m/s, 8.7 rad/s (P1-1b B2 report).
+INPUT_DOMAIN_VERSION = "material_input_domain_v1"
+INPUT_DOMAIN = {"max_edge_distance_m": 1.5, "max_edge_speed_m_s": 3.4, "max_edge_angular_speed_rad_s": 5.0,
+                "max_box_center_m": .5, "max_box_half_m": .25}
+HOLD_LATCH = INVALID_POSE | INVALID_OBSTACLE_BOXES | INVALID_INPUT_DOMAIN
+
+BATCHED_SOURCES = ("material_batch.py", "pose_interp.py", "diagnostics.py", "errors.py", "layout.py",
+                   "constitutive.py", "tlmpm_v7_2_batch.py", "particle_contacts.py")
+INTERPOLATION_LABELS = {"host_reference": "host_reference_frozen_scipy_parity_only", "preset": "preset_written_by_caller"}
+
+
+def batched_source_sha256():
+    """SHA256 of every batched-runtime source a material result depends on (receipts)."""
+    here = Path(__file__).resolve().parent
+    return {name: hashlib.sha256((here/name).read_bytes()).hexdigest() for name in BATCHED_SOURCES}
+
+
+# ---- reset coverage (ADR §6; tested by tests/test_batched_partial_reset.py over vars())
+# Solver arrays restored by reset() to their freshly packed values.
+SOLVER_RESET_ARRAYS = (
+    "x", "v", "x_start", "impulse", "stress", "F", "Fpi", "plastic", "progress", "contact_work", "code",
+    "link_codes", "link_velocity_start", "front_crossings", "front_reached", "pending_q", "pending_cut", "slot",
+    "slot_code", "gm", "gp", "gj", "old", "new_v",
+    "edge_flags", "segment_ok", "segment_plow", "stroke_engaged", "stroke_any_motion", "stroke", "stroke_travel",
+    "box_centers", "box_halves", "box_reactions", "slot_overflow", "slot_max_occupied", "previous_cut", "reaction",
+    "poses", "twists", "cuts", "previous_pose", "link_previous_pose", "link_diagnostics",
+    "stats_sum", "stats_max", "contact_totals_sum", "contact_totals_max")
+# Solver arrays that never change after packing (geometry, stencil, CSR, parameters, tables).
+SOLVER_CONSTANT_ARRAYS = (
+    "reference", "mass", "nodes", "weights", "gradients", "link_offsets", "link_neighbours", "profile",
+    "fixture_centers", "fixture_halves", "fixture_plane", "fixture_offset", "params", "env_of_particle",
+    "particle_offset", "node_offset", "env_of_node")
+# Shared lockstep substep counter: zeroed before every control step (and by a full reset).
+SOLVER_SHARED_ARRAYS = ("index",)
+# Material arrays restored by reset().
+MATERIAL_RESET_ARRAYS = ("pending_wrench", "applied_previous", "pad_wrench", "step_count", "seed", "last_pose",
+                         "measured_pose", "cut_input", "pose_status", "invalid_reason",
+                         "hold_pose", "hold_box_centers", "hold_box_halves")
+# Material constants and reset tables.
+MATERIAL_CONSTANT_ARRAYS = ("R_world_local", "T_local_world", "q_local_world", "recipients",
+                            "initial_local_pose", "initial_previous_pose", "initial_link_previous_pose",
+                            "initial_box_centers", "initial_box_halves", "initial_measured_pose", "initial_seed")
+# Scratch written before every read: in every control step (invalid_count, actual_pose) or in every
+# set_obstacle_boxes call (box_input, box_mask staging for host inputs).
+RECOMPUTED_EVERY_CONTROL_STEP = ("invalid_count", "actual_pose", "box_input", "box_mask")
+# Inputs of reset_masked(): written by reset() (or by a caller through device views) right before it, read
+# only by it, never by a control step. They keep the last reset's values (not a fresh-pack value).
+RESET_INPUTS = ("reset_mask", "reset_seed")
+DIAGNOSTICS_SCRATCH = ("partials", "summary")
+# alias_free_v1 with a speed guard only (P1-3a): solver arrays restored by reset(), and the shared substep flag
+# that is zero between substeps.
+CONTACT_GUARD_RESET_ARRAYS = ("contact_guard_flag", "contact_guard_violations")
+CONTACT_GUARD_SCRATCH = ("contact_guard_any",)
+
+
+# ----------------------------------------------------------------------------- kernels
+
+vec6d = wp.types.vector(length=6, dtype=wp.float64)
+
+
+@wp.func
+def _rotate(R: wp.mat33d, a: wp.float64, b: wp.float64, c: wp.float64, row: int):
+    """Row ``row`` of ``scene_frames.rotate_wrench_at_same_point``: ``w[:3] @ R.T`` is a NumPy (3,)@(3,3)
+    product whose host BLAS order is ``fma(c,R2, fma(a,R0, b*R1))`` (the same dgemv order as
+    ``transform_points``; asserted on the test machine by tests/test_batched_coupling.py). Exact IEEE ops
+    (no compiler contraction) make the result bitwise equal to the frozen host for any rotation."""
+    return _fma(c, R[row, 2], _fma(a, R[row, 0], _mul(b, R[row, 1])))
+
+
+@wp.kernel
+def _wrench_b(reaction: wp.array(dtype=wp.spatial_vector), box_reactions: wp.array(dtype=wp.spatial_vector),
+              rotation: wp.array(dtype=wp.mat33d), recipients: wp.array(dtype=int), boxes: int,
+              control_dt: wp.float64, feedback: int, pending: wp.array2d(dtype=wp.float64),
+              applied_previous: wp.array2d(dtype=wp.float64), pad: wp.array3d(dtype=wp.float64)):
+    """live_material.advance wrench handoff (live_material.py:353-374) for env e, in float64."""
+    e = wp.tid()
+    R = rotation[e]
+    r = reaction[e]
+    w = vec6d()
+    for k in range(3):
+        w[k] = _rotate(R, wp.float64(r[0]), wp.float64(r[1]), wp.float64(r[2]), k)
+        w[3+k] = _rotate(R, wp.float64(r[3]), wp.float64(r[4]), wp.float64(r[5]), k)
+    for b in range(boxes):
+        if recipients[b] != 0:
+            q = box_reactions[e*boxes+b]
+            for k in range(3):
+                value = _rotate(R, wp.float64(q[0]), wp.float64(q[1]), wp.float64(q[2]), k)
+                torque = _rotate(R, wp.float64(q[3]), wp.float64(q[4]), wp.float64(q[5]), k)
+                w[k] = w[k]-value
+                w[3+k] = w[3+k]-torque
+                pad[e, b, k] = value/control_dt
+                pad[e, b, 3+k] = torque/control_dt
+        else:
+            for k in range(6):
+                pad[e, b, k] = wp.float64(0.0)
+    for k in range(6):
+        previous = pending[e, k]
+        if feedback == 0:
+            previous = wp.float64(0.0)
+        applied_previous[e, k] = previous
+        pending[e, k] = w[k]/control_dt
+
+
+@wp.kernel
+def _validity_b(summary: wp.array2d(dtype=float), slot_overflow: wp.array(dtype=int),
+                pose_status: wp.array(dtype=wp.int32), cut_input: wp.array(dtype=wp.int32), max_cuts: int,
+                pending: wp.array2d(dtype=wp.float64), invalid_reason: wp.array(dtype=int),
+                invalid_count: wp.array(dtype=int)):
+    e = wp.tid()
+    reason = int(0)
+    if summary[e, 0] != 0.0:
+        reason = reason | 1
+    if slot_overflow[e] > 0:
+        reason = reason | 2
+    if pose_status[e] != 0:
+        reason = reason | 4
+    if cut_input[e] < -1 or cut_input[e] >= max_cuts:
+        reason = reason | 8
+    for k in range(6):
+        if not wp.isfinite(pending[e, k]):
+            reason = reason | 16
+    reason = reason | invalid_reason[e]
+    invalid_reason[e] = reason
+    if reason != 0:
+        wp.atomic_add(invalid_count, 0, 1)
+
+
+@wp.kernel
+def _set_boxes(boxes: wp.array4d(dtype=wp.float32), mask: wp.array(dtype=int), use_mask: int, nboxes: int,
+               centers: wp.array(dtype=wp.vec3), halves: wp.array(dtype=wp.vec3),
+               invalid_reason: wp.array(dtype=int), flag: int):
+    """``LiveCuttingMaterial.update_pad_obstacles`` for env e: ``box_centers/halves = boxes[e, :, 0/1]`` (float32).
+    An env whose boxes are not finite with positive half extents (the frozen refusal) keeps its boxes and is
+    flagged instead."""
+    e = wp.tid()
+    if use_mask != 0:
+        if mask[e] == 0:
+            return
+    ok = int(1)
+    for b in range(nboxes):
+        for k in range(3):
+            if not (wp.isfinite(boxes[e, b, 0, k]) and wp.isfinite(boxes[e, b, 1, k])) or boxes[e, b, 1, k] <= 0.0:
+                ok = 0
+    if ok == 0:
+        invalid_reason[e] = invalid_reason[e] | flag
+        return
+    for b in range(nboxes):
+        centers[e*nboxes+b] = wp.vec3(boxes[e, b, 0, 0], boxes[e, b, 0, 1], boxes[e, b, 0, 2])
+        halves[e*nboxes+b] = wp.vec3(boxes[e, b, 1, 0], boxes[e, b, 1, 1], boxes[e, b, 1, 2])
+
+
+@wp.kernel
+def _check_boxes(nboxes: int, centers: wp.array(dtype=wp.vec3), halves: wp.array(dtype=wp.vec3),
+                 invalid_reason: wp.array(dtype=int), flag: int):
+    """Before the substeps: flag envs whose boxes (possibly written in place by a backend) are not finite
+    with positive half extents (the frozen ``update_pad_obstacles`` refusal)."""
+    e = wp.tid()
+    ok = int(1)
+    for b in range(nboxes):
+        c = centers[e*nboxes+b]
+        h = halves[e*nboxes+b]
+        for k in range(3):
+            if not (wp.isfinite(c[k]) and wp.isfinite(h[k])) or h[k] <= 0.0:
+                ok = 0
+    if ok == 0:
+        invalid_reason[e] = invalid_reason[e] | flag
+
+
+@wp.kernel
+def _mask_from_bool(mask: wp.array(dtype=wp.bool), seed: wp.array(dtype=wp.int64), out: wp.array(dtype=int),
+                    reset_seed: wp.array(dtype=wp.int64)):
+    e = wp.tid()
+    out[e] = 0
+    if mask[e]:
+        out[e] = 1
+    reset_seed[e] = seed[e]
+
+
+@wp.kernel
+def _mask_from_int(mask: wp.array(dtype=wp.int32), seed: wp.array(dtype=wp.int64), out: wp.array(dtype=int),
+                   reset_seed: wp.array(dtype=wp.int64)):
+    e = wp.tid()
+    out[e] = 0
+    if mask[e] != 0:
+        out[e] = 1
+    reset_seed[e] = seed[e]
+
+
+@wp.kernel
+def _input_domain_b(pose_status: wp.array(dtype=wp.int32), last_pose: wp.array2d(dtype=wp.float64),
+                    actual: wp.array2d(dtype=wp.float64), T_local_world: wp.array(dtype=wp.mat44d),
+                    control_dt: wp.float64, max_distance: wp.float64, max_speed: wp.float64,
+                    max_angular_speed: wp.float64, nboxes: int, centers: wp.array(dtype=wp.vec3),
+                    halves: wp.array(dtype=wp.vec3), max_center: float, max_half: float, T: int,
+                    poses: wp.array(dtype=wp.transform), twists: wp.array(dtype=wp.spatial_vector),
+                    cuts: wp.array(dtype=int), hold_pose: wp.array(dtype=wp.transform),
+                    hold_centers: wp.array(dtype=wp.vec3), hold_halves: wp.array(dtype=wp.vec3),
+                    invalid_reason: wp.array(dtype=int), latch: int, flag: int):
+    """dim = N, after the pose interpolation and before the substeps (see INPUT_DOMAIN). An in-domain env only
+    records its hold state (last substep pose, boxes); its solver inputs are not touched."""
+    e = wp.tid()
+    out = int(0)
+    if pose_status[e] == wp.int32(0):
+        d = wp.float64(0.0)
+        for k in range(3):
+            d = d+(actual[e, k]-last_pose[e, k])*(actual[e, k]-last_pose[e, k])
+        if not (wp.sqrt(d) <= max_speed*control_dt):
+            out = 1
+        qa = wp.vec4d(last_pose[e, 3], last_pose[e, 4], last_pose[e, 5], last_pose[e, 6])
+        qb = wp.vec4d(actual[e, 3], actual[e, 4], actual[e, 5], actual[e, 6])
+        c = wp.abs(wp.dot(qa, qb))/wp.sqrt(wp.dot(qa, qa)*wp.dot(qb, qb))
+        angle = wp.float64(2.0)*wp.acos(wp.min(c, wp.float64(1.0)))
+        if not (angle <= max_angular_speed*control_dt):
+            out = 1
+        M = T_local_world[e]
+        r = wp.float64(0.0)
+        for i in range(3):
+            pl = M[i, 0]*actual[e, 0]+M[i, 1]*actual[e, 1]+M[i, 2]*actual[e, 2]+M[i, 3]
+            r = r+pl*pl
+        if not (wp.sqrt(r) <= max_distance):
+            out = 1
+    for b in range(nboxes):
+        cb = centers[e*nboxes+b]
+        hb = halves[e*nboxes+b]
+        if not (wp.length(cb) <= max_center):
+            out = 1
+        for k in range(3):
+            if not (hb[k] > 0.0 and hb[k] <= max_half):
+                out = 1
+    if out != 0:
+        invalid_reason[e] = invalid_reason[e] | flag
+    if out != 0 or pose_status[e] != wp.int32(0) or (invalid_reason[e] & latch) != 0:
+        held = hold_pose[e]
+        for k in range(T):
+            poses[e*T+k] = held
+            twists[e*T+k] = wp.spatial_vector()
+            cuts[e*T+k] = -1
+        for b in range(nboxes):
+            centers[e*nboxes+b] = hold_centers[e*nboxes+b]
+            halves[e*nboxes+b] = hold_halves[e*nboxes+b]
+    else:
+        hold_pose[e] = poses[e*T+T-1]
+        for b in range(nboxes):
+            hold_centers[e*nboxes+b] = centers[e*nboxes+b]
+            hold_halves[e*nboxes+b] = halves[e*nboxes+b]
+
+
+@wp.kernel
+def _reset_hold(mask: wp.array(dtype=int), nboxes: int, initial_local_pose: wp.array(dtype=wp.transform),
+                initial_centers: wp.array(dtype=wp.vec3), initial_halves: wp.array(dtype=wp.vec3),
+                hold_pose: wp.array(dtype=wp.transform), hold_centers: wp.array(dtype=wp.vec3),
+                hold_halves: wp.array(dtype=wp.vec3)):
+    e = wp.tid()
+    if mask[e] != 0:
+        hold_pose[e] = initial_local_pose[e]
+        for b in range(nboxes):
+            hold_centers[e*nboxes+b] = initial_centers[e*nboxes+b]
+            hold_halves[e*nboxes+b] = initial_halves[e*nboxes+b]
+
+
+@wp.kernel
+def _flag_all_envs_b(invalid_reason: wp.array(dtype=int), flag: int):
+    """Review fix F1: OR a batch-level flag into every env's sticky ``invalid_reason`` (launched only on detection)."""
+    e = wp.tid()
+    invalid_reason[e] = invalid_reason[e] | flag
+
+
+@wp.kernel
+def _finish_control_step(step_count: wp.array(dtype=wp.int64), last_pose: wp.array2d(dtype=wp.float64),
+                         actual_pose: wp.array2d(dtype=wp.float64)):
+    """``LiveCuttingMaterial.advance``: ``self.last_pose = actual`` (= ``validate_pose(measured)``)."""
+    e = wp.tid()
+    step_count[e] = step_count[e]+wp.int64(1)
+    for k in range(7):
+        last_pose[e, k] = actual_pose[e, k]
+
+
+@wp.kernel
+def _reset_particles(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int),
+                     reference: wp.array(dtype=wp.vec3), x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
+                     x_start: wp.array(dtype=wp.vec3), impulse: wp.array(dtype=wp.vec3),
+                     link_velocity_start: wp.array(dtype=wp.vec3), stress: wp.array(dtype=wp.mat33),
+                     F: wp.array(dtype=wp.mat33), progress: wp.array(dtype=float),
+                     contact_work: wp.array(dtype=float), code: wp.array(dtype=int), link_codes: wp.array(dtype=int),
+                     front_crossings: wp.array(dtype=int), front_reached: wp.array(dtype=int),
+                     pending_q: wp.array(dtype=int), pending_cut: wp.array(dtype=int)):
+    """Freshly constructed single-solver values (tlmpm_v5.py:769-786, tlmpm_v7.py:250-254, tlmpm_v7_1.py:161-167)."""
+    p = wp.tid()
+    if mask[env_of_particle[p]] != 0:
+        x[p] = reference[p]
+        v[p] = wp.vec3(0.0)
+        x_start[p] = wp.vec3(0.0)
+        impulse[p] = wp.vec3(0.0)
+        link_velocity_start[p] = wp.vec3(0.0)
+        stress[p] = wp.mat33(0.0)
+        F[p] = wp.identity(n=3, dtype=float)
+        progress[p] = 0.0
+        contact_work[p] = 0.0
+        code[p] = 0
+        link_codes[p] = 0
+        front_crossings[p] = 0
+        front_reached[p] = 0
+        pending_q[p] = -1
+        pending_cut[p] = -1
+
+
+@wp.kernel
+def _reset_slots(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int), slot: wp.array2d(dtype=int)):
+    p, corner = wp.tid()
+    if mask[env_of_particle[p]] != 0:
+        slot[p, corner] = 0
+
+
+@wp.kernel
+def _reset_state_mat33_identity(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int),
+                                values: wp.array(dtype=wp.mat33)):
+    p = wp.tid()
+    if mask[env_of_particle[p]] != 0:
+        values[p] = wp.identity(n=3, dtype=float)
+
+
+@wp.kernel
+def _reset_state_float_zero(mask: wp.array(dtype=int), env_of_particle: wp.array(dtype=int),
+                            values: wp.array(dtype=float)):
+    p = wp.tid()
+    if mask[env_of_particle[p]] != 0:
+        values[p] = 0.0
+
+
+@wp.kernel
+def _reset_node_slots(mask: wp.array(dtype=int), env_of_node: wp.array(dtype=int), slots: int,
+                      slot_code: wp.array(dtype=int), gm: wp.array(dtype=float), gp: wp.array(dtype=wp.vec3),
+                      gj: wp.array(dtype=wp.vec3), old: wp.array(dtype=wp.vec3), new_v: wp.array(dtype=wp.vec3)):
+    i = wp.tid()
+    if mask[env_of_node[i/slots]] != 0:
+        slot_code[i] = -1
+        gm[i] = 0.0
+        gp[i] = wp.vec3(0.0)
+        gj[i] = wp.vec3(0.0)
+        old[i] = wp.vec3(0.0)
+        new_v[i] = wp.vec3(0.0)
+
+
+@wp.kernel
+def _reset_envs(mask: wp.array(dtype=int), segments: int, boxes: int, T: int,
+                edge_flags: wp.array(dtype=int), segment_ok: wp.array(dtype=int), segment_plow: wp.array(dtype=int),
+                stroke_engaged: wp.array(dtype=int), stroke_any_motion: wp.array(dtype=int),
+                stroke: wp.array(dtype=int), stroke_travel: wp.array(dtype=float),
+                box_centers: wp.array(dtype=wp.vec3), box_halves: wp.array(dtype=wp.vec3),
+                box_reactions: wp.array(dtype=wp.spatial_vector), initial_box_centers: wp.array(dtype=wp.vec3),
+                initial_box_halves: wp.array(dtype=wp.vec3), slot_overflow: wp.array(dtype=int),
+                slot_max_occupied: wp.array(dtype=int), previous_cut: wp.array(dtype=int),
+                reaction: wp.array(dtype=wp.spatial_vector), poses: wp.array(dtype=wp.transform),
+                twists: wp.array(dtype=wp.spatial_vector), cuts: wp.array(dtype=int),
+                initial_local_pose: wp.array(dtype=wp.transform), previous_pose: wp.array(dtype=wp.transform),
+                initial_previous_pose: wp.array(dtype=wp.transform),
+                link_previous_pose: wp.array(dtype=wp.transform),
+                initial_link_previous_pose: wp.array(dtype=wp.transform), link_diagnostics: wp.array(dtype=int),
+                stats_sum: wp.array(dtype=float), stats_max: wp.array(dtype=float), stats_width: int,
+                totals_sum: wp.array(dtype=wp.float64), totals_max: wp.array(dtype=wp.float64), totals_width: int,
+                pending_wrench: wp.array2d(dtype=wp.float64), applied_previous: wp.array2d(dtype=wp.float64),
+                pad_wrench: wp.array3d(dtype=wp.float64), step_count: wp.array(dtype=wp.int64),
+                seed: wp.array(dtype=wp.int64), reset_seed: wp.array(dtype=wp.int64),
+                last_pose: wp.array2d(dtype=wp.float64), measured_pose: wp.array2d(dtype=wp.float64),
+                initial_measured_pose: wp.array2d(dtype=wp.float64), cut_input: wp.array(dtype=wp.int32),
+                pose_status: wp.array(dtype=wp.int32), invalid_reason: wp.array(dtype=int)):
+    """Per-env state of a freshly packed env (live_material.py:276-277 trajectory tile, tlmpm_v5.py:756-797)."""
+    e = wp.tid()
+    if mask[e] == 0:
+        return
+    for k in range(segments):
+        edge_flags[e*segments+k] = 0
+        segment_ok[e*segments+k] = 0
+        segment_plow[e*segments+k] = 0
+    stroke_engaged[e] = 0
+    stroke_any_motion[e] = 0
+    stroke[e] = 0
+    stroke_travel[e] = 0.0
+    for b in range(boxes):
+        box_centers[e*boxes+b] = initial_box_centers[e*boxes+b]
+        box_halves[e*boxes+b] = initial_box_halves[e*boxes+b]
+        box_reactions[e*boxes+b] = wp.spatial_vector()
+    slot_overflow[e] = 0
+    slot_max_occupied[e] = 0
+    previous_cut[e] = -1
+    reaction[e] = wp.spatial_vector()
+    for k in range(T):
+        poses[e*T+k] = initial_local_pose[e]
+        twists[e*T+k] = wp.spatial_vector()
+        cuts[e*T+k] = -1
+    previous_pose[e] = initial_previous_pose[e]
+    link_previous_pose[e] = initial_link_previous_pose[e]
+    link_diagnostics[e*2+0] = 0
+    link_diagnostics[e*2+1] = 0
+    for k in range(stats_width):
+        stats_sum[e*stats_width+k] = 0.0
+        stats_max[e*stats_width+k] = 0.0
+    for k in range(totals_width):
+        totals_sum[e*totals_width+k] = wp.float64(0.0)
+        totals_max[e*totals_width+k] = wp.float64(0.0)
+    for k in range(6):
+        pending_wrench[e, k] = wp.float64(0.0)
+        applied_previous[e, k] = wp.float64(0.0)
+        for b in range(boxes):
+            pad_wrench[e, b, k] = wp.float64(0.0)
+    step_count[e] = wp.int64(0)
+    seed[e] = reset_seed[e]
+    for k in range(7):
+        last_pose[e, k] = initial_measured_pose[e, k]
+        measured_pose[e, k] = initial_measured_pose[e, k]
+    cut_input[e] = -1
+    pose_status[e] = 0
+    invalid_reason[e] = 0
+
+
+# ----------------------------------------------------------------------------- device HashGrid guard
+
+DEVICE_HASHGRID_GUARD = "single_device_hashgrid_per_process_v1"
+# Review fix F1 (2480dc2 review): every control step rebuilds the batch's OWN grid on the host right before the graph
+# launch (or the eager substeps), so the function-static descriptor a captured build copies at replay time is this
+# batch's, whatever grid was built on the host before. alias_free_v1 did this since P1-3a (restore_descriptor);
+# frozen_v1 now does the same with the identical build call of its substep (no kernel or graph change).
+DEVICE_HASHGRID_REFRESH = "host_rebuild_before_every_launch_v1"
+# Review fix F1: per-step detection of other grids without a device sync (Python census, see _install_grid_census).
+DEVICE_HASHGRID_CENSUS = "device_hashgrid_census_v1"
+_REBUILD_EXEMPT_GRIDS = []   # grids of a material being replaced by rebuild() (dropped right after)
+_GRID_CENSUS = weakref.WeakSet()   # every wp.HashGrid created (or found by a gc scan) since this module was imported
+_LAST_HOST_BUILD = {"grid": None, "builds": 0}   # weakref to the grid of the last HashGrid.build() call, call count
+
+
+def _install_grid_census():
+    """Wrap ``wp.HashGrid.__init__``/``build`` once per process with pure bookkeeping (no Warp behaviour change):
+    new grids join ``_GRID_CENSUS`` (weak) and each host-side ``build`` call records its grid as the last built. The
+    per-step check then costs a few Python operations and no device sync. Grids created before this module was
+    imported are found by the construction-time gc scan and added to the census there."""
+    cls = wp.HashGrid
+    if getattr(cls, "_rcs_grid_census", None) == DEVICE_HASHGRID_CENSUS:
+        return
+    init, build = cls.__init__, cls.build
+
+    @functools.wraps(init)
+    def __init__(self, *args, **kwargs):
+        init(self, *args, **kwargs)
+        _GRID_CENSUS.add(self)
+
+    @functools.wraps(build)
+    def build_(self, *args, **kwargs):
+        out = build(self, *args, **kwargs)
+        _LAST_HOST_BUILD["grid"] = weakref.ref(self)
+        _LAST_HOST_BUILD["builds"] += 1
+        return out
+
+    cls.__init__, cls.build, cls._rcs_grid_census = __init__, build_, DEVICE_HASHGRID_CENSUS
+
+
+_install_grid_census()
+
+
+def _guard_applies(device):
+    return wp.get_device(device).is_cuda
+
+
+def _is_device_grid(grid):
+    return getattr(grid, "device", None) is not None and grid.device.is_cuda
+
+
+def live_device_hashgrids():
+    """Every live ``wp.HashGrid`` of this process that counts for the guard (CUDA grids; gc scan)."""
+    import gc
+    import warnings
+    gc.collect()
+    with warnings.catch_warnings():   # isinstance() on some torch objects warns (review note N6); harmless here
+        warnings.simplefilter("ignore", FutureWarning)
+        grids = [o for o in gc.get_objects() if isinstance(o, wp.HashGrid) and getattr(o, "id", None)
+                 and _is_device_grid(o)]
+    for grid in grids:   # grids created before the census hooks were installed
+        _GRID_CENSUS.add(grid)
+    return grids
+
+
+def foreign_device_hashgrids(own):
+    """Census check at step time (no gc scan, no device sync): other live grids that count for the guard, and
+    whether the last host-side ``HashGrid.build`` of the process was of another such grid."""
+    live = [g for g in list(_GRID_CENSUS) if g is not own and getattr(g, "id", None) and _is_device_grid(g)
+            and not any(g is x for x in _REBUILD_EXEMPT_GRIDS)]
+    ref = _LAST_HOST_BUILD["grid"]
+    last = ref() if ref is not None else None
+    foreign_last_build = last is not None and last is not own and _is_device_grid(last)
+    return live, foreign_last_build
+
+
+def check_single_device_hashgrid(own=None):
+    """Refuse a second live CUDA HashGrid in the process (``UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS``).
+
+    Warp 1.17.0 ``hash_grid_update_device_impl`` copies the grid descriptor from one function-static host
+    variable inside the captured graph, so a replayed graph uses the descriptor of the grid built LAST on the
+    host in the process, not its own (P1-3a, ``probe_hashgrid_descriptor.py``). With two device grids every graph
+    but the last-built one runs particle contacts against the wrong grid. ``own`` (this material's grid) and
+    grids being replaced by ``rebuild()`` are exempt. Host (CPU) grids have no such static and are not counted.
+    A device grid created AFTER this check (e.g. a frozen single LiveCuttingMaterial on CUDA built later) is not
+    refused here; review fix F1 covers it at step time: ``advance()`` rebuilds the batch's own grid on the host
+    before every launch (``DEVICE_HASHGRID_REFRESH``, so the batch never replays a foreign descriptor) and checks the
+    census (``foreign_device_hashgrids``), setting the sticky ``FOREIGN_DEVICE_HASHGRID`` bit and the receipt."""
+    others = [g for g in live_device_hashgrids()
+              if g is not own and not any(g is x for x in _REBUILD_EXEMPT_GRIDS)]
+    if others:
+        raise UnsupportedBatchConfiguration(
+            "UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS",
+            f"{len(others)} other live CUDA wp.HashGrid(s) in this process; Warp 1.17 graph replay would use the "
+            "last-built grid's descriptor (one batch or single material per process, or release the other first)")
+    return True
+
+
+# ----------------------------------------------------------------------------- material
+
+class InvalidBatchEnvs(FloatingPointError):
+    """Strict mode: some envs became invalid in the last control step (ids and reasons attached)."""
+
+    def __init__(self, env_ids, reasons):
+        self.env_ids, self.reasons = list(env_ids), dict(reasons)
+        super().__init__(f"Invalid batched envs {self.env_ids}: {self.reasons}")
+
+
+def decode_reason(value):
+    return [name for bit, name in INVALID_REASONS.items() if int(value) & bit]
+
+
+class BatchedCuttingMaterial:
+    """N independent v7_2 cutting materials in one process (ADR 0021 §6-7). See the module docstring.
+
+    ``specs``: ``layout.EnvSpec`` list (un-reset ``LiveCuttingMaterial`` on device 'cpu', initial measured edge
+    pose in WORLD, seed). ``device``: the batch device; ``"cpu"`` only with ``parity_mode=True`` (tests).
+    ``strict``: raise ``InvalidBatchEnvs`` after a control step that left any env invalid (one int32 read);
+    ``strict=False`` (training) only records ``invalid_reason`` for the caller to terminate those envs.
+    ``backend``: ``"kinematic_ideal_tracking_batched"`` (workload A) or ``"isaac_lab_newton"`` (workload B, ADR 0022:
+    requires handle + two pad recipients; the robot path writes ``box_centers/box_halves`` in place, calls
+    ``set_measured_poses`` with device arrays, ``advance()`` and ``reset_masked(mask)``, and reads
+    ``pending_wrench``/``pad_wrench`` in place). The backend changes validation and receipt labels only."""
+    runtime = RUNTIME
+
+    def __init__(self, specs, *, device="cuda:0", parity_mode=False, strict=True, capture_graph=None,
+                 backend=BACKEND, cameras=None, recorders=None, sensors=None,
+                 constitutive_model=constitutive.DEFAULT_MODEL_ID,
+                 particle_contact_mode=particle_contacts.DEFAULT_MODE, particle_contact_options=None,
+                 allow_multiple_device_hashgrids=False):
+        if backend not in BACKENDS:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_BACKEND", f"{backend!r}; supported {BACKENDS}")
+        self.backend = backend
+        if cameras or sensors:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_SENSOR", f"cameras={cameras!r} sensors={sensors!r}")
+        if recorders:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_RECORDER", f"recorders={recorders!r}")
+        device = str(wp.get_device(device))
+        if device == "cpu" and not parity_mode:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_CPU_WITHOUT_PARITY_MODE",
+                                                "device='cpu' is for parity tests (parity_mode=True)")
+        self.device, self.parity_mode, self.strict = device, bool(parity_mode), bool(strict)
+        self.capture_graph = wp.get_device(device).is_cuda if capture_graph is None else bool(capture_graph)
+        self.constitutive_model = constitutive_model
+        self.allow_multiple_device_hashgrids = bool(allow_multiple_device_hashgrids)
+        # P1-3a: "frozen_v1" (default, rollback) or "alias_free_v1" with sub-flag options (particle_contacts.py).
+        self.particle_contact_mode = particle_contact_mode
+        self.particle_contact_options = None if particle_contact_options is None else dict(particle_contact_options)
+        self.particle_contact_config = particle_contacts.resolve(particle_contact_mode, self.particle_contact_options)
+        self._build(specs)
+
+    # ------------------------------------------------------------------ construction
+
+    def _build(self, specs):
+        from .pose_interp import POSE_INTERPOLATION_VERSION, local_frames
+        start = time.perf_counter()
+        specs = list(specs)
+        if self.backend == LAB_BACKEND:
+            for e, spec in enumerate(specs):
+                recipients = spec.material.obstacle_reaction_recipients
+                if recipients is None or len(recipients) != 3 or recipients[0] is not None or None in recipients[1:]:
+                    raise UnsupportedBatchConfiguration(
+                        "UNSUPPORTED_MATERIAL_COUPLING", f"env {e}: {LAB_BACKEND} needs the handle box plus two "
+                        "finger-pad recipients (LiveCuttingMaterial.configure_pad_obstacles), ADR 0022 §5.2")
+        self.specs_feedback = [bool(s.material.config.feedback) for s in specs]
+        if any(f != self.specs_feedback[0] for f in self.specs_feedback):
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_NONUNIFORM_BATCH", "coupling feedback differs")
+        self.packed = layout.pack(specs, constitutive_model=self.constitutive_model)
+        pk = self.packed
+        if not all(s.material.cut_event_recorder is None for s in specs):
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_RECORDER", "cut_events recorder attached")
+        self.control_dt = float(pk.uniform["control_dt"])
+        self.feedback = self.specs_feedback[0]
+        self.pose_interpolation_kernel = POSE_INTERPOLATION_VERSION
+        self.interpolation_steps = {"device": 0, "host_reference": 0, "preset": 0}
+        self.num_envs = pk.num_envs
+        guarded = _guard_applies(self.device) and not self.allow_multiple_device_hashgrids
+        if guarded:
+            check_single_device_hashgrid()
+        self.solver = BatchedTLMPMv7_2(pk, self.device, particle_contact=self.particle_contact_config)
+        s = self.solver
+        self.device_hashgrid_guard = (DEVICE_HASHGRID_GUARD if guarded else "disabled"
+                                      if self.allow_multiple_device_hashgrids else "not_applicable_host_grid")
+        if _guard_applies(self.device) and not guarded:
+            live_device_hashgrids()   # opt-out: no refusal, but seed the census for the step-time check
+        self.descriptor_refreshes = 0
+        self.foreign_hashgrid = None   # sticky per-batch record of the step-time census (review fix F1)
+        N, B = self.num_envs, s.boxes
+        recipients = pk.uniform["recipients"]
+        recipient_mask = np.zeros(B, np.int32)
+        if recipients is not None:
+            recipient_mask[:len(recipients)] = [r is not None for r in recipients]
+        T_world_local = pk.env["T_world_local"]
+        from ..scene_frames import invert_transform
+        T_local_world = np.stack([invert_transform(m) for m in T_world_local])
+        with wp.ScopedDevice(self.device):
+            s.env_of_node = wp.array(np.repeat(np.arange(N, dtype=np.int32), pk.node_counts), dtype=int)
+            self.R_world_local = wp.array(np.ascontiguousarray(T_world_local[:, :3, :3]), dtype=wp.mat33d)
+            self.T_local_world, self.q_local_world = local_frames(T_local_world, device=self.device)
+            self.recipients = wp.array(recipient_mask, dtype=int)
+            self.pending_wrench = wp.zeros((N, 6), dtype=wp.float64)
+            self.applied_previous = wp.zeros((N, 6), dtype=wp.float64)
+            self.pad_wrench = wp.zeros((N, B, 6), dtype=wp.float64)
+            self.step_count = wp.zeros(N, dtype=wp.int64)
+            self.initial_seed = wp.array(pk.env["seed"], dtype=wp.int64)
+            self.seed = wp.array(pk.env["seed"], dtype=wp.int64)
+            self.initial_measured_pose = wp.array(pk.env["measured_edge_pose"], dtype=wp.float64)
+            self.last_pose = wp.array(pk.env["measured_edge_pose"], dtype=wp.float64)
+            self.measured_pose = wp.array(pk.env["measured_edge_pose"], dtype=wp.float64)
+            self.actual_pose = wp.array(pk.env["measured_edge_pose"], dtype=wp.float64)
+            self.cut_input = wp.full(N, -1, dtype=wp.int32)
+            self.pose_status = wp.zeros(N, dtype=wp.int32)
+            self.invalid_reason = wp.zeros(N, dtype=int)
+            self.invalid_count = wp.zeros(1, dtype=int)
+            self.reset_mask = wp.zeros(N, dtype=int)
+            self.box_input = wp.zeros((N, B, 2, 3), dtype=wp.float32)
+            self.box_mask = wp.zeros(N, dtype=int)
+            self.reset_seed = wp.zeros(N, dtype=wp.int64)
+            self.initial_local_pose = wp.array(pk.env["initial_local_pose"], dtype=wp.transform)
+            self.initial_previous_pose = wp.array(pk.env["initial_previous_pose"], dtype=wp.transform)
+            self.initial_link_previous_pose = wp.array(pk.env["initial_link_previous_pose"], dtype=wp.transform)
+            self.initial_box_centers = wp.array(pk.env["initial_box_centers"].reshape(-1, 3), dtype=wp.vec3)
+            self.initial_box_halves = wp.array(pk.env["initial_box_halves"].reshape(-1, 3), dtype=wp.vec3)
+            self.hold_pose = wp.clone(self.initial_local_pose)
+            self.hold_box_centers = wp.clone(self.initial_box_centers)
+            self.hold_box_halves = wp.clone(self.initial_box_halves)
+        self.diagnostics = SegmentedDiagnostics(s)
+        for module in (__name__, "robotic_cutting_sim.batched.diagnostics", "robotic_cutting_sim.batched.pose_interp"):
+            wp.load_module(module=module, device=self.device)
+        self.box_updates = 0
+        self.graph = None
+        self.capture_receipt = None
+        if self.capture_graph:
+            self._capture()
+        self.build_wall_s = time.perf_counter()-start
+
+    def _capture(self):
+        if not wp.get_device(self.device).is_cuda:
+            raise ValueError("CUDA graph capture needs a CUDA device")
+        mempool = wp.is_mempool_enabled(self.device)
+        before = wp.get_mempool_used_mem_current(self.device) if mempool else None
+        start = time.perf_counter()
+        with wp.ScopedCapture(device=self.device) as capture:
+            for _ in range(self.solver.substeps):
+                self.solver.step()
+        self.graph = capture.graph
+        after = wp.get_mempool_used_mem_current(self.device) if mempool else None
+        self.capture_receipt = {"substeps_per_graph": self.solver.substeps, "capture_wall_s": time.perf_counter()-start,
+                                "mempool_enabled": bool(mempool), "mempool_used_before": before,
+                                "mempool_used_after": after,
+                                "allocated_during_capture_bytes": None if mempool is False else int(after-before),
+                                "allocated_during_capture_semantics": "net Warp mempool used-bytes reading after "
+                                "minus before capture; 0 = no net growth (transient allocations freed during "
+                                "capture are not visible)"}
+
+    def rebuild(self, specs):
+        """Explicit repack + recapture for a new geometry or batch shape; resets every env.
+
+        Atomic: the new batch is built completely first and only then replaces this object's state, so a
+        refused or failing rebuild leaves the material unchanged and usable. Every device array is new
+        afterwards; views taken before (e.g. ``wp.to_torch``) must be taken again."""
+        options = dict(device=self.device, parity_mode=self.parity_mode, strict=self.strict,
+                       capture_graph=self.capture_graph, constitutive_model=self.constitutive_model,
+                       backend=self.backend, particle_contact_mode=self.particle_contact_mode,
+                       particle_contact_options=self.particle_contact_options,
+                       allow_multiple_device_hashgrids=self.allow_multiple_device_hashgrids)
+        own = getattr(getattr(self, "solver", None), "hash", None)
+        foreign = getattr(self, "foreign_hashgrid", None)
+        _REBUILD_EXEMPT_GRIDS.append(own)
+        try:
+            replacement = type(self)(specs, **options)
+        finally:
+            _REBUILD_EXEMPT_GRIDS.remove(own)
+        self.__dict__.clear()
+        self.__dict__.update(replacement.__dict__)
+        self.foreign_hashgrid = foreign   # the per-batch census record is sticky across rebuild()
+
+    @property
+    def _contact_guard(self):
+        return self.particle_contact_config.speed_guard != "off"
+
+    # ------------------------------------------------------------------ inputs
+
+    def set_measured_poses(self, measured_pose, cut):
+        """Write WORLD measured edge poses [N,7] (float64) and cut digits [N] (int32) into the input buffers.
+
+        Host arrays are validated (shapes, digit range) before either buffer is written, then copied; device
+        arrays (Warp, same device) are copied without a host sync and checked on the device (``advance``)."""
+        pose = digits = None
+        if not isinstance(measured_pose, wp.array):
+            pose = np.asarray(measured_pose, np.float64)
+            if pose.shape != (self.num_envs, 7):
+                raise ValueError(f"measured_pose must be [{self.num_envs}, 7]")
+        if not isinstance(cut, wp.array):
+            digits = np.asarray(cut)
+            if digits.shape != (self.num_envs,) or digits.dtype.kind not in "iu":
+                raise ValueError(f"cut must be [{self.num_envs}] integers")
+            if np.any(digits < -1) or np.any(digits >= self.solver.max_cuts):
+                raise ValueError(f"Cut digits must be -1 (disarmed) or 0..{self.solver.max_cuts-1}")
+            digits = digits.astype(np.int32)
+        if pose is None:
+            wp.copy(self.measured_pose, measured_pose)
+        else:
+            self.measured_pose.assign(pose)
+        if digits is None:
+            wp.copy(self.cut_input, cut)
+        else:
+            self.cut_input.assign(digits)
+
+    def set_obstacle_boxes(self, boxes, env_mask=None):
+        """In-place obstacle/pad box update (``LiveCuttingMaterial.update_pad_obstacles`` for every env at once).
+
+        ``boxes``: edge-frame ``[N,B,2,3]`` float32 (``[:, :, 0]`` centers, ``[:, :, 1]`` half extents) as a host
+        array, a Warp array on the material device or a Torch tensor (zero-copy ``wp.from_torch``). ``env_mask``
+        ``[N]`` (nonzero = write; None = all). Values are written into the solver's existing ``box_centers`` /
+        ``box_halves`` (no reallocation), so a captured graph sees them on its next replay; call it between
+        control steps. Host input is validated and refused (``ValueError``) like the frozen method; a device env
+        with nonfinite or non-positive boxes keeps its boxes and gets ``INVALID_OBSTACLE_BOXES``.
+        Requires configured pad recipients, as the frozen method does. Without calls, configured pads stay at
+        their packed edge-frame boxes (they move with the edge, not with the fingers)."""
+        s, N, B = self.solver, self.num_envs, self.solver.boxes
+        if self.packed.uniform["recipients"] is None:
+            raise ValueError("Configure the actual pad recipients before updating geometry")
+        if type(boxes).__module__.split(".")[0] == "torch":
+            boxes = wp.from_torch(boxes.contiguous(), dtype=wp.float32)
+        if isinstance(boxes, wp.array):
+            if boxes.shape != (N, B, 2, 3) or boxes.dtype != wp.float32 or str(boxes.device) != self.device:
+                raise ValueError(f"boxes must be float32 [{N},{B},2,3] on {self.device}")
+            source = boxes
+        else:
+            host = np.asarray(boxes, np.float32)
+            if host.shape != (N, B, 2, 3):
+                raise ValueError(f"boxes must be [{N},{B},2,3]")
+            rows = slice(None) if env_mask is None else np.asarray(env_mask).reshape(-1).astype(bool)
+            if not np.isfinite(host[rows]).all() or np.any(host[rows][:, :, 1] <= 0):
+                raise ValueError("Pad bounds must be finite and nonempty")
+            self.box_input.assign(host)
+            source = self.box_input
+        use_mask = env_mask is not None
+        if use_mask:
+            if isinstance(env_mask, wp.array):
+                if env_mask.shape != (N,) or env_mask.dtype != wp.int32:
+                    raise ValueError(f"env_mask must be int32 [{N}]")
+                mask = env_mask
+            else:
+                values = np.asarray(env_mask).reshape(-1)
+                if values.shape != (N,):
+                    raise ValueError(f"env_mask must be [{N}]")
+                self.box_mask.assign((values != 0).astype(np.int32))
+                mask = self.box_mask
+        else:
+            mask = self.box_mask
+        wp.launch(_set_boxes, N, [source, mask, int(use_mask), B, s.box_centers, s.box_halves, self.invalid_reason,
+                                  INVALID_OBSTACLE_BOXES], device=self.device)
+        self.box_updates += 1
+
+    def _interpolate_device(self):
+        from .pose_interp import launch_fill_cuts, launch_pose_interp
+        s, N, T = self.solver, self.num_envs, self.solver.trajectory_length
+        launch_pose_interp(self.last_pose, self.measured_pose, self.T_local_world, self.q_local_world,
+                           s.poses.reshape((N, T)), s.twists.reshape((N, T)), self.pose_status, s.substeps,
+                           self.control_dt, device=self.device, actual=self.actual_pose)
+        # Out-of-range digits are disarmed and flagged before the substeps run (review finding 4).
+        launch_fill_cuts(self.cut_input, s.cuts.reshape((N, T)), device=self.device, max_cuts=s.max_cuts,
+                         invalid_reason=self.invalid_reason, flag=INVALID_CUT_DIGIT)
+
+    def _interpolate_host_reference(self, measured_pose, cut):
+        """Parity path: the frozen SciPy interpolation per env (input preparation only, never production)."""
+        from ..coupled_robot import interpolate_measured_poses
+        from ..robot import validate_pose
+        from ..scene_frames import transform_poses
+        if not self.parity_mode:
+            raise ValueError("Host reference interpolation is the L0 parity input path (parity_mode=True)")
+        if measured_pose is None:
+            raise ValueError("host_reference interpolation needs measured_pose and cut")
+        from ..scene_frames import invert_transform
+        s, T = self.solver, self.solver.trajectory_length
+        # As LiveCuttingMaterial.advance: actual = validate_pose(measured); last_pose holds the previous actual.
+        raw = np.asarray(measured_pose, np.float64)
+        if raw.shape != (self.num_envs, 7):
+            raise ValueError(f"measured_pose must be [{self.num_envs}, 7]")
+        actual = np.stack([validate_pose(p) for p in raw])
+        self.set_measured_poses(raw, cut)
+        self.actual_pose.assign(actual)
+        last = self.last_pose.numpy()
+        T_world_local = self.packed.env["T_world_local"]
+        poses, twists = [], []
+        for e in range(self.num_envs):
+            T_lw = invert_transform(T_world_local[e])
+            p, w = interpolate_measured_poses(transform_poses(T_lw, last[e]), transform_poses(T_lw, actual[e]),
+                                              s.substeps, self.control_dt)
+            poses.append(p)
+            twists.append(w)
+        s.poses.assign(np.concatenate(poses))
+        s.twists.assign(np.concatenate(twists))
+        s.cuts.assign(np.repeat(np.asarray(cut, np.int32), T))
+        self.pose_status.zero_()
+
+    # ------------------------------------------------------------------ control step
+
+    def advance(self, measured_pose=None, cut=None, *, interpolation="device"):
+        """One 20 ms control step of every env.
+
+        ``interpolation``: ``"device"`` (pose_interp kernel from ``last_pose`` to ``measured_pose``),
+        ``"host_reference"`` (parity mode: frozen SciPy path) or ``"preset"`` (the caller already wrote
+        ``solver.poses/twists/cuts`` in place; ``measured_pose``/``cut`` still update the buffers if given).
+        Cut digits: host digits outside ``-1..K-1`` raise ``ValueError`` before any state changes (the frozen
+        ``LiveCuttingMaterial.advance`` refusal). Device digits (a Warp ``cut`` array, or caller-written preset
+        rows) cannot raise: they are written as ``-1`` (disarmed) and the env gets ``INVALID_CUT_DIGIT`` before
+        the substeps run; that env still advances one control step with a disarmed blade, then strict mode
+        raises / training mode terminates it.
+        Returns nothing; read ``pending_wrench``, ``applied_previous``, ``invalid_reason`` on the device."""
+        if (measured_pose is None) != (cut is None):
+            raise ValueError("measured_pose and cut are given together")
+        if interpolation not in ("device", "host_reference", "preset"):
+            raise ValueError("interpolation is 'device', 'host_reference' or 'preset'")
+        if interpolation == "host_reference":
+            self._interpolate_host_reference(measured_pose, cut)
+        elif measured_pose is not None:
+            self.set_measured_poses(measured_pose, cut)
+        if interpolation == "device":
+            self._interpolate_device()
+        elif interpolation == "preset":
+            from .pose_interp import launch_disarm_invalid_cuts, launch_validate_measured
+            s = self.solver
+            # last_pose bookkeeping and pose_status follow the measured buffer as in the device path.
+            launch_validate_measured(self.last_pose, self.measured_pose, self.actual_pose, self.pose_status,
+                                     device=self.device)
+            launch_disarm_invalid_cuts(s.cuts.reshape((self.num_envs, s.trajectory_length)), s.max_cuts,
+                                       self.invalid_reason, INVALID_CUT_DIGIT, device=self.device)
+        s = self.solver
+        with wp.ScopedDevice(self.device):
+            wp.launch(_check_boxes, self.num_envs, [s.boxes, s.box_centers, s.box_halves, self.invalid_reason,
+                                                   INVALID_OBSTACLE_BOXES])
+            self._launch_input_domain()
+            s.zero_control_step_accumulators()
+            self._check_foreign_hashgrids()
+            # Review fix F1: the batch's own grid is the last one built on the host before EVERY launch path
+            # (graph replay and eager substeps), in both particle-contact modes.
+            self.refresh_device_hashgrid()
+            if self.graph is not None:
+                wp.capture_launch(self.graph)
+            else:
+                for _ in range(s.substeps):
+                    s.step()
+            wp.launch(_wrench_b, self.num_envs, [s.reaction, s.box_reactions, self.R_world_local, self.recipients,
+                s.boxes, wp.float64(self.control_dt), int(self.feedback), self.pending_wrench,
+                self.applied_previous, self.pad_wrench])
+            self.diagnostics.launch()
+            if self._contact_guard:
+                wp.launch(particle_contacts._guard_invalid_b, self.num_envs, [s.contact_guard_violations,
+                    self.invalid_reason, INVALID_CONTACT_SPEED_GUARD])
+            self.invalid_count.zero_()
+            wp.launch(_validity_b, self.num_envs, [self.diagnostics.summary, s.slot_overflow, self.pose_status,
+                self.cut_input, s.max_cuts, self.pending_wrench, self.invalid_reason, self.invalid_count])
+            wp.launch(_finish_control_step, self.num_envs, [self.step_count, self.last_pose, self.actual_pose])
+        self.interpolation_steps[interpolation] += 1
+        if self.strict:
+            self.check_valid()
+
+    def _launch_input_domain(self):
+        """INPUT_DOMAIN check and hold of out-of-domain / invalid envs (device, before the substep graph)."""
+        s, D = self.solver, INPUT_DOMAIN
+        wp.launch(_input_domain_b, self.num_envs, [self.pose_status, self.last_pose, self.actual_pose,
+            self.T_local_world, wp.float64(self.control_dt), wp.float64(D["max_edge_distance_m"]),
+            wp.float64(D["max_edge_speed_m_s"]), wp.float64(D["max_edge_angular_speed_rad_s"]), s.boxes,
+            s.box_centers, s.box_halves, float(D["max_box_center_m"]), float(D["max_box_half_m"]),
+            s.trajectory_length, s.poses, s.twists, s.cuts, self.hold_pose, self.hold_box_centers,
+            self.hold_box_halves, self.invalid_reason, HOLD_LATCH, INVALID_INPUT_DOMAIN], device=self.device)
+
+    @property
+    def own_hashgrid(self):
+        """The device grid this batch's particle contacts query (``solver.hash``; alias_free_v1: its grid)."""
+        s = self.solver
+        return s.particle_contact.grid if s.particle_contact is not None else s.hash
+
+    def refresh_device_hashgrid(self):
+        """Host rebuild of this batch's own grid with the exact build call of its substep, so the Warp 1.17
+        function-static descriptor that a captured ``HashGrid.build`` copies at replay is this batch's
+        (``DEVICE_HASHGRID_REFRESH``). Same points, cell width and groups as the first substep's in-graph build,
+        which rebuilds the grid again before any query: no physics change. Asynchronous (no host sync)."""
+        s = self.solver
+        if s.particle_contact is not None:   # alias_free_v1 (P1-3a): its own grid and cell width
+            s.particle_contact.restore_descriptor(s)
+        elif s.hash is not None:
+            s.hash.build(s.x, 2.4*s.radius, groups=s.env_of_particle)
+        else:
+            raise RuntimeError("material released (release()): no device grid")
+        self.descriptor_refreshes += 1
+
+    def _check_foreign_hashgrids(self):
+        """Step-time census (review fix F1; no gc scan, no device sync). On detection: a sticky per-batch record
+        (receipt ``device_hashgrid``) and, for a guarded batch, the sticky ``FOREIGN_DEVICE_HASHGRID`` bit in every
+        env's ``invalid_reason`` (strict mode raises, training mode terminates; visible in ``info``)."""
+        if not _guard_applies(self.device):
+            return
+        live, foreign_build = foreign_device_hashgrids(self.own_hashgrid)
+        if not live and not foreign_build:
+            return
+        step = int(self.descriptor_refreshes)   # control steps launched before this one
+        record = self.foreign_hashgrid
+        if record is None:
+            record = self.foreign_hashgrid = {"status": "FOREIGN_DEVICE_HASHGRID_OBSERVED", "first_control_step": step,
+                                              "control_steps_flagged": 0, "max_foreign_live_grids": 0,
+                                              "foreign_last_host_build_steps": 0,
+                                              "invalid_bit_set": self.device_hashgrid_guard == DEVICE_HASHGRID_GUARD}
+        record["last_control_step"] = step
+        record["control_steps_flagged"] += 1
+        record["max_foreign_live_grids"] = max(record["max_foreign_live_grids"], len(live))
+        record["foreign_last_host_build_steps"] += int(bool(foreign_build))
+        if self.device_hashgrid_guard == DEVICE_HASHGRID_GUARD:
+            wp.launch(_flag_all_envs_b, self.num_envs, [self.invalid_reason, INVALID_FOREIGN_DEVICE_HASHGRID])
+
+    def device_hashgrid_receipt(self):
+        return {"guard": getattr(self, "device_hashgrid_guard", None), "descriptor_refresh": DEVICE_HASHGRID_REFRESH,
+                "census": DEVICE_HASHGRID_CENSUS if _guard_applies(self.device) else "not_applicable_host_grid",
+                "descriptor_refreshes": int(getattr(self, "descriptor_refreshes", 0)),
+                "status": "OK" if getattr(self, "foreign_hashgrid", None) is None
+                else "FOREIGN_DEVICE_HASHGRID_OBSERVED",
+                "foreign": None if getattr(self, "foreign_hashgrid", None) is None else dict(self.foreign_hashgrid)}
+
+    @property
+    def pose_interpolation(self):
+        """The interpolation path actually used by the control steps so far (receipt label)."""
+        used = [k for k, v in self.interpolation_steps.items() if v]
+        if not used:
+            return "none_no_control_step_yet"
+        labels = [self.pose_interpolation_kernel if k == "device" else INTERPOLATION_LABELS[k] for k in used]
+        return labels[0] if len(labels) == 1 else "mixed:" + "+".join(labels)
+
+    def check_valid(self):
+        """Strict mode check: one int32 read; raises InvalidBatchEnvs with env ids and reasons."""
+        count = int(self.invalid_count.numpy()[0])
+        if count:
+            reasons = self.invalid_reason.numpy()
+            ids = np.flatnonzero(reasons)
+            raise InvalidBatchEnvs(ids.tolist(), {int(e): decode_reason(reasons[e]) for e in ids})
+        return 0
+
+    # ------------------------------------------------------------------ reset
+
+    def reset(self, env_ids=None, seeds=None, scene_keys=None):
+        """Masked partial reset to the freshly packed state (ADR §6); no allocation, no recapture.
+
+        ``env_ids`` None resets all (in env order 0..N-1). ``seeds`` and ``scene_keys`` are matched to
+        ``env_ids`` by position, in the caller's order (``reset([2, 0], seeds=[s2, s0])``); duplicate ids
+        are refused. ``seeds`` replace the env seeds; None keeps them. ``scene_keys`` must equal the packed
+        geometry of each env, else UNSUPPORTED (use ``rebuild``). Every argument is validated before any
+        state changes."""
+        N = self.num_envs
+        if env_ids is None:
+            ids = np.arange(N, dtype=np.int64)
+        else:
+            raw = np.asarray(env_ids).reshape(-1)
+            if raw.size == 0:
+                if (seeds is not None and np.asarray(seeds).size) or (scene_keys is not None and len(scene_keys)):
+                    raise ValueError("seeds/scene_keys given for an empty env_ids")
+                return
+            if raw.dtype.kind not in "iu":
+                raise ValueError(f"env_ids must be integers, got dtype {raw.dtype}")
+            ids = raw.astype(np.int64)
+            if ids.min() < 0 or ids.max() >= N:
+                raise ValueError(f"env_ids must be in [0, {N})")
+            if np.unique(ids).size != ids.size:
+                raise ValueError(f"duplicate env_ids {ids.tolist()}: each env is reset at most once per call")
+        if scene_keys is not None:
+            keys = list(scene_keys)
+            if len(keys) != len(ids):
+                raise ValueError("one scene key per reset env")
+            for e, key in zip(ids, keys):
+                if key != self.packed.scene_keys[e]:
+                    raise UnsupportedBatchConfiguration("UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET",
+                        f"env {int(e)} holds scene {self.packed.scene_keys[e]!r}; use rebuild()")
+        mask = np.zeros(N, np.int32)
+        mask[ids] = 1
+        new_seed = self.seed.numpy().astype(np.int64)
+        if seeds is not None:
+            values = np.asarray(seeds).reshape(-1)
+            if len(values) != len(ids):
+                raise ValueError("one seed per reset env")
+            if values.dtype.kind not in "iu":
+                raise ValueError(f"seeds must be integers, got dtype {values.dtype}")
+            new_seed[ids] = values.astype(np.int64)   # ids has no duplicates: caller order is kept
+        self.reset_mask.assign(mask)
+        self.reset_seed.assign(new_seed)
+        self.reset_masked(full=len(ids) == N)
+
+    def reset_masked(self, mask=None, full=False):
+        """Device part of ``reset``.
+
+        ``mask`` None: uses ``reset_mask[N]`` and ``reset_seed[N]`` already written on the device (``reset``, or a
+        caller through device views). ``mask`` given (``MaterialCoupling.reset_masked(mask)``: Warp bool/int32
+        ``[N]``, a Torch tensor or a host array): it becomes ``reset_mask`` and the reset envs keep their seeds.
+        No allocation for device masks, no host sync."""
+        if mask is not None:
+            self._write_reset_mask(mask)
+        s = self.solver
+        with wp.ScopedDevice(self.device):
+            wp.launch(_reset_particles, s.total_particles, [self.reset_mask, s.env_of_particle, s.reference, s.x,
+                s.v, s.x_start, s.impulse, s.link_velocity_start, s.stress, s.F, s.progress, s.contact_work,
+                s.code, s.link_codes, s.front_crossings, s.front_reached, s.pending_q, s.pending_cut])
+            wp.launch(_reset_slots, (s.total_particles, 8), [self.reset_mask, s.env_of_particle, s.slot])
+            for variable in s.model.per_particle_state:   # constitutive registry (ADR §11)
+                kernel = {"identity": _reset_state_mat33_identity, "zero": _reset_state_float_zero}[variable.initial]
+                wp.launch(kernel, s.total_particles, [self.reset_mask, s.env_of_particle, getattr(s, variable.name)])
+            wp.launch(_reset_node_slots, s.total_nodes*s.slots_per_node, [self.reset_mask, s.env_of_node,
+                s.slots_per_node, s.slot_code, s.gm, s.gp, s.gj, s.old, s.new_v])
+            wp.launch(_reset_envs, self.num_envs, [self.reset_mask, s.edge_segments, s.boxes, s.trajectory_length,
+                s.edge_flags, s.segment_ok, s.segment_plow, s.stroke_engaged, s.stroke_any_motion, s.stroke,
+                s.stroke_travel, s.box_centers, s.box_halves, s.box_reactions, self.initial_box_centers,
+                self.initial_box_halves, s.slot_overflow, s.slot_max_occupied, s.previous_cut, s.reaction,
+                s.poses, s.twists, s.cuts, self.initial_local_pose, s.previous_pose, self.initial_previous_pose,
+                s.link_previous_pose, self.initial_link_previous_pose, s.link_diagnostics,
+                s.stats_sum, s.stats_max, layout.STATS_WIDTH, s.contact_totals_sum, s.contact_totals_max,
+                layout.TOTALS_WIDTH, self.pending_wrench, self.applied_previous, self.pad_wrench, self.step_count,
+                self.seed, self.reset_seed, self.last_pose, self.measured_pose, self.initial_measured_pose,
+                self.cut_input, self.pose_status, self.invalid_reason])
+            if self._contact_guard:
+                wp.launch(particle_contacts._reset_guard_b, self.num_envs, [self.reset_mask, s.contact_guard_flag,
+                    s.contact_guard_violations])
+            wp.launch(_reset_hold, self.num_envs, [self.reset_mask, s.boxes, self.initial_local_pose,
+                self.initial_box_centers, self.initial_box_halves, self.hold_pose, self.hold_box_centers,
+                self.hold_box_halves])
+            if full:
+                s.index.zero_()
+
+    def _write_reset_mask(self, mask):
+        N = self.num_envs
+        if type(mask).__module__.split(".")[0] == "torch":
+            mask = wp.from_torch(mask.contiguous())
+        if isinstance(mask, wp.array):
+            if mask.shape != (N,) or str(mask.device) != self.device:
+                raise ValueError(f"mask must be [{N}] on {self.device}")
+            if mask.dtype == wp.bool:
+                kernel = _mask_from_bool
+            elif mask.dtype == wp.int32:
+                kernel = _mask_from_int
+            else:
+                raise ValueError(f"mask dtype must be bool or int32, got {mask.dtype}")
+            wp.launch(kernel, N, [mask, self.seed, self.reset_mask, self.reset_seed], device=self.device)
+            return
+        values = np.asarray(mask).reshape(-1)
+        if values.shape != (N,):
+            raise ValueError(f"mask must be [{N}]")
+        self.reset_mask.assign((values != 0).astype(np.int32))
+        wp.copy(self.reset_seed, self.seed)
+
+    # ------------------------------------------------------------------ MaterialCoupling surface (ADR 0022 §5)
+
+    material_coupled = True
+
+    @property
+    def name(self):
+        return COUPLING_LABELS[self.backend]
+
+    @property
+    def box_centers(self):
+        """``[N*B] wp.vec3`` (float32) edge-frame box centers, the solver's own array: a backend may write it in
+        place before ``advance`` (``advance`` validates it); see also ``set_obstacle_boxes``."""
+        return self.solver.box_centers
+
+    @property
+    def box_halves(self):
+        return self.solver.box_halves
+
+    # ------------------------------------------------------------------ queries
+
+    def set_workpiece_pose(self, *args, **kwargs):
+        raise UnsupportedBatchConfiguration("UNSUPPORTED_WORKPIECE_MOTION",
+                                            "the single solver keeps a static workpiece-local frame")
+
+    def diagnostics_read(self):
+        return self.diagnostics.read()
+
+    def snapshot(self, e):
+        return self.solver.snapshot(e)
+
+    def world_state(self, e):
+        """WORLD oracle state of env e (as ``LiveCuttingMaterial.world_state``); never an observation."""
+        from ..scene_frames import transform_points
+        snap = self.snapshot(e)
+        T = self.packed.env["T_world_local"][e]
+        return {"positions": transform_points(T, snap["x"]), "velocities": snap["v"]@T[:3, :3].T,
+                "codes": snap["code"], "F": snap["F"], "Fpi": snap["Fpi"], "plastic_strain": snap["plastic"],
+                "cut_progress": snap["progress"], "contact_work_j": snap["contact_work"]}
+
+    def device_arrays(self):
+        out = {f"solver.{k}": v for k, v in self.solver.device_arrays().items()}
+        out.update({k: v for k, v in vars(self).items() if isinstance(v, wp.array)})
+        out.update({f"diagnostics.{k}": v for k, v in vars(self.diagnostics).items() if isinstance(v, wp.array)})
+        return out
+
+    def memory_bytes(self):
+        """Every device array of the batch (solver, coupling, diagnostics), excluding the hash grid."""
+        return int(sum(v.capacity for v in self.device_arrays().values()))
+
+    def release(self):
+        """Drop the CUDA graph and this material's HashGrid (end of life), so another batch or single material
+        may own the process's device grid (``check_single_device_hashgrid``). The material is unusable after."""
+        self.graph = None
+        if getattr(self, "solver", None) is not None:
+            self.solver.hash = None
+            contacts = getattr(self.solver, "particle_contact", None)
+            if contacts is not None:   # alias_free_v1 owns the solver's only device grid (particle_contacts.py)
+                contacts.grid = None
+
+    def receipt(self):
+        pk = self.packed
+        B = self.solver.boxes
+        pads = pk.uniform["recipients"] is not None and any(r is not None for r in pk.uniform["recipients"])
+        reasons = [] if pads else ["no_finger_pad_obstacles"]
+        if self.backend == LAB_BACKEND:
+            reasons.append("pad_boxes_written_in_place_by_backend_each_control_step")
+        elif pads and self.box_updates == 0:
+            # set_obstacle_boxes never called: pads stay at their packed edge-frame boxes unless a backend wrote
+            # box_centers/box_halves in place itself.
+            reasons.append("pad_boxes_not_updated_through_set_obstacle_boxes")
+        return {"runtime": RUNTIME, "version": MATERIAL_BATCH_VERSION, "backend": self.backend,
+                "particle_contact_mode": self.particle_contact_mode,
+                "particle_contact": self.solver.particle_contact_receipt(),
+                "coupling": self.name, "material_coupled": True, "device": self.device,
+                "parity_mode": self.parity_mode, "strict": self.strict, "graph": self.capture_receipt,
+                "pose_interpolation": self.pose_interpolation,
+                "pose_interpolation_steps": dict(self.interpolation_steps),
+                "pose_interpolation_kernel": self.pose_interpolation_kernel,
+                "obstacle_box_updates": self.box_updates, "control_dt_s": self.control_dt,
+                "feedback": self.feedback, "obstacle_boxes": B, "layout": pk.layout_receipt(),
+                "solver": self.solver.solver_receipt(), "envs": pk.receipts,
+                "material_fidelity_reasons": reasons, "batched_source_sha256": batched_source_sha256(),
+                "calibration": "SIMULATOR_ONLY_UNCALIBRATED", "memory_bytes": self.memory_bytes(),
+                "build_wall_s": self.build_wall_s,
+                "device_hashgrid_guard": getattr(self, "device_hashgrid_guard", None),
+                "device_hashgrid": self.device_hashgrid_receipt(),
+                "input_domain": {"version": INPUT_DOMAIN_VERSION, **INPUT_DOMAIN,
+                                 "on_violation": "INPUT_OUT_OF_DOMAIN; env inputs held (blade at last in-domain pose, "
+                                 "zero twist, cut disarmed, pads at last in-domain boxes) until its reset"}}

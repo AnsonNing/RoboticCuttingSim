@@ -1,0 +1,223 @@
+{
+ "command": "CUDA_VISIBLE_DEVICES= PYTHONPATH=src .venv/bin/python scripts/rl_ready/judge_perf_acceptance.py --config artifacts/rl_ready/p1_6_r0/<smoke>_rejudge_001/config.json --manifest artifacts/rl_ready/p1_6_r0/<smoke>_rejudge_001/manifest.json --out artifacts/rl_ready/p1_6_r0/<smoke>_rejudge_001/judge [--known-harness artifacts/rl_ready/p1_6_r0/smoke_001_rejudge_001/known_harness.json]",
+ "decision": "coordinator decision: acceptance_v1 reset-p95 rule amended before any baseline (shared GPU: WARN shared_gpu_reset_bimodality within 1.25 x B + 10 ms, FAIL beyond; both EXCLUSIVE_GPU: FAIL above 1.25 x B + 2 ms; per-side medians over all ABBA processes at N)",
+ "judge_commit": "214ac11",
+ "method": "CPU-only re-judge (.venv, CUDA_VISIBLE_DEVICES='') of the preserved smoke outputs; no GPU job rerun. Each re-judge dir holds a config copy (smoke config + reset_p95_shared_slack_ms/reset_p95_rule; smoke_001's position_band_m mapped to the descriptive physics.position_band) and a manifest copy pointing at it (rejudge_of: original manifest/config sha256). smoke_001 outputs come from a harness version before 6b71363, accepted via --known-harness (recorded in verdict.rejudge).",
+ "results": {
+  "smoke_001": {
+   "original": {
+    "failed_gates": [
+     "G9:n1:reset"
+    ],
+    "layers": {
+     "INTEGRITY": "PASS",
+     "PERFORMANCE": "FAIL",
+     "PHYSICS": "PASS"
+    },
+    "reset_gates": {
+     "G9:n1:reset": {
+      "status": "FAIL",
+      "threshold": {
+       "max_ms": 4.131327397364657,
+       "rule": "median reset p95: C <= 1.25 x B + 2 ms (config)"
+      },
+      "value": {
+       "baseline_median": 1.7050619178917263,
+       "candidate_median": 7.09391514537856
+      }
+     },
+     "G9:n2:reset": {
+      "status": "PASS",
+      "threshold": {
+       "max_ms": 11.282099505071528,
+       "rule": "median reset p95: C <= 1.25 x B + 2 ms (config)"
+      },
+      "value": {
+       "baseline_median": 7.425679604057223,
+       "candidate_median": 1.394482335308567
+      }
+     }
+    },
+    "sha256": "9216c31d9f4276f9c210eee5d34fe0242aabd17ee7720b5d40e51dbfa5b296f9",
+    "verdict": "/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p1_6_r0/smoke_001/judge/verdict.json"
+   },
+   "rejudge": {
+    "dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p1_6_r0/smoke_001_rejudge_001",
+    "failed_gates": [],
+    "judge_wall_s": 22.54790067707654,
+    "layers": {
+     "INTEGRITY": "PASS",
+     "PERFORMANCE": "PASS",
+     "PHYSICS": "PASS"
+    },
+    "ratios": {
+     "1": 1.4739741386446792,
+     "2": 1.3840821576648086
+    },
+    "rejudge": {
+     "known_harness": [
+      {
+       "harness_sha256": "511bda31c56049ccf9bafe5662558bfd9ac627539fc44f4107919757866120b9",
+       "note": "smoke_001 working tree before 6b71363 (samestate samples 15,33,43,60,90,119; rounds in one process)",
+       "shared_module_sha256": "70ae5f51921798780fff025c8d26fc2876b80909d86e78d25e25ed251a4ac71f"
+      }
+     ],
+     "note": "re-judge of preserved outputs produced by an earlier harness version; not an acceptance"
+    },
+    "reset_gates": {
+     "G9:n1:reset": {
+      "status": "PASS",
+      "threshold": {
+       "rule": "G9:<n>:reset on the per-side medians of reset p95 over all ABBA processes at N. Both sides EXCLUSIVE_GPU: FAIL if C > reset_p95_ratio_max x B + reset_p95_slack_ms. Either side SHARED_GPU (or UNKNOWN): PASS if C <= ratio x B + reset_p95_slack_ms; WARN shared_gpu_reset_bimodality (verdict.warnings, not a failure) if C <= ratio x B + reset_p95_shared_slack_ms; FAIL above that. Reason: on a shared GPU each process settles in a ~1 ms or ~7 ms reset mode independent of the variant (smoke_001: B 1.7 ms vs C 7.1 ms at N=1, reversed at N=2).",
+       "shared_max_ms": 12.131327397364657,
+       "strict_max_ms": 4.131327397364657
+      },
+      "value": {
+       "baseline_median": 1.7050619178917263,
+       "candidate_median": 7.09391514537856,
+       "regime": "shared",
+       "sharing": {
+        "baseline": [
+         "SHARED_GPU"
+        ],
+        "candidate": [
+         "SHARED_GPU"
+        ]
+       },
+       "warning": "shared_gpu_reset_bimodality"
+      }
+     },
+     "G9:n2:reset": {
+      "status": "PASS",
+      "threshold": {
+       "rule": "G9:<n>:reset on the per-side medians of reset p95 over all ABBA processes at N. Both sides EXCLUSIVE_GPU: FAIL if C > reset_p95_ratio_max x B + reset_p95_slack_ms. Either side SHARED_GPU (or UNKNOWN): PASS if C <= ratio x B + reset_p95_slack_ms; WARN shared_gpu_reset_bimodality (verdict.warnings, not a failure) if C <= ratio x B + reset_p95_shared_slack_ms; FAIL above that. Reason: on a shared GPU each process settles in a ~1 ms or ~7 ms reset mode independent of the variant (smoke_001: B 1.7 ms vs C 7.1 ms at N=1, reversed at N=2).",
+       "shared_max_ms": 19.28209950507153,
+       "strict_max_ms": 11.282099505071528
+      },
+      "value": {
+       "baseline_median": 7.425679604057223,
+       "candidate_median": 1.394482335308567,
+       "regime": "shared",
+       "sharing": {
+        "baseline": [
+         "SHARED_GPU"
+        ],
+        "candidate": [
+         "SHARED_GPU"
+        ]
+       }
+      }
+     }
+    },
+    "verdict_sha256": "6d84f9abb25ec014ed50e987a26b903bdc90b02d22b77dc7dcd06fb70668daf3",
+    "warnings": [
+     "WARN shared_gpu_reset_bimodality: G9:n1:reset candidate median reset p95 7.094 ms > strict 4.131 ms (1.25 x B 1.705 + 2.0 ms) but <= shared limit 12.131 ms (+ 10.0 ms); sharing {'baseline': ['SHARED_GPU'], 'candidate': ['SHARED_GPU']}"
+    ]
+   }
+  },
+  "smoke_003": {
+   "original": {
+    "failed_gates": [],
+    "layers": {
+     "INTEGRITY": "PASS",
+     "PERFORMANCE": "PASS",
+     "PHYSICS": "PASS"
+    },
+    "reset_gates": {
+     "G9:n1:reset": {
+      "status": "PASS",
+      "threshold": {
+       "max_ms": 11.129193851549644,
+       "rule": "median reset p95: C <= 1.25 x B + 2 ms (config)"
+      },
+      "value": {
+       "baseline_median": 7.303355081239715,
+       "candidate_median": 7.186034502228722
+      }
+     },
+     "G9:n2:reset": {
+      "status": "PASS",
+      "threshold": {
+       "max_ms": 15.036384480074048,
+       "rule": "median reset p95: C <= 1.25 x B + 2 ms (config)"
+      },
+      "value": {
+       "baseline_median": 10.429107584059238,
+       "candidate_median": 6.782387782004663
+      }
+     }
+    },
+    "sha256": "db814c18c49e7e31782cf6d1bc0363173dcf7bb22de1c242fb19e1bf40bc6648",
+    "verdict": "/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p1_6_r0/smoke_003/judge/verdict.json"
+   },
+   "rejudge": {
+    "dir": "/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p1_6_r0/smoke_003_rejudge_001",
+    "failed_gates": [],
+    "judge_wall_s": 60.89188539900351,
+    "layers": {
+     "INTEGRITY": "PASS",
+     "PERFORMANCE": "PASS",
+     "PHYSICS": "PASS"
+    },
+    "ratios": {
+     "1": 1.3612099895031617,
+     "2": 1.3691993962773767
+    },
+    "rejudge": null,
+    "reset_gates": {
+     "G9:n1:reset": {
+      "status": "PASS",
+      "threshold": {
+       "rule": "G9:<n>:reset on the per-side medians of reset p95 over all ABBA processes at N. Both sides EXCLUSIVE_GPU: FAIL if C > reset_p95_ratio_max x B + reset_p95_slack_ms. Either side SHARED_GPU (or UNKNOWN): PASS if C <= ratio x B + reset_p95_slack_ms; WARN shared_gpu_reset_bimodality (verdict.warnings, not a failure) if C <= ratio x B + reset_p95_shared_slack_ms; FAIL above that. Reason: on a shared GPU each process settles in a ~1 ms or ~7 ms reset mode independent of the variant (smoke_001: B 1.7 ms vs C 7.1 ms at N=1, reversed at N=2).",
+       "shared_max_ms": 19.129193851549644,
+       "strict_max_ms": 11.129193851549644
+      },
+      "value": {
+       "baseline_median": 7.303355081239715,
+       "candidate_median": 7.186034502228722,
+       "regime": "shared",
+       "sharing": {
+        "baseline": [
+         "SHARED_GPU",
+         "SHARED_GPU"
+        ],
+        "candidate": [
+         "SHARED_GPU",
+         "SHARED_GPU"
+        ]
+       }
+      }
+     },
+     "G9:n2:reset": {
+      "status": "PASS",
+      "threshold": {
+       "rule": "G9:<n>:reset on the per-side medians of reset p95 over all ABBA processes at N. Both sides EXCLUSIVE_GPU: FAIL if C > reset_p95_ratio_max x B + reset_p95_slack_ms. Either side SHARED_GPU (or UNKNOWN): PASS if C <= ratio x B + reset_p95_slack_ms; WARN shared_gpu_reset_bimodality (verdict.warnings, not a failure) if C <= ratio x B + reset_p95_shared_slack_ms; FAIL above that. Reason: on a shared GPU each process settles in a ~1 ms or ~7 ms reset mode independent of the variant (smoke_001: B 1.7 ms vs C 7.1 ms at N=1, reversed at N=2).",
+       "shared_max_ms": 23.036384480074048,
+       "strict_max_ms": 15.036384480074048
+      },
+      "value": {
+       "baseline_median": 10.429107584059238,
+       "candidate_median": 6.782387782004663,
+       "regime": "shared",
+       "sharing": {
+        "baseline": [
+         "SHARED_GPU",
+         "SHARED_GPU"
+        ],
+        "candidate": [
+         "SHARED_GPU",
+         "SHARED_GPU"
+        ]
+       }
+      }
+     }
+    },
+    "verdict_sha256": "18737cf1f308d74007b0e37aa49ffef851f8cc551bc9b580c93ca7a1bc8e5e39",
+    "warnings": [
+     "WARN position band (p1_0_minmax_v1, descriptive, not a gate): G6 G6_replay_candidate_r0 s512 e0 final max position diff 4.773214590541085e-05 m > 3.9e-05 m"
+    ]
+   }
+  }
+ },
+ "schema": "rcs_rl_p1_6_r0_rejudge_evidence_v1"
+}

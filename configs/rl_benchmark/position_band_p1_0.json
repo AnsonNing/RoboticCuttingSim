@@ -1,0 +1,8 @@
+{
+ "schema": "rcs_position_band_v1",
+ "version": "p1_0_minmax_v1",
+ "status": "descriptive_only",
+ "statistic": "final maximum particle position difference vs the WP-17 Native sample at control step 1200 (m)",
+ "source": "P1-0 baseline: min and max over only 4 frozen single-env replays per seed (P1_0_POSITION_BAND_M in scripts/rl_ready/run_p1_3a.py); about 40 % of identical runs would fall outside it, so it is NOT a pass/fail band (acceptance review of integration commit 2480dc2). Superseded for gating by a pre-declared band v2 (configs/rl_benchmark/position_band_v2.json) when that lands.",
+ "position_band_m": {"512": [1.4e-05, 3.9e-05], "15": [2.0e-04, 4.6e-04]}
+}

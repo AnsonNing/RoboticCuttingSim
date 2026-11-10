@@ -1,0 +1,66 @@
+{
+ "schema": "rcs_rl_benchmark_workloads_v2",
+ "status": "PREDECLARED",
+ "declared": "2026-11-10, P1-5 T5.1, before any CUT run. Adds the CUT workloads C1-C3 of docs/reports/rl_ready/P1_5_PLAN.md section 2.3; workloads A, B, D, E and the boundary/column definitions stay exactly as in workloads_v1.json, which is unchanged.",
+ "extends": {"path": "configs/rl_benchmark/workloads_v1.json",
+             "sha256": "c90fc82419c5676219bca6f1c3fc3c80ea7c7ab91a9e06be2a2ee0cf88fa01e6"},
+ "boundaries": ["single_env_native", "single_env_headless", "batched_headless"],
+ "row_columns": ["N", "particles/env", "control Hz", "material dt", "cameras", "env-steps/s", "aggregate sim-time/wall", "VRAM peak", "reset p95", "physics verdict"],
+ "row_extra_columns": ["substeps", "robot DOF", "contacts", "recording", "warm/cold", "exact GPU", "SHARED_GPU/EXCLUSIVE_GPU"],
+ "workloads": [
+  {
+   "id": "C1",
+   "name": "cut_v5_native_replay",
+   "description": "Frozen tlmpm_v5 law 8 CUT of WP-12 Demo 1 (bar_flat_board + sever_mid at 14 s, workcell_live_v1 planner overrides) replayed from the recorded Native measured trajectory through the frozen single-env LiveCuttingMaterial (P1-0 style)",
+   "boundary": "single_env_headless",
+   "physics": "full",
+   "phase": "P1-5 T5.6 (i)",
+   "reduced_fidelity": false,
+   "recording": {
+    "run": "wp12/demos_001/DEMO1_A/run (main checkout, read-only; git a960dc6 dirty, GPU0, Native PASS)",
+    "episode": "episode_000",
+    "sha256": {
+     "actions.jsonl.gz": "61a28eb4e0b6c8a79c9627e0c06b054891e3bb6a24feb980f251242c13892c7b",
+     "robot_state.npz": "bc62f2c7743de7890823f7711f56a750391e79e8a929349e9f69c0e26b50c89a",
+     "physics_state.npz": "0115f124f84d52125a308da00f8d73afb3db29e47a3ae8de8b68f4298908338c"
+    },
+    "task_id": "CFG-bar_flat_board-sever_mid-c32f94a4",
+    "steps": 740,
+    "native_samples": 75
+   },
+   "driver": {"kind": "measured_trajectory_replay", "schema": "rcs_measured_trajectory_v1", "adapter": "robotic_cutting_sim.rl.replay_wp12",
+              "inputs_per_step": ["measured edge pose [7]", "handle + two finger pad obstacle boxes [3,2,3]", "cut flag and digit"],
+              "reaction_feedback_into_trajectory": false},
+   "material": {"solver": "tlmpm_v5", "cutting_law": 8, "max_cuts": 4, "slots_per_node": 8, "particle_spacing_m": 0.001,
+                "grid_dx_m": 0.004, "material_dt_s": 0.0001, "control_dt_s": 0.02, "substeps_per_control_step": 200,
+                "material_diagnostics": "snapshot", "material_seed": 42},
+   "processes": 4,
+   "parity": "P1-0 rules: final codes vs the 75 Native samples, evaluator verdict and metrics vs Native (same evaluator), position-difference band over the 4 processes",
+   "batched": "UNSUPPORTED_SOLVER (tlmpm_v5); option (a) deferred to user decision U-P15-1",
+   "cameras": "none", "robot": null
+  },
+  {
+   "id": "C2",
+   "name": "cut_v7_2_batched",
+   "description": "configs/rl_benchmark/cut_v7_2_v1.json: the versioned opt-in scene bar_flat_board_tlmpm_v7_2_v1 (solver tlmpm_v7_2), ideal tracking, reference_command_policy_v1, batched",
+   "boundary": "batched_headless (single_env_headless reference band first, T5.6 (ii))",
+   "physics": "full material physics of a NEW configuration (solver differs from the Native CUT reference)",
+   "phase": "P1-5 T5.6 (ii) single reference, T5.7 batched (needs T5.2 after P1-2b)",
+   "reduced_fidelity": true,
+   "reduced_fidelity_reasons": ["ideal_edge_tracking_no_robot_dynamics", "reaction_not_fed_back", "no_finger_pad_obstacles"],
+   "workload": "configs/rl_benchmark/cut_v7_2_v1.json",
+   "cameras": "none", "robot": null
+  },
+  {
+   "id": "C3",
+   "name": "cut_v7_2_lab_b1",
+   "description": "Optional (T5.9 stretch): C2 task in the Isaac Lab Newton batched env with the B1 rigid tool mount (reduced_fidelity: rigid_tool_mount_no_grasp)",
+   "boundary": "batched_headless",
+   "physics": "full material + rigid-mount robot",
+   "phase": "P1-5 T5.9 (stretch)",
+   "status": "NOT_RUN",
+   "reduced_fidelity": true,
+   "cameras": "none"
+  }
+ ]
+}

@@ -1,0 +1,70 @@
+{
+ "schema": "rcs_rl_benchmark_workloads_v1",
+ "source": "docs/RL_READY_PLAN.md section 3",
+ "boundaries": ["single_env_native", "single_env_headless", "batched_headless"],
+ "row_columns": ["N", "particles/env", "control Hz", "material dt", "cameras", "env-steps/s", "aggregate sim-time/wall", "VRAM peak", "reset p95", "physics verdict"],
+ "workloads": [
+  {
+   "id": "A",
+   "name": "physics-only material driven by a recorded measured tool trajectory",
+   "physics": "full",
+   "phase": "P1-0",
+   "p1_0_status": "MEASURED",
+   "reduced_fidelity": false,
+   "material": {"task_family": "seeded_trim", "scene_version": "rcs_trim_random_sim_v1", "representative_scene_seed": 512,
+                "solver": "tlmpm_v7_2", "cutting_law": 8, "max_cuts": 2, "slots_per_node": 8, "v7_2_optimizations": true,
+                "material_diagnostics": "device_reduction_v1", "particle_spacing_m": 0.001, "grid_dx_m": 0.004,
+                "material_dt_s": 0.0001, "control_dt_s": 0.02, "control_hz": 50, "substeps_per_control_step": 200,
+                "material_seed": 42},
+   "driver": {"kind": "measured_trajectory_replay", "schema": "rcs_measured_trajectory_v1",
+              "trajectories": ["wp17/native_optimized_001/seed_512/box/env/recording/attempt_000",
+                               "wp17/native_optimized_001/seed_15/box/env/recording/attempt_000"],
+              "inputs_per_step": ["measured edge pose [7]", "handle + two finger pad obstacle boxes [3,2,3]", "cut flag and digit"],
+              "steps": 1200, "real_cutting": true, "reaction_feedback_into_trajectory": false},
+   "robot": null, "cameras": "none", "recording": "none"
+  },
+  {
+   "id": "B",
+   "name": "robot + material + contact",
+   "physics": "full",
+   "phase": "P1-1 (robot batching)",
+   "p1_0_status": "NOT_RUN",
+   "reduced_fidelity": false,
+   "description": "Franka(s) + physically grasped tool + material coupling with the 20 ms delayed reaction wrench; robot batching route per ADR 0021.",
+   "material": "as workload A", "robot": {"arms": "Franka Panda (cutting arm; second arm parked)", "dof_per_arm": 9, "coupling_delay_s": 0.02},
+   "cameras": "none", "recording": "none"
+  },
+  {
+   "id": "C",
+   "name": "original CUT (CUT-01 family / configured cut scenes)",
+   "physics": "full",
+   "phase": "P1-5",
+   "p1_0_status": "NOT_RUN",
+   "reduced_fidelity": false,
+   "cameras": "per row", "recording": "per row"
+  },
+  {
+   "id": "D",
+   "name": "original TRIM (seeded_trim rcs_trim_random_sim_v1, seeds 512 / 15, WP-17 configuration)",
+   "physics": "full",
+   "phase": "P1-0 replay, P1-5 live",
+   "p1_0_status": "MEASURED",
+   "p1_0_mode": "measured_trajectory_replay of the complete WP-17 Native episodes (same measurement as workload A, both seeds)",
+   "p1_5_mode": "live batched episode with the independent evaluator",
+   "reduced_fidelity": false,
+   "scene_seeds": [512, 15], "simulation_seed": 42, "controller": "trim_skim_c3", "actions": 1200, "simulated_episode_s": 24,
+   "native_reference": "docs/evidence/wp17/performance_001.json",
+   "material": "as workload A", "cameras": "none (headless replay); Native reference: global_d455 + wrist_d405_0", "recording": "none"
+  },
+  {
+   "id": "E",
+   "name": "dynamic rubber (rubber_material_v1)",
+   "physics": "full",
+   "phase": "Phase 2",
+   "p1_0_status": "NOT_RUN",
+   "reduced_fidelity": false,
+   "material": "rubber_material_v1 (not yet defined; SIMULATOR_ONLY_UNCALIBRATED)",
+   "cameras": "per row", "recording": "per row"
+  }
+ ]
+}

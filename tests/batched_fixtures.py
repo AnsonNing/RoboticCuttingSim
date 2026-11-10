@@ -1,0 +1,180 @@
+"""Shared helpers for the batched-material CPU tests (ADR 0021 §5 L0/L1).
+
+Small TRIM scenes (seeded_trim seeds, coarse particle spacing 2.5 mm, unchanged 4 mm grid, 0.1 ms material
+dt and 200 substeps per 20 ms control step) keep Warp-CPU runtimes to seconds per control step. Every env
+of a batch is compared with its own frozen single ``LiveCuttingMaterial`` driven by the same measured edge
+poses (the frozen SciPy ``interpolate_measured_poses`` output) and the same cut digits.
+"""
+from dataclasses import replace
+
+import numpy as np
+import warp as wp
+
+from robotic_cutting_sim.coupled_robot import CouplingConfig, interpolate_measured_poses
+from robotic_cutting_sim.live_material import LiveCuttingMaterial
+from robotic_cutting_sim.scene_config import compile_task
+from robotic_cutting_sim.seeded_trim import generate_scene, goal_config
+
+SPACING = .0025
+# Edge x (world) about 2 mm before each seed's first protrusion at the reference cutting height (t = 4 s).
+BUMP_FRONT_X = {512: .0365, 15: -.0372, 7: -.0390}
+# (dx per control step [m], cut digit): arm digit 0, switch to digit 1 (progress restart), then disarm.
+SEQUENCE = ((.001, 0), (.001, 0), (.001, 0), (.001, 1), (.0005, -1))
+
+_TASKS = {}
+
+
+def trim_task(seed, spacing=SPACING, material=None):
+    key = (seed, spacing)
+    if key not in _TASKS:
+        _TASKS[key] = compile_task(generate_scene(seed), goal_config(), seed=42, particle_spacing_m=spacing)
+    task = _TASKS[key]
+    if material:
+        task = replace(task, material=replace(task.material, **material))
+    return task
+
+
+def trim_material(seed, spacing=SPACING, material=None):
+    """An un-reset frozen single v7_2 material on the Warp CPU device (the Native configured-task path)."""
+    task = trim_task(seed, spacing, material)
+    config = CouplingConfig(control_dt=task.control_dt_s, material_dt=1e-4, dx=task.grid_dx_m, device="cpu")
+    return LiveCuttingMaterial(config, task=task, max_cuts=task.max_cuts, cutting_law=task.cutting_law,
+                               solver="tlmpm_v7_2")
+
+
+def start_pose(seed, spacing=SPACING):
+    pose = np.asarray(trim_task(seed, spacing).reference_edge_pose_world(4.0), float)
+    pose[0] = BUMP_FRONT_X[seed]
+    return pose
+
+
+def advance_single(material, pose, step, cut):
+    """LiveCuttingMaterial.advance with an explicit digit (-1 disarms)."""
+    return material.advance(pose, (step+1)*material.config.control_dt, cutting=cut >= 0, cut_index=max(cut, 0))
+
+
+def host_inputs(materials, last, current, substeps):
+    """Frozen per-env interpolation of the single path (its _pose_local + interpolate_measured_poses)."""
+    poses, twists = [], []
+    for m, a, b in zip(materials, last, current):
+        p, t = interpolate_measured_poses(m._pose_local(a), m._pose_local(b), substeps, m.config.control_dt)
+        poses.append(p)
+        twists.append(t)
+    return np.concatenate(poses), np.concatenate(twists)
+
+
+def drive_solver(solver, poses, twists, cuts):
+    """One control step of a bare BatchedTLMPMv7_2 as LiveCuttingMaterial.advance does it (CPU, no graph)."""
+    T = solver.trajectory_length
+    solver.poses.assign(poses)
+    solver.twists.assign(twists)
+    solver.cuts.assign(np.repeat(np.asarray(cuts, np.int32), T))
+    solver.zero_control_step_accumulators()
+    for _ in range(solver.substeps):
+        solver.step()
+
+
+def single_arrays(bed):
+    """Every Warp array of a frozen single solver (vars()-complete), plus its fixture data."""
+    out = {name: value.numpy() for name, value in vars(bed).items() if isinstance(value, wp.array)}
+    if bed.fixture_data is not None:
+        _, centers, halves, plane = bed.fixture_data
+        out["fixture_data"] = (centers.numpy(), halves.numpy(), np.array(plane, np.float32))
+    return out
+
+
+def compare_env(solver, e, bed):
+    """Names of arrays where env e of the batch differs (np.array_equal) from the single solver."""
+    snap = solver.snapshot(e)
+    reference = single_arrays(bed)
+    missing = sorted(set(reference)-set(snap))
+    if missing:
+        raise AssertionError(f"snapshot lacks single-solver arrays {missing}")
+    bad = []
+    for name, value in reference.items():
+        if name == "fixture_data":
+            if not all(np.array_equal(a, b) for a, b in zip(snap[name], value)):
+                bad.append(name)
+        elif snap[name].shape != value.shape or not np.array_equal(snap[name], value):
+            bad.append(name)
+    return bad
+
+
+def compare_snapshots(a, b):
+    bad = []
+    for name in a:
+        if name == "fixture_data":
+            if not all(np.array_equal(x, y) for x, y in zip(a[name], b[name])):
+                bad.append(name)
+        elif not np.array_equal(a[name], b[name]):
+            bad.append(name)
+    return bad
+
+
+# ----------------------------------------------------------------------------- BatchedCuttingMaterial helpers
+
+MATERIAL_ENV_ARRAYS = ("pending_wrench", "applied_previous", "pad_wrench", "step_count", "seed", "last_pose",
+                       "measured_pose", "cut_input", "pose_status", "invalid_reason")
+
+
+def batch_material(configs, **options):
+    """BatchedCuttingMaterial (Warp CPU, parity mode) over [(seed, material overrides, reset seed)]."""
+    from robotic_cutting_sim.batched import layout
+    from robotic_cutting_sim.batched.material_batch import BatchedCuttingMaterial
+    specs = [layout.EnvSpec(trim_material(seed, material=material), start_pose(seed), reset_seed)
+             for seed, material, reset_seed in configs]
+    return BatchedCuttingMaterial(specs, device="cpu", parity_mode=True, **options)
+
+
+def env_state(material, e):
+    """Solver snapshot of env e plus that env's rows of every per-env material array (host copies)."""
+    state = material.snapshot(e)
+    for name in MATERIAL_ENV_ARRAYS:
+        state[f"material.{name}"] = getattr(material, name).numpy()[e].copy()
+    return state
+
+
+def step_material(material, poses, cuts):
+    """One control step through the frozen SciPy interpolation (L0 input path)."""
+    material.advance(np.asarray(poses, np.float64), np.asarray(cuts, np.int32), interpolation="host_reference")
+
+
+# ----------------------------------------------------------------------------- review-fix scenes (2026-11-10)
+
+def yawed_trim_material(seed, yaw_deg, boxes_edge=None, recipients=(None, "left", "right"), spacing=SPACING):
+    """An un-reset frozen single v7_2 TRIM material whose workpiece (and board) is yawed about world z, so
+    ``T_world_local`` is a non-identity rotation; ``boxes_edge [3,2,3]`` configures handle + two pads with
+    reaction recipients (``LiveCuttingMaterial.configure_pad_obstacles``)."""
+    import copy
+    scene = copy.deepcopy(generate_scene(seed))
+    scene["workpiece"]["world_pose"]["yaw_deg"] = float(yaw_deg)
+    scene["supports"]["workcell"]["overrides"] = {"cutting_board": {"yaw_deg": float(yaw_deg)}}
+    task = compile_task(scene, goal_config(), seed=42, particle_spacing_m=spacing)
+    config = CouplingConfig(control_dt=task.control_dt_s, material_dt=1e-4, dx=task.grid_dx_m, device="cpu")
+    material = LiveCuttingMaterial(config, task=task, max_cuts=task.max_cuts, cutting_law=task.cutting_law,
+                                   solver="tlmpm_v7_2")
+    if boxes_edge is not None:
+        material.configure_pad_obstacles(np.asarray(boxes_edge, np.float32), list(recipients))
+    return material
+
+
+def yawed_start_pose(material, seed):
+    pose = np.asarray(material.task.reference_edge_pose_world(4.0), float)
+    pose[0] = BUMP_FRONT_X[seed]
+    return pose
+
+
+def block_bed(size, obstacles, **config):
+    """A frozen single ``tlmpm_v7_2.TLMPM`` lattice block (2 mm spacing, bottom on z=0) with the ruler-knife
+    profile, edge-frame obstacle boxes, a fixture box under it and a table plane (no LiveCuttingMaterial)."""
+    from robotic_cutting_sim import tlmpm_v7_2
+    from robotic_cutting_sim.blade_probe import block
+    from robotic_cutting_sim.material_config import TLMPMConfig
+    from robotic_cutting_sim.tool_profile import RULER_KNIFE_V2_Y
+    polygon, half = RULER_KNIFE_V2_Y.tlmpm_profile()
+    points, masses = block(size_m=size, spacing=.002)
+    base = dict(cuts=2, floor=False, fixture_walls=False, blade_half_width=float(half))
+    base.update(config)
+    return tlmpm_v7_2.TLMPM(points, masses, .002, TLMPMConfig(**base), "cpu", blade_profile_xz=polygon,
+                            cutting_law=8, obstacle_boxes_edge=obstacles,
+                            fixture_boxes=[[[0., 0., -.002], [.05, .05, .002]]], table_plane=[0., 0., 1., .0012])
