@@ -20,10 +20,14 @@ were built with; they must agree; the defaults add no array and no launch):
 - ``state_precision="f64_shadow_v1"`` (F10): the single solver's ``_deformation_f64`` / ``_positions_f64`` UNCHANGED
   over flat float64 shadows ``F64`` / ``x64``.
 
-BC launch (``bc_launch``): ``constrained_list_v1`` (default since §20) launches the BC pass over the packed list of
-constrained nodes (increasing global id) instead of every node; ``all_nodes_v1`` is the P2-1/P2-2 launch, kept for
-the A/B parity test. On the CPU device both visit the constrained nodes in the same order with the same arithmetic
-(the all-node launch returns at once on unconstrained nodes), so the results are bitwise equal.
+BC launch (``bc_launch``, ADR 0023 §20.2): ``all_nodes_v1`` is the P2-1/P2-2 launch (``_bc_b`` over every node,
+group maps evaluated per node); ``constrained_list_v1`` launches the same body over the packed list of constrained
+nodes (increasing global id); ``motion_table_v1`` (default since §20) also evaluates the group maps of every substep
+boundary once per control step (``_motion_table_b``, ``prepare_motion_table``) and the BC kernel reads them. On the CPU
+device all three visit the constrained nodes in the same order with the same arithmetic (the all-node launch returns
+at once on unconstrained nodes; the table holds exactly the M(s), b(s) that ``group_target`` computes before
+M X + b), so the results are bitwise equal (tested). The GPU cost of the BC pass was per-thread float64 map evaluation,
+not the node loop (``artifacts/rl_ready/p2_3_prep/bc_bench_001/002``).
 """
 import hashlib
 from pathlib import Path
@@ -48,7 +52,7 @@ SOLVER_NAME = "tlmpm_rubber_v1_batch"
 BASE_SOLVER = "tlmpm_rubber_v1"
 STATUS = "EXPERIMENTAL_NOT_ACCEPTED"
 BC_LAUNCHES = ("constrained_list_v1", "all_nodes_v1", "motion_table_v1")
-DEFAULT_BC_LAUNCH = "constrained_list_v1"
+DEFAULT_BC_LAUNCH = "motion_table_v1"
 _HERE = Path(__file__).resolve()
 
 

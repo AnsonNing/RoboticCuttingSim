@@ -107,7 +107,8 @@ def _classified():
 def test_reset_classification_is_vars_complete():
     batch = rmb.BatchedRubberMaterial([_live()], device="cpu", parity_mode=True)
     solver_names = set(batch.solver.device_arrays())
-    assert solver_names == _classified(), solver_names ^ _classified()
+    classified = _classified() | set(rmb.SOLVER_RECOMPUTED_ARRAYS)       # default bc_launch motion_table_v1
+    assert solver_names == classified, solver_names ^ classified
     material = {k for k, v in vars(batch).items() if hasattr(v, "numpy") and k != "solver"}
     declared = set(rmb.MATERIAL_RESET_ARRAYS+rmb.MATERIAL_CONSTANT_ARRAYS+rmb.RESET_INPUTS
                    + rmb.RECOMPUTED_EVERY_CONTROL_STEP+rmb.DIAGNOSTICS_SCRATCH)

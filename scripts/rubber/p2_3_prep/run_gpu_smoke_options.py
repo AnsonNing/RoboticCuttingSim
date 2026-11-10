@@ -6,8 +6,9 @@
 
 Workload E (``configs/rubber/workload_e_v1.json``: profile rubber_rl_v1, n_t 3, case A clamp, 50 Hz, per-reset material
 randomisation inside the declared ranges, dt from the range maxima), stable-step guard 1.0, N = 4, CUDA graph chunks.
-Rows (back to back, same process): ``default_all_nodes`` (v1 options, the P2-2 all-node BC launch),
-``default_list`` (v1 options, ``constrained_list_v1``), ``options_list`` (F8 + F9 + F10, ``constrained_list_v1``).
+Rows (back to back, same process; ``--rows``): ``default_all_nodes`` (v1 options, the P2-2 all-node BC launch), then
+the BC variant under test with v1 options and with F8 + F9 + F10: ``list`` = ``constrained_list_v1`` (gpu_smoke_001),
+``motion_table`` = ``motion_table_v1`` (default).
 Per row: build, 1 cold + ``--warm`` control steps, masked resets with resampled material, L2 invariants (finite, mass
 constant between resets, invalid bits 0, guard violations 0, env-ownership audits 0); for ``options_list`` also the
 option invariants (F = float32(F64), x = float32(x64) bitwise; F8 MUSL momentum on the constrained (node, component)
@@ -32,8 +33,10 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT/"scripts"/"rubber"))
 ALL = {"dirichlet": "consistent_mass_projection_v1", "traction_work": "grid_displacement_v1",
        "state_precision": "f64_shadow_v1"}
-ROWS = (("default_all_nodes", {}, "all_nodes_v1"), ("default_list", {}, "constrained_list_v1"),
-        ("options_list", ALL, "constrained_list_v1"))
+ROWS = {"list": (("default_all_nodes", {}, "all_nodes_v1"), ("default_list", {}, "constrained_list_v1"),
+                 ("options_list", ALL, "constrained_list_v1")),                       # gpu_smoke_001
+        "motion_table": (("default_all_nodes", {}, "all_nodes_v1"), ("default_motion_table", {}, "motion_table_v1"),
+                         ("options_motion_table", ALL, "motion_table_v1"))}
 
 
 def free_mb(index):
@@ -70,6 +73,7 @@ def main():
     ap.add_argument("--warm", type=int, default=3)
     ap.add_argument("--resets", type=int, default=4)
     ap.add_argument("--profile-substeps", type=int, default=100)
+    ap.add_argument("--rows", default="motion_table", choices=sorted(ROWS))
     args = ap.parse_args()
     out = Path(args.out)
     if out.exists():
@@ -124,7 +128,7 @@ def main():
         wp.synchronize_device(args.device)
         return batch, lives_s, time.perf_counter()-t
 
-    for label, options, bc_launch in ROWS:
+    for label, options, bc_launch in ROWS[args.rows]:
         wp.synchronize_device(args.device)
         t0 = time.perf_counter()
         batch, lives_s, first_reset_s = build(options, bc_launch)

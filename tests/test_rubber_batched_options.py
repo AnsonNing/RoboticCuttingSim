@@ -179,6 +179,7 @@ def test_reset_classification_is_vars_complete_with_options():
     batch = rmb.BatchedRubberMaterial([_live(ALL)], device="cpu", parity_mode=True)
     names = set(batch.solver.device_arrays())
     declared = set(rmb.SOLVER_RESET_ARRAYS+rmb.SOLVER_CONSTANT_ARRAYS+rmb.SOLVER_SHARED_ARRAYS)
+    declared |= set(rmb.SOLVER_RECOMPUTED_ARRAYS)          # default bc_launch motion_table_v1
     for table in (rmb.OPTION_RESET_ARRAYS, rmb.OPTION_CONSTANT_ARRAYS):
         for value in table.values():
             declared |= set(value)
@@ -238,7 +239,7 @@ def test_defaults_add_no_option_array_and_report_v1_ids():
     opts = batch.receipt()["solver"]["options"]
     assert (opts["dirichlet"], opts["traction_work"], opts["state_precision"]) == (
         "lumped_v1", "particle_velocity_v1", "float32_v1")
-    assert opts["bc_launch"] == rb.DEFAULT_BC_LAUNCH == "constrained_list_v1"
+    assert opts["bc_launch"] == rb.DEFAULT_BC_LAUNCH == "motion_table_v1"
     assert opts["bc_nodes"] == int(np.count_nonzero(batch.packed.host["node_group"] >= 0)) > 0
 
 
