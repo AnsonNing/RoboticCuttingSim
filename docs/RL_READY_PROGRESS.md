@@ -27,7 +27,10 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      `frozen_v1` is still exposed. Multi-variant in-process A/B runs are INVALID; P1-2 and P1-1b agents are auditing
      their runs for multi-grid processes (label `INVALID_MULTI_GRID_PROCESS`).
   4. P1-6: design DONE in the external agentic optimizer repository (design doc + ADR + CPU scaffold, 35 tests);
-     its thin adapter (worktree/proposal/bench/accept/PR/pin/receipt) is being implemented there, CPU only.
+     its thin adapter (worktree/proposal/bench/accept/PR/pin/receipt) is implemented there (CPU rehearsal against a
+     fake RCS repo PASS, full CPU suite 781 passed; live GPU rehearsal and first pin NOT_RUN until R0 + Phase 1 merge).
+     R0 is being implemented in worktree `/home/ningan/RoboticCuttingSim-rl-r0` (branch `claude/rl-p1-6-r0` from
+     `claude/rl-p1-3a`).
      Cycle 1 baseline = the Phase 1 merge on RCS `main`. RCS-side prerequisite R0 (after P1-2 and P1-3a land):
      `scripts/rl_ready/run_perf_acceptance.py` (variant JSON → `open_vector_env` kwargs, `--out` outside the
      checkout, stdout timing markers, physics dumps), `scripts/rl_ready/judge_perf_acceptance.py` (runs from the
