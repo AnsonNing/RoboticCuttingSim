@@ -51,7 +51,11 @@ def frozen_modules(frozen):
     spec = importlib.util.spec_from_file_location("make_p1_0_evidence", frozen / "scripts/rl_ready/make_p1_0_evidence.py")
     p10 = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(p10)
-    return benchmark, p10
+    spec = importlib.util.spec_from_file_location("make_p1_5_cut_evidence", frozen / "scripts/rl_ready/make_p1_5_cut_evidence.py")
+    p15 = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(p15)
+    p15.P15 = D   # the chain moved the run directories of this window into D
+    return benchmark, p10, p15
 
 
 # ----------------------------------------------------------------------------------------------- chain logs
@@ -66,6 +70,9 @@ def parse_chain(path):
             continue
         ts, kind, name, rest = m.groups()
         t = datetime.fromisoformat(ts).timestamp()
+        if kind == "moved":   # "moved <src>/excl001_<row>_NNN -> <dst>"
+            rest = f"{name}{rest}"
+            name = re.sub(r"^excl001_(.*)_\d{3}$", r"\1", Path(name).name)
         r = rows.setdefault(name, {"name": name})
         if kind == "start":
             r["start"], r["start_iso"] = t, ts
@@ -163,6 +170,34 @@ def labelled_from_codes(path):
         else [int(np.count_nonzero(codes))]
 
 
+CATCH = re.compile(r"^(\S+) pid=(\d+) type=(\S+) mem_mib=(\S+) Name : (.*?) \| ps: (.*)$")
+
+
+def catcher_summary(paths, windows):
+    """Foreign processes seen by gpu_process_catcher.sh (every ~1 s, names included): our own benchmark processes
+    (interpreters of the frozen checkout's venvs) are dropped; for the others the process name is reduced to its
+    last three path components (no environment paths)."""
+    seen = {}
+    for path in paths:
+        if not Path(path).exists():
+            continue
+        for line in Path(path).read_text().splitlines():
+            m = CATCH.match(line)
+            if not m:
+                continue
+            t, pid, typ, mem, name, ps = m.groups()
+            if not name.strip() or "isaacsim-venv" in name or "isaaclab-venv" in name:
+                continue
+            short = "/".join(name.strip().split("/")[-3:])
+            entry = seen.setdefault(int(pid), dict(pid=int(pid), type=typ, name=short, memory_mib=mem,
+                                                    first=float(t), last=float(t), samples=0))
+            entry["last"] = float(t)
+            entry["samples"] += 1
+    for entry in seen.values():
+        entry["rows"] = [n for n, (a, b) in windows.items() if a - 1 <= entry["first"] <= b + 1]
+    return sorted(seen.values(), key=lambda e: e["first"])
+
+
 # ----------------------------------------------------------------------------------------------- row builders
 def a_row(B, name, chain_row, samples, seed):
     run = D / name
@@ -226,12 +261,29 @@ def single_rows(B, P10, name, chain_row, samples):
                  git_dirty=manifest["git_dirty"], warm_step_mean_s=t.get("warm_step_mean_s"),
                  warm_step_p95_s=t.get("warm_step_p95_s"), warm_resets_s=t.get("warm_resets_s"),
                  first_reset_s=t.get("first_reset_s"), invariants=result["invariants"].get("status"),
-                 parity_final_codes_equal=(result.get("parity") or {}).get("final_codes_equal"),
                  wall_s=result.get("wall_s"), classification=cls)
     parity = result.get("parity") or {}
-    extra["parity"] = {k: parity.get(k) for k in ("final_codes_equal", "final_code_differences",
-                                                   "max_position_diff_m", "final_max_position_diff_m")
-                       if k in parity}
+    extra["parity"] = {k: parity.get(k) for k in ("final", "first_sample_with_code_difference",
+                                                   "max_position_diff_m_over_time", "samples_compared")}
+    return extra, rows
+
+
+def single_cut_rows(P15M, name, chain_row, samples):
+    run = Path(chain_row.get("moved", "").split(" -> ")[-1]) if chain_row.get("moved") else None
+    if run is None or not (run / "result.json").exists():
+        return dict(name=name, status="NO_RUN_DIR", rc=chain_row.get("rc"), skipped=chain_row.get("skipped")), []
+    summary = P15M.run_summary(run.name)
+    if summary["status"] != "COMPLETE":
+        return dict(name=name, run=run.name, status=summary["status"], error=summary.get("error")), []
+    rows = P15M.headless_rows(summary, "C2-v7_2-single-reference", P15M.HEADLESS_REFERENCE_CONTACTS, True,
+                              "P1-5 run_cut_single.py --mode reference (2 warm resets).")
+    win = window_stats(samples, chain_row["start"], chain_row["end"])
+    cls = classify(summary["_result"]["telemetry"], win, chain_row)
+    for row in rows:
+        row.gpu_sharing = cls["label"]
+    extra = {k: v for k, v in summary.items() if not k.startswith("_")}
+    extra.update(name=name, rc=chain_row.get("rc"), start=chain_row.get("start_iso"), end=chain_row.get("end_iso"),
+                 classification=cls)
     return extra, rows
 
 
@@ -308,7 +360,10 @@ def b_rows(B, name, chain_row, samples):
     term = r.get("termination_reason")
     multi = (r.get("hashgrids") or {}).get("multi_grid_process")
     complete = w.get("episode_steps_driven") == 1200 and len(evals) == r["N"]
-    verdict = "PASS" if complete and all(v == "PASS" for v in verdicts) and not any(term or []) and not multi else "FAIL"
+    # termination_reason_v1 bitfield: 16 = TRUNCATED_HORIZON (the 1200-step horizon, not a termination); every
+    # other bit is terminal (rigid/material invalid, grasp lost, IK streak, input guard, infrastructure).
+    terminal = [int(x) & ~16 for x in (term or [])]
+    verdict = "PASS" if complete and all(v == "PASS" for v in verdicts) and not any(terminal) and not multi else "FAIL"
     win = window_stats(samples, chain_row["start"], chain_row["end"])
     cls = classify(tele, win, chain_row)
     b2 = r["tool_mount"] == "physical_grasp_v1"
@@ -321,7 +376,7 @@ def b_rows(B, name, chain_row, samples):
                  cold=r.get("cold"), warm=w, evaluation=[dict(env=e.get("env"), verdict=v, labelled=e.get("labelled"),
                                                              final_codes_sha256=e.get("final_codes_sha256"))
                                                         for e, v in zip(evals, verdicts)],
-                 termination_reason=term, reward_fractions=r.get("reward_fractions"),
+                 termination_reason=term, terminal_bits_excluding_truncation=terminal, reward_fractions=r.get("reward_fractions"),
                  grasp_trace_summary=r.get("grasp_trace_summary"), hashgrids=r.get("hashgrids", {}).get("status"),
                  hashgrid_cuda_count=r.get("hashgrids", {}).get("cuda_count"), dofs_per_world=dof,
                  particles_per_env=r.get("particles_per_env"), commit=r.get("commit"), verdict=verdict,
@@ -347,7 +402,7 @@ def b_rows(B, name, chain_row, samples):
                f"per step (mean {w.get('step_wall_s_mean', 0):.3f} s, p95 {w.get('step_wall_s_p95', 0):.3f} s); no "
                f"resets in the episode (cold reset {(r.get('cold') or {}).get('reset_s', 0):.2f} s"
                f"{' incl. grasp settle' if b2 else ''}); physics verdict = frozen evaluator PASS in every env, "
-               "termination reason 0, one device HashGrid."))
+               "no terminal termination bit (16 = horizon truncation only), one device HashGrid."))
     return extra, [br]
 
 
@@ -441,16 +496,60 @@ def prior_rows(frozen):
     return prior
 
 
+CONTACT_CODES = {A_CONTACTS: "A", CUT_CONTACTS: "C", B_CONTACTS: "B"}
+CAMERA_CODES = {"none": "none"}
+
+
+def report_table(rows, runs):
+    """Plan columns + substeps, robot DOF, contacts, recording, warm/cold, GPU, sharing (compact codes, legend in the
+    report)."""
+    head = ("boundary", "workload", "N", "particles/env", "control Hz", "material dt", "cameras", "env-steps/s",
+            "aggregate sim-time/wall", "VRAM peak", "reset p95", "physics verdict", "substeps", "robot DOF", "contacts",
+            "recording", "warm/cold", "GPU", "sharing (foreign load)", "source")
+    lines = ["| " + " | ".join(head) + " |", "|" + "|".join("---" for _ in head) + "|"]
+    for r in rows:
+        co = r.co_tenant or {}
+        load = r.gpu_sharing
+        if r.source == "wp17_evidence":
+            load += " (process list only)"
+        elif r.gpu_sharing == "SHARED_GPU":
+            bits = []
+            if co.get("foreign_sm_pct_mean") is not None:
+                bits.append(f"SM mean {co['foreign_sm_pct_mean']:.0f} %/max {co.get('foreign_sm_pct_max') or 0:.0f} %")
+            if co.get("foreign_graphics_pids"):
+                bits.append(f"graphics PID {co['foreign_graphics_pids']} max {co.get('foreign_memory_mib_max') or 0:.0f} MiB")
+            if co.get("foreign_compute_pids"):
+                bits.append(f"compute PID {co['foreign_compute_pids']}")
+            load += f" ({'; '.join(bits)})"
+        cams = "Native RGB-D rig" if r.boundary == "single_env_native" else r.cameras
+        contacts = CONTACT_CODES.get(r.contacts, "N" if r.boundary == "single_env_native" else "H")
+        rec = "none" if r.recording.startswith("none") else ("eval stream" if r.recording.startswith("evaluation")
+                                                             else "full Native")
+        gpu = "RTX 5090 #1, " + (r.gpu_driver or "driver UNVERIFIED")
+        cells = (r.boundary, r.workload_id, r.num_envs, r.particles_per_env, f"{r.control_hz:g}",
+                 f"{r.material_dt_s:g} s", cams,
+                 "n/a" if r.env_steps_per_s is None else f"{r.env_steps_per_s:.3f}",
+                 "n/a" if r.aggregate_sim_time_per_wall is None else f"{r.aggregate_sim_time_per_wall:.4f}",
+                 "n/a" if r.vram_peak_mib is None else f"{r.vram_peak_mib:.0f} MiB",
+                 "n/a" if r.reset_p95_s is None else f"{r.reset_p95_s:.3f} s", r.physics_verdict,
+                 r.substeps_per_control_step, r.robot_dof, contacts, rec, r.warm_cold, gpu, load,
+                 r.source.replace("measured (", "").rstrip(")"))
+        lines.append("| " + " | ".join(str(c) for c in cells) + " |")
+    return "\n".join(lines) + "\n"
+
+
 # ----------------------------------------------------------------------------------------------- main
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--frozen", type=Path, default=FROZEN)
     p.add_argument("--out", required=True)
     args = p.parse_args()
-    B, P10 = frozen_modules(args.frozen)
+    B, P10, P15M = frozen_modules(args.frozen)
     chain_a = parse_chain(D / "chain_a.log")
     chain_b = parse_chain(D / "chain_b.log") if (D / "chain_b.log").exists() else {}
+    chain_c = parse_chain(D / "chain_c.log") if (D / "chain_c.log").exists() else {}
     sa, sb = sampler(D / "sampler_chain_a.jsonl"), sampler(D / "sampler_chain_b.jsonl")
+    sc = sampler(D / "sampler_chain_c.jsonl")
     runs, rows, failures = {}, [], []
 
     p10 = load(args.frozen / "docs/evidence/rl_ready/p1_0_baseline_001.json")
@@ -473,7 +572,7 @@ def main():
             failures.append(extra)
 
     rows_by_key = {}
-    for chain, seed, log in (("A", 512, chain_a), ("B", 15, chain_b)):
+    for chain, seed, log in (("A", 512, chain_a), ("B", 15, chain_b), ("C", 15, chain_c)):
         for name, cr in log.items():
             if not name.startswith("a_n"):
                 continue
@@ -481,13 +580,18 @@ def main():
                 runs[name] = dict(name=name, status="NOT_FINISHED", start=cr.get("start_iso"))
                 failures.append(runs[name])
                 continue
-            extra, br = a_row(B, name, cr, sa if chain == "A" else sb, seed)
+            extra, br = a_row(B, name, cr, {"A": sa, "B": sb, "C": sc}[chain], seed)
+            extra["chain"] = chain
             runs[name] = extra
             if br is None:
                 failures.append(extra)
                 continue
             rows.append(br)
-            rows_by_key[(br.workload_id, br.num_envs)] = br
+            key = (br.workload_id, br.num_envs)
+            # several rows of one configuration (a repeat): comparisons use the EXCLUSIVE one, else the first
+            if key not in rows_by_key or (br.gpu_sharing == "EXCLUSIVE_GPU"
+                                          and rows_by_key[key].gpu_sharing != "EXCLUSIVE_GPU"):
+                rows_by_key[key] = br
             if not extra["classification"]["chain_sampler_used"]:
                 extra["classification"]["note"] = "chain sampler started after this row began; rule (2) unavailable"
 
@@ -505,21 +609,58 @@ def main():
         if not rr or extra.get("verdict") != "PASS":
             failures.append({k: extra.get(k) for k in ("name", "status", "verdict", "error")})
 
-    for name in ("b1_n1", "b1_n4", "b1_n8", "b1_n16", "b2_n4"):
-        cr = chain_b.get(name)
+    single_cut = None
+    cr = chain_c.get("single_cut_ref")
+    if cr is None or "end" not in cr:
+        runs["single_cut_ref"] = dict(name="single_cut_ref", status="NOT_RUN" if cr is None or "start" not in cr
+                                      else "NOT_FINISHED")
+    else:
+        extra, rr = single_cut_rows(P15M, "single_cut_ref", cr, sc)
+        runs["single_cut_ref"] = extra
+        rows += rr
+        single_cut = next((r for r in rr if r.warm_cold == "warm"), None)
+        if not rr or extra.get("verdict") != "PASS":
+            failures.append({k: extra.get(k) for k in ("name", "status", "verdict", "error")})
+
+    for name in ("b1_n1", "b1_n4", "b1_n8", "b1_n16", "b2_n4", "b1_n4_r2"):
+        in_c = name.endswith("_r2")
+        cr = (chain_c if in_c else chain_b).get(name)
         if cr is None or "end" not in cr:
             runs[name] = dict(name=name, status="NOT_RUN" if cr is None or "start" not in cr else "NOT_FINISHED",
                               skipped=(cr or {}).get("skipped"))
             continue
-        extra, rr = b_rows(B, name, cr, sb)
+        extra, rr = b_rows(B, name, cr, sc if in_c else sb)
+        extra["chain"] = "C" if in_c else "B"
         runs[name] = extra
         rows += rr
         for row in rr:
-            rows_by_key[(row.workload_id.rsplit("-N", 1)[0], row.num_envs)] = row
+            key = (row.workload_id.rsplit("-N", 1)[0], row.num_envs)
+            if key not in rows_by_key or (row.gpu_sharing == "EXCLUSIVE_GPU"
+                                          and rows_by_key[key].gpu_sharing != "EXCLUSIVE_GPU"):
+                rows_by_key[key] = row
         if not rr or extra.get("verdict") != "PASS":
             failures.append({k: extra.get(k) for k in ("name", "status", "verdict", "rc", "log_tail")})
 
+    windows = {n: (cr["start"], cr["end"]) for log in (chain_a, chain_b, chain_c) for n, cr in log.items()
+               if "start" in cr and "end" in cr}
+    # host CPU load (1-min load average, 64 cores), logged every 10 s from 19:00:39 KST (chain B) and in chain C
+    host_load = []
+    for f in ("host_loadavg_chain_b.log", "host_loadavg_chain_c.log"):
+        if (D / f).exists():
+            host_load += [(float(x.split()[0]), float(x.split()[1])) for x in (D / f).read_text().splitlines() if x.strip()]
+    for n, (a, b) in windows.items():
+        v = [x for t, x in host_load if a <= t <= b]
+        if n in runs and isinstance(runs[n], dict):
+            runs[n]["host_loadavg_1min"] = (dict(samples=len(v), min=min(v), median=float(np.median(v)), max=max(v))
+                                            if v else dict(samples=0, note="not logged for this row"))
+    catcher = catcher_summary([D / "gpu1_process_catcher.log", D / "gpu1_process_catcher_chain_c.log"], windows)
     comps = comparisons(rows_by_key, single, prior_rows(args.frozen))
+    if single_cut is not None:
+        comps["batched_cut_vs_single_cut_reference"] = {
+            f"N{n}": dict(batched=row.env_steps_per_s, single=single_cut.env_steps_per_s,
+                          ratio=ratio(row.env_steps_per_s, single_cut.env_steps_per_s), sharing=row.gpu_sharing,
+                          single_sharing=single_cut.gpu_sharing)
+            for (w, n), row in sorted(rows_by_key.items()) if w == "C2-CUT-v7_2"}
     gpu = next((r for r in rows if r.gpu_index == 1 and r.gpu_driver), None)
     evidence = dict(
         schema="rcs_rl_p1_exclusive_perf_v1",
@@ -540,16 +681,19 @@ def main():
             B1="rigid tool mount (reduced fidelity: rigid_tool_mount_no_grasp, finger_opening_fixed_nominal), MJWarp "
                "robot + material with reaction feedback",
             B2="physical grasp (physical_grasp_v1) with the opt-in mjwarp_grip_v1 contact profile, not reduced"),
-        sampler_coverage=dict(chain_a=dict(samples=len(sa), first=sa[0]["t"] if sa else None,
-                                           last=sa[-1]["t"] if sa else None),
-                              chain_b=dict(samples=len(sb), first=sb[0]["t"] if sb else None,
-                                           last=sb[-1]["t"] if sb else None)),
+        sampler_coverage={k: dict(samples=len(v), first=v[0]["t"] if v else None, last=v[-1]["t"] if v else None)
+                          for k, v in (("chain_a", sa), ("chain_b", sb), ("chain_c", sc))},
+        foreign_processes_identified=dict(
+            source="gpu_process_catcher.sh (nvidia-smi -q -d PIDS every ~1 s with names; started at 19:16 KST during "
+                   "chain B row b2_n4, after the transient processes of a_n8_s15_default and b1_n4, which are "
+                   "therefore not identified by name)",
+            processes=catcher),
         runs=runs, rows=[r.to_dict() for r in rows], comparisons=comps, failures_or_not_run=failures,
-        markdown_table=B.markdown_table(rows))
+        markdown_table=B.markdown_table(rows), report_table=report_table(rows, runs))
     out = Path(args.out)
     with out.open("x") as stream:
         json.dump(evidence, stream, indent=1, sort_keys=True, default=str)
-    print(evidence["markdown_table"])
+    print(evidence["report_table"])
     print(json.dumps(comps, indent=1, default=str)[:6000])
     print(hashlib.sha256(out.read_bytes()).hexdigest())
 
