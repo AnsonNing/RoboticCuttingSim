@@ -44,7 +44,8 @@ from ..batched.robot_ik import BatchedEdgeIK, ik_rejection_status_code
 from .actions import EdgeDeltaActionV1
 from .observations import StateObservation
 from .termination import (INVALID_STATE_BITS, TERM_GRASP_LOST, TERM_IK_STREAK, TERM_INFRASTRUCTURE,  # noqa: F401
-                          TERM_MATERIAL_INVALID, TERM_RIGID_INVALID, TERM_TRUNCATED, TERMINATION_REASONS)
+                          TERM_MATERIAL_INVALID, TERM_RIGID_INVALID, TERM_TRUNCATED, TERMINATION_REASONS,
+                          material_termination_bits)
 
 RUNTIME = "rl_gpu_headless"
 BACKEND = "isaac_lab_newton"
@@ -483,8 +484,8 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                              torch.zeros_like(self.termination_reason))
         reason = reason | torch.where(overflow, TERM_INFRASTRUCTURE, 0).to(reason.dtype)
         if self.coupling.material_coupled:
-            material_invalid = wp.to_torch(self.coupling.invalid_reason) != 0
-            reason = reason | torch.where(material_invalid, TERM_MATERIAL_INVALID, 0).to(reason.dtype)
+            # every material bit -> MATERIAL_INVALID; FOREIGN_DEVICE_HASHGRID also INFRASTRUCTURE (rl.termination)
+            reason = reason | material_termination_bits(wp.to_torch(self.coupling.invalid_reason)).to(reason.dtype)
         if self.options.max_consecutive_ik_failures is not None:
             streak = wp.to_torch(self.ik_streak) >= int(self.options.max_consecutive_ik_failures)
             reason = reason | torch.where(streak, TERM_IK_STREAK, 0).to(reason.dtype)
@@ -550,6 +551,8 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         x, v, code = s.x[p0:p1].numpy(), s.v[p0:p1].numpy(), s.code[p0:p1].numpy()
         step = int(self.coupling.step_count[e:e+1].numpy()[0])
         T = self._env_host[e]["T_world_local"]
+        from .evaluation_stream import finite_or_raise
+        finite_or_raise(x, v, f"material state of env {e}")     # NonFiniteSnapshot (a ValueError, as before)
         return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T, codes=np.array(code, copy=True),
                     step_count=step, time_s=step*float(self.task.control_dt_s))
 

@@ -58,6 +58,8 @@ def main():
     parser.add_argument("--stream-every", type=int, default=10)
     parser.add_argument("--observation-profile", default="state", choices=("state", "privileged_state"))
     parser.add_argument("--tool-mount", default="rigid_mount_v1")
+    parser.add_argument("--grip-profile", default=None,
+                        help="isaac_lab_newton grip_contact_profile (e.g. mjwarp_grip_v1 with physical_grasp_v1)")
     parser.add_argument("--spacing", type=float, default=None, help="coarse particle spacing (tests only)")
     parser.add_argument("--max-episode-steps", type=int, default=None)
     parser.add_argument("--non-strict", action="store_true")
@@ -73,7 +75,8 @@ def main():
     row = {"probe": "p1_2b_smoke" if not cpu else "p1_2b_contract_cpu", "backend": args.backend, "N": len(args.tasks),
            "tasks": args.tasks, "steps": args.steps, "reset_step": args.reset_step, "reset_envs": args.reset_envs,
            "evaluation_stream": args.evaluation_stream, "observation_profile": args.observation_profile,
-           "tool_mount": args.tool_mount if args.backend == "isaac_lab_newton" else None, "device": args.device,
+           "tool_mount": args.tool_mount if args.backend == "isaac_lab_newton" else None,
+           "grip_profile": args.grip_profile, "device": args.device,
            "particle_spacing_m": args.spacing or .001, "max_episode_steps": args.max_episode_steps,
            "control_hz": 50, "material_dt_s": 1e-4, "material_substeps_per_control_step": 200, "cameras": "none",
            "recording": "none (evaluation stream on the device when enabled)", "commit": _commit(),
@@ -118,6 +121,8 @@ def main():
                    observation_profile=args.observation_profile, strict=not args.non_strict)
     if args.backend == "isaac_lab_newton":
         options.update(tool_mount=args.tool_mount)
+        if args.grip_profile is not None:
+            options.update(grip_contact_profile=args.grip_profile)
         if cpu:
             options.update(cpu_test_mode=True)
     elif cpu:
@@ -159,6 +164,9 @@ def main():
             row["input_guard_reason_final"] = None if env.input_guard is None else env.input_guard.reason.tolist()
             row["evaluation"] = report["evaluation"]
             row["fidelity"] = receipt["fidelity"]
+            if "grip" in receipt:
+                row["grip"] = receipt["grip"]
+                row["contact_solver"] = receipt["lab"].get("contact_solver")
             row["evaluation_mode"] = receipt["evaluation_mode"]
             row["evaluation_stream_device_bytes"] = (None if receipt["evaluation_stream"] is None
                                                      else receipt["evaluation_stream"]["device_bytes"])

@@ -98,7 +98,8 @@ NATIVE_TRIM_V7_2_REFERENCE = dict(
     source="WP-17 native_optimized_001 (seeded_trim rcs_trim_random_sim_v1, seeds 512/15)")
 
 VECTOR_CODES = BATCH_CODES + ("UNSUPPORTED_RUNTIME", "UNSUPPORTED_OPTION", "UNSUPPORTED_TASK",
-                              "UNSUPPORTED_DEVICE", "UNSUPPORTED_AUTORESET_FINAL_OBS")
+                              "UNSUPPORTED_DEVICE", "UNSUPPORTED_AUTORESET_FINAL_OBS",
+                              "UNSUPPORTED_GRIP_CONTACT_PROFILE")   # isaac_lab_newton: unknown grip contact profile
 
 
 class UnsupportedVectorConfiguration(UnsupportedBatchConfiguration):
@@ -194,34 +195,141 @@ def compile_family(family):
 
 
 TASK_SELECTION_KEYS = ("scene_seed", "family_id", "seed")
+# Configured-scene entries (P1 consolidation): {"scene": <workload id | scene path/dict>, "goal": ..., "family_id":
+# "configured_scene_v1", "planner_options": ..., "seed": <env RNG seed>}; "goal"/"planner_options" only for a scene
+# path/dict (a workload id brings its own).
+CONFIGURED_SELECTION_KEYS = ("scene", "goal", "planner_options", "family_id", "seed")
+CONFIGURED_WORKLOADS = ("cut_v7_2_v1",)
+# What one batched material shares across envs (checked from compiled tasks before any Warp/Torch work).
+BATCH_LAYOUT_FIELDS = ("solver_module", "control_dt_s", "duration_s", "grid_dx_m", "max_cuts", "cutting_law",
+                       "action_limits", "reward_kind")
+
+
+def batch_layout_key(task):
+    """The compiled-task fields one batch must share (``VectorCuttingEnv._build`` refuses a batch that differs)."""
+    from .reward_sever import SEVER_GOAL_TYPES
+    goal_type = task.goal["type"] if getattr(task, "goal_json", None) else None
+    reward_kind = "sever" if goal_type in SEVER_GOAL_TYPES else getattr(task, "goal_kind", None)
+    return dict(solver_module=task.solver_module, control_dt_s=float(task.control_dt_s),
+                duration_s=float(task.duration_s), grid_dx_m=float(task.grid_dx_m), max_cuts=int(task.max_cuts),
+                cutting_law=int(task.cutting_law), action_limits=task.action_limits(), reward_kind=reward_kind)
+
+
+def _configured_entry(e, item):
+    """``(scene, goal, planner_options, workload_id)`` of one configured ``tasks=`` entry."""
+    from .configured_family import FAMILY_ID
+    family = item.get("family_id", FAMILY_ID)
+    if family != FAMILY_ID:
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"tasks[{e}]: family_id {family!r} with 'scene'; "
+                                             f"configured scenes are {FAMILY_ID!r}")
+    scene = item["scene"]
+    if isinstance(scene, str) and scene in CONFIGURED_WORKLOADS:
+        if "goal" in item or "planner_options" in item:
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"tasks[{e}]: workload {scene!r} declares its "
+                                                 "own goal and planner options")
+        from .cut_workload import load_workload, workload_task_args
+        w = load_workload()
+        if w["id"] != scene:
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"tasks[{e}]: workload {scene!r} not declared")
+        args = workload_task_args(w)
+        return args["scene"], args["goal"], args["planner_options"], scene, int(args["seed"])
+    if "goal" not in item:
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"tasks[{e}]: a configured scene path/dict needs "
+                                             f"'goal' (or use a workload id {CONFIGURED_WORKLOADS})")
+    return scene, item["goal"], item.get("planner_options"), None, None
+
+
+def _refuse_mixed_batch(trim_items, configured, base):
+    """A batch of seeded-TRIM slots and configured-scene slots: compile one task of each kind (host, no particles)
+    and refuse with ``UNSUPPORTED_NONUNIFORM_BATCH`` naming the layout fields that differ; a layout-compatible mix
+    is still ``UNSUPPORTED_TASK`` (one family kind per batch; the per-slot compile seed and receipt mapping of a
+    mixed family is not implemented)."""
+    from ..scene_config import compile_task, resolve_scene
+    trim_family = base if isinstance(base, TaskFamily) else TaskFamily(scene_seeds=(trim_items[0][0],))
+    spacing = getattr(base, "particle_spacing_m", None)
+    trim_task = _compile(trim_family, trim_items[0][0], trim_items[0][1] or trim_family.family_id)
+    scene, goal, options, _, compile_seed, _ = configured[0]
+    seed = compile_seed if compile_seed is not None else int(getattr(base, "sim_seed", 42))
+    cfg_task = compile_task(resolve_scene(scene), goal, planner_options=options, seed=seed,
+                            **({} if spacing is None else {"particle_spacing_m": float(spacing)}))
+    a, b = batch_layout_key(trim_task), batch_layout_key(cfg_task)
+    differs = [f"{k}: {a[k]!r} (TRIM) vs {b[k]!r} (configured)" for k in BATCH_LAYOUT_FIELDS if a[k] != b[k]]
+    if differs:
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_NONUNIFORM_BATCH", "seeded-TRIM and configured-scene slots "
+                                             "need one batched layout; they differ in " + "; ".join(differs))
+    raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "seeded-TRIM and configured-scene slots share a layout "
+                                         "but a mixed task family is not implemented (one family kind per batch)")
 
 
 def resolve_tasks(num_envs, task=None, tasks=None):
     """``open_vector_env(tasks=...)``: per-env task/seed selection of a heterogeneous batch.
 
-    ``tasks``: one item per env, an int scene seed (``[512, 15]``) or a dict with ``scene_seed`` and optional
-    ``family_id`` (``agentic_trim_id`` | ``agentic_trim_ood``) and ``seed`` (the env's initial RNG seed). With a
-    ``TaskFamily`` as ``task`` its other options (spacing, episode length, poses, pads, dt) are kept and the
-    per-env selection is replaced; without one, a default ``TaskFamily`` is built. Anything else (compiled task
-    objects, CUT scenes) raises ``UNSUPPORTED_TASK``."""
+    ``tasks``: one item per env. Seeded TRIM: an int scene seed (``[512, 15]``) or a dict with ``scene_seed`` and
+    optional ``family_id`` (``agentic_trim_id`` | ``agentic_trim_ood``) and ``seed`` (the env's initial RNG seed).
+    With a ``TaskFamily`` as ``task`` its other options (spacing, episode length, poses, pads, dt) are kept and the
+    per-env selection is replaced; without one, a default ``TaskFamily`` is built.
+
+    Configured scenes (``ConfiguredTaskFamily``, e.g. the CUT ``cut_v7_2_v1`` scene): a dict with ``scene`` (the
+    workload id ``"cut_v7_2_v1"``, or a scene path/dict together with ``goal`` and optional ``planner_options``),
+    optional ``family_id`` (``configured_scene_v1``) and ``seed``. A ``ConfiguredTaskFamily`` as ``task`` keeps its
+    options (spacing, episode length, poses, pads, dt); a workload entry needs the family's compile seed to be the
+    workload's. TRIM and configured entries in one batch are compiled and compared first: a different batched
+    layout (K, episode length, grid, law, action limits, reward kind) raises ``UNSUPPORTED_NONUNIFORM_BATCH``.
+    Anything else (compiled task objects, unknown keys) raises ``UNSUPPORTED_TASK``."""
     from dataclasses import replace
+    from .configured_family import NATIVE_CUT_V7_2_REFERENCE, NATIVE_REFERENCE_NOT_RUN, ConfiguredTaskFamily
     if tasks is None:
         return task
     items = list(tasks)
     if not isinstance(num_envs, int) or len(items) != num_envs:
         raise ValueError(f"tasks must hold one entry per env ({num_envs}), got {len(items)}")
-    seeds, families, env_seeds = [], [], []
+    if task is not None and not isinstance(task, (TaskFamily, ConfiguredTaskFamily)):
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "task must be a TaskFamily or ConfiguredTaskFamily "
+                                             "(or None) with tasks=")
+    trim, configured = [], []
     for e, item in enumerate(items):
         if isinstance(item, (int, np.integer)) and not isinstance(item, bool):
             item = {"scene_seed": int(item)}
+        if isinstance(item, dict) and "scene" in item and "scene_seed" not in item \
+                and not set(item) - set(CONFIGURED_SELECTION_KEYS):
+            configured.append(_configured_entry(e, item) + (item.get("seed"),))
+            continue
         if not isinstance(item, dict) or "scene_seed" not in item or set(item) - set(TASK_SELECTION_KEYS):
-            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"tasks[{e}]={item!r}: an int scene seed or a "
-                                                 f"dict with keys {TASK_SELECTION_KEYS} (scene_seed required)")
-        seeds.append(int(item["scene_seed"]))
-        families.append(item.get("family_id"))
-        env_seeds.append(item.get("seed"))
-    if task is not None and not isinstance(task, TaskFamily):
-        raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "task must be a TaskFamily (or None) with tasks=")
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"tasks[{e}]={item!r}: an int scene seed, a "
+                                                 f"dict with keys {TASK_SELECTION_KEYS} (scene_seed required) or a "
+                                                 f"configured-scene dict with keys {CONFIGURED_SELECTION_KEYS} "
+                                                 "(scene required)")
+        trim.append((int(item["scene_seed"]), item.get("family_id"), item.get("seed")))
+    if trim and configured:
+        _refuse_mixed_batch(trim, configured, task)
+    if configured:
+        if isinstance(task, TaskFamily):
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "configured-scene tasks= entries need a "
+                                                 "ConfiguredTaskFamily (or None) as task, not a seeded-TRIM TaskFamily")
+        compile_seeds = {c[4] for c in configured if c[4] is not None}
+        if len(compile_seeds) > 1:
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"workload compile seeds differ {compile_seeds}")
+        sim_seed = int(task.sim_seed) if task is not None else (compile_seeds.pop() if compile_seeds else 42)
+        if compile_seeds and sim_seed not in compile_seeds:
+            raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", f"the family compile seed {sim_seed} differs from "
+                                                 f"the workload's {sorted(compile_seeds)}")
+        workloads = {c[3] for c in configured}
+        all_workload = len(workloads) == 1 and None not in workloads
+        env_seeds = [c[5] for c in configured]
+        resolved_env_seeds = None if all(s is None for s in env_seeds) else tuple(
+            int(s) if s is not None else sim_seed for s in env_seeds)
+        fields = dict(scenes=tuple(c[0] for c in configured), goals=tuple(c[1] for c in configured),
+                      planner_options=tuple(c[2] for c in configured), env_seeds=resolved_env_seeds, sim_seed=sim_seed,
+                      workload_id=workloads.copy().pop() if all_workload else None,
+                      native_reference=dict(NATIVE_CUT_V7_2_REFERENCE) if all_workload
+                      else dict(NATIVE_REFERENCE_NOT_RUN))
+        return ConfiguredTaskFamily(**fields) if task is None else replace(task, **fields)
+    if isinstance(task, ConfiguredTaskFamily):
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_TASK", "seeded-TRIM tasks= entries need a TaskFamily (or "
+                                             "None) as task, not a ConfiguredTaskFamily")
+    seeds = [t[0] for t in trim]
+    families = [t[1] for t in trim]
+    env_seeds = [t[2] for t in trim]
     base = task if task is not None else TaskFamily(scene_seeds=tuple(seeds))
     default_family = base.family_id
     family_ids = tuple(f if f is not None else default_family for f in families)
@@ -698,9 +806,15 @@ class VectorCuttingEnv:
         calls. Task failures (strict-mode invalid envs) and caller errors propagate unchanged."""
         from .termination import TERM_INFRASTRUCTURE, VectorEnvInfrastructureError, classify_exception
         try:
+            from ..batched.material_batch import InvalidBatchEnvs
+        except ImportError:
+            InvalidBatchEnvs = ()
+        try:
             return fn(*args, **kwargs)
         except VectorEnvInfrastructureError:
             raise
+        except InvalidBatchEnvs:
+            raise        # strict mode: the material's own raise reaches the caller unchanged (any reason)
         except Exception as error:
             category, kind = classify_exception(error)
             if category != "infrastructure":
@@ -782,8 +896,8 @@ class VectorCuttingEnv:
             self._measured.copy_(pose)
             self._cut_input.copy_(cut)
             self.material.advance(interpolation="device")      # strict: one int32 readback, raises on invalid
-            from .termination import INVALID_STATE_BITS, TERM_MATERIAL_INVALID, TERM_TRUNCATED
-            reason = torch.where(self._invalid != 0, TERM_MATERIAL_INVALID, 0).to(torch.int32)
+            from .termination import INVALID_STATE_BITS, TERM_TRUNCATED, material_termination_bits
+            reason = material_termination_bits(self._invalid)    # every material bit -> 2; foreign grid also 64
             if self.input_guard is not None:
                 reason = reason | self.input_guard.termination_bits()
             invalid = (reason & INVALID_STATE_BITS) != 0
@@ -829,6 +943,8 @@ class VectorCuttingEnv:
             x, v, code = s.x[p0:p1].numpy(), s.v[p0:p1].numpy(), s.code[p0:p1].numpy()
             step = int(self.material.step_count[e:e + 1].numpy()[0])
         T = self._env_host[e]["T_world_local"]
+        from .evaluation_stream import finite_or_raise
+        finite_or_raise(x, v, f"material state of env {e}")     # NonFiniteSnapshot (a ValueError, as before)
         # copies: on the Warp CPU device .numpy() aliases the live solver arrays
         return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T, codes=np.array(code, copy=True),
                     step_count=step, time_s=step * self.control_dt)
@@ -863,8 +979,14 @@ class VectorCuttingEnv:
         ``episode="last_completed"`` (needs ``terminal_capture=True`` with ``autoreset="same_step"``) scores the
         state captured when the env's last episode ended inside ``step()`` (and, with the stream, that episode's
         samples). Returns one dict per env with the full evaluator result, a summary, the mode and
-        ``episode_scored``."""
-        from .evaluation_stream import DEFAULT_MODE, STREAM_VERSION, evaluate_frozen
+        ``episode_scored``, plus the env's material ``invalid_reason(s)`` and ``termination_reason(s)`` (current
+        episode). An env with a non-finite material state (``NONFINITE_STATE`` / ``NONFINITE_WRENCH`` bit, or a
+        non-finite snapshot or stream sample) is not passed to the frozen evaluator: its entry is
+        ``evaluation_stream.integrity_failure_result`` (verdict ``FAIL_INTEGRITY``, decoded reasons, no physics
+        metrics); the other envs are evaluated normally. ``step()`` is unchanged (strict mode still raises)."""
+        from .evaluation_stream import (DEFAULT_MODE, NONFINITE_MATERIAL_BITS, STREAM_VERSION, NonFiniteSnapshot,
+                                        evaluate_frozen, integrity_failure_result)
+        from .termination import decode_material_invalid as decode_reason, decode_termination
         self._check_open()
         if episode not in ("current", "last_completed"):
             raise ValueError("episode is 'current' or 'last_completed'")
@@ -878,31 +1000,53 @@ class VectorCuttingEnv:
         with self._stream():
             steps = self._step_count.cpu().clone().numpy()
             autoreset = self.autoreset_count.cpu().clone().numpy()
+            invalid = self._invalid.cpu().clone().numpy()
+            termination = self.termination_reason.cpu().clone().numpy()
+        mode = DEFAULT_MODE if stream is None else STREAM_VERSION
         out = []
         for e in ids:
             h = self._env_host[e]
             extra = dict(scene_seed=h["scene_seed"], family_id=h["family_id"], episode_scored=episode)
-            if episode == "current":
-                if autoreset[e] > 0 and steps[e] == 0:
-                    raise RuntimeError(f"NOT_EVALUATED: env {e} was autoreset inside step() and holds the fresh "
-                                       "state of its next episode; use terminal_capture=True and "
-                                       "evaluate(episode='last_completed')")
-                final = self.snapshot_world(e)
-                completed = False
-            else:
-                with self._stream():
-                    final = self.terminal.host_snapshot(e, h["T_world_local"], self.control_dt)
-                if final is None:
-                    raise RuntimeError(f"NOT_EVALUATED: env {e} has not finished an episode inside step()")
-                extra["completed_episode_index"] = final.pop("episode")
-                completed = True
-            if stream is None:
-                series, mode = list((frames or {}).get(e, [])), DEFAULT_MODE
-            else:
-                with self._stream():
-                    series, dropped = stream.host_frames(e, h["T_world_local"], self.control_dt, completed=completed)
-                mode = STREAM_VERSION
-                extra.update(stream_samples=len(series), stream_every=stream.every, stream_dropped_samples=dropped)
+            current = episode == "current"
+            if current:
+                extra.update(invalid_reason=int(invalid[e]), invalid_reasons=decode_reason(invalid[e]),
+                             termination_reason=int(termination[e]),
+                             termination_reasons=decode_termination(termination[e]))
+            failure = dict(env=e, control_dt=self.control_dt, mode=mode, extra=extra,
+                           invalid_reason=invalid[e] if current else None,
+                           termination_reason=termination[e] if current else None)
+            if current and int(invalid[e]) & NONFINITE_MATERIAL_BITS:
+                out.append(integrity_failure_result(h["task"], step_count=steps[e], cause="nonfinite_material_bit",
+                                                    **failure))
+                continue
+            try:
+                if current:
+                    if autoreset[e] > 0 and steps[e] == 0:
+                        raise RuntimeError(f"NOT_EVALUATED: env {e} was autoreset inside step() and holds the fresh "
+                                           "state of its next episode; use terminal_capture=True and "
+                                           "evaluate(episode='last_completed')")
+                    final = self.snapshot_world(e)
+                    completed = False
+                else:
+                    with self._stream():
+                        final = self.terminal.host_snapshot(e, h["T_world_local"], self.control_dt)
+                    if final is None:
+                        raise RuntimeError(f"NOT_EVALUATED: env {e} has not finished an episode inside step()")
+                    extra["completed_episode_index"] = final.pop("episode")
+                    completed = True
+                if stream is None:
+                    series = list((frames or {}).get(e, []))
+                else:
+                    with self._stream():
+                        series, dropped = stream.host_frames(e, h["T_world_local"], self.control_dt,
+                                                             completed=completed)
+                    extra.update(stream_samples=len(series), stream_every=stream.every,
+                                 stream_dropped_samples=dropped)
+            except NonFiniteSnapshot as error:
+                step = steps[e] if current else int(self.terminal.step[e].item())
+                out.append(integrity_failure_result(h["task"], step_count=step, cause=f"nonfinite_snapshot: {error}",
+                                                    **failure))
+                continue
             out.append(evaluate_frozen(h["task"], self.evaluation_reference(e), final, series, mode=mode, env=e,
                                        extra=extra))
         return out
@@ -1056,8 +1200,14 @@ def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, obs
     ``backend="kinematic_ideal_tracking_batched"`` (default, workload A): ``VectorCuttingEnv`` (ADR 0021 §8).
     ``backend="isaac_lab_newton"`` (workload B, robot-batched, ADR 0022): ``rl.lab_vector_env.LabVectorCuttingEnv``
     (Isaac Lab venv; it keeps ``launch_simulation`` open for its lifetime). Both have the same public contract
-    (``rl.vector_contract``). ``tasks``: per-env task selection (``resolve_tasks``), e.g. ``tasks=[512, 15]``."""
+    (``rl.vector_contract``). ``tasks``: per-env task selection (``resolve_tasks``), e.g. ``tasks=[512, 15]`` or
+    configured scenes ``[{"scene": "cut_v7_2_v1", "seed": 3}, ...]``. Workload B options (``tool_mount``,
+    ``grip_contact_profile`` incl. the opt-in ``mjwarp_grip_v1``) go to the Lab env; workload A refuses them."""
     task = resolve_tasks(num_envs, task, tasks)
+    robot_only = sorted(k for k in ("tool_mount", "grip_contact_profile") if k in options)
+    if backend != LAB_BACKEND and robot_only:
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"{robot_only} are {LAB_BACKEND!r} options "
+                                             "(workload A has no robot or grasp)")
     if backend == LAB_BACKEND:
         from .lab_vector_env import LabVectorCuttingEnv
         env = LabVectorCuttingEnv(num_envs, runtime=runtime, task=task, material=material,
@@ -1077,4 +1227,5 @@ def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, obs
 
 __all__ = ["open_vector_env", "VectorCuttingEnv", "TaskFamily", "UnsupportedVectorConfiguration", "REWARDS",
            "NATIVE_TRIM_V7_2_REFERENCE", "splitmix64", "summarize_evaluation", "resolve_tasks", "compile_family",
+           "batch_layout_key", "BATCH_LAYOUT_FIELDS", "CONFIGURED_SELECTION_KEYS", "CONFIGURED_WORKLOADS",
            "BACKENDS", "LAB_BACKEND"]

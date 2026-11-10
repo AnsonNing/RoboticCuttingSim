@@ -21,7 +21,14 @@ class as workload A). Refused with explicit codes: cameras/sensors (``UNSUPPORTE
 initial edge poses and pad boxes (the robot's HOME and measured finger pads define them), unknown options.
 
 Workload B with ``tool_mount="rigid_mount_v1"`` (B1) is ``reduced_fidelity`` (rigid knife mount, no grasp);
-B2 (``physical_grasp_v1``) is not reduced but lost its grasp in every S3 env (P1-1b report).
+B2 (``physical_grasp_v1``) is not reduced. With the default point grip profile it lost its grasp in every S3 env
+(P1-1b report); ``grip_contact_profile="mjwarp_grip_v1"`` (opt-in, ``batched.lab_scene.CONTACT_SOLVER_PROFILES``:
+MuJoCo ``box_box`` collider + ``impratio`` 10, B2 only) held it and passed S3 (P1-1b "B2 grasp follow-up").
+
+``grip_contact_profile`` (P1 consolidation) is validated here before Isaac Lab is imported: a profile outside
+``lab_scene.GRIP_PROFILES`` raises ``UNSUPPORTED_GRIP_CONTACT_PROFILE``, a non-default profile without
+``tool_mount="physical_grasp_v1"`` raises ``UNSUPPORTED_TOOL_MOUNT``; the profile and its MuJoCo-Warp solver options
+are recorded in ``receipt()`` and ``fidelity()`` (a listed difference, never a silent change).
 """
 from contextlib import ExitStack
 import json
@@ -39,6 +46,35 @@ LAB_MATERIAL = "tlmpm_v7_2"
 LAB_OPTIONS = ("tool_mount", "grip_contact_profile", "deterministic_mode", "use_cuda_graph",
                "max_consecutive_ik_failures", "feedback", "ik_iterations", "velocity_feedforward", "cpu_test_mode",
                "evaluation_stream", "input_guard")
+
+
+def check_grip_contact_profile(profile, tool_mount="rigid_mount_v1"):
+    """``(profile, tool_mount)`` of an ``isaac_lab_newton`` request, refused before Isaac Lab is imported.
+
+    ``profile`` None is the default point profile. Unknown profiles raise ``UNSUPPORTED_GRIP_CONTACT_PROFILE``; a
+    non-default profile needs the B2 physical grasp (``UNSUPPORTED_TOOL_MOUNT``, as ``BatchedLabOptions.validate``)."""
+    from ..batched import lab_scene
+    from ..pad_contact import POINT_PROFILE
+    profile = POINT_PROFILE if profile is None else profile
+    if not isinstance(profile, str) or profile not in lab_scene.GRIP_PROFILES:
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_GRIP_CONTACT_PROFILE",
+                                             f"grip_contact_profile={profile!r}; supported {lab_scene.GRIP_PROFILES}")
+    if profile != POINT_PROFILE and tool_mount != "physical_grasp_v1":
+        raise UnsupportedVectorConfiguration("UNSUPPORTED_TOOL_MOUNT", f"grip_contact_profile={profile!r} needs "
+                                             f"tool_mount='physical_grasp_v1' (B2), got {tool_mount!r}")
+    return profile, tool_mount
+
+
+def grip_profile_record(profile, tool_mount):
+    """Receipt/fidelity record of the grip contact profile (``lab_scene.CONTACT_SOLVER_PROFILES`` when it has one)."""
+    from ..batched import lab_scene
+    solver = lab_scene.contact_solver_profile(profile)
+    return {"grip_contact_profile": profile, "tool_mount": tool_mount,
+            "applies": tool_mount == "physical_grasp_v1",
+            "contact_solver_profile": None if solver is None else dict(solver),
+            "statement": "opt-in MuJoCo-Warp contact-solver options of the B2 model (listed difference, not a "
+                         "calibrated grip)" if solver is not None else
+                         "authored grip profile of the single Lab env (no solver options changed)"}
 
 
 class _LabGuardHook:
@@ -115,6 +151,8 @@ class LabVectorCuttingEnv:
         if unknown:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", f"isaac_lab_newton options {unknown}; "
                                                  f"supported {LAB_OPTIONS}")
+        self.grip_contact_profile, self.tool_mount = check_grip_contact_profile(
+            options.get("grip_contact_profile"), options.get("tool_mount", "rigid_mount_v1"))
         cpu_test_mode = bool(options.pop("cpu_test_mode", False))
         if str(device).startswith("cpu") and not cpu_test_mode:
             raise UnsupportedVectorConfiguration("UNSUPPORTED_RIGID_CPU", "isaac_lab_newton on device='cpu' is the "
@@ -158,7 +196,7 @@ class LabVectorCuttingEnv:
         self._stack = ExitStack()
         try:
             from .lab_batched_env import open_lab_batched_env
-            lab_options = dict(options)
+            lab_options = dict(options, grip_contact_profile=self.grip_contact_profile)   # None -> the default
             tool_mount = lab_options.pop("tool_mount", "rigid_mount_v1")
             self.cfg, factory = open_lab_batched_env(
                 num_envs, task=self.tasks[0], tasks=self.tasks, tool_mount=tool_mount, device=lab_device,
@@ -372,8 +410,11 @@ class LabVectorCuttingEnv:
 
     def evaluate(self, env_ids=None, *, frames=None, episode="current"):
         """Frozen goal evaluation of ``env_ids`` (host, episode end); modes as ``VectorCuttingEnv.evaluate``. No
-        autoreset on this backend, so only ``episode="current"``."""
-        from .evaluation_stream import DEFAULT_MODE, STREAM_VERSION, evaluate_frozen
+        autoreset on this backend, so only ``episode="current"``. A non-finite env gets the same structured
+        ``FAIL_INTEGRITY`` entry as workload A (``evaluation_stream.integrity_failure_result``)."""
+        from .evaluation_stream import (DEFAULT_MODE, NONFINITE_MATERIAL_BITS, STREAM_VERSION, NonFiniteSnapshot,
+                                        evaluate_frozen, integrity_failure_result)
+        from .termination import decode_material_invalid, decode_termination
         self._check_open()
         if episode != "current":
             raise UnsupportedVectorConfiguration("UNSUPPORTED_OPTION", "isaac_lab_newton has no same-step autoreset; "
@@ -382,18 +423,35 @@ class LabVectorCuttingEnv:
         if stream is not None and frames:
             raise ValueError("frames= and the evaluation stream are exclusive")
         ids = range(self.num_envs) if env_ids is None else [int(e) for e in np.asarray(env_ids).reshape(-1)]
+        invalid = self._invalid.to(self.torch.int32).cpu().clone().numpy()
+        termination = self.env.termination_reason.to(self.torch.int32).cpu().clone().numpy()
+        steps = self.env.episode_length_buf.to(self.torch.int64).cpu().clone().numpy()
+        mode = DEFAULT_MODE if stream is None else STREAM_VERSION
         out = []
         for e in ids:
             h = self.env._env_host[e]
-            final = self.snapshot_world(e)
             extra = dict(scene_seed=self.task_family.scene_seeds[e], family_id=self.task_family.family_of(e),
-                         episode_scored="current")
-            if stream is None:
-                series, mode = list((frames or {}).get(e, [])), DEFAULT_MODE
-            else:
-                series, dropped = stream.host_frames(e, h["T_world_local"], self.control_dt)
-                mode = STREAM_VERSION
-                extra.update(stream_samples=len(series), stream_every=stream.every, stream_dropped_samples=dropped)
+                         episode_scored="current", invalid_reason=int(invalid[e]),
+                         invalid_reasons=decode_material_invalid(invalid[e]), termination_reason=int(termination[e]),
+                         termination_reasons=decode_termination(termination[e]))
+            failure = dict(env=e, control_dt=self.control_dt, mode=mode, extra=extra, invalid_reason=invalid[e],
+                           termination_reason=termination[e])
+            if int(invalid[e]) & NONFINITE_MATERIAL_BITS:
+                out.append(integrity_failure_result(h["task"], step_count=steps[e], cause="nonfinite_material_bit",
+                                                    **failure))
+                continue
+            try:
+                final = self.snapshot_world(e)
+                if stream is None:
+                    series = list((frames or {}).get(e, []))
+                else:
+                    series, dropped = stream.host_frames(e, h["T_world_local"], self.control_dt)
+                    extra.update(stream_samples=len(series), stream_every=stream.every,
+                                 stream_dropped_samples=dropped)
+            except NonFiniteSnapshot as error:
+                out.append(integrity_failure_result(h["task"], step_count=steps[e], cause=f"nonfinite_snapshot: {error}",
+                                                    **failure))
+                continue
             out.append(evaluate_frozen(h["task"], self.evaluation_reference(e), final, series, mode=mode, env=e,
                                        extra=extra))
         return out
@@ -407,7 +465,11 @@ class LabVectorCuttingEnv:
             reasons.append(f"episode_steps={self.max_episode_steps} (reference {self.declared_episode_steps})")
         if self.task_family.particle_spacing_m is not None and self.task_family.particle_spacing_m != .001:
             reasons.append(f"particle_spacing_m={self.task_family.particle_spacing_m} (reference 0.001)")
-        return {**fid, "reasons": reasons, "reduced_fidelity": bool(reasons), "computed_not_hand_set": True}
+        grip = grip_profile_record(self.grip_contact_profile, self.tool_mount)
+        return {**fid, "reasons": reasons, "reduced_fidelity": bool(reasons), "computed_not_hand_set": True,
+                "grip_contact_profile": grip["grip_contact_profile"],
+                "contact_solver_profile": None if grip["contact_solver_profile"] is None
+                else grip["contact_solver_profile"]["version"]}
 
     def receipt(self):
         import torch
@@ -437,6 +499,7 @@ class LabVectorCuttingEnv:
             else "two_frame_reset_and_current_v1", infrastructure_error=self.infrastructure_error,
             terminal_capture={"enabled": False, "statement": "no same-step autoreset on isaac_lab_newton"},
             fidelity=self.fidelity(), lab=self.env.receipt(), material=self.material.receipt(),
+            grip=grip_profile_record(self.grip_contact_profile, self.tool_mount),
             launch_simulation={"headless": True, "visualizer": [], "lifetime": "entered at open, exited in close()"},
             versions=dict(python=platform.python_version(), torch=torch.__version__, warp=wp.config.version,
                           numpy=np.__version__, gymnasium=gym_version),
@@ -483,4 +546,4 @@ class LabVectorCuttingEnv:
         self.close()
 
 
-__all__ = ["LabVectorCuttingEnv", "LAB_OPTIONS"]
+__all__ = ["LabVectorCuttingEnv", "LAB_OPTIONS", "check_grip_contact_profile", "grip_profile_record"]

@@ -1,0 +1,31 @@
+{
+ "schema": "rcs_rl_evidence_v1",
+ "id": "p1_consolidation_001",
+ "date": "2026-11-10",
+ "branch": "claude/rl-p1-consolidate",
+ "base_commit": "181ed37",
+ "tested_commit": "53b915e",
+ "gpu_jobs": "none (CPU suites; the GPU0-visible CPU run held flock gpu0.lock; GPU1 untouched)",
+ "host_load": "shared machine, load average about 65 on 64 cores during the runs (wall times inflated)",
+ "runs": [
+  {"suite": "cpu_full_cuda_hidden", "command": "CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q -p no:cacheprovider -rs tests/",
+   "passed": 2443, "failed": 1, "skipped": 28, "xfailed": 6, "wall_s": 4013,
+   "failures": ["tests/test_wp12_phase5_native_success.py::test_reproduces_phase2b_records"]},
+  {"suite": "cpu_full_gpu0_visible", "command": "flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m pytest -q -p no:cacheprovider -rs tests/",
+   "passed": 2443, "failed": 1, "skipped": 28, "xfailed": 6, "wall_s": 2809,
+   "failures": ["tests/test_wp12_phase5_native_success.py::test_reproduces_phase2b_records"]},
+  {"suite": "torch_rl_vector", "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaacsim-venv/bin/python -m pytest -q -p no:cacheprovider -rs tests/test_rl_*.py tests/test_vector_env_*.py tests/test_perf_acceptance.py tests/test_long_rollout_config.py",
+   "passed": 343, "failed": 0, "skipped": 10, "wall_s": 1806,
+   "skipped_reasons": "workload-B modules needing Isaac Lab or OpenUSD (NOT_RUN in this venv); tests/test_vector_env_gpu_stream.py needs CUDA (NOT_RUN)"},
+  {"suite": "isaac_lab", "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaaclab-venv/bin/python -m pytest -q -p no:cacheprovider -rs tests/test_rl_lab_*.py tests/test_vector_env_contract.py",
+   "passed": 56, "failed": 0, "skipped": 0, "wall_s": 679}
+ ],
+ "preexisting_failure": {
+  "test": "tests/test_wp12_phase5_native_success.py::test_reproduces_phase2b_records",
+  "symptom": "workcell_live_006: local artifacts/wp12 analysis class CUTTING_FAILURE vs committed evidence TASK_SUCCESS",
+  "independent_of_this_branch": "fails identically at base 181ed37 with the same artifacts (temporary detached worktree, removed); the test imports no rl module",
+  "status": "OPEN (WP-12 local-artifact record mismatch; not investigated here)"
+ },
+ "new_tests": ["tests/test_rl_consolidation_cpu.py", "tests/test_rl_termination.py (3 new)", "tests/test_vector_env_consolidation.py",
+               "tests/test_rl_lab_grip_profile.py::test_open_vector_env_passes_mjwarp_grip_v1_to_the_lab_env"]
+}

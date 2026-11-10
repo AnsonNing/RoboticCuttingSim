@@ -80,3 +80,30 @@ def test_lab_mjwarp_grip_v1_holds_the_reorientation_and_point_profile_collapses(
     point_counts = np.concatenate([point_trace["count_left"][:, 0], point_trace["count_right"][:, 0]])
     assert np.mean(point_counts <= 2) > .5                            # manifold collapsed to 1-2 points per pad
     assert np.linalg.norm(point_trace["slip_hand"][:, 0], axis=-1).max() > .005
+
+
+@pytest.mark.cpu_sim
+def test_open_vector_env_passes_mjwarp_grip_v1_to_the_lab_env(tmp_path):
+    """P1 consolidation: ``open_vector_env(backend="isaac_lab_newton", tool_mount="physical_grasp_v1",
+    grip_contact_profile="mjwarp_grip_v1")`` reaches the MuJoCo-Warp model of the batched Lab env and is recorded in
+    ``receipt()["grip"]`` and ``fidelity()`` (worker ``run_p1_2b_smoke.py``, Warp CPU, N=1, coarse 2.5 mm, 2 steps,
+    contract incl. a partial reset)."""
+    pytest.importorskip("isaaclab", reason="Lab build needs the Isaac Lab venv (NOT_RUN in .venv)")
+    out = tmp_path/"vector_grip"
+    env = {**os.environ, "CUDA_VISIBLE_DEVICES": "", "PYTHONPATH": str(ROOT/"src")}
+    proc = subprocess.run([sys.executable, str(ROOT/"scripts/rl_ready/run_p1_2b_smoke.py"), "--backend",
+                           "isaac_lab_newton", "--device", "cpu", "--tasks", "512", "--steps", "2", "--reset-step", "1",
+                           "--reset-envs", "0", "--spacing", "0.0025", "--max-episode-steps", "2",
+                           "--tool-mount", "physical_grasp_v1", "--grip-profile", "mjwarp_grip_v1", "--non-strict",
+                           "--out", str(out)], env=env, cwd=ROOT, capture_output=True, text=True, timeout=1800)
+    row = json.loads((out/"row.json").read_text()) if (out/"row.json").exists() else {}
+    if proc.returncode != 0:
+        raise AssertionError(f"worker failed ({proc.returncode}): {row.get('error')}\n{proc.stderr[-3000:]}")
+    assert row["status"] == "PASS" and row["grip_profile"] == "mjwarp_grip_v1"
+    assert row["grip"]["grip_contact_profile"] == "mjwarp_grip_v1" and row["grip"]["applies"] is True
+    assert row["grip"]["contact_solver_profile"]["impratio"] == 10.
+    assert row["fidelity"]["grip_contact_profile"] == "mjwarp_grip_v1"
+    assert row["fidelity"]["contact_solver_profile"] == "mjwarp_grip_v1"
+    assert row["fidelity"]["listed_differences"]["contact_solver_profile"]["version"] == "mjwarp_grip_v1"
+    solver = row["contact_solver"]                     # read back from the live MuJoCo-Warp model
+    assert solver["profile"] == "mjwarp_grip_v1" and solver["nativeccd_disabled"] is True and solver["impratio"] == 10.
