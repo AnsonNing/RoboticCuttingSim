@@ -240,9 +240,11 @@ feature-parity matrix and Phase 1 checklist are in
 **Around the env:**
 
 - the P1-4 supervisor and crash-safe ledger (`rl.supervision`, `scripts/rl_ready/supervise_rollout.py`);
-- the RL pipeline smoke (`scripts/rl_ready/run_rl_smoke.py`, `rcs_rl_rollout_v1`, no training);
-- the P1-6 acceptance harness and judge (`scripts/rl_ready/run_perf_acceptance.py`, `judge_perf_acceptance.py`,
-  `configs/rl_benchmark/acceptance_v1.json`).
+- the RL pipeline smoke (`scripts/rl_ready/run_rl_smoke.py`, `rcs_rl_rollout_v1`; opt-in `--rollout-schema
+  rcs_rl_rollout_v2` labels the privileged / oracle-derived fields; no training);
+- the P1-6 acceptance harness and judge (`scripts/rl_ready/run_perf_acceptance.py`, `judge_perf_acceptance.py`) with
+  the contract `configs/rl_benchmark/acceptance_v2.json` (D-14). `acceptance_v1.json` is frozen and kept for the
+  record only.
 
 ```bash
 # CPU tests (project venv); run once with CUDA hidden and once with GPU 0 visible.
@@ -285,8 +287,11 @@ CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src flock /mnt/dat
   The rows measured code `691b571`, before the per-step HashGrid refresh of review fix F1. P1-4 long-rollout rows
   and every partial-reset latency are `SHARED_GPU`. No B-vs-Native ratio is claimed.
 - Status: **P1-6 external-optimizer sync is PENDING**. After the Phase 1 merge the status is
-  `MERGED_RCS_PENDING_OPTIMIZER_SYNC` until the external descriptor is pinned. `acceptance_v1` is not to be used for
-  a P1-6 acceptance; the first acceptance needs `acceptance_v2` (G9 window with contact and cutting).
+  `MERGED_RCS_PENDING_OPTIMIZER_SYNC` until the external descriptor is pinned. P1-6 acceptances use
+  `acceptance_v2` (D-14): G9 times steps 229–400 of the s512 replay (all tool contact, particle contact and cutting)
+  at N 1/16 with 3 ABBA pairs, a trade-off against v1's 5 pairs at N 1/8/16 (N=8 is not gated); `G9:window` checks
+  the window on the episode runs; VRAM and reset p95 stay candidate-reported. No acceptance under v2 has run yet,
+  and v2 freezes at its merge into `main`. `acceptance_v1` (pre-contact G9 window) is never used.
 - "Whole-RCS RL-ready" is **PARTIAL for CUT**: the frozen v5 CUT is not batched, and batched CUT is the opt-in
   v7_2 scene with ideal tracking and no robot.
 - Materials are provisional and uncalibrated. The rubber material is Phase 2 work on its own branch.
@@ -302,7 +307,9 @@ Reports in `docs/reports/rl_ready/`:
 [P1 parity matrix](docs/reports/rl_ready/P1_PARITY_MATRIX.md) ·
 [P1 performance table](docs/reports/rl_ready/P1_PERFORMANCE_TABLE.md) ·
 [P1-1/P1-2/P1-3a acceptance review](docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md) ·
-[Phase 1 acceptance review](docs/reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md) (PASS_WITH_LIMITATIONS at `f03fbff`).
+[Phase 1 acceptance review](docs/reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md) (PASS_WITH_LIMITATIONS at `f03fbff`) ·
+[P1 follow-up](docs/reports/rl_ready/P1_FOLLOWUP.md) (`acceptance_v2`, review findings 1–4, 10, 12) ·
+[P1 follow-up review](docs/reports/rl_ready/P1_FOLLOWUP_REVIEW.md).
 
 ## Agentic control robot seeded trimming
 

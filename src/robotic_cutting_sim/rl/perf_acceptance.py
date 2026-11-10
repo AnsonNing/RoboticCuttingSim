@@ -3,8 +3,14 @@ seed rounds, variant validation, the sample-position codec, junit summaries and 
 
 Used by ``scripts/rl_ready/run_perf_acceptance.py`` (the harness, in the process under test) and
 ``scripts/rl_ready/judge_perf_acceptance.py`` (the judge, CPU, from the frozen evaluator checkout). NumPy and the
-standard library only; nothing here imports Torch or Warp. Part of the evaluator file set of
-``configs/rl_benchmark/acceptance_v1.json``: a candidate may not change it.
+standard library only; nothing here imports Torch or Warp. Part of the evaluator file set of every acceptance
+config (``configs/rl_benchmark/acceptance_v<N>.json``, schema ``rcs_perf_acceptance_v1``): a candidate may not change
+it. ``acceptance_v2`` (decision D-14) adds two optional ``performance`` blocks that ``acceptance_v1`` does not have:
+``window_check`` (the judge's ``G9:window`` gate: the G9 timed window must contain the tool-material contact phase,
+counted as steps with non-zero stats slot 1 (``tool_contacts`` in the episode dumps), and the cutting, counted as new
+labelled particles; particle-particle contacts (stats slot 4, ``contacts``) are reported, never gated; measured on
+the episode dumps of the same variants, not inside the G9 processes) and ``phases`` (descriptive per-phase step
+walls, candidate-reported).
 """
 import hashlib
 import inspect
@@ -47,6 +53,7 @@ PERF_KEYS = ("num_envs", "primary_num_envs", "pairs", "order", "warmup_steps", "
 THRESHOLD_KEYS = ("primary_median_min", "primary_pairs_above_1", "all_median_min", "vram_ratio_max",
                   "vram_slack_mib", "reset_p95_ratio_max", "reset_p95_slack_ms", "clock_tolerance")
 PHYSICS_KEYS = ("position_band", "impulse_rel_tol", "contact_total_rel_tol", "replay_position_tol_m")
+WINDOW_CHECK_KEYS = ("plans", "min_tool_contact_steps", "min_new_labels")   # optional performance.window_check (v2)
 POSITION_BAND_MODES = ("descriptive", "gate")
 
 
@@ -309,6 +316,8 @@ def config_problems(cfg):
               and perf["primary_num_envs"] in perf["num_envs"]
               and all(perf["order"][2 * i:2 * i + 2] in ("BC", "CB") for i in range(int(perf["pairs"])))):
         p.append("performance: order of B/C pairs (BC or CB each), 2 x pairs long; primary_num_envs in num_envs")
+    else:
+        p += performance_window_problems(perf, cfg["plan"] if isinstance(cfg["plan"], list) else [])
     if not isinstance(cfg["cpu_tests"], dict) or not isinstance(cfg["cpu_tests"].get("args"), list):
         p.append("cpu_tests: {args: [pytest arguments]}")
     if not isinstance(cfg["baseline_measure"], list):
@@ -324,6 +333,8 @@ def config_problems(cfg):
     th = cfg["thresholds"]
     if not isinstance(th, dict) or any(not isinstance(th.get(k), (int, float)) for k in THRESHOLD_KEYS):
         p.append(f"thresholds: needs numbers {', '.join(THRESHOLD_KEYS)}")
+    elif isinstance(perf, dict) and isinstance(perf.get("pairs"), int) and th["primary_pairs_above_1"] > perf["pairs"]:
+        p.append("thresholds.primary_pairs_above_1 exceeds performance.pairs")
     ph = cfg["physics"]
     if not isinstance(ph, dict) or any(k not in ph for k in PHYSICS_KEYS):
         p.append(f"physics: needs {', '.join(PHYSICS_KEYS)}")
@@ -332,6 +343,46 @@ def config_problems(cfg):
         if not (isinstance(band, dict) and isinstance(band.get("path"), str) and not band["path"].startswith("/")
                 and ".." not in band["path"] and band.get("mode") in POSITION_BAND_MODES):
             p.append(f"physics.position_band: {{path: repository-relative band file, mode: {POSITION_BAND_MODES}}}")
+    return p
+
+
+def g9_windows(perf):
+    """``{N: (first_timed_step, last_timed_step)}`` (1-based control steps of the replay from reset) of the G9 runs."""
+    out = {}
+    for n in perf["num_envs"]:
+        steps = int((perf.get("steps_by_num_envs") or {}).get(str(n), perf["steps"]))
+        out[int(n)] = (int(perf["warmup_steps"]) + 1, int(perf["warmup_steps"]) + steps)
+    return out
+
+
+def performance_window_problems(perf, plan):
+    """Problems of the optional ``performance.window_check`` / ``performance.phases`` blocks (``acceptance_v2``)."""
+    p = []
+    check = perf.get("window_check")
+    if check is not None:
+        episodes = {e.get("id"): e for e in plan if isinstance(e, dict) and e.get("mode") == "episode"}
+        if not isinstance(check, dict) or set(check) != set(WINDOW_CHECK_KEYS):
+            p.append(f"performance.window_check: exactly the keys {', '.join(WINDOW_CHECK_KEYS)}")
+        elif not (isinstance(check["plans"], list) and check["plans"] and all(x in episodes for x in check["plans"])
+                  and isinstance(check["min_tool_contact_steps"], int) and check["min_tool_contact_steps"] >= 1
+                  and isinstance(check["min_new_labels"], int) and check["min_new_labels"] >= 0):
+            p.append("performance.window_check: plans = ids of episode plan entries, min_tool_contact_steps >= 1, "
+                     "min_new_labels >= 0 (ints)")
+        else:
+            last = max(b for _, b in g9_windows(perf).values())
+            for pid in check["plans"]:
+                e = episodes[pid]
+                if not set(perf["seeds"]) <= set(e["seeds"]) or int(e["warmup_steps"]) != 0 or \
+                        int(e["steps"]) < last:
+                    p.append(f"performance.window_check: plan {pid} must replay the G9 seeds {perf['seeds']} from "
+                             f"reset (warmup_steps 0) through step {last}")
+    phases = perf.get("phases")
+    if phases is not None:
+        if not isinstance(phases, dict) or not all(
+                isinstance(v, list) and len(v) == 2 and all(isinstance(x, int) and not isinstance(x, bool) for x in v)
+                and 1 <= v[0] <= v[1] <= EPISODE_STEPS for v in phases.values()):
+            p.append(f"performance.phases: {{name: [first_step, last_step]}} with 1 <= first <= last <= "
+                     f"{EPISODE_STEPS}")
     return p
 
 
@@ -368,4 +419,5 @@ def load_config(path):
 __all__ = ["HARNESS_VERSION", "JUDGE_VERSION", "SCHEMA_RESULT", "SCHEMA_VERDICT", "SCHEMA_CONFIG",
            "SCHEMA_MANIFEST", "MARK", "MODES", "WORDS", "LAYERS", "format_mark", "parse_mark", "outer_rate",
            "plan_rounds", "check_variant", "accepted_options", "encode_positions", "decode_positions", "worst",
-           "percentile", "digit_rewrites", "junit_summary", "config_problems", "load_config"]
+           "percentile", "digit_rewrites", "junit_summary", "config_problems", "load_config", "g9_windows",
+           "performance_window_problems"]

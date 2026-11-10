@@ -20,6 +20,8 @@ from robotic_cutting_sim.rl import perf_acceptance as PA
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "configs" / "rl_benchmark" / "acceptance_v1.json"
+CONFIG_V2 = ROOT / "configs" / "rl_benchmark" / "acceptance_v2.json"
+CONFIGS = [CONFIG, CONFIG_V2]
 HARNESS = ROOT / "scripts" / "rl_ready" / "run_perf_acceptance.py"
 JUDGE = ROOT / "scripts" / "rl_ready" / "judge_perf_acceptance.py"
 
@@ -86,13 +88,49 @@ def test_acceptance_v1_config_is_complete_and_matches_the_contract():
     assert set(cfg["gpu_mem_mib"]) >= {str(n) for n in perf["num_envs"]} | {"4"}
 
 
-def test_reference_variant_is_an_accepted_open_vector_env_option():
-    cfg = json.loads(CONFIG.read_text())
+def test_acceptance_v2_config_times_contact_and_cutting():
+    """acceptance_v2 (D-14, review findings 1 and 2): same schema and contract as v1 except the G9 block."""
+    v1, v2 = json.loads(CONFIG.read_text()), json.loads(CONFIG_V2.read_text())
+    assert PA.config_problems(v2) == []
+    assert v2["schema"] == "rcs_perf_acceptance_v1" and v2["version"] == "acceptance_v2"
+    same = ("harness", "judge", "evaluator_files", "reference_variant", "seeds", "gpu_mem_mib", "plan", "cpu_tests",
+            "torch_tests", "frozen_paths", "dev_limits", "judge_python", "run_timeout_s", "judge_timeout_s")
+    assert {k: v2[k] for k in same} == {k: v1[k] for k in same}
+    assert {k: v for k, v in v2["thresholds"].items() if k not in ("primary_pairs_above_1", "rules",
+                                                                     "candidate_reported")} == \
+        {k: v for k, v in v1["thresholds"].items() if k not in ("primary_pairs_above_1", "rules")}
+    assert v2["thresholds"]["primary_pairs_above_1"] == v2["performance"]["pairs"] == 3
+    assert "candidate-reported" in v2["thresholds"]["candidate_reported"]
+    assert {k: v for k, v in v2["physics"].items() if k not in ("position_rule", "contact_total_rel_tol_note")} == \
+        {k: v for k, v in v1["physics"].items() if k != "position_rule"}
+    assert v2["physics"]["contact_total_rel_tol"] == 0.02 and "smoke_003" in v2["physics"]["contact_total_rel_tol_note"]
+    assert v2["physics"]["position_band"] == {"path": "configs/rl_benchmark/position_band_v2.json",
+                                              "mode": "descriptive"}
+    perf = v2["performance"]
+    assert perf["num_envs"] == [1, 16] and perf["primary_num_envs"] == 16 and perf["order"] == "BCCBBC"
+    assert perf["seeds"] == [512] and "steps_by_num_envs" not in perf
+    # the timed window starts at the first s512 tool-contact step (229) and holds all tool contact (229-366), all
+    # particle contact (315-364) and all labelling (251-380), every N; the untimed warm-up is the approach
+    assert PA.g9_windows(perf) == {1: (229, 400), 16: (229, 400)}
+    assert perf["window_check"] == {"plans": ["G6_replay", "G7_batched"], "min_tool_contact_steps": 80,
+                                    "min_new_labels": 30000}
+    assert perf["phases"]["timed_window"] == [229, 400] and perf["phases"]["approach"] == [21, 228]
+    assert perf["phases"]["particle_contact"] == [315, 364]
+    for key in ("window", "statistics", "budget"):
+        assert perf["design"][key]
+    for entry in v2["baseline_measure"]:
+        assert (entry["warmup_steps"], entry["steps"]) == (228, 172)
+
+
+@pytest.mark.parametrize("config", CONFIGS, ids=["v1", "v2"])
+def test_reference_variant_is_an_accepted_open_vector_env_option(config):
+    cfg = json.loads(config.read_text())
     assert PA.check_variant(cfg["reference_variant"]) == cfg["reference_variant"]
 
 
-def test_evaluator_files_and_frozen_paths_cover_the_evaluator():
-    cfg = json.loads(CONFIG.read_text())
+@pytest.mark.parametrize("config", CONFIGS, ids=["v1", "v2"])
+def test_evaluator_files_and_frozen_paths_cover_the_evaluator(config):
+    cfg = json.loads(config.read_text())
     files = tracked()
 
     def covered(path, globs):
@@ -100,6 +138,7 @@ def test_evaluator_files_and_frozen_paths_cover_the_evaluator():
     for glob in cfg["evaluator_files"] + cfg["frozen_paths"]:
         assert any(fnmatch.fnmatchcase(f, glob) for f in files), glob
     for path in (cfg["harness"], cfg["judge"], "configs/rl_benchmark/acceptance_v1.json",
+                 "configs/rl_benchmark/acceptance_v2.json", "tests/test_acceptance_frozen.py",
                  "src/robotic_cutting_sim/rl/perf_acceptance.py", "src/robotic_cutting_sim/rl/replay.py",
                  "src/robotic_cutting_sim/rl/benchmark.py", "src/robotic_cutting_sim/rl/telemetry.py",
                  "src/robotic_cutting_sim/goals.py", "src/robotic_cutting_sim/seeded_trim.py",
@@ -114,6 +153,7 @@ def test_evaluator_files_and_frozen_paths_cover_the_evaluator():
         assert not covered(path, cfg["frozen_paths"] + cfg["evaluator_files"]), path
 
 
+@pytest.mark.parametrize("config", CONFIGS, ids=["v1", "v2"])
 @pytest.mark.parametrize("mutate, message", [
     (lambda c: c["seeds"].update(heldout=[512]), "seeds"),
     (lambda c: c["performance"].update(order="BBCC"), "performance"),
@@ -122,10 +162,26 @@ def test_evaluator_files_and_frozen_paths_cover_the_evaluator():
     (lambda c: c.pop("physics"), "missing physics"),
     (lambda c: c.update(harness="/abs/path.py"), "harness"),
     (lambda c: c["physics"]["position_band"].update(mode="hard"), "position_band"),
+    (lambda c: c["thresholds"].update(primary_pairs_above_1=9), "primary_pairs_above_1"),
 ])
-def test_config_problems_are_reported(mutate, message):
-    cfg = json.loads(CONFIG.read_text())
+def test_config_problems_are_reported(config, mutate, message):
+    cfg = json.loads(config.read_text())
     mutate(cfg)
+    assert any(message in p for p in PA.config_problems(cfg))
+
+
+@pytest.mark.parametrize("mutate, message", [
+    (lambda p: p["window_check"].update(plans=["G4_samestate"]), "window_check"),
+    (lambda p: p["window_check"].pop("min_new_labels"), "window_check"),
+    (lambda p: p["window_check"].update(min_tool_contact_steps=0), "window_check"),
+    (lambda p: p["window_check"].update(min_contact_steps=40), "window_check"),   # the pre-review key is refused
+    (lambda p: p.update(warmup_steps=1150), "through step"),        # the episode plans end before the window
+    (lambda p: p["phases"].update(bad=[400, 300]), "phases"),
+    (lambda p: p["phases"].update(bad=[1, 1201]), "phases"),
+])
+def test_v2_window_and_phase_problems_are_reported(mutate, message):
+    cfg = json.loads(CONFIG_V2.read_text())
+    mutate(cfg["performance"])
     assert any(message in p for p in PA.config_problems(cfg))
 
 
@@ -242,6 +298,39 @@ def test_harness_argument_validation(harness_mod, tmp_path, argv):
     assert info.value.code == 2
 
 
+def test_harness_config_argument_is_optional_provenance(harness_mod, tmp_path):
+    """``--config`` (default none = the acceptance_v1 behaviour): validated, recorded, never passed to the rounds;
+    the acceptance_v2 G9 window (W 228, K 172) is a valid harness request at every N."""
+    base = ["--variant-json", "v.json", "--mode", "throughput", "--num-envs", "16", "--seeds", "512",
+            "--warmup-steps", "228", "--steps", "172", "--out", str(tmp_path / "o")]
+    args = harness_mod.parse_args(base)
+    assert args.config is None and args.acceptance_config is None
+    args = harness_mod.parse_args(base + ["--config", str(CONFIG_V2)])
+    assert args.acceptance_config == dict(path=str(CONFIG_V2), version="acceptance_v2",
+                                          sha256=PA.sha256_file(CONFIG_V2))
+    assert "--config" not in harness_mod.child_argv(args, 0, 0)
+    (tmp_path / "bad.json").write_text(json.dumps({"schema": "rcs_perf_acceptance_v1"}))
+    for bad in (str(tmp_path / "bad.json"), str(tmp_path / "missing.json")):
+        with pytest.raises(SystemExit) as info:
+            harness_mod.parse_args(base + ["--config", bad])
+        assert info.value.code == 2
+
+
+def test_harness_writes_acceptance_config_into_the_result(harness_mod, tmp_path):
+    (tmp_path / "v.json").write_text(json.dumps({"made_up_flag": True}))
+    out = tmp_path / "run"
+    rc = harness_mod.main(["--variant-json", str(tmp_path / "v.json"), "--mode", "throughput", "--num-envs", "1",
+                           "--seeds", "512", "--warmup-steps", "228", "--steps", "172", "--device", "cpu",
+                           "--config", str(CONFIG_V2), "--out", str(out)])
+    res = json.loads((out / "result.json").read_text())
+    assert rc == 3 and res["error_code"] == "UNSUPPORTED_OPTION"
+    assert res["acceptance_config"]["version"] == "acceptance_v2"
+    out1 = tmp_path / "run_v1"
+    harness_mod.main(["--variant-json", str(tmp_path / "v.json"), "--mode", "throughput", "--num-envs", "1",
+                      "--seeds", "512", "--steps", "1", "--device", "cpu", "--out", str(out1)])
+    assert "acceptance_config" not in json.loads((out1 / "result.json").read_text())
+
+
 def test_harness_child_argv_round_trips(harness_mod, tmp_path):
     args = harness_mod.parse_args(["--variant-json", "v.json", "--mode", "episode", "--num-envs", "1", "--seeds",
                                    "512,15", "--steps", "5", "--gpu-uuid", "GPU-x", "--out", str(tmp_path / "o")])
@@ -257,7 +346,8 @@ def test_harness_cpu_one_step_end_to_end(tmp_path):
     out = tmp_path / "run"
     proc = subprocess.run([sys.executable, str(HARNESS), "--variant-json", str(tmp_path / "v.json"), "--mode",
                            "throughput", "--num-envs", "1", "--seeds", "512", "--warmup-steps", "0", "--steps", "1",
-                           "--device", "cpu", "--out", str(out)], cwd=ROOT, capture_output=True, text=True,
+                           "--device", "cpu", "--config", str(CONFIG_V2), "--out", str(out)], cwd=ROOT,
+                          capture_output=True, text=True,
                           timeout=1800, env=dict(os.environ, PYTHONPATH=str(ROOT / "src"), CUDA_VISIBLE_DEVICES=""))
     assert proc.returncode == 0, proc.stdout[-2000:] + proc.stderr[-2000:]
     marks = [PA.parse_mark(x) for x in proc.stdout.splitlines() if PA.parse_mark(x)]
@@ -271,6 +361,8 @@ def test_harness_cpu_one_step_end_to_end(tmp_path):
     assert res["rounds"][0]["final_step_count"] == [1] and len(res["rounds"][0]["reset_ms"]) == 10
     assert all((out / d["path"]).is_file() for d in res["dumps"])
     assert res["process_model"].startswith("one child process per round") and len(res["round_pids"]) == 1
+    assert len(res["rounds"][0]["step_walls_s"]) == 1 and res["rounds"][0]["step_walls_s"][0] > 0
+    assert res["acceptance_config"]["version"] == "acceptance_v2"
 
 
 # ----------------------------------------------------------------------------- judge on synthetic outputs
@@ -289,15 +381,20 @@ class FakeTask:
 
 
 class FakeNatives:
-    """121 Native samples (0.2 s apart) of P particles; codes label half the particles from step 600 on."""
+    """121 Native samples (0.2 s apart) of P particles; codes label half the particles from step 600 on
+    (``progressive``: one more particle per sample from step 260 on, all 40 by step 650, as the WP-17 cut phase)."""
 
-    def __init__(self):
+    def __init__(self, progressive=False):
         rng = np.random.default_rng(1)
         time_s = np.arange(121) * 0.2
         base = rng.uniform(-0.1, 0.1, (P, 3))
         pos = np.stack([base + 1e-4 * k for k in range(121)])
         codes = np.zeros((121, P), np.int32)
-        codes[60:, : P // 2] = 1
+        if progressive:
+            for k in range(121):
+                codes[k, :min(P, max(0, k - 25))] = 1
+        else:
+            codes[60:, : P // 2] = 1
         ref = dict(mass_kg=np.full(P, 1e-3), reference_positions=base, reference_stencil_nodes=np.zeros((P, 8), int),
                    reference_stencil_weights=np.zeros((P, 8), np.float32),
                    reference_stencil_gradients=np.zeros((P, 8, 3), np.float32))
@@ -308,7 +405,9 @@ class FakeNatives:
         return self.entry
 
 
-def synthetic_config():
+def synthetic_config(version="v1"):
+    if version == "v2":
+        return synthetic_config_v2()
     cfg = json.loads(CONFIG.read_text())
     cfg["version"] = "acceptance_v1_test"
     cfg["plan"] = [dict(id="G4_samestate", gate="G4", mode="samestate", num_envs=1, seeds=[SEED], warmup_steps=0,
@@ -324,15 +423,43 @@ def synthetic_config():
     return cfg
 
 
+_STEP = np.arange(1, 1201)
+TOOL_CONTACT_S512 = np.where((_STEP >= 229) & (_STEP <= 366) & ~((_STEP >= 237) & (_STEP <= 256))
+                             & ~((_STEP >= 259) & (_STEP <= 273)), 30, 0)
+
+
+def synthetic_config_v2():
+    """acceptance_v2's G9 block at the synthetic scale: G6 (s512, 1200 steps) feeds G9:window; W 228 / K 172."""
+    cfg = json.loads(CONFIG_V2.read_text())
+    cfg["version"] = "acceptance_v2_test"
+    cfg["plan"] = synthetic_config("v1")["plan"]
+    cfg["performance"] = dict(num_envs=[1, 2], primary_num_envs=2, pairs=2, order="BCCB", warmup_steps=228,
+                              steps=172, seeds=[SEED],
+                              window_check=dict(plans=["G6_replay"], min_tool_contact_steps=80, min_new_labels=5),
+                              phases=dict(approach=[21, 228], timed_window=[229, 400], beyond=[401, 500]))
+    cfg["thresholds"]["primary_pairs_above_1"] = 2
+    cfg["torch_tests"] = None
+    assert PA.config_problems(cfg) == []
+    return cfg
+
+
 class Acceptance:
     """Synthetic manifest + results + dumps in the layout the external caller and the harness produce."""
 
-    def __init__(self, root, judge_mod):
+    def __init__(self, root, judge_mod, version="v1"):
         self.root, self.judge_mod = Path(root), judge_mod
-        self.cfg = synthetic_config()
+        self.cfg = synthetic_config(version)
         self.cfg_path = self.root / "acceptance.json"
         self.cfg_path.write_text(json.dumps(self.cfg))
-        self.native = FakeNatives().entry
+        self.progressive = version == "v2"
+        self.native = FakeNatives(self.progressive).entry
+        # per-step particle contact counts of the episode dumps (side -> [1200]); WP-17 s512: contacts at 315-364
+        self.contacts = {side: np.where((np.arange(1, 1201) >= 315) & (np.arange(1, 1201) <= 364), 7, 0)
+                         for side in ("baseline", "candidate")}
+        # per-step tool-material contacts (stats slot 1); WP-17 s512: 229-366 with gaps 237-256 and 259-273
+        self.tool_contacts = {side: TOOL_CONTACT_S512.copy() for side in ("baseline", "candidate")}
+        self.dump_tool_contacts = True
+        self.step_walls = True
         self.checkouts = {s: self.root / s for s in ("baseline", "candidate")}
         for c in self.checkouts.values():
             (c / "src" / "robotic_cutting_sim").mkdir(parents=True)
@@ -401,7 +528,10 @@ class Acceptance:
                       sample_index=idx.astype(np.int64), sample_codes=codes, sample_dq=enc["dq"],
                       sample_escape_index=enc["escape_index"], sample_escape_delta=enc["escape_delta"],
                       final_positions=pos[-1], final_velocities=np.zeros((P, 3), np.float32), final_codes=final_codes,
-                      final_step_count=np.int64(1200), contacts=np.full(1200, 7, np.int64), invalid_reason=np.int64(0))
+                      final_step_count=np.int64(1200), contacts=np.asarray(self.contacts[side], np.int64),
+                      invalid_reason=np.int64(0))
+        if self.dump_tool_contacts:
+            arrays["tool_contacts"] = np.asarray(self.tool_contacts[side], np.int64)
         rounds = [dict(round=0, invalid_reason=[0], final_step_count=[1200],
                        l2_candidate_reported=dict(code_monotone_violations=[0], nonfinite_steps=[0], status="PASS"))]
         return [("r0_e0_s512.npz", dict(kind="episode", round=0, env=0, seed=SEED, samples=120), arrays)], rounds
@@ -438,15 +568,20 @@ class Acceptance:
                 steps = perf["steps"]
                 outer = dict(env_steps=steps * n, seconds=steps * n / rate, env_steps_per_s=rate, num_envs=n,
                              vector_steps=steps)
+                warm = perf["warmup_steps"]
                 row = dict(num_envs=n, env_steps_per_s=inner, vram_peak_mib=1000., vram_source="nvidia_smi_process",
                            reset_p95_ms=self.candidate_reset_ms if side == "candidate" else self.baseline_reset_ms,
                            control_hz=50., gpu_sharing=self.sharing)
-                rounds = [dict(round=0, final_step_count=[12] * n, final_labelled=[{"0": {"labelled": 0}}] * n)]
-                self.add_run(f"perf_n{n}_{i:02d}_{ch}", side, "G9", "PERFORMANCE", "throughput", n, 2, steps,
+                rounds = [dict(round=0, final_step_count=[warm + steps] * n, final_labelled=[{"0": {"labelled": 0}}] * n)]
+                if self.step_walls:          # contact steps cost twice as much; the candidate is uniformly faster
+                    wall = np.where((np.arange(1, warm + steps + 1) >= 315) & (np.arange(1, warm + steps + 1) <= 364),
+                                    2., 1.) * n / (5.0 * n * (self.candidate_rate if side == "candidate" else 1.0))
+                    rounds[0]["step_walls_s"] = wall.tolist()
+                self.add_run(f"perf_n{n}_{i:02d}_{ch}", side, "G9", "PERFORMANCE", "throughput", n, warm, steps,
                              "reference" if side == "baseline" else "proposal", [row], rounds, [], outer=outer,
                              plan_id=f"perf_n{n}", pair=i // 2, order=i)
         suite = dict(tests=10, passed=10, failed=0, errors=0, skipped=1, failed_ids=[], skipped_ids=["t::gpu"], rc=0)
-        manifest = dict(schema=PA.SCHEMA_MANIFEST, config="acceptance_v1_test", config_path=str(self.cfg_path),
+        manifest = dict(schema=PA.SCHEMA_MANIFEST, config=self.cfg["version"], config_path=str(self.cfg_path),
                         config_sha256=PA.sha256_file(self.cfg_path),
                         baseline=dict(commit=self.commits["baseline"], variant=self.cfg["reference_variant"],
                                       checkout=str(self.checkouts["baseline"])),
@@ -467,7 +602,7 @@ class Acceptance:
         if band_mode:
             cfg["physics"]["position_band"]["mode"] = band_mode
         manifest = json.loads(self.manifest_path.read_text())
-        return J.Judge(cfg, self.cfg_path, manifest, self.manifest_path, natives=FakeNatives()).run()
+        return J.Judge(cfg, self.cfg_path, manifest, self.manifest_path, natives=FakeNatives(self.progressive)).run()
 
 
 def gates(v, status):
@@ -483,6 +618,8 @@ def test_judge_pass(judge_mod, tmp_path):
     assert v["performance"]["ratios"]["2"]["pairs"] == pytest.approx([1.2, 1.2])
     assert v["failed_gates"] == [] and v["judge"]["version"] == PA.JUDGE_VERSION
     assert len(v["rows"]) == 8 and v["rows"][0]["clock"] == "outer (caller)"
+    # acceptance_v1 behaviour unchanged: no window gate, no phase report
+    assert not any(g["id"] == "G9:window" for g in v["gates"]) and "phases" not in v["performance"]
 
 
 def test_judge_physics_fail_on_final_codes(judge_mod, tmp_path):
@@ -634,3 +771,95 @@ def test_judge_known_harness_only_for_rejudging_preserved_outputs(judge_mod, tmp
                         natives=FakeNatives(), known_harness=[dict(old, note="earlier version")]).run()
     assert v["layers"] == {"PHYSICS": "PASS", "PERFORMANCE": "PASS", "INTEGRITY": "PASS"}
     assert any(n.startswith("re-judge:") for n in v["notes"])
+
+
+# ----------------------------------------------------------------------------- acceptance_v2: the G9 window
+
+def test_judge_v2_window_pass_and_phase_report(judge_mod, tmp_path):
+    v = Acceptance(tmp_path, judge_mod, "v2").build().verdict()
+    assert v["config"] == "acceptance_v2_test"
+    assert v["layers"] == {"PHYSICS": "PASS", "PERFORMANCE": "PASS", "INTEGRITY": "PASS"}, v["gates"]
+    g = next(g for g in v["gates"] if g["id"] == "G9:window")
+    assert g["status"] == "PASS" and g["threshold"]["windows"] == [[229, 400]]
+    assert g["threshold"]["particle_contacts"] == "reported, not gated"
+    rows = g["value"]
+    assert {r["side"] for r in rows} == {"baseline", "candidate"} and len(rows) == 4      # 2 repeats x 2 sides
+    w = rows[0]["values"]["windows"][0]
+    # synthetic recording: tool contact 229-366 (103 steps) all inside 229-400; labels 0 -> 15 (samples 220, 400);
+    # particle contacts 315-364 (50 steps) reported only
+    n_tool = int(np.count_nonzero(TOOL_CONTACT_S512))
+    assert (w["tool_contact_steps"], w["tool_contact_steps_episode"]) == (n_tool, n_tool) == (103, 103)
+    assert (w["new_labels"], w["label_steps"]) == (15, [220, 400])
+    assert (w["particle_contact_steps_reported"], w["particle_contact_steps_episode_reported"]) == (50, 50)
+    assert {"G9:n1", "G9:n2", "G9:n2:work"} <= set(gates(v, "PASS"))
+    phases = v["performance"]["phases"]["2"]
+    assert phases["timed_window"]["speed_ratio_c_over_b"] == pytest.approx(1.2)
+    assert phases["approach"]["candidate_median_step_s"] == pytest.approx(0.2 / 1.2)
+    assert phases["beyond"]["status"] == "NOT_RUN"
+    assert v["performance"]["ratios"]["2"]["median"] == pytest.approx(1.2)
+    assert any("G9:window is measured on the episode-mode runs" in x for x in v["limitations"])
+
+
+def test_judge_v2_window_fails_when_the_candidate_window_has_no_contact(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod, "v2")
+    acc.tool_contacts["candidate"] = np.where(_STEP <= 228, 30, 0)            # tool contact moved before the window
+    v = acc.build().verdict()
+    assert next(g for g in v["gates"] if g["id"] == "G9:window")["status"] == "FAIL"
+    assert v["layers"]["PERFORMANCE"] == "FAIL" and "G9:window" in v["failed_gates"]
+
+
+def test_judge_v2_window_blocked_when_the_baseline_window_has_no_contact(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod, "v2")
+    acc.tool_contacts = {s: np.zeros(1200, np.int64) for s in acc.tool_contacts}
+    v = acc.build().verdict()
+    g = next(g for g in v["gates"] if g["id"] == "G9:window")
+    assert g["status"] == "BLOCKED" and v["layers"]["PERFORMANCE"] == "BLOCKED"
+    assert "G9:window" not in v["failed_gates"]
+
+
+def test_judge_v2_window_does_not_gate_particle_contacts(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod, "v2")
+    acc.contacts = {s: np.zeros(1200, np.int64) for s in acc.contacts}     # no particle-particle contact anywhere
+    v = acc.build().verdict()
+    g = next(g for g in v["gates"] if g["id"] == "G9:window")
+    assert g["status"] == "PASS" and g["value"][0]["values"]["windows"][0]["particle_contact_steps_reported"] == 0
+
+
+def test_judge_v2_window_needs_tool_contact_dumps(judge_mod, tmp_path):
+    """Episode dumps of a harness before the re-declared v2 (no ``tool_contacts``) cannot pass G9:window."""
+    acc = Acceptance(tmp_path, judge_mod, "v2")
+    acc.dump_tool_contacts = False
+    v = acc.build().verdict()
+    g = next(g for g in v["gates"] if g["id"] == "G9:window")
+    assert g["status"] == "BLOCKED" and g["value"][0]["values"]["windows"][0]["tool_contact_steps"] is None
+
+
+def test_judge_v2_window_blocked_without_episode_dumps(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod, "v2").build()
+    manifest = json.loads(acc.manifest_path.read_text())
+    manifest["runs"] = [r for r in manifest["runs"] if r.get("gate") != "G6"]
+    acc.manifest_path.write_text(json.dumps(manifest))
+    v = acc.verdict()
+    assert next(g for g in v["gates"] if g["id"] == "G9:window")["status"] == "BLOCKED"
+
+
+def test_judge_v2_refuses_g9_runs_timed_on_the_v1_window(judge_mod, tmp_path):
+    """G9 outputs of the v1 window (W 2, K 10 here) are not accepted under v2: every run is an integrity problem."""
+    acc = Acceptance(tmp_path, judge_mod, "v2")
+    acc.cfg["performance"].update(warmup_steps=2, steps=10)
+    acc.build()                                         # results written with the old window
+    acc.cfg_path.write_text(json.dumps(synthetic_config("v2")))
+    manifest = json.loads(acc.manifest_path.read_text())
+    manifest["config_sha256"] = PA.sha256_file(acc.cfg_path)
+    acc.manifest_path.write_text(json.dumps(manifest))
+    v = acc.verdict()
+    assert v["layers"]["PERFORMANCE"] != "PASS" and v["layers"]["INTEGRITY"] != "PASS"
+    assert next(g for g in v["gates"] if g["id"] == "G9:n2")["status"] in ("FAIL", "BLOCKED")
+
+
+def test_judge_v2_phases_not_run_for_results_without_step_walls(judge_mod, tmp_path):
+    acc = Acceptance(tmp_path, judge_mod, "v2")
+    acc.step_walls = False
+    v = acc.build().verdict()
+    assert v["layers"] == {"PHYSICS": "PASS", "PERFORMANCE": "PASS", "INTEGRITY": "PASS"}
+    assert {p["status"] for p in v["performance"]["phases"]["2"].values()} == {"NOT_RUN"}

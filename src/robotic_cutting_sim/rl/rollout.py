@@ -1,8 +1,11 @@
-"""``rcs_rl_rollout_v1``: RL transition chunks written from a batched vector env (P1-5 T5.12, plan section 5).
+"""``rcs_rl_rollout_v1`` / ``rcs_rl_rollout_v2``: RL transition chunks written from a batched vector env (P1-5 T5.12,
+plan section 5).
 
 The writer records, for every batch step, the transition of every env as consumed by a standard RL loop:
-``obs_policy[t]`` (observation the action was computed from), ``actions[t]`` (executed ``edge_delta_v1`` action as
-the env reports it, ``info`` not needed), ``rewards[t]``, ``terminated[t]``, ``truncated[t]``, ``next_obs_policy[t]``
+``obs_policy[t]`` (observation the action was computed from), ``actions[t]`` (the action array the caller passes to
+``add``: ``run_rl_smoke.py`` stores the policy output clamped to the ``edge_delta_v1`` box [-1, 1], i.e. the env's
+input; what the env then executed differs only where ``info["action_status"]`` / ``action_clamped`` say so),
+``rewards[t]``, ``terminated[t]``, ``truncated[t]``, ``next_obs_policy[t]``
 (the observation after the step; for an env that ended inside the step under ``autoreset="same_step"`` it is
 ``info["final_obs"]``, the pre-reset observation), plus ``episode``, ``step_count``, ``seed``, ``drive``,
 ``action_status``, ``invalid_reason``, ``termination_reason`` and ``reset_kind`` (0 none, 1 autoreset, 2 forced).
@@ -18,6 +21,14 @@ SHA256, policies, drive and reset schedule, git, versions), ``chunk_NNNNN.npz`` 
 finished episode, written by the caller through ``episode_record``). The consumer check is
 ``scripts/rl_ready/check_rl_rollout.py``. Privileged ``obs_critic`` is written only when ``critic=True`` and the
 manifest then flags it non-deployable.
+
+``rcs_rl_rollout_v2`` (opt-in ``schema=SCHEMA_V2``; review finding 12) writes the same arrays and adds to the
+manifest the role of every field (``FIELD_ROLES``, ``field_roles_version``): ``privileged_non_deployable`` lists the
+oracle-derived fields a deployable policy must never consume (``invalid_reason``, ``termination_reason`` — material
+solver validity / the env's oracle termination — and ``obs_critic`` / ``next_obs_critic``), ``oracle_derived``
+additionally names the training signals computed from oracle material state (``rewards``: severed-bond progress;
+``terminated``: from ``termination_reason``), and ``deployable_policy_inputs`` is exactly ``obs_policy`` /
+``next_obs_policy``. ``rcs_rl_rollout_v1`` (the default, declared runs keep it) stays readable; it has no roles.
 """
 import hashlib
 import json
@@ -26,6 +37,20 @@ from pathlib import Path
 import numpy as np
 
 SCHEMA = "rcs_rl_rollout_v1"
+SCHEMA_V2 = "rcs_rl_rollout_v2"
+SCHEMAS = (SCHEMA, SCHEMA_V2)
+FIELD_ROLES_VERSION = "rollout_field_roles_v1"
+DEPLOYABLE, ACTION, TRAINING, BOOKKEEPING, PRIVILEGED = (
+    "deployable_policy_input", "action", "training_signal", "bookkeeping", "privileged_non_deployable")
+FIELD_ROLES = {
+    "obs_policy": DEPLOYABLE, "next_obs_policy": DEPLOYABLE, "actions": ACTION,
+    "rewards": TRAINING, "terminated": TRAINING, "truncated": TRAINING,
+    "episode": BOOKKEEPING, "step_count": BOOKKEEPING, "seed": BOOKKEEPING, "drive": BOOKKEEPING,
+    "action_status": BOOKKEEPING, "reset_kind": BOOKKEEPING,
+    "invalid_reason": PRIVILEGED, "termination_reason": PRIVILEGED,
+    "obs_critic": PRIVILEGED, "next_obs_critic": PRIVILEGED}
+# computed from oracle material state (never observable by a deployed policy), whatever their role
+ORACLE_DERIVED = ("rewards", "terminated", "invalid_reason", "termination_reason", "obs_critic", "next_obs_critic")
 RESET_NONE, RESET_AUTO, RESET_FORCED = 0, 1, 2
 END_TIME_LIMIT = "TRUNCATED_TIME_LIMIT"
 END_INVALID = "TERMINATED_INVALID"
@@ -44,8 +69,11 @@ def _sha256(path):
 
 class RolloutWriter:
     def __init__(self, out_dir, num_envs, *, obs_dim, action_dim=8, chunk_size=256, device="cpu", critic_dim=None,
-                 manifest=None):
+                 manifest=None, schema=SCHEMA):
         import torch
+        if schema not in SCHEMAS:
+            raise ValueError(f"schema {schema!r}; one of {SCHEMAS}")
+        self.schema = schema
         self.torch = torch
         self.out = Path(out_dir)
         if self.out.exists() and any(self.out.iterdir()):
@@ -127,7 +155,17 @@ class RolloutWriter:
     def close(self, **extra):
         self._flush()
         self._episodes.close()
-        manifest = dict(schema=SCHEMA, version=1, num_envs=self.N, steps=self.total, chunk_size=self.chunk_size,
+        roles = {}
+        if self.schema == SCHEMA_V2:
+            roles = dict(field_roles_version=FIELD_ROLES_VERSION, field_roles={k: FIELD_ROLES[k] for k in self.fields},
+                         privileged_non_deployable=sorted(k for k in self.fields if FIELD_ROLES[k] == PRIVILEGED),
+                         oracle_derived=sorted(k for k in self.fields if k in ORACLE_DERIVED),
+                         deployable_policy_inputs=sorted(k for k in self.fields if FIELD_ROLES[k] == DEPLOYABLE),
+                         actions_semantics="the action array passed to add() (run_rl_smoke.py: the policy output "
+                                           "clamped to the edge_delta_v1 box [-1, 1]); env-side changes are flagged "
+                                           "by action_status")
+        manifest = dict(schema=self.schema, version=SCHEMAS.index(self.schema) + 1, num_envs=self.N, steps=self.total,
+                        chunk_size=self.chunk_size, **roles,
                         chunks=self.chunks, fields={k: dict(dtype=np.dtype(v[1]).name, trailing=v[0])
                                                     for k, v in self.fields.items()},
                         episodes_file="episodes.jsonl", episodes_sha256=_sha256(self.out / "episodes.jsonl"),
@@ -146,11 +184,12 @@ class RolloutWriter:
 
 
 def load_rollout(path):
-    """``(manifest, arrays concatenated over chunks, episodes list)``; verifies the chunk SHA256s."""
+    """``(manifest, arrays concatenated over chunks, episodes list)``; verifies the chunk SHA256s. Reads
+    ``rcs_rl_rollout_v1`` and ``rcs_rl_rollout_v2`` (same arrays; v2 adds field roles to the manifest)."""
     path = Path(path)
     manifest = json.loads((path / "manifest.json").read_text())
-    if manifest.get("schema") != SCHEMA:
-        raise ValueError(f"not a {SCHEMA} rollout")
+    if manifest.get("schema") not in SCHEMAS:
+        raise ValueError(f"not a {' / '.join(SCHEMAS)} rollout")
     parts = {}
     for chunk in manifest["chunks"]:
         file = path / chunk["file"]
@@ -164,5 +203,6 @@ def load_rollout(path):
     return manifest, arrays, episodes
 
 
-__all__ = ["RolloutWriter", "load_rollout", "SCHEMA", "RESET_NONE", "RESET_AUTO", "RESET_FORCED", "END_TIME_LIMIT",
+__all__ = ["RolloutWriter", "load_rollout", "SCHEMA", "SCHEMA_V2", "SCHEMAS", "FIELD_ROLES", "FIELD_ROLES_VERSION",
+           "ORACLE_DERIVED", "PRIVILEGED", "DEPLOYABLE", "RESET_NONE", "RESET_AUTO", "RESET_FORCED", "END_TIME_LIMIT",
            "END_INVALID", "END_FORCED"]

@@ -10,17 +10,26 @@ cameras, no recording, no robot DOF, ``reduced_fidelity`` (ideal edge tracking).
 
     PYTHONPATH=<checkout>/src .deps/isaacsim-venv/bin/python scripts/rl_ready/run_perf_acceptance.py \\
         --variant-json V.json --mode throughput|episode|samestate|profile --num-envs N --seeds 512[,15] \\
-        --warmup-steps W --steps K [--device cuda:0] [--gpu-uuid UUID | --gpu-index I] [--wp17 DIR] --out DIR
+        --warmup-steps W --steps K [--device cuda:0] [--gpu-uuid UUID | --gpu-index I] [--wp17 DIR] \\
+        [--config configs/rl_benchmark/acceptance_v2.json] --out DIR
+
+``--config`` is optional provenance only (default: none, the ``acceptance_v1`` behaviour): the harness never reads
+its workload from a config (the caller passes W / K / N / seeds of the plan entry or G9 block); when given, the
+config is validated and its path, version and sha256 are recorded in ``result.json`` (``acceptance_config``).
 
 Modes (W + K <= 1200 control steps; the timed window is the K steps after the W warm-up steps):
 
 * ``throughput``: one untimed and 10 timed full resets, W + K replay steps; final codes per env (work check).
-* ``episode``: W + K replay steps with the in-process L2 monitor (candidate-reported), per-step contact counts and
-  the Native sample steps dumped (codes exact; positions as int8 micrometre deltas to the Native sample with exact
+* ``episode``: W + K replay steps with the in-process L2 monitor (candidate-reported), per-step contact counts
+  (``contacts``: stats slot 4, particle-particle / cut-face contacts; ``tool_contacts``: stats slot 1, tool-material
+  contacts of the handle, pads and edge obstacles; one host read per step for both) and the Native sample steps dumped (codes exact; positions as int8 micrometre deltas to the Native sample with exact
   escapes); exact final snapshot per env; in-process 2-frame ``evaluate()`` (candidate-reported).
 * ``samestate``: per seed, the recorded Native state of each ``SAMESTATE_SAMPLES`` sample written into the batch
   and the contact stage run alone twice (impulse, stats); then a W + K step replay from reset (contacts, final).
 * ``profile``: as throughput, the K timed steps inside ``cudaProfilerStart/Stop`` (for an external nsys).
+
+Every round records ``step_walls_s`` (the in-process wall of every one of the W + K steps, warm-up included,
+candidate-reported) so that the judge can report per-phase speed (``acceptance_v2`` ``performance.phases``).
 
 Seeds: one batch per round (``perf_acceptance.plan_rounds``); every round runs in its own child process (the
 parent only samples GPU telemetry and assembles ``result.json``), so each process builds exactly one material and
@@ -83,6 +92,8 @@ def parse_args(argv=None):
     g.add_argument("--gpu-uuid")
     g.add_argument("--gpu-index", type=int)
     p.add_argument("--wp17", default=None, help="WP-17 record tree: DIR/<record>/seed_<s>/ (default artifacts/wp17)")
+    p.add_argument("--config", default=None,
+                   help="optional acceptance config (provenance only: validated, path/version/sha256 recorded)")
     p.add_argument("--out", required=True)
     # internal: the parent runs every round in its own child process (one material per process)
     p.add_argument("--child-round", type=int, default=None, help=argparse.SUPPRESS)
@@ -95,6 +106,14 @@ def parse_args(argv=None):
         p.error(f"--seeds/--num-envs: {error}")
     if args.warmup_steps < 0 or args.steps < 1 or args.warmup_steps + args.steps > PA.EPISODE_STEPS:
         p.error(f"need warmup_steps >= 0, steps >= 1, warmup_steps + steps <= {PA.EPISODE_STEPS}")
+    args.acceptance_config = None
+    if args.config is not None and args.child_round is None:
+        try:
+            cfg = PA.load_config(args.config)
+        except (OSError, ValueError) as error:
+            p.error(f"--config: {error}")
+        args.acceptance_config = dict(path=str(args.config), version=cfg.get("version"),
+                                      sha256=PA.sha256_file(args.config))
     return args
 
 
@@ -287,6 +306,7 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
                         for x in natives}
         samples = {e: [] for e in range(N)}
         contacts = np.zeros((W + K, N), np.int64) if mode in ("episode", "samestate") else None
+        tool_contacts = np.zeros((W + K, N), np.int64) if contacts is not None else None
         walls = np.zeros(W + K)
         start = marks.global_step
         if gpu.telemetry:
@@ -306,7 +326,7 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
             if monitor is not None:
                 monitor.update()
             if contacts is not None:
-                contacts[t] = P3.stats_counts(env)
+                contacts[t], tool_contacts[t] = stats_slots(env)
             if mode == "episode":
                 n_step = t + 1
                 for e, seed in enumerate(env_seeds):
@@ -350,6 +370,7 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
             arrays.update({f"final_positions_e{e}": np.asarray(f["positions"], np.float64)
                            for e, f in enumerate(finals)})
             arrays["contacts"] = contacts
+            arrays["tool_contacts"] = tool_contacts
             dumps.append(dict(kind="samestate", round=r, seed=int(env_seeds[0]), env_seeds=list(env_seeds),
                               samples=list(PA.SAMESTATE_SAMPLES), steps=W + K,
                               **save_npz(out, f"{tag}_samestate_s{env_seeds[0]}.npz", arrays)))
@@ -377,13 +398,22 @@ def run_round(args, gpu, marks, r, env_seeds, variant, out, RV, P3):
                     final_positions=np.asarray(f["positions"], np.float64),
                     final_velocities=np.asarray(f["velocities"], np.float32),
                     final_codes=np.asarray(f["codes"], np.int32), final_step_count=np.int64(f["step_count"]),
-                    contacts=contacts[:, e].copy(), invalid_reason=np.int64(res["invalid_reason"][e]))
+                    contacts=contacts[:, e].copy(), tool_contacts=tool_contacts[:, e].copy(),
+                    invalid_reason=np.int64(res["invalid_reason"][e]))
                 dumps.append(dict(kind="episode", round=r, env=e, seed=int(seed), samples=len(rows),
                                   **save_npz(out, f"{tag}_e{e}_s{seed}.npz", arrays)))
         res["dumps"] = dumps
         if mode == "profile":
             res["profile_step_walls_s"] = walls[W:].tolist()
+        res["step_walls_s"] = [round(float(x), 7) for x in walls]   # every step incl. warm-up (per-phase report)
     return res
+
+
+def stats_slots(env):
+    """Per-env contact counts of the last control step from one host read of the solver's ``stats_sum``: slot 4
+    (particle-particle contacts, what ``run_p1_3a.stats_counts`` returns) and slot 1 (tool-material contacts)."""
+    a = env.material.solver.stats_sum.numpy().reshape(env.num_envs, -1)
+    return a[:, 4].astype(np.int64), a[:, 1].astype(np.int64)
 
 
 def timed_reset(env, gpu, N):
@@ -564,6 +594,8 @@ def main(argv=None):
                 seeds=args.seed_list, warmup_steps=args.warmup_steps, steps=args.steps,
                 variant_json=str(args.variant_json), workload=WORKLOAD,
                 timing_note="in-process timing; the caller's outer clock on the marks is the reference")
+    if args.acceptance_config is not None:
+        base["acceptance_config"] = args.acceptance_config
     status, code, error, data = "ERROR", None, None, {}
     try:
         base["environment"] = environment(args)

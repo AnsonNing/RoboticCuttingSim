@@ -62,6 +62,8 @@ def main():
                         help="isaac_lab_newton grip_contact_profile (e.g. mjwarp_grip_v1 with physical_grasp_v1)")
     parser.add_argument("--spacing", type=float, default=None, help="coarse particle spacing (tests only)")
     parser.add_argument("--max-episode-steps", type=int, default=None)
+    parser.add_argument("--material-dt", type=float, default=None,
+                        help="non-default material_dt_s (tests only: fidelity() must report it, review finding 3)")
     parser.add_argument("--non-strict", action="store_true")
     parser.add_argument("--out", required=True)
     args = parser.parse_args()
@@ -116,6 +118,8 @@ def main():
         family_kwargs["particle_spacing_m"] = args.spacing
     if args.max_episode_steps:
         family_kwargs["max_episode_steps"] = args.max_episode_steps
+    if args.material_dt:
+        family_kwargs["material_dt_s"] = args.material_dt
     base = TaskFamily(scene_seeds=tuple(args.tasks), **family_kwargs) if family_kwargs else None
     options = dict(evaluation_stream={"every": args.stream_every} if args.evaluation_stream else None,
                    observation_profile=args.observation_profile, strict=not args.non_strict)

@@ -97,6 +97,20 @@ NATIVE_TRIM_V7_2_REFERENCE = dict(
     robot="Native Isaac Sim 6.2 PhysX Franka, physical grasp, IK tracking", reaction_fed_back=True,
     source="WP-17 native_optimized_001 (seeded_trim rcs_trim_random_sim_v1, seeds 512/15)")
 
+from .vector_contract import PRIVILEGED_INFO_KEYS  # noqa: E402  (Torch-free constants)
+
+# keys of a Native reference that a batched env's actual material / control setup is compared with (fidelity());
+# shared by workload A (VectorCuttingEnv) and workload B (LabVectorCuttingEnv, review finding 3)
+FIDELITY_REFERENCE_KEYS = ("cutting_law", "max_cuts", "slots_per_node", "particle_spacing_m", "grid_dx_m",
+                           "material_dt_s", "substeps_per_control_step", "control_dt_s", "episode_steps")
+
+
+def reference_reasons(actual, reference, keys=FIDELITY_REFERENCE_KEYS):
+    """``["<key>=<actual> (reference <ref>)", ...]`` for every key of ``keys`` in ``reference`` that differs."""
+    return [f"{key}={actual[key]} (reference {reference[key]})" for key in keys
+            if key in reference and not np.isclose(actual[key], reference[key], rtol=1e-9, atol=0)]
+
+
 VECTOR_CODES = BATCH_CODES + ("UNSUPPORTED_RUNTIME", "UNSUPPORTED_OPTION", "UNSUPPORTED_TASK",
                               "UNSUPPORTED_DEVICE", "UNSUPPORTED_AUTORESET_FINAL_OBS",
                               "UNSUPPORTED_GRIP_CONTACT_PROFILE")   # isaac_lab_newton: unknown grip contact profile
@@ -624,7 +638,8 @@ class VectorCuttingEnv:
         self.single_observation_space = self._obs_space(None)
         self.observation_space = self._obs_space(N)
         self.metadata = {**type(self).metadata, "autoreset_mode": "same_step" if self.autoreset else "disabled",
-                         "observation_profile": self.observation_profile, "max_episode_steps": self.max_episode_steps}
+                         "observation_profile": self.observation_profile, "max_episode_steps": self.max_episode_steps,
+                         "privileged_info_keys": PRIVILEGED_INFO_KEYS}
 
     def _obs_space(self, n):
         shape = (lambda d: (d,)) if n is None else (lambda d: (n, d))
@@ -1073,10 +1088,7 @@ class VectorCuttingEnv:
                       grid_dx_m=float(u["dx"]), material_dt_s=float(u["dt"]),
                       substeps_per_control_step=int(u["substeps"]), control_dt_s=self.control_dt,
                       episode_steps=self.max_episode_steps, obstacle_boxes=self.boxes)
-        for key in ("cutting_law", "max_cuts", "slots_per_node", "particle_spacing_m", "grid_dx_m", "material_dt_s",
-                    "substeps_per_control_step", "control_dt_s", "episode_steps"):
-            if key in ref and not np.isclose(actual[key], ref[key], rtol=1e-9, atol=0):
-                reasons.append(f"{key}={actual[key]} (reference {ref[key]})")
+        reasons += reference_reasons(actual, ref)
         if self.boxes == 1:
             reasons.append("no_finger_pad_obstacles")
         per_env = []
