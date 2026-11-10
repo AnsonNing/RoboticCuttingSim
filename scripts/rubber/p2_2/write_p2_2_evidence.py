@@ -115,9 +115,18 @@ def batched_gpu():
 
 def batched_l0():
     out = {}
-    for case in ("07_ramped", "07_instant", "12"):
-        r = load(A/f"f4_batched_l0_{case}_001"/"l0.json")
-        out[case] = {"status": "NOT_RUN"} if r is None else r
+    for case, run in (("07_ramped", "001"), ("07_instant", "001"), ("12", "003")):
+        r = load(A/f"f4_batched_l0_{case}_{run}"/"l0.json")
+        out[case] = {"status": "NOT_RUN"} if r is None else dict(r, raw=f"artifacts/rl_ready/p2_2/f4_batched_l0_{case}_{run}")
+    out["earlier_12_runs"] = {}
+    for run in ("001", "002"):
+        d = A/f"f4_batched_l0_12_{run}"
+        r, note = load(d/"l0.json"), d/"NOTE.txt"
+        out["earlier_12_runs"][run] = {"first_mismatch": r and r["first_mismatch"],
+                                       "note": note.read_text().strip() if note.exists() else None}
+    out["note_07"] = ("the 07 runs compared with np.array_equal (signed zero equal, NaN unequal; both states stayed "
+                      "finite); their 'commit' field was read at the end of the run, the code imported at the start "
+                      "was 44e5b59")
     return out
 
 

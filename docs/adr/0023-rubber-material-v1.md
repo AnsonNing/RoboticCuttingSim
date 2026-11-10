@@ -927,3 +927,22 @@ check (§14.4).
   the triplet (3, 4, 6) with Celik's observed order, p_eff = clip(p_obs, 1, 2), Fs 1.25 (3.0 if p_obs ∉ [1, 3] or
   oscillatory), GRID_INDEPENDENT when the triplet range ≤ 1e-4; pass GCI ≤ 2 % and CFL 0.5 → 0.25 change ≤ 0.1 %.
 - New sections: `throughput_v4` (R2.4/F5), `batched_gpu_v4` (R2.1 GPU N = 4 of -07 v3 / -12), `batched_l0_v4` (F4).
+
+### 19.3 Results (P2-2 formal runs; details: `docs/reports/rl_ready/P2_2_RUBBER_HYPERELASTIC.md`)
+
+| Item | Result |
+|---|---|
+| F1 (Phase 1 fix `db036a0`) | PASS with a GPU visible (fallback-grid test 3 × 3 alone, file 15 / 15) |
+| F2 guard-on GPU smoke N 1/4/8 | PASS: L2 invariants, 0 guard violations, ≤ 922 MB; guard +1.2–1.9 % per substep (SHARED_GPU) |
+| -10 L3 (rule v4) | PASS: batched max M/U 0.877, held-out singles 10 / 10 within (v2 L3 FAIL preserved) |
+| -02 / -03 / -05 (v4, f64 shadow) | PASS (δ/δ_extrap ≤ 1.0178; similar configurations equal to 1e-6; v3 -02 FAIL preserved) |
+| -06 (v4, guard) | PASS |
+| -07 (v4, projection + grid traction work) | PASS: 07a energy 0.0047 % of Ψ, 07b 0.33 % (v2 / v3 FAILs preserved) |
+| -08 (v4, guard) | FAIL (validity): stresses exact to 1.6e-6, but γ = 2 reaches CFL_eff 1.30 > 1.0 (bound ratio 2.52 at r = 1); a v5 -08 needs r ≥ 1.3 declared before its run |
+| -11 refinement | FAIL: production GCI (n_t 3) Q1 3.98 % (p_obs 3.26 outside [1, 3] → Fs 3), Q2 1.28 %, Q3 0.01 %, Q4 0.92 %; dt criterion PASS for all |
+| β 50 vs β 20 | reported: simulated differences equal the analytic compressible ones to ≤ 0.16 %; β 20 vs incompressible −2.7 % stress at λ 1.5 |
+| R2.4 workload E N 1/4/8/16 | 0.64 / 1.35 / 1.47 / 1.52 env-steps/s, ≤ 952 MB, guard 2.1 % of GPU time (no fusion) |
+| Batched GPU N = 4 (-07 v3, -12) and CPU L0 (-07 v3, -12) | PASS (07b v3 batched energy 1.058 % reported, lumped) |
+
+Open decisions for R2.5: production n_t for bending observables (Q1), -08 with an explicit deformation reserve,
+batched projection / shadow before P2-6.

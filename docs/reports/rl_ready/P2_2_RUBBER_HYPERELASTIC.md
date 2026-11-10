@@ -12,7 +12,23 @@ Nothing frozen changed: v1–v7_2 solvers, law 8, evaluators, `tlmpm.py`/`tlmpm_
 
 ## 0. Status per task
 
-<!-- STATUS_TABLE -->
+| Task | Status | Key numbers |
+|---|---|---|
+| Merge `origin/claude/rl-ready-rubber-physics` | DONE (`5854f34`) | normal merge commit |
+| F1 Phase 1 device pin re-check (GPU visible) | **PASS** | fallback-grid test 3 × 3 alone; file 15 / 15 GPU visible and CUDA hidden |
+| F2 guard-on GPU smoke (N 1/4/8) | **PASS** | L2 invariants, 0 guard violations, VRAM ≤ 922 MB; guard +1.2–1.9 % ms/substep |
+| F3 L3 rule v4 (declared before run) | **PASS** | batched max M/U 0.877 (0 / 16 outside); held-out 10 / 10 within |
+| F8 energy-consistent Dirichlet | **DONE**; v4 -07b **PASS** | lumped −2.6e-4 … −1.4e-3 Ψ/T_ax → projection ≤ +1.3e-5 (= free-free); -07b 1.058 % → 0.33 % |
+| F9 grid-consistent traction work | **DONE**; v4 -07a **PASS** | -07a energy 0.96 % (v3) → 0.0047 % (v4) |
+| F10 float32 static precision | **DONE**; v4 -02 **PASS** | float32 band 0.9–4.2e-3, Ψ +1–3 % after the stop; f64 shadow ≤ 4.1e-7; δ/δ_extrap max 1.0178 (v3: 1.0203 FAIL) |
+| R2.1 hyperelastic runs (v4, CPU) | -02/-03/-05/-06/-07 **PASS**, -08 **FAIL** (validity) | -08 physics 1.6e-6; γ 2 trips the guard (CFL_eff 1.30) |
+| R2.1 batched GPU N = 4 | -07a **PASS**, -12 **PASS**, -07b FAIL (reported, lumped v1) | values = single v3 |
+| F4 batched L0 -07 v3 / -12 | **PASS** | bitwise (L0 definition) every control step |
+| R2.2 refinement / GCI | **FAIL** (Q1) | GCI n_t 3: Q1 3.98 % (Fs 3, p_obs 3.26), Q2 1.28 %, Q3 0.01 %, Q4 0.92 %; dt ≤ 1e-5 |
+| R2.3 β 20 vs 50 | DONE (reported) | Q3 −2.7 % vs incompressible; β 50 − β 20 = analytic ±0.16 % |
+| R2.4 throughput / VRAM N 1/4/8/16 | DONE; VRAM criterion **PASS** | 0.64 / 1.35 / 1.47 / 1.52 env-steps/s, ≤ 952 MB, SHARED_GPU |
+| F5 guard profiling | DONE | guard 2.1 % of GPU time → no fusion |
+| R2.5 review / freeze | **NOT_RUN** | reviewer decision |
 
 ## 1. Integration merge and F1 (Phase 1 device pin)
 
@@ -190,7 +206,7 @@ grid-consistent one in the P2-1 diagnostic) stays the v3 result.
 ## 8. F10 — float32 static-state precision
 
 **Quantification first** (diagnostic): `f10_static_precision_001` (`scripts/rubber/p2_2/diag_static_precision.py`,
-commit `ba2dec5`, CPU, 17 runs, 18:12–20:xx KST). Protocol-v3 -02 configurations (relax_mass_proportional_v1,
+commit `ba2dec5`, CPU, 17 runs, 18:12–20:18 KST). Protocol-v3 -02 configurations (relax_mass_proportional_v1,
 static_stop_v3 float64 markers, guard 1.0), but the damped relaxation continues to 10 T1 and the float64 tip deflection is
 recorded every T1/20. Columns: δ/δ_EB at 3 T1 (the v3 stop time) and at 10 T1, least-squares drift per T1 and band
 (max − min) over [3, 10] T1, change of Ψ from 3 to 10 T1.
@@ -213,7 +229,8 @@ recorded every T1/20. Columns: δ/δ_EB at 3 T1 (the v3 stop time) and at 10 T1,
 | Lt20 t4 W = 4t n_t 3 | f64_shadow_v1 | 0.5 | 0.96683 | 0.96683 | +2.4e-9 | 1.6e-7 | +0.00 % |
 | Lt20 t6 W = 4t n_t 3 | f64_shadow_v1 | 0.5 | 0.96683 | 0.96683 | −9.0e-10 | 1.9e-7 | −0.00 % |
 
-<!-- F10_LATE -->
+| Lt20 t6 W = 4t n_t 3 | float32_v1 | 0.25 | 0.96604 | 0.96795 | +2.5e-4 | 2.6e-3 | +2.90 % |
+| Lt20 t6 W = 4t n_t 3 | f64_shadow_v1 | 0.25 | 0.96683 | 0.96683 | +2.0e-9 | 2.0e-7 | −0.00 % |
 
 Reading: the float32 values at 3 T1 reproduce the v3 formal results exactly (0.96527 / 0.96556 / 0.96738 for the
 W = 4t triple, the -02 FAIL). After the stop the float32 state keeps moving in a 0.9–4.2e-3 band while Ψ grows by
@@ -264,4 +281,137 @@ r declared before its run is an open item. -01, -04, -09 (v2) and -12 (v3) were 
 physics PASS; v2 PASS under the v2 protocol without guard); -10 L0/L1/L2/L3 PASS (L3 under v4); -11 see §10; -12 PASS
 (v3; batched GPU and L0 see §5, §11). Earlier FAILs stay recorded: -07 v2 and v3, -02 v3, -10 L3 v2.
 
-<!-- BODY -->
+## 12. R2.5 — review and freeze: NOT_RUN
+
+R2.5 (xhigh review → acceptance; freeze `tlmpm_rubber_v1`) is not part of this implementation run: the solver
+gained three opt-in options in P2-2, the -08 v4 validity FAIL and the open items below are unresolved, and an
+acceptance decision belongs to the reviewer. `tlmpm_rubber_v1` stays `EXPERIMENTAL_NOT_ACCEPTED`.
+
+## 13. Tests
+
+| Command | Result |
+|---|---|
+| `CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_tlmpm_rubber_v1.py tests/test_live_rubber_material.py tests/test_batched_*.py tests/test_wp12_phase5_frozen.py tests/test_repo_naming.py` (at `3d12969`) | 315 passed (1,307 s, loaded host) |
+| rubber files only (`tests/test_rubber_*.py tests/test_tlmpm_rubber_v1.py tests/test_live_rubber_material.py tests/test_batched_frozen_sources.py`) at the final commit, CUDA hidden / GPU0 visible | 144 / 144 passed |
+| same with `CUDA_VISIBLE_DEVICES=0` (GPU visible) | 315 passed (1,083 s) |
+| `tests/test_batched_particle_contacts.py`, GPU1 visible / CUDA hidden (F1) | 15 / 15 passed |
+
+New tests: `test_rubber_solver_options.py` (6: defaults, projection constraint and inverse, static reaction, grid
+traction work, float64 shadows, batch refusal), `test_rubber_gci.py` (7), `test_rubber_l3.py` (5, incl. a Monte Carlo of
+the family false-reject rate), `test_rubber_refinement.py` (2), v4 pin + v4-vs-v3 diff in `test_rubber_phys_config.py`,
+ppc 3 lattice in `test_rubber_scene.py` (the old "ppc 3 refused" assertion now refuses ppc 4). No torch code changed;
+the torch suite was not run.
+
+## 14. What P2-3 (viscoelasticity, ADR §10) needs
+
+1. **Declare `rubber_visc_tests_v1` (RUBBER-VISC-01..05) before implementation**, with the v4 machinery: guard on,
+   L3 rule v4 for GPU parity, and the energy balance written as E_kin + Ψ_eq + Σ Ψ_visc − W_ext + D_visc with the
+   integrated dissipation D_visc = Σ ∫ Q_i : Ḋ (reported per step), so "loss per cycle vs πγ₀²G″" is measured on the
+   material, not on numerics.
+2. **Energy-consistent constraints in every hysteresis / relaxation test**: the lumped clamp loses 0.03–0.14 % of Ψ
+   per axial period (§6), the same order as small-g_i Prony losses. Use `consistent_mass_projection_v1` (single env)
+   and **implement it in the batched path** (per-env block inverses, CSR of constrained rows; the batch currently
+   refuses the option) before batched VISC runs or P2-6 grips.
+3. **Float64 state for slow/quasi-static tests** (`f64_shadow_v1`): relaxation tests at fixed C and τ ≫ dt accumulate
+   tiny increments exactly as the static cantilever did (§8); the Prony internal variables Q_i (sym-6, per particle,
+   M ≤ 4) should be updated in float64 for the exponential integrator (a_i, b_i in float64 from expm1) and stored
+   float32 only if a test shows it suffices; batched shadows are also missing.
+4. **Registry/state**: `visco_q[P·M]` and `visco_s_prev[P]` with initial value zero/snapshot in
+   `batched/constitutive_rubber.py` (Phase 2 file), cleared by the masked reset (vars()-complete L1 test), per-env
+   a_i, b_i columns in the params table; L0 parity single ↔ batched as for the elastic model.
+5. **Stable step**: the guard uses μ₀ (instantaneous modulus), as now; add the Prony tangent bound check
+   (`bound_check.py` analogue) and keep `deformation_reserve` explicit for large-strain cyclic tests (the -08 γ 2
+   result shows the guard trips in large homogeneous shear at r = 1).
+6. **Tests to carry over**: dt-independence of fitted τ (CFL 0.5 vs 0.25, as -11's dt criterion), three loading rates,
+   reset clears internal variables; GCI-style refinement only for Q1/Q2-type observables.
+7. **Cost**: guard 2 % (no fusion needed); `_bc_b` (14–17 % of GPU time) iterates all nodes twice per substep — a
+   constrained-node list would cut it before P2-6 throughput work.
+
+## 10. R2.2 / R2.3 / F4 — refinement study RUBBER-PHYS-11 (GCI) and β sensitivity
+
+Run `refinement_v4_002` (commit `a3a079a`, src/configs clean, v4 sha256 `f1cecee6…38f0`, Warp 1.17.0 CPU, 22 workers,
+44 runs, 7,541 s wall, 18:52–20:57 KST; single-env reference, guard on, static_stop_v3, `f64_shadow_v1` for Q1/Q4):
+
+```
+TMPDIR=/mnt/data/ningan/tmp CUDA_VISIBLE_DEVICES='' PYTHONPATH=src .deps/isaacsim-venv/bin/python \
+    scripts/rubber/p2_2/run_refinement_v4.py --device cpu --workers 22 --out artifacts/rl_ready/p2_2/refinement_v4_002
+```
+
+The first attempt `refinement_v4_001` was aborted by me after 20 min: `case_q4` read `live.last_diagnostics`, which does
+not exist before a control step (AttributeError after the physics); preserved with `ABORTED.txt`; the fix (`a3a079a`)
+touches measurement code only, the protocol is unchanged. No run is invalid, unconverged or missing in `_002`; no
+guard or J flag. Q values at CFL 0.5, β 20, 2 particles per cell (h = 1/n_t):
+
+| Q | n_t 2 | n_t 3 | n_t 4 | n_t 6 | convergence (3, 4, 6) | p_obs | p_eff / Fs | φ_ext | **GCI n_t 3** (criterion ≤ 2 %) | GCI n_t 6 | CFL 0.5 → 0.25 at n_t 3 (≤ 0.1 %) | triplet (2, 3, 4): GCI n_t 2 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Q1 sag δ (m) | 5.09915e-4 | 4.99302e-4 | 4.96405e-4 | 4.95041e-4 | monotone | 3.26 | 2.0 / **3.0** | 4.93949e-4 | **3.98 % FAIL** | 0.66 % | +8.7e-8 PASS | 4.68 % (p 2.69) |
+| Q2 f1 (Hz) | 18.9453 | 19.2017 | 19.2877 | 19.3356 | monotone | 2.75 | 2.0 / 1.25 | 19.374 | **1.28 % PASS** | 0.25 % | −1.0e-5 PASS | 3.05 % (p 2.12) |
+| Q3 P11 at λ 1.5 (Pa) | 410,733 | 410,766 | 410,762 | 410,804 | oscillatory (range 1.03e-4) | 4.87 | 2.0 / 3.0 | 410,838 | **0.01 % PASS** | 0.025 % | +1.6e-5 PASS | grid independent |
+| Q4 large sag δ (m) | 0.0663048 | 0.0658945 | 0.0658064 | 0.0657977 | monotone | 8.25 | 2.0 / 3.0 | 0.0657907 | **0.92 % PASS** | 0.032 % | −2.4e-9 PASS | 3.34 % (p 3.34) |
+
+**RUBBER-PHYS-11: FAIL** (Q1 production GCI 3.98 % > 2 %; Q2–Q4 PASS; every dt criterion PASS; validity PASS). The
+Q1 verdict follows the declared rule: p_obs = 3.26 lies outside the verified window [1, 3], so Fs = 3.0 with p_eff = 2.
+With p_obs and Fs 1.25 the same data give 1.19 %, and the actual distance of n_t 3 from the extrapolated value is
++1.08 % — reported, not a re-evaluation; the declared verdict stands. The n_t 3 production grid carries a 1.1 % (Q1),
+0.9 % (Q2), 0.2 % (Q4) discretisation error relative to the p_eff = 2 extrapolation; n_t 4 halves it.
+
+The CFL 0.25 triplets give the same picture (GCI n_t 3: Q1 3.98 %, Q2 1.29 %, Q3 grid independent, Q4 0.92 %); dt changes
+on every grid ≤ 1.2e-4 (largest: Q2 at n_t 2), i.e. time-step error is negligible against grid error.
+
+**Model form and quadrature (R2.3, reported, not scored)** at CFL 0.5:
+
+| Q | β 50 / β 20 − 1 (n_t 3 / n_t 4) | analytic ratio β 50 / β 20 | β 20 vs incompressible reference | ppc 3 / ppc 2 − 1 (n_t 3; Q3 n_t 4) |
+|---|---|---|---|---|
+| Q1 | −1.14 % / −1.12 % | δ_EB: −0.98 % | δ_EB(E_eff) / δ_EB(3μ) = 1.0167 | −1.56 % |
+| Q2 | +0.62 % / +0.61 % | f_EB: +0.50 % | f_EB(E_eff) / f_EB(3μ) = 0.9918 | +0.90 % |
+| Q3 | +1.62 % / +1.63 % | compressible P11: +1.62 % | 410,766 vs 422,222 Pa (incompressible NH): −2.71 % | +0.00 % |
+| Q4 | −0.47 % / −0.46 % | elastica(E_eff): −0.39 % | elastica(E_eff) / elastica(3μ) = 1.0066 | −0.53 % |
+
+β 20 is a documented model-form error (§6): −2.7 % nominal stress at λ 1.5 against incompressible NH (as predicted),
++1.7 % static sag, −0.8 % frequency; the simulated β 50 − β 20 differences match the analytic compressible-model
+differences to ≤ 0.16 % (the discretisation itself is β-insensitive: β 50 / β 20 the same on n_t 3 and 4). The ppc 3
+quadrature check moves the bending observables by −1.6 % (Q1), +0.9 % (Q2), −0.5 % (Q4) at n_t 3 — the same order as the
+n_t 3 grid error, and for Q2 ppc 3 at n_t 3 (19.3754 Hz) equals the n_t → ∞ extrapolation of ppc 2 (19.374): the 2-ppc
+quadrature is part of the n_t 3 error; uniaxial stress (homogeneous) is insensitive. Q5 (−06 type, load half): gauge J̄
+error ≤ 4.1e-5 (β 20), J̄ ∈ [1.000, 1.055] at λ ≤ 2.
+
+**F4 float32 static floor and float64-marker noise:** with `f64_shadow_v1` the static floor is ≤ 4.1e-7 of δ (§8); the
+float64-marker noise of static_stop_v3 is below that (geometrically similar configurations agree to 1e-7 in v4 -02).
+
+## 11. F4 — batched L0 (CPU bitwise) of RUBBER-PHYS-07 v3 and -12
+
+`scripts/rubber/p2_2/run_batched_l0_v3.py`: the single-env reference and a `BatchedRubberMaterial` of 2 copies
+(Warp CPU, parity mode) get the v3 inputs; after every control step every particle / node / group / traction array,
+work, J and CFL violation counters, diagnostics, markers, wrench and invalid bits of both batched envs are compared
+with the single reference (the L0 definition of `tests/test_rubber_batched.py`: `np.array_equal`, plus NaN at the same
+places). CPU, 19,200 particles/env, guard on, v1 options.
+
+| case | control steps | result | run |
+|---|---|---|---|
+| -07a ramped (λ 1.5, traction ramp) | 5,621 × 18 substeps | **equal at every step** (both envs), no flag | `f4_batched_l0_07_ramped_001` (code `44e5b59`, 3,974 s) |
+| -07b instant (λ 1.03) | 3,373 × 18 | **equal at every step**, no flag | `f4_batched_l0_07_instant_001` (code `44e5b59`, 2,552 s) |
+| -12 guard regression | 68 × 862 | **equal at every step** incl. the non-finite steps 56–68; invalid bits 7 = 7 = 7 | `f4_batched_l0_12_003` (`6b26534`, 1,422 s) |
+
+**F4 batched L0: PASS.** Preserved earlier -12 attempts: `_001` compared with `np.array_equal` without `equal_nan`
+and stopped matching exactly at step 56, where single and batched states both became non-finite (NaN ≠ NaN); `_002`
+compared byte-wise and reported a first byte difference at step 54 in the derived `wrench` (the release step), where
+`array_equal` finds equality — a signed-zero difference (+0.0 / −0.0) in a [G, 6] average, not a value difference.
+`_003` records both: L0-equal at every step; first byte-wise difference at step 54 (wrench). The 07 runs' `commit`
+field was read at the end of the run; the code they imported at their start (18:22 KST) is `44e5b59`.
+
+## 15. Artifacts
+
+`artifacts/rl_ready/p2_2/`: `f2_gpu_smoke_guard_001`, `l3_v4_001`, `throughput_v4_001`, `batched_gpu_v4_001`,
+`f8_clamp_dissipation_001`, `f10_static_precision_001`, `rubber_phys_v4_001`, `refinement_v4_001` (aborted, preserved),
+`refinement_v4_002`, `f4_batched_l0_07_ramped_001`, `f4_batched_l0_07_instant_001`, `f4_batched_l0_12_001` / `_002`
+(preserved, comparison notes) / `_003`. Compact: `docs/evidence/rl_ready/p2_2_rubber_001.json`.
+
+## 16. Open items
+
+- -11 Q1 GCI FAIL at the production grid n_t 3 (3.98 % by the declared rule): either `rubber_rl_v1` moves to n_t ≥ 4
+  for bending-dominated observables or the acceptance accepts a documented ~1 % bending error at n_t 3 — a decision
+  for R2.5; a new -11 version must be declared before any re-run.
+- -08 v4 validity FAIL (guard at γ 2): a v5 -08 with an explicit `deformation_reserve` (≥ 1.3) declared before its run.
+- Batched execution of `consistent_mass_projection_v1` and `f64_shadow_v1` (the batch refuses both).
+- `_bc_b` node loop (14–17 % of GPU time) → constrained-node list.
+- R2.5 xhigh review and freeze decision.
