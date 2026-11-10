@@ -6,7 +6,11 @@ Scenes (strip-local frame, elastic neo_hookean_jbar_v1, mu 0.4 MPa, beta 20, rho
 
 Laws: ``particle_frozen`` (frozen helper), ``grid_node`` (``grid_node_coulomb_v1``, velocity-level node projection),
 ``grid_penalty`` (``grid_node_penalty_coulomb_v1``, node penalty + Coulomb spring-dashpot-slider, the module defaults
-kappa_n = kappa_t = 0.25, zeta = 0.5), ``grid_penalty_undamped`` (the same with zeta = 0).
+kappa_n = kappa_t = 0.25, zeta_n = zeta_t = 0.5), ``grid_penalty_undamped``: at commit 259f2b6 (run
+probe_contact_laws_004) this variant set only ``damping_ratio`` = 0, i.e. the TANGENTIAL dashpot off and the normal dashpot
+0.5 kept (a normal-dashpot-only variant; its impact rows equal the damped law). Fully undamped data (zeta_n = zeta_t = 0):
+probe_contact_laws_003 (single-zeta kernel then) and ``diag_contact_sweep.py``. From the commit after 259f2b6 the variant
+sets both dashpots to 0.
 
 - ``incline_<stick|slip>_<law>``: block 12 x 6 x 3 mm (n_t 3, case free) on the plane z = 0, gravity tilted by theta
   about y (g = 9.81 (sin theta, 0, -cos theta)), friction mu_table 0.5, tan theta = 0.8 / 0.95 mu (stick), 1.25 mu
@@ -61,7 +65,7 @@ def _solver(law, spec, material, gravity, control_dt, cfl, plane):
         from robotic_cutting_sim.rubber_contact import PENALTY_LAW, PROJECTION_LAW, ContactSpec
         from robotic_cutting_sim.tlmpm_rubber_contact_v1 import TLMPMRubberContact
         lawid = PROJECTION_LAW if law == "grid_node" else PENALTY_LAW
-        extra = {"damping_ratio": 0.0} if law == "grid_penalty_undamped" else {}
+        extra = {"damping_ratio": 0.0, "normal_damping_ratio": 0.0} if law == "grid_penalty_undamped" else {}
         s = TLMPMRubberContact(scene, material, dt, contact=ContactSpec(planes=(tuple(plane),), law=lawid, **extra),
                                **common)
     s.reset()
