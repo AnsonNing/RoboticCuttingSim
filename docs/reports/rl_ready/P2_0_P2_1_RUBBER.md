@@ -16,6 +16,12 @@ parts (L2 smoke N = 1/4/8, L3 band) and the R1.4 GPU smoke are **BLOCKED / NOT_R
 Phase 1 jobs for the whole session. RUBBER-PHYS-11 (refinement) is P2-2, NOT_RUN. One deviation from the ADR is
 declared: the static-initializer stop rule (§2).
 
+**Update (P2-1 follow-up, same day, §9 and ADR 0023 §18).** RUBBER-PHYS-07 diagnosed (the λ 1.5 instantaneous release
+buckles and folds the strip; the fold exceeds the stable step); a deformation-aware stable-step guard was added
+(opt-in, on in protocol v3); the v2 stop rule was found to fire on float32-frozen positions and replaced by
+static_stop_v3; protocol `rubber_phys_tests_v3` was declared before its formal run; the GPU smoke ran (§9.6). The
+sections above are the original P2-1 report and stay unchanged.
+
 ## 1. What was built
 
 | Task | Deliverable | Status |
@@ -209,3 +215,112 @@ solver 7, runtime 6, initializer 3, batched 10.
 - `artifacts/rl_ready/p2_1/gpu_smoke_001/` (not created: no GPU slot)
 - `artifacts/rl_ready/p2_1/array_memory_cpu_001/array_memory.json` (array bytes, not VRAM)
 
+
+## 9. P2-1 follow-up (ADR 0023 §18)
+
+Commits: `dc78743` (diagnostic scripts), `bdf2838` (stable-step guard + deformation reserve, single and batched),
+`849e10b` (protocol v3 declared and SHA-pinned before its formal run; static_stop_v3; v3 cases), then the results
+commit. Decisions and their evidence: ADR 0023 §18. Compact evidence: `docs/evidence/rl_ready/p2_1_followup_001.json`.
+
+### 9.1 RUBBER-PHYS-07 root cause (diagnostics, not formal results)
+
+| Run | Finding |
+|---|---|
+| periodic-block spectrum (`followup_stability_spectrum_n4_001`) | exact MUSL/FLIP operator: critical CFL 1.79 at F = I, 1.79/r(F) deformed (r 2.02 at uniaxial 0.5, 3.43 at 0.3); no negative stiffness mode in 35 states; K symmetric to 1e-8 |
+| release from a checkpoint at CFL 0.5 / 0.25 / 0.125 (`followup_07_release_*`) | 0–10 ms: 1-D-like compression to 0.671 L₀ (theory 0.668), stretch ≥ 0.40, energy within 0.54 / 0.32 / 0.17 % of Ψ; lateral 1 mm at 11 ms (dynamic buckling, 360× the Euler strain); fold at the clamp: stretch 0.05, guard bound 13 / 5.0 / 3.3; non-finite at 14.0 ms (CFL 0.5); J 0.06 / 0.23 with J̄ ≥ 0.77 / 0.84; energy −4.0 / −2.1 % at 20 ms (∝ dt) |
+| free-free release (CFL 0.25) | buckles later (13 ms), stretch ≥ 0.27, energy within 0.25 % to 20 ms |
+| Dirichlet projection | lumped kinetic energy removed by both BC passes: 0 in every run |
+| analytic (`followup_release_physics_001`) | NH uniaxial P(λ) concave: the release is a shock in 1-D (9.9 % + 14.2 % dissipation per round trip in the 1-D entropy solution; the 3-D solution is dispersive); λ_c 0.668; ⟨ε⟩ ≈ 0.1 for an undamped λ 1.5 oscillation |
+
+### 9.2 Stable-step guard (implemented)
+
+`stable_step_guard_v1` (ADR §18.2): per substep, per particle, dt·c_bound(F, J̄)/dx > 1.0 sets the sticky
+`RUBBER_CFL_EXCEEDED` bit. The bound is ≥ the exact acoustic tensor (299 random F: modulus ratio 1.0005–1.11) and ≥
+the exact discrete ratio of the spectrum (speed ratio 1.009–1.28; 1.031 at F = I). Off by default (v1 launch sequence,
+bitwise-identical state when on); `deformation_reserve` r ≥ 1 in the step rule (r = 1 = v1 dt). Tests:
+`tests/test_rubber_stable_step.py` (7), including batched L0 with the guard tripping in one env.
+
+### 9.3 Initializer stop rule
+
+All 33 formal v2 initializers stopped with the last five marker changes exactly 0.0 (float32 positions frozen once
+dt|v| < ulp/2), at 0.9–1.45 T1. Re-run of -02 Lt10_t3mm_Wt1_nt3 (`followup_stop_rule_001`): δ/δ_EB 0.98399 at the v2
+stop, 0.98546 at 2.45 T1 on the float64 displacement, Ψ +0.36 %. static_stop_v3 (float64 markers, ≥ 3 T1) replaces it
+in protocol v3.
+
+### 9.4 Test-order report
+
+Not rubber state (`pollution_diag_001`, `pollution_diag_002`): the Phase 1 fallback-grid test fails alone with a
+visible GPU and passes with CUDA hidden, after `wp.set_device("cpu")`, or with its build pinned to the CPU; its
+`FallbackGrid.build` runs on the default `cuda:0` against pageable CPU arrays and races the host radix sort. The fix
+is Phase 1's (ADR §18.6); the rubber side has a regression test that its runtimes leave Warp's global state unchanged.
+
+### 9.5 Formal run of protocol v3 (`rubber_phys_v3_001`)
+
+Protocol `rubber_phys_tests_v3.json` (sha256 `c7fdfc95…dbd9`) was committed in `849e10b` before the run; v1 and v2 are
+unchanged. Command (CPU, single-env reference, 24 workers, stable-step guard on in every configuration):
+
+```
+TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/rubber/run_rubber_phys.py \
+    --protocol v3 --tests 02,03,05,07,12 --device cpu --workers 24 --out artifacts/rl_ready/p2_1/rubber_phys_v3_001
+```
+
+Commit `849e10b` (src/configs clean), Warp 1.17.0 CPU, 36 configurations, 2,839 s wall (16:42–17:29 KST, shared host
+load 25–36). `summary_with_validity.json` re-applies the criteria with the declared validity condition (commit
+`68b2497`; the run's own `summary.json` predates that evaluator line): same verdicts, no invalid configuration.
+
+| Test (v3) | Measured | Verdict |
+|---|---|---|
+| RUBBER-PHYS-02 | narrow 0.9813–1.0001; wide 0.9245–0.9674 (in bracket); reaction ≤ 5.5e-4; converged 3.00–3.35 T1; δ/δ_extrap 1.0039–1.0203 (Lt20_t6mm_Wt4_nt3 = 1.0203) | **FAIL** (extrapolated, 1/24) |
+| RUBBER-PHYS-03 | exponents 4.011, −2.011 | PASS |
+| RUBBER-PHYS-05 | δ/δ_elastica 0.9991 / 0.9984 / 0.9981; J̄ ∈ [0.9918, 1.0088] | PASS |
+| RUBBER-PHYS-07a ramped, λ 1.5 | mean length +2.9e-5; energy 0.96 % of Ψ; valid; lateral 2.8e-7 m | PASS |
+| RUBBER-PHYS-07b instant, λ 1.03 | mean length +4.4e-4; valid; lateral 5.9e-7 m; energy **1.058 %** of Ψ | **FAIL** |
+| RUBBER-PHYS-12 guard regression | CFL flag at control step 54 (first after the release), J flag and non-finite at 56 | PASS |
+
+v3 static deflections differ from the v2 ones by −0.02 % … +0.30 % (median +0.13 %): the v2 stop was premature. The
+-02 FAIL comes from the float32 static-state scatter (geometrically similar configurations differ by up to 0.3 %,
+amplified 2.3× by the two-grid extrapolation) at the criterion's margin — continuing the relaxation of the failing
+configuration to 6 T1 moves it further (0.96738 → 0.96830; `followup_stop_rule_v3_t6w4nt3_001`, a float32 creep of
+~5e-4 of δ per T1, ADR §18.9); the -07b FAIL from numerical dissipation of the
+clamp's Dirichlet projection (free-free: no secular loss; clamped: −0.1 % of Ψ per axial period). Details and
+diagnostics: ADR 0023 §18.7. Both failures are preserved; nothing was re-declared after the run.
+
+Current status per test: -01, -04, -06, -08, -09 PASS (v2, unchanged protocol and dt); -03, -05, -12 PASS (v3);
+-02 FAIL (v3; v2 PASS superseded); -07 FAIL (v3; v2 FAIL preserved); -10 L0/L1 PASS, L2 PASS, L3 FAIL; -11 NOT_RUN.
+
+### 9.6 GPU smoke (`gpu_smoke_001`, R1.4 / R1.7 L2 / RUBBER-PHYS-10 L3)
+
+One job, queued with a blocking `flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu1.lock` (free-memory check
+≥ 5.5 GB at acquisition: 29.6 GB free), RTX 5090 GPU1, 16:35:47–16:36:45 KST, code = `git archive` of `6c9477f` (before
+the guard), **SHARED_GPU**: co-tenant PID 2128623 (762 MB) at start, PID 2144853 (712 MB) at the end, GPU1 utilisation
+65 → 94 %. Workload E smoke variant, 97,280 particles/env, 50 Hz, no cameras, no recording.
+
+| N | particles/env | control Hz | material dt | substeps | cameras | env-steps/s | sim-time/wall | VRAM peak | reset p95 | physics verdict | warm/cold | GPU | sharing |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 (single, A) | 97,280 | 50 | 5.80 µs | 3,446 | none | 0.835 | 0.0167 | 742 MB | – | PASS (finite, J in domain) | 1.197 / 1.252 s | RTX 5090 | SHARED_GPU |
+| 1 (batched, B) | 97,280 | 50 | 3.00 µs | 6,662 | none | 0.432 | 0.0086 | 744 MB | 1.94 ms | L2 PASS | 2.313 / 2.419 s | RTX 5090 | SHARED_GPU |
+| 4 (batched, B) | 97,280 | 50 | 3.00 µs | 6,662 | none | 0.621 | 0.0124 | 840 MB | 0.86 ms | L2 PASS | 6.442 / 6.495 s | RTX 5090 | SHARED_GPU |
+| 8 (batched, B) | 97,280 | 50 | 3.00 µs | 6,662 | none | 0.735 | 0.0147 | 968 MB | 0.40 ms | L2 PASS | 10.879 / 12.672 s | RTX 5090 | SHARED_GPU |
+
+ms per substep (warm): 0.347 / 0.347 / 0.967 / 1.633. Part C (L3 band, N = 4 RUBBER-PHYS-04 envs vs 3 single GPU
+repeats, 30 steps): **FAIL**, 25 of 480 values outside the band, worst excess 2.1e-5 relative, repeat spread up to
+3.3e-3 (the band of three repeats is statistically weak; ADR §18.8 F3). The guard was not in this code; a guard-on
+GPU smoke is F2.
+
+### 9.7 Tests
+
+| Command | Result |
+|---|---|
+| `.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_tlmpm_rubber_v1.py tests/test_live_rubber_material.py tests/test_batched_frozen_sources.py tests/test_repo_naming.py` | 124 passed |
+| same rubber files + `tests/test_batched_*.py tests/test_wp12_phase5_frozen.py` (GPU visible) | 289 passed, 3 failed: the Phase 1 fallback-grid test (§9.4, fails alone with a GPU visible) |
+| `CUDA_VISIBLE_DEVICES=''` rubber files + the Phase 1 fallback-grid test | 106 passed |
+
+New rubber tests: `test_rubber_stable_step.py` (7), `test_rubber_phys_v3_cases.py` (6), v3 pin in
+`test_rubber_phys_config.py` (1).
+
+### 9.8 Open items
+
+ADR 0023 §18.8 (F1–F10): Phase 1 device pin of the fallback-grid test; guard-on GPU smoke; a statistically sound L3
+rule; refinement/GCI and float32 static precision (F4, F10); guard profiling; P2-4 fold scene with self-contact;
+P2-6 termination on `RUBBER_CFL_EXCEEDED`; energy-consistent Dirichlet constraint before a v4 -07b (F8); grid-consistent
+traction-work accounting (F9).

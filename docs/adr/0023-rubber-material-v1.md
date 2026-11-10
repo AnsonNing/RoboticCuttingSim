@@ -5,6 +5,8 @@ constitutive model, near-incompressibility, time integration, resolution, bounda
 cost rules, P2-0 deliverables). D7 (viscoelasticity, P2-3) and D8 (contact and coupling, P2-4) are accepted as
 **designs**: their formulas, layouts and test protocols are binding, but each needs its own probe evidence before it
 is implemented as accepted physics. Plan decision D-12 routes this decision here and the implementation to rcs-impl.
+**Amended 2026-11-10 by §18 (P2-1 follow-up):** stable-step guard and deformation reserve (§7 step rule),
+static_stop_v3 (§7 initializer), RUBBER-PHYS-07 v3 / -12 (`rubber_phys_tests_v3.json`); no self-contact in v1.
 
 Nothing here changes a frozen solver, profile, threshold, evaluator or record. v1–v7_2 (including
 `tlmpm_v7_2_contacts.py`, `tlmpm_v7_2_frontier.py`), law 8, the v1 evaluator, evaluation v2, final_v4, camera rigs
@@ -349,13 +351,15 @@ directly (the recipe takes μ and β; ν is derived).
   of NH in compression and contact), c_p,max over the **declared randomisation range** of the batch (μ₀ max, ρ min),
   rounded down so that `control_dt / dt` is an integer. Receipts record CFL, c_p,max and the margin. The old 0.2 rule
   stays the cutting profiles' rule; rubber uses its measured rule, re-measured in P2-2 under large deformation and
-  contact.
+  contact. **Amended (§18.2):** optional `deformation_reserve` r ≥ 1 divides dt; the opt-in
+  `stable_step_guard_v1` flags `RUBBER_CFL_EXCEEDED` when the deformed-state bound dt·c_bound(F)/dx exceeds 1.0.
 - **CUDA graph:** substeps per control step are thousands (§13), so the graph holds a chunk of `K_g` substeps
   (default 500) replayed `substeps/K_g` times; the device substep index carries across replays (`_advance`), so pose
   interpolation is unchanged. No host work between chunks.
 - **Static-equilibrium initializer** (used by RUBBER-PHYS-02/05 and by preload snapshots): dynamic relaxation with
   either kinetic damping at **CFL ≤ 0.25** or mass-proportional damping at the solver CFL, stop on
-  `max |v| < 1e-5 m/s` and BC-reaction/weight balance within 1e-3. It is labelled `initializer`, never used inside an
+  `max |v| < 1e-5 m/s` and BC-reaction/weight balance within 1e-3 (**amended, §18.5:** the velocity stop is unreachable;
+  the stop rule is `static_stop_v3` — float64 grid-displacement markers, ≥ 3 T1, reaction balance). It is labelled `initializer`, never used inside an
   episode, and its result is the starting state, not a dynamic observable (E4 preserved failure).
 
 ## 8. D5 — resolution profiles
@@ -684,3 +688,206 @@ directories.
 | 6 | One device HashGrid per process | self-contact rubber batches never share a process with a cutting batch |
 | 7 | GPU atomics nondeterminism | L3 bands; deterministic J̄ gather |
 | 8 | Calibration over-claim | status field validator; REAL_CALIBRATED only after frozen held-out pass |
+
+## 18. P2-1 follow-up decisions (amendment, 2026-11-10, rcs-xhigh)
+
+Scope: the RUBBER-PHYS-07 FAIL of the P2-1 formal run, the initializer stop rule of protocol v2, and the reported
+test-order dependence of a Phase 1 test. Nothing frozen changed (v1–v7_2, law 8, evaluators, Phase 1 batched modules,
+`rubber_phys_tests_v1/v2.json`, the P2-1 records); every failure stays preserved. Scripts:
+`scripts/rubber/p2_1_followup/`; raw outputs: `artifacts/rl_ready/p2_1/followup_*`, `pollution_diag_001`, `_002`,
+`rubber_phys_v3_001`, `gpu_smoke_001`; compact evidence: `docs/evidence/rl_ready/p2_1_followup_001.json`.
+Material status unchanged: `SIMULATOR_ONLY_UNCALIBRATED`.
+
+### 18.1 Diagnosis of RUBBER-PHYS-07 (stretch and release, λ 1.5, v2)
+
+| # | Finding | Evidence |
+|---|---|---|
+| F1 | **The discrete operator is stable and energy-consistent in compression; its stable step scales with the reference-frame wave speed.** Pure FLIP + MUSL with fixed TLMPM weights is algebraically symplectic Euler for (u, g), g the MUSL grid velocity, with inverse mass B = M_l⁻¹M_cM_l⁻¹ (M_c = W M_p Wᵀ); the particle kinetic energy equals ½gᵀM_lM_c⁻¹M_l g. On a periodic 4³-cell block (exact kernels' stencil, J-bar, finite-difference stiffness) the critical CFL is 1.79 at F = I (lumped FEM: 1.00) and 1.79/r(F) when deformed: r = 1.11 / 1.43 / 2.02 / 2.54 / 3.43 at uniaxial stretch 0.9 / 0.7 / 0.5 / 0.4 / 0.3, 1.45 at 2.0, 2.36 at shear γ 2. Zero negative stiffness modes in 35 states (uniaxial 0.3–3, uniaxial strain, isotropic J 0.5–1.25, shear, 12 random); K symmetric to 1e-8. In TLMPM the reference grid does not shrink with the material, so the speed that matters grows like 1/λ in compression on top of the NH/volumetric tangent. | `followup_stability_spectrum_n4_001` |
+| F2 | **The release wave itself is resolved and conserves energy.** From a checkpoint at the v2 release: the strip contracts to 0.671 L₀ at 3.8 ms (1-D shock theory for the reflected compression: 0.668), minimum principal stretch 0.40 near the clamp, J ∈ [0.81, 1.15], J̄ ≥ 0.95, particle speeds 21–35 m/s; total energy within 0.54 / 0.32 / 0.17 % of Ψ at CFL 0.5 / 0.25 / 0.125 over 0–10 ms (O(dt) fluctuation, no drift). TLMPM forces depend on F only, so the transfer is speed-independent; FLIP/grid transfer at high speed is not implicated. | `followup_07_release_cfl{050,025,0125}_001`, `followup_release_physics_001` |
+| F3 | **The declared scene buckles and folds — physically.** The post-release compression (≈ 0.33) is ≈ 360× the Euler strain of this 60 × 10 × 4 mm strip (9.1e-4); beam theory gives a dynamic-buckling e-folding time of 0.22 ms at that compression. Lateral marker excursion: 5e-9 m at the release (round-off seed), 8e-5 m at 5 ms, 1 mm at 11.0 ms, 9–15 mm at 14–20 ms; the hinge forms at the clamped end. | same, analytic §18 script `release_physics.py` |
+| F4 | **The fold, not the 1-D wave, exceeds the stable step.** In the hinge the minimum principal stretch reaches 0.05–0.06 and the guard bound (§18.2) 13 / 5.0 / 3.3 at CFL 0.5 / 0.25 / 0.125: non-finite at 14.0 ms at CFL 0.5; finite at 0.25 / 0.125 but particle J down to 0.06 / 0.23 while J̄ stays ≥ 0.77 / 0.84. During the 1-D wave the bound peaked at 1.30 (CFL 0.5) without growth. The implementer's hypothesis (compressive stiffening consumes the CFL margin) is right as the mechanism of the blow-up, but the stiffening comes from the fold. | same |
+| F5 | **J-bar:** no instability (F1). It does let particle J leave the domain in the fold through intra-cell dilatation patterns that keep J̄ (only μ resists them): the J-domain flag fires on particle J (0.06) while J̄ ≥ 0.77. | same |
+| F6 | **Energy loss (≈ 34 % over 75 ms at CFL 0.25) is numerical: the Dirichlet projection at the clamped face, amplified by the fold whose hinge sits there.** Without any Dirichlet group (free-free release) the energy shows no secular change: ±0.25 % for 20 ms at λ 1.5 while buckling, and a bounded ±0.55 % symplectic fluctuation with a mean of +0.04 % over 75 ms at λ 1.03 (CFL 0.5). With the clamp the same λ 1.03 release loses energy secularly, about 0.1 % of Ψ per axial period (mean −0.72 % at 60–75 ms at CFL 0.5, −0.49 % at CFL 0.25), and at λ 1.5 the loss accelerates once the fold forms at the clamp (−4.0 % / −2.1 % at 20 ms for CFL 0.25 / 0.125), with energy moving into grid-scale modes (KE_particle − KE_grid 0.01 J → 0.03–0.07 J). Mechanism: zeroing the constrained grid velocity after P2G and feeding the change back through the FLIP increment acts as an inelastic impact on the grid-scale part of the motion at the wall (the effective MUSL mass M_lM_c⁻¹M_l couples constrained and free nodes). Not physical, not the J-bar, not high-speed transfer. (Correction: an earlier per-substep "lumped KE removed by the BC" measure read 0 because CPU `wp.array.numpy()` is a zero-copy view; with copies it counts ½mṽ² that is mostly re-supplied every substep, so it is not an energy measure and is not used.) | `followup_07_release_*_002`, `followup_07_release_l103_*_002` |
+| F7 | **The v2 criteria were not satisfiable by the exact solution.** (a) The time-averaged length of an undamped large-amplitude NH oscillation is not L₀ (P ≈ 3μ(ε − ε²) gives ⟨ε⟩ ≈ ⟨ε²⟩ ≈ 0.1 at λ 1.5), and the strip folds. (b) The v2 denominator E_total(release) = KE + Ψ − W_ext is ≈ 7.6e-6 J, a numerical residual (0 in exact arithmetic): "1 %" meant 3e-7 of the stored energy. | `rubber_phys.evaluate_07`, `diag_07_cfl_factor1` |
+
+**Root cause.** The protocol: an instantaneous release from λ 1.5 drives the declared slender strip into a physical
+dynamic buckling and fold. A fold is outside v1 (no self-contact, extreme local compression); at CFL 0.5 the
+reference-frame stiffening in the fold exceeds the stable step. The solver behaves as designed inside its domain (F1,
+F2); what v1 lacked was a guard that reports leaving the stable-step domain before the state becomes non-finite.
+
+### 18.2 Decision (a) — deformation-aware stable step (solver option, versioned here)
+
+- The step stays **uniform and fixed per batch** (CUDA graph chunks, batching), §7, with two additions:
+  1. **`deformation_reserve` r ≥ 1** in the step rule: `dt ≤ CFL · dx / (c_p,max · r)` (r = 1 is the v1 rule and the
+     default; a scene declared for strong compression or folds sets r, e.g. 2 for P2-4 fold scenes).
+  2. **`stable_step_guard_v1`** (opt-in solver option, single and batched): every substep, every particle,
+     `CFL_eff = dt · c_bound(F, J̄) / dx` with
+     `ρ c_bound² = a + (p'(J̄) + 5aI₁/(9J²)) g² + (2a/(3J)) (s_max g − J)`, `g = J/s_min = √λ_max(cof Fᵀ cof F)`,
+     `s_max = √λ_max(FᵀF)`, `a = μJ^(−2/3)`, `p'(J) = κ/2 (1 + J⁻²)` — Weyl's bound on the largest eigenvalue of the
+     reference-frame acoustic tensor `Q(N) = aI + (p' + 5aI₁/(9J²)) g gᵀ − (2a/(3J))(f gᵀ + g fᵀ)` (f = FN, g = cof F N,
+     f·g = J). It is ≥ the exact acoustic maximum (299 random F, stretches 0.3–3: modulus ratio 1.0005–1.11) and ≥ the
+     exact discrete-operator ratio r(F) of F1 in all 35 states (speed ratio 1.009–1.28; 1.031 at F = I)
+     (`followup_bound_check_001`). `CFL_eff > limit` (default **1.0**) counts a
+     violation; the env gets the sticky bit **`RUBBER_CFL_EXCEEDED`** (4); strict mode raises, training terminates;
+     the state is never touched (bitwise-identical state with the guard on), no host sync, graph-safe, per-env
+     counters cleared by the masked reset; diagnostics column `cfl_eff_max` (end of control step).
+- **Why limit 1.0:** measured critical CFL at F ≈ I is 1.2–1.5 with free surfaces (E2) and 1.79 without (F1); the
+  bound over-estimates the speed by 1–28 %; the λ 1.5 wave survived a transient bound of 1.30, and the blow-up came
+  only after the fold drove it to 2.5–13. At CFL 0.5 an undeformed strip sits at 0.515.
+- **Status:** off by default in `tlmpm_rubber_v1` (the v1 launch sequence, so every v2 result stands); **on in every
+  v3 run; mandatory for P2-2 runs, the `rubber_rl_v1` profile and the P2-6 environments.** Cost: one particle pass per
+  substep (one F read, ~150 float32 flops, an atomic only on a violation); to be profiled in R2.4 (fusing into the
+  stress pass is allowed if bitwise equal).
+- **Rejected:** a fixed dt from the maximum stiffening over the J domain (J alone does not bound c: uniaxial λ 0.3 at
+  J ≈ 0.95 already gives r = 3.4; covering the domain means r ≈ 4–19, i.e. 4–19× the substeps); a per-control-step
+  adaptive dt (host decision, breaks uniform-dt batching and graph reuse); per-env dt (breaks the uniform batch);
+  any silent clamp.
+
+### 18.3 Decision (b) — no self-contact in v1; RUBBER-PHYS-07 v3
+
+- **v1 gets no self-contact.** A fold is a P2-4 scene: opt-in self-contact through the D8 path (the particle-contact
+  path with all cut codes 0 is a pure self-contact behind the reference-distance exclusion), `friction_self`, the
+  guard and r ≥ 2. The λ 1.5 instantaneous release is the natural RUBBER-CONT-05 (fold) candidate there; until then
+  any fold must end in a flag (guard / J domain), which RUBBER-PHYS-12 checks.
+- **`rubber_phys_tests_v3.json`** (declared and SHA-pinned at commit `849e10b`, before any v3 formal run; v1/v2
+  unchanged). RUBBER-PHYS-07 v3, strip and grips as -06, 0.1 ms control intervals, guard on:
+  - **07a `ramped`:** cosine stretch to λ 1.5 (60 T_ax), hold 10 T_ax, then grip 1 is replaced in the same control
+    step by a traction on the end particle layer carrying the measured hold force, cosine-ramped to zero over
+    60 T_ax; 10 fixed-free axial periods after. Large-strain elastic recovery and energy accounting with external work.
+  - **07b `instant`:** as v2 but from λ 1.03: compression wave resolved (dispersive-bore width ≈ 8 mm = 8 dx),
+    mean-length bias ≈ 4.5e-4, dynamic buckling over 10 periods below ≈ 8 e-folds from round-off (analysis, not a
+    trial run).
+  - Criteria per variant: |mean length / L₀ − 1| ≤ 0.005 (v2 threshold), energy drift ≤ 0.01 **of Ψ(release)**
+    (the v2 threshold with the ill-posed denominator of F7(b) corrected), no invalid flag, lateral marker excursion
+    ≤ 0.1 t (stays in the v1 domain).
+- **RUBBER-PHYS-12** (software regression of the guard, designed after the diagnosis and labelled so): the exact v2
+  -07 path at CFL 0.5 with the guard on must flag (CFL or J) at a control step strictly before the first
+  NONFINITE_STATE step.
+- The v2 RUBBER-PHYS-07 FAIL (`rubber_phys_001`) stays the v2 result.
+
+### 18.4 (c) — energy loss
+
+Explained in F6: numerical dissipation of the Dirichlet projection at the clamped face (no secular loss without a
+Dirichlet group), small for smooth motion (RUBBER-PHYS-04: ≤ 5.8e-4 of peak Ψ) but about 0.1 % of Ψ per axial period
+for a step-released axial wave hitting the clamp, and much larger once a fold forms at the clamp; dt-dependent (not
+proportional). Never attributed to the material. P2-2 task F8 (§18.8): an energy-consistent Dirichlet constraint.
+
+### 18.5 Initializer stop rule (amends §7)
+
+- The §7 / v1 stop `max |v| < 1e-5 m/s` is unreachable (confirmed). Correction of the P2-1 mechanism statement: there
+  is no grid-invisible null space under pure FLIP (v_p = Wᵀa stays in the range of Wᵀ); for grid-scale modes the
+  particle velocity a exceeds the grid image M_l⁻¹M_c a, and float32 force noise keeps both at a floor.
+- **static_stop_v2 is not sound as implemented.** Its reaction test (b) is sound; its marker test (a) is defeated by
+  float32 position rounding: x = x_start + dt·v drops the increment once dt|v| < ulp(x)/2 (≈ 2e-5 m/s for z ≈ 3 mm at
+  dt 5.8 µs). All 33 formal v2 initializers stopped with the last five marker changes exactly 0.0, at 0.9–1.45 T1.
+  Re-run of -02 Lt10_t3mm_Wt1_nt3: δ/δ_EB 0.98399 at the v2 stop, 0.98546 at 2.45 T1 (float64 displacement),
+  Ψ +0.36 % after the stop.
+- **Decision: `static_stop_v3`** (§7 stop replaced): float64 grid displacement u_I += dt v_I after every substep
+  (initializer only), markers x64 = x(start) + Σ w u; stop when t ≥ 3 T1 (all modes decayed by e^(−6π) under
+  c = 2ω₁), the float64 markers move ≤ 1e-4 of their displacement on 3 consecutive checks, and |R_z + Mg|/(Mg) < 1e-3.
+  The static deflection is read from the float64 markers (float32 value reported). Limits: the float64 markers carry
+  a float32-force noise floor of ~1e-9 m per check (so δ must exceed ~1e-5 m; every formal δ is ≥ 1.7e-4 m), and the
+  float32 static state itself keeps wandering inside a ~6e-4 band after convergence (δ/δ_EB 0.98546–0.98603 from 2.45
+  to 11.5 T1 in the re-run) and creeps by ~5e-4 of δ per T1 in Lt20_t6mm_Wt4_nt3 (§18.9); both are reported, P2-2
+  (R2.2, F10) quantifies them.
+- v3 results: see §18.7.
+
+### 18.6 Reported test-order dependence (Phase 1 test)
+
+- **Not rubber state.** `tests/test_batched_particle_contacts.py::test_fallback_grid_reproduces_warp_grouped_query_sequence`
+  fails **alone** whenever a GPU is visible (3/3, five repeats, both worktrees), passes with `CUDA_VISIBLE_DEVICES=''`
+  (alone and after every rubber test) and passes after `wp.set_device("cpu")`. `FallbackGrid.build` launches without a
+  device, i.e. on Warp's default `cuda:0`; Warp 1.17's RELAXED launch-array access lets that kernel write the test's
+  pageable CPU arrays (verified), asynchronously, while `radix_sort_pairs` (dispatched on the arrays' CPU device) reads
+  them on the host inside the same `build`: a race whose outcome depends on GPU contention (which explains the earlier
+  "passes alone"). A `wp.synchronize()` after the build does not help; pinning the build to the CPU makes all three
+  parameters pass (`pollution_diag_002`). Rubber code changes no Warp global.
+- **Fix belongs to Phase 1** (the test and `batched/particle_contacts.py` are Phase 1 files; the module is SHA-frozen):
+  pin the device in the test (`with wp.ScopedDevice("cpu"):` around the build — the device of every array it already
+  creates; strengthens, does not weaken) or, in a versioned module, `with wp.ScopedDevice(s.device)` inside
+  `FallbackGrid.build`. Not changed in the rubber branch.
+- Regression check (rubber side): `tests/test_rubber_stable_step.py::test_rubber_runtimes_leave_warp_global_state_unchanged`.
+
+### 18.7 Results (formal v3 run and GPU smoke)
+
+**Formal v3 run `rubber_phys_v3_001`** (commit `849e10b`, clean; `rubber_phys_tests_v3.json` sha256 `c7fdfc95…dbd9`;
+`.deps/isaacsim-venv` Python, Warp 1.17.0 CPU, 24 workers on the shared Threadripper PRO 9975WX (load 25–36);
+36 configurations, 2,839 s wall). Command:
+`PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/rubber/run_rubber_phys.py --protocol v3 --tests 02,03,05,07,12
+--device cpu --workers 24 --out artifacts/rl_ready/p2_1/rubber_phys_v3_001`. The run's `summary.json` was written by
+the evaluator loaded at its start; `summary_with_validity.json` re-applies the same criteria plus the declared v3
+validity condition (commit `68b2497`, `--evaluate-only`, no overwrite): identical verdicts, no invalid configuration.
+
+| Test | Measured (v3) | Verdict |
+|---|---|---|
+| -02 small sag (24 configurations) | narrow δ/δ_EB 0.9813–1.0001; wide 0.9245–0.9674 (inside the bracket); reaction ≤ 5.5e-4; converged at 3.00–3.35 T1; no flag; **δ/δ_extrap 1.0039–1.0203: Lt20_t6mm_Wt4_nt3 = 1.0203 > 1.02** | **FAIL** (extrapolated, 1 of 24) |
+| -03 scaling | exponents 4.011, −2.011 | PASS |
+| -05 large sag | δ/δ_elastica 0.9991 / 0.9984 / 0.9981 (α 20 / 3 / 9); J̄ ∈ [0.9918, 1.0088] | PASS |
+| -07a ramped (λ 1.5) | mean length +2.9e-5; energy drift 0.96 % of Ψ; no flag; lateral 2.8e-7 m; CFL_eff ≤ 0.64; J ∈ [0.967, 1.070] | PASS |
+| -07b instant (λ 1.03) | mean length +4.4e-4; no flag; lateral 5.9e-7 m; CFL_eff ≤ 0.52; **energy drift 1.058 % of Ψ** | **FAIL** (energy) |
+| -07 overall | | **FAIL** (07b energy) |
+| -12 guard regression | RUBBER_CFL_EXCEEDED at control step 54 (the first after the release), RUBBER_J_DOMAIN and NONFINITE_STATE at step 56 | PASS |
+
+Reading of the two failures (diagnostics after the formal run, not formal results):
+- **-07b energy.** The loss is secular (mean −0.1 % of Ψ per axial period on top of a bounded ±0.3 % fluctuation)
+  and comes from the clamp: from a λ 1.03 checkpoint (5 ms-interval ramp, dt 5.80 µs) the same release loses −0.72 %
+  (mean, 60–75 ms) at CFL 0.5 and
+  −0.49 % at CFL 0.25, while the free-free release has no secular change (+0.04 % mean, ±0.55 % fluctuation)
+  (`followup_07_release_l103_*_002`; F6). The criterion is the declared one; the remedy is F8 (energy-consistent
+  Dirichlet constraint) and a v4 -07b declared before its run.
+- **-07a energy margin.** The declared accounting uses the traction work j·v_p(start of substep); the grid-consistent
+  work f·Δx of the loaded end layer differs by 1.4 % of Ψ over the ramp (drift −0.48 % with it instead of +0.96 %).
+  The PASS stands as declared, but at the 1 % level the traction channel is not resolved (F9).
+- **-02 extrapolated.** v3 moved every static deflection by −0.02 % … +0.30 % (median +0.13 %) relative to the v2
+  stop, as expected from §18.5, and the n_t 3 wide strips sit at 1.4–2.0 % from the two-grid extrapolation (v2:
+  1.5–1.8 %). Geometrically similar configurations (same L/t, W/t, n_t, α) should give identical δ/δ_EB but scatter
+  by up to 0.3 % (Lt20 W4t n_t 3: 0.96527 / 0.96556 / 0.96738; Lt20 W t n_t 3: 0.99700 / 1.00009 / 0.99797), and the
+  extrapolation amplifies that scatter 2.3×: the float32 static state, not the stop rule, limits this criterion at
+  its margin (F10). The v2 -02 PASS was obtained with the premature v2 stop; the v3 FAIL is the result under the
+  v3 stop rule. A continuation of Lt20_t6mm_Wt4_nt3 to 6 T1 shows the float32 static state still creeping (§18.9),
+  so the stop rule converges the dynamics but cannot make the float32 static state more precise than ~1e-3.
+
+**GPU smoke `gpu_smoke_001`** (R1.4 / R1.7 L2 / RUBBER-PHYS-10 L3), queued once behind
+`flock …/rcs_rl_runner/gpu1.lock` (acquired 16:35:46 with 29.6 GB free; run 16:35:47–16:36:45 KST), RTX 5090 GPU1,
+code = `git archive` snapshot of `6c9477f` (guard not yet present), **SHARED_GPU** (co-tenant PID 2128623 762 MB at
+start, PID 2144853 712 MB at the end; GPU1 utilisation 65 → 94 %). Workload E smoke variant: 97,280 particles/env, 50 Hz
+control, no cameras, no recording.
+
+| Part | N | material dt | substeps | env-steps/s (warm) | sim-time/wall | ms/substep | VRAM peak (process) | reset p95 | warm / cold wall | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A single (R1.4) | 1 | 5.80 µs (nominal μ) | 3,446 | 0.835 | 0.0167 | 0.347 | 742 MB | – | 1.197 / 1.252 s | PASS |
+| B batched L2 | 1 | 3.00 µs (range maxima) | 6,662 | 0.432 | 0.0086 | 0.347 | 744 MB | 1.94 ms | 2.313 / 2.419 s | PASS |
+| B batched L2 | 4 | 3.00 µs | 6,662 | 0.621 | 0.0124 | 0.967 | 840 MB | 0.86 ms | 6.442 / 6.495 s | PASS |
+| B batched L2 | 8 | 3.00 µs | 6,662 | 0.735 | 0.0147 | 1.633 | 968 MB | 0.40 ms | 10.879 / 12.672 s | PASS |
+| C L3 band | 4 (RUBBER-PHYS-04 envs) | – | – | – | – | – | – | – | – | **FAIL**: 25 of 480 values outside the band, worst excess 2.1e-5 relative, single-repeat spread up to 3.3e-3 |
+
+L2: finite, mass constant between resets, J̄ ∈ [0.998, 1.002], env-ownership audits 0, every invalid bit 0, ≤ 1.5 GB.
+L3 FAIL preserved: the batched values lie within 2.1e-5 of a band whose own repeat spread is 3.3e-3, i.e. consistent
+with the frozen P2G/MUSL atomics nondeterminism, but the declared band (min/max of only three repeats) is statistically
+weak; a new rule must be declared before a new run (F3). RUBBER-PHYS-10 is therefore L0/L1 PASS (CPU), L2 PASS, L3 FAIL.
+
+### 18.8 Remaining tasks (rcs-impl)
+
+| Task | Owner | Content | Size |
+|---|---|---|---|
+| F1 | Phase 1 (not rubber) | Pin the device in `test_fallback_grid_reproduces_warp_grouped_query_sequence` (`with wp.ScopedDevice("cpu"):` around `fallback.build`) or pin `s.device` in a versioned `FallbackGrid.build`; re-run with a visible GPU | S |
+| F2 | rcs-impl, GPU | Re-run `gpu_smoke_rubber.py` part B with `stable_step_guard=1.0` (N 1/4/8, ≤ 1.5 GB): L2 invariants incl. zero guard violations, ms/substep with and without the guard | S |
+| F3 | rcs-impl + review | RUBBER-PHYS-10 L3: the v2 band (min/max of 3 GPU repeats widened by 1e-5) failed (§18.7) and is statistically weak (a fourth i.i.d. sample leaves the range of three with probability 1/2); declare a new L3 rule in a v4 protocol **before** its run (e.g. ≥ 10 repeats and a band from their spread), keep the v2 FAIL | M |
+| F4 | P2-2 (R2.2, R2.3) | Refinement / GCI with static_stop_v3 and the guard on; quantify the float32 static floor (~6e-4 band) and the float64-marker noise (~1e-9 m per check); batched (L0) runs of -07 v3 and -12 | M |
+| F5 | P2-2 (R2.4) | Profile the guard on GPU; fuse it into the stress pass only if bitwise equal | S |
+| F6 | P2-4 | Fold scene RUBBER-CONT-05 from the λ 1.5 instantaneous release: opt-in self-contact, `friction_self`, r = 2, guard on, energy balance with contact work; declared before implementation | L |
+| F7 | P2-6 | `RUBBER_CFL_EXCEEDED` → `terminated`; guard on by default in `rubber_rl_v1` envs; receipts print `cfl_eff_max` | S |
+| F8 | P2-2 (before a v4 -07) | Energy-consistent Dirichlet constraint: quantify the clamp dissipation (fixed vs free-free, dt, grid, mask x vs xyz) and try a constraint applied consistently to the MUSL mass (e.g. constrained DOFs removed from the M_lM_c⁻¹M_l system, or the particle-side FLIP increment of constrained nodes excluded); bitwise-off by default; then a v4 RUBBER-PHYS-07b declared before its run | M |
+| F9 | P2-2 | External-work accounting of traction groups from the grid-consistent particle displacement (Δx_p · j/dt) instead of j · v_p(start): in 07a the two measures differ by 1.4 % of Ψ over the force ramp (§18.7) | S |
+| F10 | P2-2 (R2.2) | Float32 static-state precision: geometrically similar -02 configurations scatter by up to 0.3 % in δ/δ_EB; quantify (repeat, longer relaxation, dt) and, if needed, an opt-in compensated (float64 / Kahan) F and position accumulation for the initializer and quasi-static tests, versioned, bitwise-off by default | M |
+
+### 18.9 Continuation check of the -02 outlier
+
+`followup_stop_rule_v3_t6w4nt3_001` (diagnostic; `diag_stop_rule.py --label Lt20_t6mm_Wt4_nt3 --extra 3
+--stop-rule static_stop_v3`): static_stop_v3 reproduces the formal value bitwise in its deterministic CPU run
+(δ/δ_EB 0.96738 at 3.05 T1); continuing the same damped relaxation, the float64 deflection keeps moving: 0.96727 /
+0.96783 / 0.96830 at 4.05 / 5.05 / 6.05 T1, with Ψ +0.38 %, while every physical mode has decayed by more than
+e^(−6π). The float32 static state therefore creeps at about 5e-4 of δ per T1 in this configuration, away from its
+geometrically similar siblings (0.9653, 0.9656): the -02 result depends on the stopping time at the 1e-3 level. Mechanism
+not established (candidates: float32 rounding of F near 1, where the ulp below 1 is half the ulp above 1, under the
+noise-driven increments; to be resolved in F10). This does not change the formal verdict (FAIL), which stays as run.
