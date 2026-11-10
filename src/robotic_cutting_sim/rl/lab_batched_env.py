@@ -36,22 +36,23 @@ from isaaclab.envs import DirectRLEnv
 from ..batched import lab_scene
 from ..batched.lab_scene import BatchedLabOptions, unsupported
 from ..batched import grasp_batch
-from ..batched.robot_kernels import (GRASP_STATUS_NAMES, RIGID_REASONS, SAMPLE_WIDTH, RobotFrames,
+from ..batched.robot_kernels import (GRASP_STATUS_NAMES, RIGID_CONTACT_POOL_OVERFLOW, RIGID_REASONS, SAMPLE_WIDTH,
+                                     RobotFrames,
                                      collect_world_contacts, decode_rigid_reason, grasp_monitor_kernel,
                                      integrate_world_contacts, resolve_index_tables, rigid_validity_kernel)
 from ..batched.robot_ik import BatchedEdgeIK, ik_rejection_status_code
 from .actions import EdgeDeltaActionV1
 from .observations import StateObservation
+from .termination import (INVALID_STATE_BITS, TERM_GRASP_LOST, TERM_IK_STREAK, TERM_INFRASTRUCTURE,  # noqa: F401
+                          TERM_MATERIAL_INVALID, TERM_RIGID_INVALID, TERM_TRUNCATED, TERMINATION_REASONS)
 
 RUNTIME = "rl_gpu_headless"
 BACKEND = "isaac_lab_newton"
 ENV_VERSION = "isaac_lab_batched_cutting_env_v1"
 IK_STREAK_LIMIT = 0  # 0: an IK failure streak never invalidates an env by itself (held, reported per step)
 GRASP_SETTLE_FAILED = 16  # rigid_reason bit (training mode) for a world whose B2 settle gates failed
-# termination_reason bits (ADR 0022 §7: validity, grasp monitor, IK streak -> dones)
-TERM_RIGID_INVALID, TERM_MATERIAL_INVALID, TERM_GRASP_LOST, TERM_IK_STREAK = 1, 2, 4, 8
-TERMINATION_REASONS = {TERM_RIGID_INVALID: "RIGID_INVALID", TERM_MATERIAL_INVALID: "MATERIAL_INVALID",
-                       TERM_GRASP_LOST: "GRASP_LOST", TERM_IK_STREAK: "IK_FAILURE_STREAK"}
+# termination_reason bits (ADR 0022 §7: validity, grasp monitor, IK streak -> dones), shared with workload A in
+# rl.termination since P1-2b (same values 1/2/4/8, plus truncation 16, input guard 32, infrastructure 64).
 
 
 # ----------------------------------------------------------------------------- material coupling interface
@@ -119,10 +120,15 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
 
     runtime_source = "isaac_lab_newton_batched"
 
-    def __init__(self, cfg, options, task, *, coupling=None, tasks=None):
+    def __init__(self, cfg, options, task, *, coupling=None, tasks=None, max_episode_steps=None):
         """``task``: the rigid scene / HOME / tool task (env 0). ``tasks``: optional per-env material tasks (length
         N, e.g. seeded TRIM seeds 512 and 15 in one batch); their rigid scenes must be uniform
-        (``check_uniform_rigid_scene``); default: ``task`` in every env."""
+        (``check_uniform_rigid_scene``); default: ``task`` in every env. ``max_episode_steps``: truncation step
+        (None: the task's ``duration / control_dt``, 1200 for TRIM; a shorter value is reduced fidelity)."""
+        if max_episode_steps is not None and (not isinstance(max_episode_steps, int) or max_episode_steps < 1):
+            raise ValueError("max_episode_steps must be a positive int or None")
+        self._max_episode_steps = max_episode_steps
+        self.material_input_guard = None   # P1-2b hook (rl.lab_vector_env): held material input of out-of-domain envs
         self.options = options.validate()
         self.task = task
         self.tasks = [task]*int(options.num_envs) if tasks is None else list(tasks)
@@ -186,7 +192,8 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         from ..control import ActionLimits
         limits = self.task.action_limits() if callable(getattr(self.task, "action_limits", None)) else ActionLimits()
         self.action_spec = EdgeDeltaActionV1(limits, T, int(getattr(self.task, "max_cuts", 1)), device=self.device)
-        self.max_steps = int(round(float(self.task.duration_s)/float(self.task.control_dt_s)))
+        self.declared_steps = int(round(float(self.task.duration_s)/float(self.task.control_dt_s)))
+        self.max_steps = self.declared_steps if self._max_episode_steps is None else int(self._max_episode_steps)
         self.observation = StateObservation(N, max_steps=self.max_steps, control_dt=float(self.task.control_dt_s),
                                             device=self.device)
         f64 = dict(dtype=torch.float64, device=self.device)
@@ -195,6 +202,8 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.previous_action = torch.zeros((N, 8), dtype=torch.float32, device=self.device)
         self.armed = torch.zeros(N, dtype=torch.bool, device=self.device)
         self.action_status = torch.zeros(N, dtype=torch.int32, device=self.device)
+        self.action_clamped = torch.zeros(N, dtype=torch.bool, device=self.device)
+        self.action_out_of_box = torch.zeros(N, dtype=torch.bool, device=self.device)
         self.ik_streak = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
         self.cut_digit = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
         self.rigid_reason = wp.zeros(N, dtype=wp.int32, device=self.wp_device)
@@ -349,6 +358,8 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         ik_failed = (ik_status != 0) & ~rejected_action
         accept = ~rejected_action & ~ik_failed
         self.action_status = torch.where(ik_failed, torch.full_like(result.status, self.reject_ik), result.status)
+        self.action_clamped = result.translation_clamped | result.rotation_clamped | result.workspace_clamped
+        self.action_out_of_box = result.out_of_box
         self.commanded = torch.where(accept[:, None], result.commanded_pose, self.commanded)
         hold_row = self.action_spec._hold_row.expand_as(result.executed_action)
         self.previous_action = torch.where(ik_failed[:, None], hold_row, result.executed_action)
@@ -392,6 +403,8 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         franka1.actuators.target_command.set_position_mask(value=self.home_targets[1])
         franka1.actuators.target_command.set_velocity_mask(value=torch.zeros_like(self.home_targets[1]))
         wp.copy(self.cut_digit, wp.from_torch(torch.full((self.num_envs,), -1, dtype=torch.int32, device=self.device)))
+        self.action_clamped = torch.zeros_like(self.action_clamped)
+        self.action_out_of_box = torch.zeros_like(self.action_out_of_box)
         self.frames.applied_impulse.zero_()
         if self.options.tool_mount == "physical_grasp_v1":
             self.contact_integral.zero_()
@@ -407,7 +420,10 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
             self.frames.launch_pad_boxes(state.body_q, self.coupling.box_centers, self.coupling.box_halves)
         else:
             self.frames.launch_pad_boxes(state.body_q)
-        self.coupling.set_measured_poses(self.frames.measured_edge, self.cut_digit)
+        edge, cut = self.frames.measured_edge, self.cut_digit
+        if self.material_input_guard is not None:   # P1-2b: out-of-domain envs reach the material held (device)
+            edge, cut = self.material_input_guard(edge, cut)
+        self.coupling.set_measured_poses(edge, cut)
         self.coupling.advance()
         self.rigid_count.zero_()
         data = self.solver.mjw_data
@@ -418,9 +434,13 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         if self.options.strict:
             self.check_valid()
         self.step_index += 1
-        invalid = wp.to_torch(self.rigid_reason) != 0
+        rigid = wp.to_torch(self.rigid_reason)
+        # the shared MJWarp contact pool overflowing is a batch-level infrastructure failure, never a task one
+        overflow = (rigid & RIGID_CONTACT_POOL_OVERFLOW) != 0
+        invalid = (rigid & ~RIGID_CONTACT_POOL_OVERFLOW) != 0
         reason = torch.where(invalid, torch.full_like(self.termination_reason, TERM_RIGID_INVALID),
                              torch.zeros_like(self.termination_reason))
+        reason = reason | torch.where(overflow, TERM_INFRASTRUCTURE, 0).to(reason.dtype)
         if self.coupling.material_coupled:
             material_invalid = wp.to_torch(self.coupling.invalid_reason) != 0
             reason = reason | torch.where(material_invalid, TERM_MATERIAL_INVALID, 0).to(reason.dtype)
@@ -437,8 +457,10 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
                               int(self.cfg.decimation), self.grasp_unsupported, self.grasp_lost, self.grasp_slip,
                               self.grasp_angle, self.grasp_status])
             reason = reason | torch.where(wp.to_torch(self.grasp_lost) != 0, TERM_GRASP_LOST, 0).to(reason.dtype)
-        self.termination_reason = reason
+        if self.material_input_guard is not None:
+            reason = reason | self.material_input_guard.termination_bits().to(reason.dtype)
         truncated = self.episode_length_buf >= self.max_steps
+        self.termination_reason = reason | torch.where(truncated, TERM_TRUNCATED, 0).to(reason.dtype)
         return reason != 0, truncated
 
     def debug_set_commanded(self, mask, pose):
@@ -466,7 +488,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         self.extras["action_status"] = self.action_status
         if self.reward is None:
             return torch.zeros(self.num_envs, device=self.device)
-        invalid = (self.termination_reason & (TERM_RIGID_INVALID | TERM_MATERIAL_INVALID)) != 0
+        invalid = (self.termination_reason & INVALID_STATE_BITS) != 0
         reward, terms = self.reward.step(self._codes, invalid)
         self.extras["reward_terms"] = terms
         return reward
@@ -487,7 +509,7 @@ class IsaacLabBatchedCuttingEnv(DirectRLEnv):
         x, v, code = s.x[p0:p1].numpy(), s.v[p0:p1].numpy(), s.code[p0:p1].numpy()
         step = int(self.coupling.step_count[e:e+1].numpy()[0])
         T = self._env_host[e]["T_world_local"]
-        return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T, codes=np.asarray(code),
+        return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T, codes=np.array(code, copy=True),
                     step_count=step, time_s=step*float(self.task.control_dt_s))
 
     def evaluation_reference(self, e):
@@ -778,12 +800,13 @@ def make_batched_env(options, task, *, coupling=None):
 
 
 def open_lab_batched_env(num_envs, *, backend="isaac_lab_newton", task=None, tool_mount="rigid_mount_v1", device="cuda:0",
-                    material=None, observation_profile="state", **kwargs):
-    """Entry point for ``open_vector_env(backend="isaac_lab_newton", tool_mount=...)`` (ADR 0022 §9); the
-    dispatch from ``rl.vector_env.open_vector_env`` is not wired here (that module refuses the backend today).
+                    material=None, observation_profile="state", tasks=None, max_episode_steps=None, **kwargs):
+    """Entry point of ``open_vector_env(backend="isaac_lab_newton", tool_mount=...)`` (ADR 0022 §9), wired since
+    P1-2b through ``rl.lab_vector_env.LabVectorCuttingEnv``.
 
     Returns ``(cfg, factory)``: the caller enters ``launch_simulation(cfg, {"headless": True, "visualizer": []})``
-    and calls ``factory()`` inside it (Isaac Lab owns the process-wide simulation context)."""
+    and calls ``factory()`` inside it (Isaac Lab owns the process-wide simulation context). ``tasks``: per-env
+    material tasks (uniform rigid scene); ``max_episode_steps``: truncation step (None: the task's)."""
     if backend != BACKEND:
         raise unsupported("UNSUPPORTED_BACKEND", f"{backend!r}; workload B is {BACKEND!r}")
     if observation_profile != "state":
@@ -793,7 +816,8 @@ def open_lab_batched_env(num_envs, *, backend="isaac_lab_newton", task=None, too
     options = BatchedLabOptions(num_envs=int(num_envs), tool_mount=tool_mount, device=device, material=material,
                                 **kwargs).validate()
     cfg = lab_scene.make_batched_lab_cfg(options, task)
-    return cfg, (lambda coupling=None: IsaacLabBatchedCuttingEnv(cfg, options, task, coupling=coupling))
+    return cfg, (lambda coupling=None: IsaacLabBatchedCuttingEnv(cfg, options, task, coupling=coupling, tasks=tasks,
+                                                                 max_episode_steps=max_episode_steps))
 
 
 __all__ = ["IsaacLabBatchedCuttingEnv", "MaterialCoupling", "RobotOnlyCoupling", "make_batched_env",

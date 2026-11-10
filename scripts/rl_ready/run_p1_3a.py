@@ -26,6 +26,15 @@ Modes (one process each; GPU lock, ``CUDA_VISIBLE_DEVICES=<gpu>``, ``TMPDIR=/mnt
 * ``profile --num-envs N --variants V --steps K``: a short replay inside cudaProfilerStart/Stop for an external
   ``nsys profile --cuda-graph-trace=node --capture-range=cudaProfilerApi``.
 
+Several envs in one process (``samestate``; ``stagebench``, ``ab`` and ``episode`` with more than one variant): since
+the single-device-HashGrid guard was merged these modes open their envs with the DIAGNOSTICS-ONLY
+``open_vector_env(..., allow_multiple_device_hashgrids=True)`` (review F7), recorded in every env receipt
+(``allow_multiple_device_hashgrids``, ``device_hashgrid_guard="disabled"``). Warp 1.17 replays a graph's HashGrid
+build with the last host-built descriptor, so every stage/graph replay must be preceded by a host build of that
+env's own grid (``restore_descriptor``, as these modes do for ``alias_free_v1``; the ``frozen_v1`` batch relies on
+the per-launch rebuild of its own grid that the F1 fix adds to the batched material). A single variant (``profile``,
+or ``--variants`` with one name) runs one env per process under the guard.
+
 Raw output: a new ``artifacts/rl_ready/p1_3/<name>_NNN/`` per run (never overwritten).
 """
 import argparse
@@ -91,12 +100,16 @@ def manifest(args, run):
     return data
 
 
-def open_env(stack, variant, seeds, inputs):
+def open_env(stack, variant, seeds, inputs, multi_env=False):
+    """``multi_env=True``: this process keeps several batches open (samestate, stagebench, ab and episode with more
+    than one variant). They pass the DIAGNOSTICS-ONLY ``allow_multiple_device_hashgrids=True`` (review F7; recorded
+    in each env's receipt) instead of being refused by the single-device-HashGrid guard."""
     from robotic_cutting_sim.rl import open_vector_env
     mode, options = VARIANTS[variant]
     return stack.enter_context(open_vector_env(len(seeds), task=RV.family_for(seeds, inputs), device="cuda",
                                                strict=True, particle_contact_mode=mode,
-                                               particle_contact_options=options))
+                                               particle_contact_options=options,
+                                               allow_multiple_device_hashgrids=bool(multi_env)))
 
 
 def sync():
@@ -213,7 +226,7 @@ def mode_samestate(args, run, telemetry):
     seeds = (seed,) * args.copies
     out = dict(seed=seed, sample=sample, time_s=float(data["time_s"][sample]), copies=args.copies)
     with contextlib.ExitStack() as stack:
-        envs = {name: open_env(stack, name, seeds, inputs)
+        envs = {name: open_env(stack, name, seeds, inputs, multi_env=True)
                 for name in ("frozen_v1", "alias_free_v1", "alias_free_forced_fallback")}
         for env in envs.values():
             env.reset(seeds=[42] * args.copies)
@@ -313,7 +326,7 @@ def mode_stagebench(args, run, telemetry):
     variants = args.variants.split(",")
     out = dict(seed=seed, sample=sample, copies=args.copies, variants=variants, repeats=args.repeats)
     with contextlib.ExitStack() as stack:
-        envs = {name: open_env(stack, name, seeds, inputs) for name in variants}
+        envs = {name: open_env(stack, name, seeds, inputs, multi_env=len(variants) > 1) for name in variants}
         for env in envs.values():
             env.reset(seeds=[42] * args.copies)
             load_state(env, data, sample)
@@ -375,7 +388,7 @@ def mode_ab(args, run, telemetry):
         envs = {}
         for name in variants:
             start = time.perf_counter()
-            envs[name] = open_env(stack, name, seeds, inputs)
+            envs[name] = open_env(stack, name, seeds, inputs, multi_env=len(variants) > 1)
             out.setdefault("build_wall_s", {})[name] = time.perf_counter() - start
         drivers = {name: MeasuredTrajectoryDriver([inputs[s]["trajectory"] for s in order],
                                                   [order.index(s) for s in seeds], device="cuda") for name in envs}
@@ -459,7 +472,7 @@ def mode_episode(args, run, telemetry):
     out = dict(num_envs=N, seeds=list(seeds), variants=variants)
     RV._grouped_query_audit = RV._define_kernels()
     with contextlib.ExitStack() as stack:
-        envs = {name: open_env(stack, name, seeds, inputs) for name in variants}
+        envs = {name: open_env(stack, name, seeds, inputs, multi_env=len(variants) > 1) for name in variants}
         out["payload_check"] = RV.check_payloads(envs[variants[0]], inputs)
         drivers = {name: MeasuredTrajectoryDriver([inputs[s]["trajectory"] for s in order],
                                                   [order.index(s) for s in seeds], device="cuda") for name in envs}

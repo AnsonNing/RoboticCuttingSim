@@ -1,0 +1,647 @@
+{
+ "work_package": "P1-2b",
+ "raw_root": "artifacts/rl_ready/p1_2b (not committed)",
+ "rows": [
+  {
+   "run": "smoke_a_n2_001",
+   "status": "PASS",
+   "backend": "kinematic_ideal_tracking_batched",
+   "N": 2,
+   "tasks": [
+    512,
+    15
+   ],
+   "tool_mount": null,
+   "particles_per_env": [
+    102732,
+    103898
+   ],
+   "control_hz": 50,
+   "material_dt_s": 0.0001,
+   "material_substeps_per_control_step": 200,
+   "cameras": "none",
+   "recording": "none (evaluation stream on the device when enabled)",
+   "evaluation_stream": true,
+   "evaluation_stream_device_bytes": 705850032,
+   "strict_mode": true,
+   "steps": 50,
+   "reset_step": 25,
+   "reset_envs": [
+    1
+   ],
+   "cold": {
+    "imports_s": 0.7927181089762598,
+    "open_s": 2.161897892015986,
+    "warp_kernel_cache": "user cache (not cleared)"
+   },
+   "timing": {
+    "first_step_s": 0.782402258948423,
+    "warm_steps": 49,
+    "warm_step_median_s": 0.4891712380340323,
+    "warm_step_mean_s": 0.47086217279583975,
+    "env_steps_per_s": 4.247527441256523,
+    "resets": [
+     {
+      "partial": false,
+      "wall_s": 0.6591777439462021
+     },
+     {
+      "partial": true,
+      "wall_s": 0.007054191897623241
+     }
+    ],
+    "timing_scope": "env.step wall incl. strict-mode readback; device synchronized around each call by this harness only"
+   },
+   "warm_cold": "warm steps exclude the first step",
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 15743.0,
+    "utilization_pct": 99.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "vram_peak_own_mib": 1620.0,
+   "foreign_sm_pct": {
+    "max": 97.0,
+    "mean": 57.96875,
+    "n": 32
+   },
+   "foreign_sm_pct_warm": {
+    "max": 97.0,
+    "mean": 49.19230769230769,
+    "n": 26
+   },
+   "foreign_compute_pids": [
+    642659,
+    1705326,
+    1727471,
+    1730345,
+    1731070
+   ],
+   "hashgrids": {
+    "count": 3,
+    "cuda_count": 1,
+    "devices": [
+     "cpu",
+     "cpu",
+     "cuda:0"
+    ]
+   },
+   "fidelity": {
+    "reference": {
+     "id": "native_trim_v7_2_reference",
+     "solver": "tlmpm_v7_2",
+     "cutting_law": 8,
+     "max_cuts": 2,
+     "slots_per_node": 8,
+     "particle_spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001,
+     "substeps_per_control_step": 200,
+     "control_dt_s": 0.02,
+     "episode_steps": 1200,
+     "obstacle_boxes": 3,
+     "obstacles": "handle + two measured finger pads (updated every control step)",
+     "robot": "Native Isaac Sim 6.2 PhysX Franka, physical grasp, IK tracking",
+     "reaction_fed_back": true,
+     "source": "WP-17 native_optimized_001 (seeded_trim rcs_trim_random_sim_v1, seeds 512/15)"
+    },
+    "actual": {
+     "solver": "tlmpm_v7_2",
+     "cutting_law": 8,
+     "max_cuts": 2,
+     "slots_per_node": 8,
+     "particle_spacing_m": 0.001,
+     "grid_dx_m": 0.004,
+     "material_dt_s": 0.0001,
+     "substeps_per_control_step": 200,
+     "control_dt_s": 0.02,
+     "episode_steps": 1200,
+     "obstacle_boxes": 1
+    },
+    "reduced_fidelity": true,
+    "reasons": [
+     "ideal_edge_tracking_no_robot_dynamics",
+     "reaction_not_fed_back",
+     "no_finger_pad_obstacles"
+    ],
+    "per_env": [
+     {
+      "env": 0,
+      "scene_seed": 512,
+      "drive_steps": {
+       "policy_action_edge_delta_v1": 50,
+       "measured_trajectory_replay": 0
+      },
+      "replay_steps_with_measured_pads": 0,
+      "reasons": []
+     },
+     {
+      "env": 1,
+      "scene_seed": 15,
+      "drive_steps": {
+       "policy_action_edge_delta_v1": 50,
+       "measured_trajectory_replay": 0
+      },
+      "replay_steps_with_measured_pads": 0,
+      "reasons": []
+     }
+    ],
+    "computed_not_hand_set": true
+   },
+   "contract": {
+    "status": "PASS",
+    "clauses": [
+     "receipt/spaces/metadata",
+     "full reset",
+     "partial reset",
+     "steps",
+     "evaluate"
+    ],
+    "final_step_count": [
+     50,
+     24
+    ],
+    "termination_reason": [
+     [],
+     []
+    ],
+    "evaluation_mode": "evaluation_stream_v1"
+   },
+   "evaluation": [
+    {
+     "env": 0,
+     "scene_seed": 512,
+     "step_count": 50,
+     "frames": 6,
+     "mode": "evaluation_stream_v1",
+     "verdict": "FAIL_INTEGRITY",
+     "labelled": 0
+    },
+    {
+     "env": 1,
+     "scene_seed": 15,
+     "step_count": 24,
+     "frames": 4,
+     "mode": "evaluation_stream_v1",
+     "verdict": "FAIL_INTEGRITY",
+     "labelled": 0
+    }
+   ],
+   "termination_reason_final": [
+    [],
+    []
+   ],
+   "input_guard_reason_final": [
+    0,
+    0
+   ],
+   "commit": {
+    "sha": "fe542f48f86373b84a0da6bc08c948687d1e94c3",
+    "tracked_src_or_scripts_modified": false
+   },
+   "error": null,
+   "error_class": null
+  },
+  {
+   "run": "smoke_b1_n2_001",
+   "status": "PASS",
+   "backend": "isaac_lab_newton",
+   "N": 2,
+   "tasks": [
+    512,
+    15
+   ],
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": [
+    102732,
+    103898
+   ],
+   "control_hz": 50,
+   "material_dt_s": 0.0001,
+   "material_substeps_per_control_step": 200,
+   "cameras": "none",
+   "recording": "none (evaluation stream on the device when enabled)",
+   "evaluation_stream": true,
+   "evaluation_stream_device_bytes": 705850032,
+   "strict_mode": true,
+   "steps": 50,
+   "reset_step": 25,
+   "reset_envs": [
+    1
+   ],
+   "cold": {
+    "imports_s": 0.8532191480044276,
+    "open_s": 5.461329653044231,
+    "warp_kernel_cache": "user cache (not cleared)"
+   },
+   "timing": {
+    "first_step_s": 1.8376039990689605,
+    "warm_steps": 49,
+    "warm_step_median_s": 0.46057747304439545,
+    "warm_step_mean_s": 0.40932593869796136,
+    "env_steps_per_s": 4.8860817527515295,
+    "resets": [
+     {
+      "partial": false,
+      "wall_s": 0.0048342919908463955
+     },
+     {
+      "partial": true,
+      "wall_s": 0.009546560002490878
+     }
+    ],
+    "timing_scope": "env.step wall incl. strict-mode readback; device synchronized around each call by this harness only"
+   },
+   "warm_cold": "warm steps exclude the first step",
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 0,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 14382.0,
+    "utilization_pct": 97.0
+   },
+   "gpu_sharing": "SHARED_GPU",
+   "vram_peak_own_mib": 1646.0,
+   "foreign_sm_pct": {
+    "max": 97.0,
+    "mean": 57.75757575757576,
+    "n": 33
+   },
+   "foreign_sm_pct_warm": {
+    "max": 86.0,
+    "mean": 48.47826086956522,
+    "n": 23
+   },
+   "foreign_compute_pids": [
+    642659,
+    1739079
+   ],
+   "hashgrids": {
+    "count": 3,
+    "cuda_count": 1,
+    "devices": [
+     "cpu",
+     "cpu",
+     "cuda:0"
+    ]
+   },
+   "fidelity": {
+    "reduced_fidelity": true,
+    "reasons": [
+     "rigid_tool_mount_no_grasp",
+     "finger_opening_fixed_nominal"
+    ],
+    "listed_differences": {
+     "rigid_engine": "newton_mjwarp (Native reference: physx_cpu)"
+    },
+    "grasp_restore": null,
+    "computed_not_hand_set": true
+   },
+   "contract": {
+    "status": "PASS",
+    "clauses": [
+     "receipt/spaces/metadata",
+     "full reset",
+     "partial reset",
+     "steps",
+     "evaluate"
+    ],
+    "final_step_count": [
+     50,
+     24
+    ],
+    "termination_reason": [
+     [],
+     []
+    ],
+    "evaluation_mode": "evaluation_stream_v1"
+   },
+   "evaluation": [
+    {
+     "env": 0,
+     "scene_seed": 512,
+     "step_count": 50,
+     "frames": 6,
+     "mode": "evaluation_stream_v1",
+     "verdict": "FAIL_INTEGRITY",
+     "labelled": 0
+    },
+    {
+     "env": 1,
+     "scene_seed": 15,
+     "step_count": 24,
+     "frames": 4,
+     "mode": "evaluation_stream_v1",
+     "verdict": "FAIL_INTEGRITY",
+     "labelled": 0
+    }
+   ],
+   "termination_reason_final": [
+    [],
+    []
+   ],
+   "input_guard_reason_final": [
+    0,
+    0
+   ],
+   "commit": {
+    "sha": "fe542f48f86373b84a0da6bc08c948687d1e94c3",
+    "tracked_src_or_scripts_modified": false
+   },
+   "error": null,
+   "error_class": null
+  },
+  {
+   "run": "contract_cpu_b1_privileged_001",
+   "status": "PASS",
+   "backend": "isaac_lab_newton",
+   "N": 2,
+   "tasks": [
+    512,
+    15
+   ],
+   "tool_mount": "rigid_mount_v1",
+   "particles_per_env": [
+    6677,
+    6748
+   ],
+   "control_hz": 50,
+   "material_dt_s": 0.0001,
+   "material_substeps_per_control_step": 200,
+   "cameras": "none",
+   "recording": "none (evaluation stream on the device when enabled)",
+   "evaluation_stream": false,
+   "evaluation_stream_device_bytes": null,
+   "strict_mode": true,
+   "steps": 3,
+   "reset_step": 1,
+   "reset_envs": [
+    1
+   ],
+   "cold": {
+    "imports_s": 1.5741175640141591,
+    "open_s": 5.032501018955372,
+    "warp_kernel_cache": "user cache (not cleared)"
+   },
+   "timing": {
+    "first_step_s": 4.169713597046211,
+    "warm_steps": 2,
+    "warm_step_median_s": 3.322499623056501,
+    "warm_step_mean_s": 3.321873167529702,
+    "env_steps_per_s": 0.6020699464234187,
+    "resets": [
+     {
+      "partial": false,
+      "wall_s": 0.044639070983976126
+     },
+     {
+      "partial": true,
+      "wall_s": 0.002959719975478947
+     }
+    ],
+    "timing_scope": "env.step wall incl. strict-mode readback; device synchronized around each call by this harness only"
+   },
+   "warm_cold": "warm steps exclude the first step",
+   "gpu": null,
+   "gpu_sharing": null,
+   "vram_peak_own_mib": null,
+   "foreign_sm_pct": null,
+   "foreign_sm_pct_warm": null,
+   "foreign_compute_pids": null,
+   "hashgrids": {
+    "count": 3,
+    "cuda_count": 0,
+    "devices": [
+     "cpu",
+     "cpu",
+     "cpu"
+    ]
+   },
+   "fidelity": {
+    "reduced_fidelity": true,
+    "reasons": [
+     "rigid_tool_mount_no_grasp",
+     "finger_opening_fixed_nominal",
+     "episode_steps=3 (reference 1200)",
+     "particle_spacing_m=0.0025 (reference 0.001)"
+    ],
+    "listed_differences": {
+     "rigid_engine": "newton_mjwarp (Native reference: physx_cpu)"
+    },
+    "grasp_restore": null,
+    "computed_not_hand_set": true
+   },
+   "contract": {
+    "status": "PASS",
+    "clauses": [
+     "receipt/spaces/metadata",
+     "full reset",
+     "partial reset",
+     "steps",
+     "evaluate"
+    ],
+    "final_step_count": [
+     3,
+     1
+    ],
+    "termination_reason": [
+     [
+      "TRUNCATED_HORIZON"
+     ],
+     []
+    ],
+    "evaluation_mode": "two_frame_reset_and_current_v1"
+   },
+   "evaluation": [
+    {
+     "env": 0,
+     "scene_seed": 512,
+     "step_count": 3,
+     "frames": 2,
+     "mode": "two_frame_reset_and_current_v1",
+     "verdict": "FAIL_INTEGRITY",
+     "labelled": 0
+    },
+    {
+     "env": 1,
+     "scene_seed": 15,
+     "step_count": 1,
+     "frames": 2,
+     "mode": "two_frame_reset_and_current_v1",
+     "verdict": "FAIL_INTEGRITY",
+     "labelled": 0
+    }
+   ],
+   "termination_reason_final": [
+    [
+     "TRUNCATED_HORIZON"
+    ],
+    []
+   ],
+   "input_guard_reason_final": [
+    0,
+    0
+   ],
+   "commit": {
+    "sha": "eefef8238788c198802956b2b541b1316a644e3e",
+    "tracked_src_or_scripts_modified": false
+   },
+   "error": null,
+   "error_class": null
+  }
+ ],
+ "guard_domain_check": {
+  "status": "PASS",
+  "config": {
+   "enabled": true,
+   "margin_m": 0.25,
+   "max_translation_per_step_m": 0.05,
+   "max_rotation_per_step_rad": 0.5,
+   "quaternion_norm_tolerance": 0.5,
+   "max_pad_center_m": 0.5,
+   "max_pad_half_extent_m": 0.1
+  },
+  "workload_a_replay": {
+   "512": {
+    "steps": 1200,
+    "tripped_steps": 0,
+    "reasons": {
+     "NONFINITE_POSE": 0,
+     "QUATERNION_NORM": 0,
+     "OUT_OF_DOMAIN": 0,
+     "TRANSLATION_JUMP": 0,
+     "ROTATION_JUMP": 0,
+     "PAD_BOX": 0
+    },
+    "max_translation_step_m": 0.0033590370294768147,
+    "max_rotation_step_rad": 0.01743713655540185,
+    "min_distance_to_domain_boundary_m": 0.24693044364182293,
+    "max_pad_center_m": 0.09674511104822159,
+    "max_pad_half_extent_m": 0.029999999329447746
+   },
+   "15": {
+    "steps": 1200,
+    "tripped_steps": 0,
+    "reasons": {
+     "NONFINITE_POSE": 0,
+     "QUATERNION_NORM": 0,
+     "OUT_OF_DOMAIN": 0,
+     "TRANSLATION_JUMP": 0,
+     "ROTATION_JUMP": 0,
+     "PAD_BOX": 0
+    },
+    "max_translation_step_m": 0.00323556046179882,
+    "max_rotation_step_rad": 0.017440961744385964,
+    "min_distance_to_domain_boundary_m": 0.24693336029070678,
+    "max_pad_center_m": 0.09674546122550964,
+    "max_pad_half_extent_m": 0.029999999329447746
+   }
+  },
+  "workload_b": {
+   "s3_b1_n2_001": {
+    "env0_seed512": {
+     "steps": 1200,
+     "tripped_steps": 0,
+     "reasons": {
+      "NONFINITE_POSE": 0,
+      "QUATERNION_NORM": 0,
+      "OUT_OF_DOMAIN": 0,
+      "TRANSLATION_JUMP": 0,
+      "ROTATION_JUMP": 0,
+      "PAD_BOX": 0
+     },
+     "max_translation_step_m": 0.003438054430441968,
+     "max_rotation_step_rad": 0.018041873826377588,
+     "min_distance_to_domain_boundary_m": 0.2469074170455949,
+     "max_pad_center_m": 0.09610901772975922,
+     "max_pad_half_extent_m": 0.029999999329447746
+    },
+    "env1_seed15": {
+     "steps": 1200,
+     "tripped_steps": 0,
+     "reasons": {
+      "NONFINITE_POSE": 0,
+      "QUATERNION_NORM": 0,
+      "OUT_OF_DOMAIN": 0,
+      "TRANSLATION_JUMP": 0,
+      "ROTATION_JUMP": 0,
+      "PAD_BOX": 0
+     },
+     "max_translation_step_m": 0.0032796407404114235,
+     "max_rotation_step_rad": 0.01794004009576386,
+     "min_distance_to_domain_boundary_m": 0.24690655887283336,
+     "max_pad_center_m": 0.09610899537801743,
+     "max_pad_half_extent_m": 0.029999999329447746
+    }
+   },
+   "s3_b2_n2_001": {
+    "env0_seed512": {
+     "steps": 1200,
+     "tripped_steps": 0,
+     "reasons": {
+      "NONFINITE_POSE": 0,
+      "QUATERNION_NORM": 0,
+      "OUT_OF_DOMAIN": 0,
+      "TRANSLATION_JUMP": 0,
+      "ROTATION_JUMP": 0,
+      "PAD_BOX": 0
+     },
+     "max_translation_step_m": 0.011879017793847221,
+     "max_rotation_step_rad": 0.13330155601337568,
+     "min_distance_to_domain_boundary_m": 0.16090449601810336,
+     "max_pad_center_m": 0.11787712574005127,
+     "max_pad_half_extent_m": 0.029999999329447746
+    },
+    "env1_seed15": {
+     "steps": 1200,
+     "tripped_steps": 0,
+     "reasons": {
+      "NONFINITE_POSE": 0,
+      "QUATERNION_NORM": 0,
+      "OUT_OF_DOMAIN": 0,
+      "TRANSLATION_JUMP": 0,
+      "ROTATION_JUMP": 0,
+      "PAD_BOX": 0
+     },
+     "max_translation_step_m": 0.01148976890214678,
+     "max_rotation_step_rad": 0.1743014244126449,
+     "min_distance_to_domain_boundary_m": 0.25092735964724266,
+     "max_pad_center_m": 0.10417614877223969,
+     "max_pad_half_extent_m": 0.029999999329447746
+    }
+   }
+  },
+  "run": "guard_domain_check_001"
+ },
+ "tests": {
+  "source_commit": "eefef82 (code identical to 93d2fc9 for src/tests)",
+  "cpu_venv": {
+   "command": "CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -p no:cacheprovider -q tests/test_rl_*.py tests/test_vector_env_*.py tests/test_batched_*.py tests/test_repo_naming.py",
+   "passed": 286,
+   "failed": 0,
+   "skipped": 17,
+   "wall_s": 499,
+   "note": "skips are Torch / Isaac Lab / CUDA modules (NOT_RUN in .venv); tests/test_rl_termination.py 3/3 runs here"
+  },
+  "torch_venv": {
+   "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaacsim-venv/bin/python -m pytest -p no:cacheprovider -q tests/test_rl_actions.py tests/test_rl_observations.py tests/test_rl_reward_packed.py tests/test_rl_policies_batched.py tests/test_rl_benchmark.py tests/test_rl_replay.py tests/test_rl_termination.py tests/test_vector_env_api.py tests/test_vector_env_p12b.py tests/test_vector_env_contract.py tests/test_vector_env_gpu_stream.py",
+   "passed": 123,
+   "failed": 0,
+   "skipped": 3,
+   "wall_s": 244,
+   "note": "skipped: GPU stream module (CUDA hidden) and the two workload B contract tests (no Isaac Lab in this venv) = NOT_RUN here; test_vector_env_p12b.py 13/13, test_vector_env_api.py 12/12"
+  },
+  "isaac_lab_venv": {
+   "command": "CUDA_VISIBLE_DEVICES='' PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaaclab-venv/bin/python -m pytest -p no:cacheprovider -q tests/test_vector_env_contract.py tests/test_rl_lab_env.py tests/test_rl_lab_kernels.py tests/test_rl_lab_ik.py tests/test_rl_lab_rigid_isolation.py tests/test_rl_lab_scene_usd.py",
+   "passed": 53,
+   "failed": 0,
+   "skipped": 0,
+   "wall_s": 191,
+   "note": "includes the CPU contract of both backends (workload B on Warp-CPU MJWarp, cpu_test_mode) and the unchanged S0-S3 Lab tests"
+  }
+ }
+}
