@@ -188,6 +188,8 @@ def main():
     parser.add_argument("--steps", type=int, default=250)
     parser.add_argument("--driver", default="recorded", choices=("recorded", "hold"))
     parser.add_argument("--grip-profile", default="legacy_point_contact")
+    parser.add_argument("--registered-task", default=None, help="e.g. TRIM-01-R (the G4 task); needs --driver hold")
+    parser.add_argument("--initial-from", default=None, help="with --registered-task: a G4 single run dir (settled q)")
     parser.add_argument("--solver-set", action="append", default=[], help="DIAGNOSTIC MJWarp option override k=v")
     parser.add_argument("--mjw-disable", action="append", default=[],
                         help="DIAGNOSTIC: set a MuJoCo-Warp DisableBit (e.g. NATIVECCD) on the built model before reset")
@@ -212,12 +214,26 @@ def main():
     from robotic_cutting_sim.physical_tool import ToolGraspConfig  # noqa: F401
     device = "cpu" if cpu else "cuda:0"
     seeds = [args.scene_seeds[e % len(args.scene_seeds)] for e in range(args.num_envs)]
-    compiled = {seed: _task(seed) for seed in dict.fromkeys(seeds)}
-    task = compiled[seeds[0]]
-    env_tasks = [compiled[s] for s in seeds]
+    initial_q = None
+    if args.registered_task:
+        # the G4 setting: registered ruler-knife task, HOME = a single Lab run's settled arm q, hold driver only
+        if args.driver != "hold":
+            raise SystemExit("--registered-task needs --driver hold (no recorded commands for it)")
+        from robotic_cutting_sim.task_scenarios import configure_task
+        from robotic_cutting_sim.tasks import make_task
+        task = configure_task(make_task(args.registered_task, seed=42), scenario=None, material_profile_id=None)
+        env_tasks = [task]*args.num_envs
+        if args.initial_from:
+            initial_q = tuple(json.loads((Path(args.initial_from)/"g4.json").read_text())["info"]["settled_q"])
+    else:
+        compiled = {seed: _task(seed) for seed in dict.fromkeys(seeds)}
+        task = compiled[seeds[0]]
+        env_tasks = [compiled[s] for s in seeds]
     options = lab_scene.BatchedLabOptions(num_envs=args.num_envs, tool_mount="physical_grasp_v1", device=device,
                                           cpu_test_mode=cpu, use_cuda_graph=False, strict=not args.non_strict,
-                                          material=None, grip_contact_profile=args.grip_profile)
+                                          material=None, grip_contact_profile=args.grip_profile,
+                                          initial_joint_positions=initial_q,
+                                          **({"feedback": False, "seed": 42} if args.registered_task else {}))
     cfg = lab_scene.make_batched_lab_cfg(options, task)
     overrides = {}
     for item in args.solver_set:
@@ -227,6 +243,7 @@ def main():
         setattr(cfg.sim.physics.solver_cfg, key, _parse_value(value))
         overrides[key] = _parse_value(value)
     row = {"probe": "b2_grasp_diag", "device": device, "N": args.num_envs, "scene_seeds": seeds, "driver": args.driver,
+           "registered_task": args.registered_task, "initial_from": args.initial_from,
            "steps": args.steps, "grip_profile": args.grip_profile, "diagnostic_solver_overrides": overrides,
            "use_cuda_graph": False, "material": "none (robot-only)", "commit": _commit(),
            "fidelity": options.fidelity(), "label": "DIAGNOSTIC (eager, host reads every step; not a timing row)",
