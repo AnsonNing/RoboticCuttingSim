@@ -13,16 +13,44 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
      `open_vector_env` (workload A, reduced fidelity: replayed edge, no robot). M0 s512/s15, M1 N=4 (staggered
      partial resets, policy + replay envs), M2 N=8 ×3 episodes (24/24) and N=16 (16/16): final codes = Native,
      frozen evaluator PASS, L2 every step, no leak. Matched-load throughput (co-tenant ~46 %, SHARED_GPU):
-     N=1 3.354 → N=8 4.849 (1.45×) → N=16 4.752 env-steps/s (1.42×); VRAM 834 / 1378 / 2064 MiB; partial reset
+     N=1 3.354 → N=8 4.849 → N=16 4.752 env-steps/s as first reported (1.45× / 1.42×, but over mismatched step
+     windows; matched windows give **1.40× / 1.37×** per the acceptance review, being corrected in the report;
+     vs the frozen single env ~1.24–1.26×); VRAM 834 / 1378 / 2064 MiB; partial reset
      4–9 ms. Kernel time ~linear in N (one 103k-particle env already fills most of the GPU). L4 RUN_TO_RUN BLOCKED
      (frozen `tlmpm_v5._particle_contacts` mixes add/max atomics). HashGrid audit: no P1-2 evidence run held >1
      device grid; P1-1 `ab_timing_001` is INVALID_MULTI_GRID_PROCESS → its "≈1.9× at N=4" claim is withdrawn.
      Guard `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` added (a24ac46).
-  - P1-3a merged into this branch (3682786; release() also frees the alias_free_v1 grid, new CPU test).
-  - Running now: xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786; P1-2b (isaac_lab_newton dispatch, `tasks=`,
-    `termination_reason`, full evaluation stream, per-env pose-bounds invalidation) in worktree
-    `/home/ningan/RoboticCuttingSim-rl-p12b`; B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
-    P1-5/P1-4 plan (parity matrix, CUT in the batched path); P1-6 R0 in `/home/ningan/RoboticCuttingSim-rl-r0`.
+  - P1-3a merged into this branch (3682786; release() also frees the alias_free_v1 grid, new CPU test). Tests on
+    3682786: full CPU suite 2211 passed / 24 skipped / 6 xfailed; Torch vector-env/RL suite 117 passed / 1 skipped
+    (GPU stream test, NOT_RUN on CPU).
+  - **xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786: PASS_WITH_LIMITATIONS ×3, no BLOCKER**
+    ([review](reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md), 2480dc2). MAJOR: frozen_v1 grid-after-build hazard
+    is only checked at build/full reset; the 4-run L3 position band is not a valid pass/fail test and some statuses were
+    misreported. Fixes: findings 1–4, 6, 8–10 in worktree `/home/ningan/RoboticCuttingSim-rl-fix1` (grid refresh
+    before each launch, pre-declared position band v2 with ≥10 replays/seed, matched-window throughput, stale text);
+    findings 5 (autoreset → evaluate) and 7 (diagnostics opt-out) folded into P1-2b.
+  - **P1-2b DONE and merged (6e1e544)** ([section in milestones report](reports/rl_ready/P1_1_P1_2_MILESTONES.md),
+    evidence `p1_2b_001.json`): `open_vector_env(backend="isaac_lab_newton")` (same contract as workload A via
+    `rl/vector_contract.py`; cameras / same-step autoreset / CPU refused with codes), per-env `tasks=` (512 + 15 in one
+    batch, both backends), `termination_reason` bits (1 rigid, 2 material, 4 grasp lost, 8 IK streak, 16 truncated,
+    32 input guard, 64 infrastructure) + `VectorEnvInfrastructureError` + `classify_process_exit`, opt-in device
+    evaluation stream (121 samples at the Native cadence, ~350 MB/env), input guard (0 trips over 6 recorded legitimate
+    episodes), review F5 (`terminal_capture`, `evaluate(episode="last_completed")`, autoreset envs refused) and F7
+    (diagnostics-only `allow_multiple_device_hashgrids`). Tests: CPU 286 / Torch 123 / Isaac Lab 53 passed. GPU smoke
+    N=2 tasks=[512,15], SHARED_GPU: workload A contract PASS (4.25 env-steps/s), B1 contract PASS (4.89) — API smoke,
+    no cutting in 50 steps.
+  - Running now: B2 grasp root cause in `/home/ningan/RoboticCuttingSim-rl-b2`;
+    P1-6 R0 DONE and merged here (87cfa3b; [report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
+    `run_perf_acceptance.py` (one material per child process), `judge_perf_acceptance.py`, `acceptance_v1.json`,
+    local runner; GPU smoke default vs `alias_free_v1`: PHYSICS/PERFORMANCE/INTEGRITY PASS, ratios 1.361 (N=1) /
+    1.369 (N=2) SHARED_GPU; external adapter drove the harness cleanly; full CPU suite 2243 passed. Decision: reset-p95
+    gate on a shared GPU → WARN up to 1.25·B + 10 ms (bimodal 1 vs 7 ms reset latency on the shared GPU), strict
+    1.25·B + 2 ms on an exclusive GPU — amended in acceptance_v1 (214ac11) before it enters any baseline; re-judge of
+    smoke_001/003: PASS ×3 (evidence `p1_6_r0_003.json`). acceptance_v1 freezes when it enters the Phase 1 merge on
+    `main`; until then the position-band input may still be pointed at band v2 (descriptive). P1-5 plan DONE (30b8a67) → CUT groundwork (T5.1, T5.3–T5.6,
+    T5.8) in `/home/ningan/RoboticCuttingSim-rl-p15` and P1-4 supervisor/ledger + N=8 long run (T4.1, T4.3, T4.4) in
+    `/home/ningan/RoboticCuttingSim-rl-p14`. Parity matrix today: 4 PASS, 8 PARTIAL, 1 UNSUPPORTED (cameras),
+    2 NOT_RUN (CUT, RL smoke).
   2. P1-1b S0–S3 DONE ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md), evidence `p1_1b_s2_s3_001.json`, 78a211b):
      reward/evaluator wiring in the Lab batched env; G3 snapshot restore PASS; G5 L0 bitwise PASS, G5 L3 (frozen single
      replays reproduce batch final codes, both seeds) PASS; **S3 TRIM B1 (rigid mount, reduced fidelity) N=2/4 both
@@ -64,6 +92,12 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms;
   U3 per-cycle budget: research agent $20 / 6 h plus one xhigh review (~1 working day, 3–5 GPU-h);
   U4 the research agent gets no web access.
+- P1-5 defaults (none blocks work; [P1_5_PLAN.md](reports/rl_ready/P1_5_PLAN.md)):
+  U-P15-1 the frozen `tlmpm_v5` CUT is **not** batched in Phase 1 (option (a), ~3–4 agent-days, deferred): the batched
+  path runs CUT on a new opt-in `bar_flat_board_tlmpm_v7_2_v1` scene, the frozen v5 CUT runs single-env headless
+  (replay of Native Demo 1); the CUT parity row therefore stays PARTIAL;
+  U-P15-2 no batched camera/vision profile (cameras stay UNSUPPORTED in the batched path);
+  U-P15-3 no per-episode geometry/material randomisation inside a running batch (per-env seeds + rebuild only).
 
 ## P1-0 baseline — 2026-11-10 — PASS
 
