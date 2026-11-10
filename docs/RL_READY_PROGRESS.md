@@ -126,8 +126,11 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   calibration status will stay `SIMULATOR_ONLY_UNCALIBRATED` unless data is provided.
 - P1-6 defaults in force until the user decides otherwise (none blocks work):
   U1 optimizer-written candidate code runs on GPU1 only (not GPU0);
-  U2 `acceptance_v1` speed gate: at N=16 paired median ≥ 1.05 with ≥ 4/5 pairs faster, every N ≥ 0.97,
-  VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms;
+  U2 speed gate (first optimizer acceptance uses `acceptance_v2`, D-14; `acceptance_v1` is frozen and not used):
+  v2 times the cutting phase (window being finalised to start at tool contact), N ∈ {1, 16}, 3 ABBA pairs, N=16
+  paired median ≥ 1.05 with all 3 pairs faster, every N ≥ 0.97 (v1 was: N=16 median ≥ 1.05 with ≥ 4/5 pairs
+  faster); both: VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms (shared GPU: WARN up
+  to + 10 ms);
   U3 per-cycle budget: research agent $20 / 6 h plus one xhigh review (~1 working day, 3–5 GPU-h);
   U4 the research agent gets no web access.
 - P1-5 defaults (none blocks work; [P1_5_PLAN.md](reports/rl_ready/P1_5_PLAN.md)):
