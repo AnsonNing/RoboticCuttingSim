@@ -42,7 +42,7 @@ Block 12 × 6 × 3 mm (n_t 3, μ 0.5), gravity ramped per substep over 20 ms, ho
 |---|---|---|---|
 | frozen per-particle helper (`_contact_impulse`, D8 design) | 0.50 / 1.24 / 1.59 mm | +2.0 / +0.8 / +0.4 % | 0.966 / 0.950 |
 | node velocity projection `grid_node_coulomb_v1` | 0.34 / 0.75 / 1.15 mm | +1.2 / +0.3 / +0.1 % | 0.993 / 0.972 |
-| node penalty, no dashpots (`_003`, sweeps) | creeps (2e-5 … 3e-4 m at 0.8 μ) | +1.8 … +16 % | 1.0015 / 1.0008 |
+| node penalty, no dashpots (`_003`, sweeps) | creeps at 0.8 μ in most settings (4e-5 … 7e-4 m; one κ 0.05 setting held) | +1.4 … +3.3 % | 1.0015 / 1.0008 |
 | node penalty, normal dashpot only (`_004` "undamped" — see note) | 2.7e-9 / 7.3e-9 m / 1.3 mm | +4.2 / +4.3 / +4.3 % | 0.962 / 0.960 |
 | node penalty, tangential dashpot only (sweep) | 1.3e-4 m at 0.8 μ | +1.3 … +9 % | – |
 | **node penalty + both dashpots, ζ 0.5 (adopted)** | **1.0e-6 / 8.3e-7 m** / 0.71 mm | **+0.53 / +0.15 / +0.10 %** | **0.962 / 0.960** |
@@ -171,8 +171,10 @@ GPU vs CPU (small pinch, 10 control steps): pad wrench 3.3e-6 relative, markers 
 ## 5. CPU suites
 
 `tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py
-tests/test_repo_naming.py` (new: `test_rubber_contact.py` 12, `test_rubber_p2_4_protocols.py` 3): see
-`artifacts/rl_ready/p2_4/cpu_tests_001/` and the evidence file (both `CUDA_VISIBLE_DEVICES=''` and `=0`).
+tests/test_repo_naming.py` (new: `test_rubber_contact.py` 12 = RUBBER-CONT-10, `test_rubber_p2_4_protocols.py` 3) at
+`045ce6c` (src and tests unchanged since `51023d6`): **421 passed, 0 failed, 0 skipped** with `CUDA_VISIBLE_DEVICES=''`
+(575 s) and **421 passed** with `CUDA_VISIBLE_DEVICES=0` under the GPU0 lock (545 s); logs in
+`artifacts/rl_ready/p2_4/cpu_tests_001/`. None of the new tests needs local artifacts, torch or CUDA.
 
 ## 6. Open items
 

@@ -1530,7 +1530,7 @@ frictionless rod 30 × 4 × 4 mm, n_t 4, 0.2 m/s end impact:
 |---|---|---|---|---|
 | frozen per-particle helper (D8 design) | 0.50 / 1.24 / 1.59 mm | +2.0 / +0.8 / +0.4 % | 0.966 / 0.950 (loss grows as dt shrinks) | rejected |
 | node velocity projection `grid_node_coulomb_v1` | 0.34 / 0.75 / 1.15 mm | +1.2 / +0.3 / +0.1 % | 0.993 / 0.972 (dt-dependent) | rejected |
-| node penalty, no dashpots (sweeps, `_003`) | creeps 2e-5 … 3e-4 m at 0.8 μ | +1.8 … +16 % | 1.0015 / 1.0008 (conservative) | rejected |
+| node penalty, no dashpots (sweeps, `_003`) | creeps at 0.8 μ in most settings (4e-5 … 7e-4 m; one κ 0.05 setting held) | +1.4 … +3.3 % | 1.0015 / 1.0008 (conservative) | rejected |
 | node penalty, normal dashpot only (`_004` "undamped") | 2.7e-9 / 7.3e-9 m / 1.3 mm | +4.2 / +4.3 / +4.3 % | — | rejected |
 | node penalty, tangential dashpot only (sweep) | 1.3e-4 m at 0.8 μ | +1.3 … +9 % | — | rejected |
 | **node penalty + both dashpots ζ 0.5 (adopted)** | **1.0e-6 / 8.3e-7 m** / 0.71 mm | **+0.53 / +0.15 / +0.10 %** | **0.962 / 0.960 (dt-independent, booked)** | **adopted** |
@@ -1652,7 +1652,7 @@ Threadripper, 41 jobs. Every FAIL below is the v1 result and stays preserved; no
 | -06 self-contact | NOT_RUN | NOT_IMPLEMENTED_V1 (declared) |
 | -07 coupling delay | **PASS** (assessment complete) | all 8 envelope points **coupling_delay_significant**: tip error 0.3–13 %, hand-side delay energy 4–93 % of the strip's mechanical energy; log-decrement tip damping with the 20 ms handoff negative at 6 of 8 points (−0.0006 … −0.030), the 1 ms arm resolved at 4 points (+0.0003, +0.0003, +0.0017, −0.030; the elastic strip has no damping, so ~1e-3 is the estimator's noise level); material books ≤ 0.10 % in every arm |
 | -08 / -09 batched, GPU isolation | NOT_RUN | batched contact path not implemented (task B1) |
-| -10 unit tests | PASS | `tests/test_rubber_contact.py` 12 / 12 (CPU suites below) |
+| -10 unit tests | PASS | `tests/test_rubber_contact.py` 12 / 12; CPU suites (rubber + batched + naming, `045ce6c`): 421 passed with `CUDA_VISIBLE_DEVICES=''` and with `=0` |
 | -11 cost (GPU0, SHARED_GPU, driver 570.211.01) | reported | workload E single env (41,220 particles, n_t 3, 2,585 substeps): 0.218 → 0.320 ms per substep with a table and two pads (+46 %; +40 % out of reach); VRAM 686 → 744 MB; contact kernel 0.076 ms (22 % of kernel time: per-node float64 slerp / quat-to-matrix of the frames); out-of-reach contact rows exactly 0.0; GPU vs CPU pad wrench 3.3e-6 relative |
 
 Reading (diagnostic, after the run). The μ 0.8 failures share one cause with the decision probe's near-threshold
