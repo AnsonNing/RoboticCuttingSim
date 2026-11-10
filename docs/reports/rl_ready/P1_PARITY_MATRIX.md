@@ -97,7 +97,7 @@ Ticked means the checkbox is met by merged evidence, with its limitation stated.
   ulp, 0 ulp for FK quaternions) on hosts whose NumPy/OpenBLAS selects the SkylakeX kernels (current workstation
   venvs; GitHub EPYC 9V45). Where OpenBLAS selects other kernels (GitHub EPYC 7763 / Haswell; reproduced on the
   workstation with `OPENBLAS_CORETYPE=Haswell`) the live chain's `np.linalg.norm` and small matmul round
-  differently: the float64 validated pose differs in the last bit and tiny-angle twists differ by ≤ 2.3e-13 rad/s
+  differently: the float64 validated pose differs by ≤ 2 float64 ulp and tiny-angle twists differ by ≤ 2.3e-13 rad/s
   in this suite (3300 float32 ulp at 1e-12 rad, ~6.8e8 at exactly 0 rad). Those comparisons are NOT_RUN on hosts
   without `avx512f` and fail on an AVX-512 host whose BLAS selects other kernels (`tests/test_batched_pose_interp.py`).
   The Native receipts do not record the BLAS core, so their SkylakeX selection is inferred from the current venvs;

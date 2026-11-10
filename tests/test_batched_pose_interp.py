@@ -31,9 +31,9 @@ def _cpu_flags():
 
 
 # The kernel mirrors the float64 operation orders of NumPy/OpenBLAS's AVX-512 (SkylakeX) kernels, the ones the
-# workstation and its Native runs use (see test_host_float64_operation_orders_the_kernel_reproduces). Without
+# workstation and (inferred) its Native runs use (see test_host_float64_operation_orders_the_kernel_reproduces). Without
 # AVX-512 OpenBLAS selects other kernels (e.g. Haswell on GitHub's EPYC 7763 runners) and the live chain itself
-# rounds differently (float64 validated pose off in the last bit; tiny-angle twists off by <= 2.3e-13 rad/s:
+# rounds differently (float64 validated pose off by <= 2 float64 ulp; tiny-angle twists off by <= 2.3e-13 rad/s:
 # 3300 float32 ulp at 1e-12 rad, ~6.8e8 ulp at exactly 0 rad; reproduce with OPENBLAS_CORETYPE=Haswell), so
 # comparisons against the live chain are hardware-specific: NOT_RUN there, strict wherever AVX-512 is present.
 LIVE_CHAIN_HOST = pytest.mark.skipif(
