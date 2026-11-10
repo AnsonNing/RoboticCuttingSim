@@ -69,3 +69,22 @@ def test_guard_is_inactive_for_cpu_grids_without_the_test_predicates():
     first = batch_material(CONFIG)
     second = batch_material(CONFIG)           # host grids have no static descriptor: not counted
     assert first.device_hashgrid_guard == "not_applicable_host_grid" == second.device_hashgrid_guard
+
+
+@pytest.mark.parametrize("options", [{}, {"speed_guard": "flag"}])
+def test_alias_free_v1_owns_one_grid_released_and_rebuilt_under_the_guard(cpu_guard, options):
+    """P1-3a ``alias_free_v1`` replaces the solver's frozen-dims grid by its alias-free grid: the guard sees one
+    grid per material, ``release()`` frees it (also the contacts' reference) and ``rebuild()`` stays allowed."""
+    from batched_fixtures import start_pose, trim_material
+    from robotic_cutting_sim.batched import layout
+    from robotic_cutting_sim.batched import particle_contacts as PC
+    first = batch_material(CONFIG, particle_contact_mode=PC.ALIAS_FREE_MODE, particle_contact_options=options)
+    assert first.solver.particle_contact.grid is first.solver.hash
+    with pytest.raises(UnsupportedBatchConfiguration, match="^UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS"):
+        batch_material(CONFIG)
+    first.rebuild([layout.EnvSpec(trim_material(512), start_pose(512), 42)])
+    assert first.solver.particle_contact.grid is first.solver.hash and not MB._REBUILD_EXEMPT_GRIDS
+    first.release()
+    assert first.solver.hash is None and first.solver.particle_contact.grid is None
+    second = batch_material(CONFIG, particle_contact_mode=PC.ALIAS_FREE_MODE, particle_contact_options=options)
+    assert isinstance(second.solver.hash, wp.HashGrid)

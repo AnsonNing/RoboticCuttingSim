@@ -107,7 +107,7 @@ def test_receipt_hashes_sources_and_names_the_interpolation_path_used():
     here = Path(MB.__file__).resolve().parent
     expected = {name: hashlib.sha256((here/name).read_bytes()).hexdigest()
                 for name in ("material_batch.py", "pose_interp.py", "diagnostics.py", "errors.py", "layout.py",
-                             "constitutive.py", "tlmpm_v7_2_batch.py")}
+                             "constitutive.py", "tlmpm_v7_2_batch.py", "particle_contacts.py")}
     assert receipt["batched_source_sha256"] == expected
     assert receipt["pose_interpolation"] == "none_no_control_step_yet"
     material.advance(interpolation="preset")

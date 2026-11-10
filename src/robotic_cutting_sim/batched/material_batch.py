@@ -24,7 +24,7 @@ from pathlib import Path
 import numpy as np
 import warp as wp
 
-from . import constitutive, layout
+from . import constitutive, layout, particle_contacts
 from .diagnostics import SegmentedDiagnostics
 from .errors import UnsupportedBatchConfiguration
 from .pose_interp import _fma, _mul
@@ -45,12 +45,16 @@ INVALID_POSE = 4
 INVALID_CUT_DIGIT = 8
 INVALID_NONFINITE_WRENCH = 16
 INVALID_OBSTACLE_BOXES = 32
+# alias_free_v1 only (P1-3a): the particle-contact speed certificate failed in some substep (frozen fallback ran
+# for that env in "fallback" mode; no parity claim in "flag" mode).
+INVALID_CONTACT_SPEED_GUARD = 64
 INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_SLOT_OVERFLOW: "SLOT_OVERFLOW",
                    INVALID_POSE: "INVALID_MEASURED_POSE", INVALID_CUT_DIGIT: "INVALID_CUT_DIGIT",
-                   INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH", INVALID_OBSTACLE_BOXES: "INVALID_OBSTACLE_BOXES"}
+                   INVALID_NONFINITE_WRENCH: "NONFINITE_WRENCH", INVALID_OBSTACLE_BOXES: "INVALID_OBSTACLE_BOXES",
+                   INVALID_CONTACT_SPEED_GUARD: "CONTACT_SPEED_GUARD"}
 
 BATCHED_SOURCES = ("material_batch.py", "pose_interp.py", "diagnostics.py", "errors.py", "layout.py",
-                   "constitutive.py", "tlmpm_v7_2_batch.py")
+                   "constitutive.py", "tlmpm_v7_2_batch.py", "particle_contacts.py")
 INTERPOLATION_LABELS = {"host_reference": "host_reference_frozen_scipy_parity_only", "preset": "preset_written_by_caller"}
 
 
@@ -91,6 +95,10 @@ RECOMPUTED_EVERY_CONTROL_STEP = ("invalid_count", "actual_pose", "box_input", "b
 # only by it, never by a control step. They keep the last reset's values (not a fresh-pack value).
 RESET_INPUTS = ("reset_mask", "reset_seed")
 DIAGNOSTICS_SCRATCH = ("partials", "summary")
+# alias_free_v1 with a speed guard only (P1-3a): solver arrays restored by reset(), and the shared substep flag
+# that is zero between substeps.
+CONTACT_GUARD_RESET_ARRAYS = ("contact_guard_flag", "contact_guard_violations")
+CONTACT_GUARD_SCRATCH = ("contact_guard_any",)
 
 
 # ----------------------------------------------------------------------------- kernels
@@ -445,7 +453,9 @@ class BatchedCuttingMaterial:
 
     def __init__(self, specs, *, device="cuda:0", parity_mode=False, strict=True, capture_graph=None,
                  backend=BACKEND, cameras=None, recorders=None, sensors=None,
-                 constitutive_model=constitutive.DEFAULT_MODEL_ID, allow_multiple_device_hashgrids=False):
+                 constitutive_model=constitutive.DEFAULT_MODEL_ID,
+                 particle_contact_mode=particle_contacts.DEFAULT_MODE, particle_contact_options=None,
+                 allow_multiple_device_hashgrids=False):
         if backend not in BACKENDS:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_BACKEND", f"{backend!r}; supported {BACKENDS}")
         self.backend = backend
@@ -461,6 +471,10 @@ class BatchedCuttingMaterial:
         self.capture_graph = wp.get_device(device).is_cuda if capture_graph is None else bool(capture_graph)
         self.constitutive_model = constitutive_model
         self.allow_multiple_device_hashgrids = bool(allow_multiple_device_hashgrids)
+        # P1-3a: "frozen_v1" (default, rollback) or "alias_free_v1" with sub-flag options (particle_contacts.py).
+        self.particle_contact_mode = particle_contact_mode
+        self.particle_contact_options = None if particle_contact_options is None else dict(particle_contact_options)
+        self.particle_contact_config = particle_contacts.resolve(particle_contact_mode, self.particle_contact_options)
         self._build(specs)
 
     # ------------------------------------------------------------------ construction
@@ -491,7 +505,7 @@ class BatchedCuttingMaterial:
         guarded = _guard_applies(self.device) and not self.allow_multiple_device_hashgrids
         if guarded:
             check_single_device_hashgrid()
-        self.solver = BatchedTLMPMv7_2(pk, self.device)
+        self.solver = BatchedTLMPMv7_2(pk, self.device, particle_contact=self.particle_contact_config)
         s = self.solver
         self.device_hashgrid_guard = (DEVICE_HASHGRID_GUARD if guarded else "disabled"
                                       if self.allow_multiple_device_hashgrids else "not_applicable_host_grid")
@@ -568,7 +582,8 @@ class BatchedCuttingMaterial:
         afterwards; views taken before (e.g. ``wp.to_torch``) must be taken again."""
         options = dict(device=self.device, parity_mode=self.parity_mode, strict=self.strict,
                        capture_graph=self.capture_graph, constitutive_model=self.constitutive_model,
-                       backend=self.backend,
+                       backend=self.backend, particle_contact_mode=self.particle_contact_mode,
+                       particle_contact_options=self.particle_contact_options,
                        allow_multiple_device_hashgrids=self.allow_multiple_device_hashgrids)
         own = getattr(getattr(self, "solver", None), "hash", None)
         _REBUILD_EXEMPT_GRIDS.append(own)
@@ -578,6 +593,10 @@ class BatchedCuttingMaterial:
             _REBUILD_EXEMPT_GRIDS.remove(own)
         self.__dict__.clear()
         self.__dict__.update(replacement.__dict__)
+
+    @property
+    def _contact_guard(self):
+        return self.particle_contact_config.speed_guard != "off"
 
     # ------------------------------------------------------------------ inputs
 
@@ -734,6 +753,8 @@ class BatchedCuttingMaterial:
                                                    INVALID_OBSTACLE_BOXES])
             s.zero_control_step_accumulators()
             if self.graph is not None:
+                if s.particle_contact is not None:   # alias_free_v1 only: Warp static-descriptor guard
+                    s.particle_contact.restore_descriptor(s)
                 wp.capture_launch(self.graph)
             else:
                 for _ in range(s.substeps):
@@ -742,6 +763,9 @@ class BatchedCuttingMaterial:
                 s.boxes, wp.float64(self.control_dt), int(self.feedback), self.pending_wrench,
                 self.applied_previous, self.pad_wrench])
             self.diagnostics.launch()
+            if self._contact_guard:
+                wp.launch(particle_contacts._guard_invalid_b, self.num_envs, [s.contact_guard_violations,
+                    self.invalid_reason, INVALID_CONTACT_SPEED_GUARD])
             self.invalid_count.zero_()
             wp.launch(_validity_b, self.num_envs, [self.diagnostics.summary, s.slot_overflow, self.pose_status,
                 self.cut_input, s.max_cuts, self.pending_wrench, self.invalid_reason, self.invalid_count])
@@ -846,6 +870,9 @@ class BatchedCuttingMaterial:
                 layout.TOTALS_WIDTH, self.pending_wrench, self.applied_previous, self.pad_wrench, self.step_count,
                 self.seed, self.reset_seed, self.last_pose, self.measured_pose, self.initial_measured_pose,
                 self.cut_input, self.pose_status, self.invalid_reason])
+            if self._contact_guard:
+                wp.launch(particle_contacts._reset_guard_b, self.num_envs, [self.reset_mask, s.contact_guard_flag,
+                    s.contact_guard_violations])
             if full:
                 s.index.zero_()
 
@@ -925,6 +952,9 @@ class BatchedCuttingMaterial:
         self.graph = None
         if getattr(self, "solver", None) is not None:
             self.solver.hash = None
+            contacts = getattr(self.solver, "particle_contact", None)
+            if contacts is not None:   # alias_free_v1 owns the solver's only device grid (particle_contacts.py)
+                contacts.grid = None
 
     def receipt(self):
         pk = self.packed
@@ -938,6 +968,8 @@ class BatchedCuttingMaterial:
             # box_centers/box_halves in place itself.
             reasons.append("pad_boxes_not_updated_through_set_obstacle_boxes")
         return {"runtime": RUNTIME, "version": MATERIAL_BATCH_VERSION, "backend": self.backend,
+                "particle_contact_mode": self.particle_contact_mode,
+                "particle_contact": self.solver.particle_contact_receipt(),
                 "coupling": self.name, "material_coupled": True, "device": self.device,
                 "parity_mode": self.parity_mode, "strict": self.strict, "graph": self.capture_receipt,
                 "pose_interpolation": self.pose_interpolation,
