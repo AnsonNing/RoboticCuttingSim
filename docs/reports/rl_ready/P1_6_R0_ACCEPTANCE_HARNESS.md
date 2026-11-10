@@ -3,7 +3,7 @@
 Date: 2026-11-10. Branch `claude/rl-p1-6-r0` (from `claude/rl-p1-3a` @ `25c4fc1`). Decision: D-11
 (`docs/RL_READY_PLAN.md` §5). Interface: the R0 section of the external agentic optimizer's P1-6 implementation
 note (flags, marks, result / verdict / config keys and exit codes copied from there). Compact evidence:
-`docs/evidence/rl_ready/p1_6_r0_001.json`; raw outputs (not committed) under `artifacts/rl_ready/p1_6_r0/`.
+`docs/evidence/rl_ready/p1_6_r0_002.json` (final harness; `p1_6_r0_001.json` is the superseded first version); raw outputs (not committed) under `artifacts/rl_ready/p1_6_r0/`.
 
 ## Status
 
@@ -14,8 +14,8 @@ note (flags, marks, result / verdict / config keys and exit codes copied from th
 | R0c config `configs/rl_benchmark/acceptance_v1.json` (`rcs_perf_acceptance_v1`), decision D-11 | DONE (frozen from its first commit) |
 | Shared pieces `src/robotic_cutting_sim/rl/perf_acceptance.py` (marks, rounds, variant check, codec, config check) | DONE |
 | Local runner `scripts/rl_ready/run_perf_acceptance_local.py` (RCS runs an acceptance without the optimizer) | DONE |
-| CPU tests `tests/test_perf_acceptance.py` | PASS: `.venv` 36 passed, 1 skipped (Torch-only) in 0.5 s; Torch venv (D-09 overlay) 37 passed in 34.8 s |
-| GPU smoke (B = default `frozen_v1`, C = `alias_free_v1`; throughput N=1/2, episode N=1 s512, samestate s512) + judge | PASS (`smoke_002`: PHYSICS / PERFORMANCE / INTEGRITY PASS; `SHARED_GPU`) |
+| CPU tests `tests/test_perf_acceptance.py` | PASS: `.venv` 39 passed, 1 skipped (Torch-only) in 0.4 s; Torch venv (D-09 overlay) 40 passed in 32.9 s |
+| GPU smoke (B = default `frozen_v1`, C = `alias_free_v1`; throughput N=1/2, episode N=1 s512 + s15, samestate s512) + judge | PASS (`smoke_003`: PHYSICS / PERFORMANCE / INTEGRITY PASS, one descriptive band WARN; `SHARED_GPU`) |
 | Full acceptance (all plan entries, G9 N=1/8/16 ABBA × 5, held-out s15) | NOT_RUN (the external caller runs it per candidate) |
 | `EXCLUSIVE_GPU` rows | NOT_RUN (every smoke row is `SHARED_GPU`) |
 
@@ -27,9 +27,11 @@ note (flags, marks, result / verdict / config keys and exit codes copied from th
 `UNSUPPORTED_OPTION` before anything is built. Workload A: the WP-17 Native replays (seed 512 dev, 15 held-out)
 through `step_measured_edge` (1 mm / 4 mm / 0.1 ms / 200 substeps, 50 Hz, handle + two measured pads, no cameras,
 no recording, 0 robot DOF, `reduced_fidelity`). Seeds run in rounds (`plan_rounds`: cyclic when N ≥ #seeds,
-otherwise one round per seed; samestate always per seed); every round builds one batch and releases it, and the
-harness refuses to build while any device `wp.HashGrid` is alive (`MULTIPLE_DEVICE_HASHGRIDS`; Warp 1.17 static
-descriptor hazard). Marks `RCS_PERF_MARK {"event", "global_step", "num_envs"}` are printed after
+otherwise one round per seed; samestate always per seed). **Every round runs in its own child process** (`5ea4ce4`):
+the parent only samples GPU telemetry (its process tree includes the child) and assembles `result.json`, so each
+process builds exactly one material and holds one device `wp.HashGrid` (Warp 1.17 static-descriptor hazard; the
+child additionally refuses to build while another device grid is alive, `MULTIPLE_DEVICE_HASHGRIDS`). Marks go to
+the inherited stdout; the global step is carried across rounds. Marks `RCS_PERF_MARK {"event", "global_step", "num_envs"}` are printed after
 `torch.cuda.synchronize()`; `global_step` counts vector steps over the process. The in-process clock spans exactly
 the marked window (warm_end → episode_end).
 
@@ -54,12 +56,17 @@ attributable to the code under test); 1 = infrastructure (only `error.json`; the
 the side's checkout, harness and `perf_acceptance.py` bytes equal to the evaluator's, mode / N / seeds / steps /
 variant as planned, dump sha256) and recomputes:
 
-- episodes (G6, G7): final codes = Native, labelled counts = Native, final max position difference vs Native ≤
-  max(P1-0 band high, the reference variant's own value for that seed in the same acceptance), invariants on the
+- episodes (G6, G7), hard gates: final codes = Native, labelled counts = Native, invariants on the
   sampled frames and the final state (finite, digits ≤ 2, no digit rewrites, invalid_reason 0), the frozen TRIM
   evaluator (`goals.evaluate_goal` through the compiled task; references from the WP-17 recording) on 2 frames and
   on the Native sample series, per-env contact totals vs the baseline; candidate-reported L2 vs the recomputation
-  (disagreement → INTEGRITY);
+  (disagreement → INTEGRITY). **Position band: descriptive only.** The final max position difference vs Native
+  is compared with the band file named by `physics.position_band.path` (high value per seed, or the reference
+  variant's own value for that seed if larger). The P1-0 band (`configs/rl_benchmark/position_band_p1_0.json`,
+  min–max of 4 runs, ~40 % false rejects per the acceptance review of `2480dc2`) has `mode: descriptive`: an
+  exceedance is a `WARN` in `verdict.warnings` and in the gate values, never a gate result. `mode: gate` makes it a
+  PHYSICS check; the coordinator points `path`/`mode` at band v2 (`position_band_v2.json`) when it lands. The band
+  file must provide `position_band_m: {"<seed>": [low, high] | {"high_m": x}}`;
 - samestate (G4, G8): identical non-zero impulse sets (both reruns) and stats[4] per sample, impulse max relative
   difference ≤ 1e-5, short-replay final codes equal and positions / contact totals within tolerance;
 - G1 / G2 from the caller's junit summaries (0 failed; no skip beyond the baseline's);
@@ -103,61 +110,71 @@ judge's `verdict.json` and `adapter_checks` finds nothing on the local manifest.
 | 9 | Evaluator file set | The caller's floor includes `tests/*`: a candidate cannot edit an existing test (e.g. a receipt source list); new test files are fine. `rl/vector_env.py` and `batched/*` are deliberately **not** in `evaluator_files` / `frozen_paths`, so a candidate can add opt-in options. | Noted; no RCS change. |
 | 10 | Shim note: "`evaluate()` … each env's `success` field" | RCS `VectorCuttingEnv.evaluate()` returns per env `{env, scene_seed, task_id, step_count, time_s, frames, final_codes_sha256, labelled, summary, result, evaluator, wall_s}`; the boolean is `result["success"]` (`summary["verdict"] == "PASS"`), there is no top-level `success`. | For the external side's first real smoke. |
 | 11 | Warp kernel cache | Warp writes its kernel cache outside `--out` unless `WARP_CACHE_PATH` is set. | The caller sets it (as specified); the harness writes nothing else outside `--out`. |
+| 13 | Position band (coordinator, after the review of `2480dc2`) | Not a hard gate. | `physics.position_band = {path, mode}`; P1-0 values in `position_band_p1_0.json`, `mode: descriptive` (WARN only); a band v2 file needs `position_band_m` per seed (`[low, high]` or `{high_m}`); `mode: gate` then enables it. A missing / unreadable band file is a WARN (descriptive) or BLOCKED (gate). |
+| 14 | One material per process (coordinator; the integration branch's `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` guard) | The first version built several rounds sequentially in one process (releasing in between). | Since `5ea4ce4` each round is its own child process (G6 N=1 s512 + s15 = two processes); the harness never relies on the guard and never builds a second material in a process. |
 | 12 | Reset p95 rule `C ≤ 1.25 × B + 2 ms` | On the shared GPU each process settles in one of two reset-latency modes, ≈ 1 ms or ≈ 7 ms, for all its resets, independently of the variant (smoke_001: B 1.7 / C 7.1 ms at N=1, B 7.4 / C 1.4 ms at N=2). With 5 runs per side the median can still land in different modes, so `G9:n<N>:reset` can FAIL on a co-tenant artefact. | Kept as specified (U2); flagged for a decision (open item). smoke_001 was REJECTED_PERFORMANCE on exactly this gate. |
 
 
 ## 3. GPU smoke
 
-All runs `SHARED_GPU` (foreign compute processes on the GPU, foreign SM max 64–98 %); RTX 5090, driver 570.211.01,
+All runs `SHARED_GPU` (foreign compute processes, foreign SM max 64–98 %); RTX 5090, driver 570.211.01,
 `.deps/isaacsim-venv` (Python 3.12.12, Warp 1.17.0, Torch 2.11.0+cu128, NumPy 2.3.1), no Kit; one RCS job per GPU
 under `flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu<N>.lock`. The smoke configs are **not** the contract:
 B = `{}` (default `frozen_v1`), C = `{"particle_contact_mode": "alias_free_v1"}` (a known-good, known-faster change),
-both from the same checkout (harness, judge and shared module committed at `6b71363`; `docs/RL_READY_PLAN.md`
-modified, so `environment.dirty` is true). Workload A, seed 512, 102,732 particles, 50 Hz, 0.1 ms, 200 substeps,
-no cameras, no recording, 0 robot DOF, `reduced_fidelity`.
+both from the same checkout. Workload A: s512 (102,732 particles) and, in G6 of smoke_003, s15; 50 Hz, 0.1 ms,
+200 substeps, no cameras, no recording, 0 robot DOF, `reduced_fidelity`; throughput warm (W=3, K=20).
 
 ```bash
 flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env TMPDIR=/mnt/data/ningan/tmp \
   .deps/isaacsim-venv/bin/python scripts/rl_ready/run_perf_acceptance_local.py \
-  --config artifacts/rl_ready/p1_6_r0/smoke_config_002.json --baseline-checkout . --candidate-checkout . \
+  --config artifacts/rl_ready/p1_6_r0/smoke_config_003.json --baseline-checkout . --candidate-checkout . \
   --proposal-json artifacts/rl_ready/p1_6_r0/proposal_alias_free_v1.json --gpu-index 0 \
   --cpu-tests-args "tests/test_repo_naming.py tests/test_rl_benchmark.py tests/test_perf_acceptance.py" \
-  --out artifacts/rl_ready/p1_6_r0/smoke_002
+  --out artifacts/rl_ready/p1_6_r0/smoke_003
 ```
 
-`smoke_002` (GPU0, 09:46–10:05, 8.2 MB of outputs; judge 49 s, peak RSS 1.9 GB, `.venv`, CPU):
+**`smoke_003`** (final harness `5ea4ce4`, GPU0, 10:29–10:57, 15 MB of outputs; judge 47 s, peak RSS 2.2 GB, `.venv`,
+CPU). Evidence `docs/evidence/rl_ready/p1_6_r0_002.json`.
 
 | Gate | Status | Value |
 | --- | --- | --- |
-| G1 (56 CPU tests, both sides) | PASS | 0 failed, 1 skip (the Torch-only test) on both sides |
-| G4 samestate s512, 9 recorded states + 400-step replay | PASS | non-zero impulse sets and stats[4] identical (12–31 contact particles at samples 32–36, 0 elsewhere), impulse rel. diff 0; replay final codes identical, max position diff B–C 9.1e-6 m, contacts 152,501 / 152,525 |
-| G6 episode s512, 1200 steps | PASS | both sides: codes = Native (0 different), labelled 37,958 = Native, final max position diff 9.4e-6 (B) / 2.4e-5 m (C) ≤ 3.9e-5 m, evaluator PASS on 2 and 121 frames, invariants PASS, contacts C vs B 2.2e-4 |
-| G9 N=1 (2 ABBA pairs) | PASS | C/B outer-clock ratios 1.463, 1.468 (median 1.465); B 2.87, C 4.21 env-steps/s |
-| G9 N=2 (primary in the smoke) | PASS | 1.361, 1.401 (median 1.381); B 3.64, C 5.02 env-steps/s |
-| G9 VRAM | PASS | N=1 832 → 894 MiB, N=2 936 → 998 MiB (nvidia-smi per process) |
-| G9 reset p95 | PASS | medians 9.6 vs 10.3 ms (N=1), 10.6 vs 9.2 ms (N=2) |
-| G9 work, clocks, integrity | PASS | same final labelled counts; inner/outer agree within 1e-4 on every run |
+| G1 (59 CPU tests, both sides) | PASS | 0 failed, 1 skip (the Torch-only test) on both sides |
+| G4 samestate s512: 9 recorded states + 400-step replay | PASS | non-zero impulse sets and stats[4] identical (12–31 contact particles at samples 32–36), impulse rel. diff 0; replay final codes identical, max position diff B–C 7.5e-6 m, contacts 152,546 / 152,550 |
+| G6 episode N=1, s512 and s15 (two rounds = two child processes per side) | PASS | codes = Native (0 different) and labelled = Native (37,958 / 85,786) on both sides; evaluator PASS on 2 and 121 frames; invariants PASS; contacts C vs B 2.9e-4 (s512), 5.1e-3 (s15) |
+| Position band (descriptive) | WARN | s512 final max diff B 3.89e-5, **C 4.77e-5 m > P1-0 high 3.9e-5 m** (a known-good change; would have been a spurious hard FAIL); s15 B 8.3e-5 / C 8.8e-5 m (high 4.6e-4) |
+| G9 N=1 (2 ABBA pairs) | PASS | C/B 1.448, 1.275 (median 1.361); B 3.00 / 3.43, C 4.34 / 4.37 env-steps/s |
+| G9 N=2 (primary in the smoke) | PASS | 1.373, 1.365 (median 1.369) |
+| G9 VRAM / reset / work / clocks | PASS | 832 → 894 MiB (N=1), 936 → 998 MiB (N=2); reset p95 medians 7.3 vs 7.2 ms, 10.4 vs 6.8 ms; same labelled counts; inner/outer within 1e-4 |
 
-Layers: **PHYSICS PASS, PERFORMANCE PASS, INTEGRITY PASS** (status word RCS_PR_PENDING by the caller's mapping).
+Layers: **PHYSICS PASS, PERFORMANCE PASS, INTEGRITY PASS** (the caller's mapping gives RCS_PR_PENDING); one
+descriptive position-band WARN.
 
-Other runs:
+Earlier runs (preserved):
 
-- `smoke_001` (GPU1, first pass, 1 pair, the original samestate samples and a 300-step G4 replay): PHYSICS PASS,
-  INTEGRITY PASS, ratios 1.474 (N=1) / 1.384 (N=2), **PERFORMANCE FAIL on `G9:n1:reset`** (B 1.71 ms vs C 7.09 ms; at
-  N=2 the other way round, B 7.43 vs C 1.39 ms) — the reset-latency bimodality of item 12 in §2. Its G4 replay had
-  zero contacts (item 7). Preserved, superseded by `smoke_002`.
-- `adapter_probe_001` (GPU0 by UUID): the external adapter's own `harness.command` / `harness_env` / `run` driving
-  this harness, throughput N=2, W=3, K=20, B then C: rc 0, inner/outer 1.000004 / 1.000009, no environment
-  problems, C/B 1.381 (the full CPU suite ran concurrently on the host).
-- `probe_throughput_n2_001` (GPU1) and `cpu_probe/episode_cpu_001` (Warp CPU, 2 steps, 28 s per step): harness
-  bring-up.
+- `smoke_002` (`6b71363`, rounds still in one process, the P1-0 band still a hard check; GPU0): PASS / PASS / PASS,
+  ratios 1.465 (N=1) / 1.381 (N=2); evidence `p1_6_r0_001.json` (superseded by `p1_6_r0_002.json`).
+- `smoke_001` (GPU1, 1 pair, original samestate samples, 300-step G4 replay): PHYSICS PASS, INTEGRITY PASS, ratios
+  1.474 / 1.384, **PERFORMANCE FAIL on `G9:n1:reset`** (B 1.71 ms vs C 7.09 ms; at N=2 the other way round) — the
+  reset-latency bimodality of item 12 in §2; its G4 replay had zero contacts (item 7).
+- `adapter_probe_001` (GPU0 by UUID, `6b71363`): the external adapter's own `harness.command` / `harness_env` /
+  `run` driving this harness, throughput N=2, W=3, K=20, B then C: rc 0, inner/outer 1.000004 / 1.000009, no
+  environment problems, C/B 1.381.
+- `probe_throughput_n2_001` (GPU1) and `cpu_probe/episode_cpu_001` (Warp CPU, 2 steps, 28 s per step): bring-up.
 
-Evidence: `docs/evidence/rl_ready/p1_6_r0_001.json` (per-run plan-column rows, verdict gates, commands).
+After smoke_003 the `contact_total_rel_tol` floor was raised from 0.01 to 0.02: frozen_v1 vs alias_free_v1 s15
+contact totals differ by 0.51 %, a 2× margin only, and G7 has one baseline run (no spread term).
 
 ## 4. Open
 
-- The full acceptance (G4/G6/G7/G8 with s15 held-out, G9 N=1/8/16 × 5 ABBA pairs) has not been run; the first real
-  run is the external caller's T10 GPU rehearsal.
-- `EXCLUSIVE_GPU` rows: NOT_RUN.
+- **Decision needed: the reset p95 rule on a shared GPU** (§2 item 12). smoke_001 was REJECTED_PERFORMANCE by a
+  co-tenant artefact. Options: keep it and run G9 only on an exclusive GPU, make the reset gate BLOCKED (not FAIL)
+  when both sides are `SHARED_GPU` and the difference is within the observed ~6 ms quantum, or widen the slack;
+  any of them is `acceptance_v2` once R0 is in the baseline.
+- Position band: `physics.position_band` points at the descriptive P1-0 file; switch `path`/`mode` to band v2
+  (`position_band_v2.json`, `mode: gate`) when it lands (the file must provide `position_band_m` per seed).
+- The full acceptance (G4/G6/G7/G8 incl. s15 held-out, G9 N=1/8/16 × 5 ABBA pairs) has not been run; the first real
+  run is the external caller's T10 GPU rehearsal. `EXCLUSIVE_GPU` rows: NOT_RUN.
 - VRAM peak and reset p95 are measured inside the process under test (candidate-reported); only env-steps/s has an
   outer clock.
+- G1 runs the whole `tests/` in `.venv`: 44 min 26 s on this host (timeout raised to 7200 s per suite; the caller
+  runs both sides sequentially, in parallel with the GPU blocks).

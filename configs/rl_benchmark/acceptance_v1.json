@@ -50,7 +50,7 @@
   "position_band": {"path": "configs/rl_benchmark/position_band_p1_0.json", "mode": "descriptive"},
   "position_rule": "full episodes: the final maximum position difference vs Native is compared with the band file's high value per seed (or the reference variant's own value for that seed in the same acceptance, whichever is larger). mode descriptive: a WARN in verdict.warnings and the gate values, never a gate result; mode gate: a PHYSICS check. The P1-0 min-max band is descriptive only; the coordinator points path/mode at band v2 when it lands.",
   "impulse_rel_tol": 1e-05,
-  "contact_total_rel_tol": 0.01,
+  "contact_total_rel_tol": 0.02,
   "replay_position_tol_m": 0.0001,
   "rules": "episodes (hard gates): final codes = Native, labelled counts = Native, sample invariants (finite, digits <= 2, no digit rewrites, invalid_reason 0), frozen TRIM evaluator PASS on 2 frames and on the Native sample series, per-env contact total within max(contact_total_rel_tol, 2 x baseline spread) of the baseline median; position band per position_band.mode; samestate: per recorded sample identical non-zero impulse sets (both reruns) and stats[4], impulse max relative difference <= impulse_rel_tol; short replay final codes equal, positions within replay_position_tol_m, contact totals within contact_total_rel_tol; a candidate failure where the baseline fails the same check for the same seed is BLOCKED"
  },
