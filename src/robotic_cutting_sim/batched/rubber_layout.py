@@ -82,6 +82,11 @@ def _validate(live):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"{type(s).__name__}; only {SOLVER}")
     if s.device != "cpu":
         raise ValueError("pack_rubber reads single solvers built on the Warp CPU device (ADR 0021 §3.4)")
+    options = (s.dirichlet, s.traction_work, s.state_precision)
+    if options != ("lumped_v1", "particle_velocity_v1", "float32_v1"):
+        raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER",
+                                            f"{options}: the P2-2 opt-in single-env options (ADR 0023 §19) have no "
+                                            "batched execution yet")
     if (live.step_count != 0 or int(s.index.numpy()[0]) != 0 or not np.array_equal(s.x.numpy(), s.reference.numpy())
             or np.abs(s.v.numpy()).max() != 0.0 or s.damping_rate != 0.0):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SINGLE_ENV_STATE", "pack takes fresh, unstepped reset states")

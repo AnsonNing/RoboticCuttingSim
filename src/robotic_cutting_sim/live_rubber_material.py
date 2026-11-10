@@ -49,12 +49,14 @@ class LiveRubberMaterial:
     ``material``) gives the c_p,max of the step rule (a batch passes its randomisation maxima).
     ``stable_step_guard`` (None = off, the v1 behaviour; a float = the limit of dt c_bound / dx, recommended
     ``rubber_constitutive.STABLE_STEP_GUARD_DEFAULT_LIMIT``) and ``deformation_reserve`` (>= 1, divides dt; 1 = v1)
-    are the ADR 0023 §7 amendment options."""
+    are the ADR 0023 §7 amendment options; ``dirichlet``, ``traction_work`` and ``state_precision`` are the P2-2 opt-in
+    solver options (ADR 0023 §19, ``tlmpm_rubber_v1`` module docstring; defaults = v1)."""
 
     def __init__(self, spec, *, recipe=None, material=None, control_dt=0.02, cfl=None, substeps=None,
                  step_material=None, gravity=(0.0, 0.0, -9.81), device="cpu", graph_chunk=DEFAULT_GRAPH_CHUNK,
                  capture_graph=None, record=False, strict=True, table_plane=None, fixture_boxes=None,
-                 stable_step_guard=None, deformation_reserve=1.0):
+                 stable_step_guard=None, deformation_reserve=1.0, dirichlet="lumped_v1",
+                 traction_work="particle_velocity_v1", state_precision="float32_v1"):
         start = time.perf_counter()
         self.recipe = rm.load_recipe() if recipe is None else recipe
         self.material = self.recipe.nominal() if material is None else material
@@ -79,7 +81,8 @@ class LiveRubberMaterial:
                                   device=device, j_domain=self.recipe.j_domain,
                                   contact_stiffness=self.recipe.contact_stiffness_fraction,
                                   contact_radius_scale=self.recipe.contact_radius_scale, table_plane=table_plane,
-                                  fixture_boxes=fixture_boxes, stable_step_guard=stable_step_guard)
+                                  fixture_boxes=fixture_boxes, stable_step_guard=stable_step_guard,
+                                  dirichlet=dirichlet, traction_work=traction_work, state_precision=state_precision)
         self.device = self.solver.device
         self.strict, self.record = bool(strict), bool(record)
         self.capture_graph = wp.get_device(self.device).is_cuda if capture_graph is None else bool(capture_graph)

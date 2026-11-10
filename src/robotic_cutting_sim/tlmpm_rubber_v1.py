@@ -20,6 +20,21 @@ One substep (17 launches, ADR §13):
 7.  frozen ``_g2p`` (pic = 0); zero gp/gj; frozen ``_musl``; frozen ``_grid_update``; ``_bc`` (no reaction)
 8.  frozen ``_deformation`` (F += dt sum v_I (x) grad N_I); frozen ``tlmpm_v6._grid_positions``; frozen ``_advance``
 
+Opt-in solver options (P2-2, ADR 0023 §19; every default is the v1 launch sequence above, bitwise unchanged):
+
+- ``dirichlet="consistent_mass_projection_v1"`` (F8): step 6 is skipped and, after step 7's G2P, the particle
+  velocities are projected onto the constraint set in the kinetic-energy (consistent-mass) metric: with
+  A = (W M_p W^T) restricted to the constrained (node, component) pairs of each active group (constant in TLMPM,
+  inverted once in float64 at construction), mu = A^-1 (p_C - m_C v_presc,C) and v_p -= sum_{I in C} w_pI mu_I;
+  the MUSL pass is then repeated, so the MUSL grid velocity meets the constraint exactly (up to float32) and the
+  constrained system stays symplectic Euler on the constraint subspace (no projection dissipation). Reaction impulse
+  -m_I mu_I per constrained node and component; constraint work = impulse . prescribed velocity;
+- ``traction_work="grid_displacement_v1"`` (F9): the traction work is accumulated after step 8 from the
+  grid-consistent particle displacement, j_p . (x_p(end) - x_p(start)) / dt, instead of j_p . v_p(start);
+- ``state_precision="f64_shadow_v1"`` (F10): F and x are accumulated in float64 shadows (F64 += dt sum v_I (x)
+  grad N_I, x64 += dt sum w_pI v_I) and rounded once to the float32 state every substep, instead of the frozen
+  float32 ``_deformation`` / ``_grid_positions`` (float32 increments below half an ulp of F ~ 1 are otherwise lost).
+
 Frozen kernels are launched unchanged (``tlmpm_v5.py``, ``tlmpm_v6.py`` byte-identical). Group motions are rigid
 (slerp of the rotation and linear translation, x = R(s) X + b(s)) or affine (x = A(s) X + b(s), linear in s; patch /
 homogeneous tests), s = substep index / substeps per control step, reference node positions X in float64.
@@ -185,6 +200,164 @@ def _bc(node_group: wp.array(dtype=int), node_mask: wp.array(dtype=int), node_X:
                 o1 = group_target(kind[g], q0[g], q1[g], b0[g], b1[g], A0[g], A1[g], s1, origin[g])
                 wp.atomic_add(reaction, g, bc_reaction(gm[i], v, vn, x1, o1))
                 wp.atomic_add(work, 0, bc_work(gm[i], v, vn))
+
+
+# ----------------------------------------------------------------------------- opt-in options (P2-2, F8 / F9 / F10)
+
+DIRICHLET_MODES = ("lumped_v1", "consistent_mass_projection_v1")
+TRACTION_WORK_MODES = ("particle_velocity_v1", "grid_displacement_v1")
+STATE_PRECISION_MODES = ("float32_v1", "f64_shadow_v1")
+PROJECTION_MAX_BLOCK = 4096
+
+
+@wp.kernel
+def _proj_rhs(row_node: wp.array(dtype=int), row_comp: wp.array(dtype=int), row_group: wp.array(dtype=int),
+              node_X: wp.array(dtype=wp.vec3d), gm: wp.array(dtype=float), gp: wp.array(dtype=wp.vec3),
+              index: wp.array(dtype=int), substeps: int, dt: wp.float64, kind: wp.array(dtype=int),
+              active: wp.array(dtype=int), q0: wp.array(dtype=wp.quatd), q1: wp.array(dtype=wp.quatd),
+              b0: wp.array(dtype=wp.vec3d), b1: wp.array(dtype=wp.vec3d), A0: wp.array(dtype=wp.mat33d),
+              A1: wp.array(dtype=wp.mat33d), rhs: wp.array(dtype=wp.float64), vpresc: wp.array(dtype=wp.float64)):
+    """F8: per constrained (node, component) row: rhs = p_I[k] - m_I v_presc,I[k] (MUSL momentum of the projected
+    G2P velocities), v_presc the position-exact prescribed velocity of this substep (as ``_bc``)."""
+    r = wp.tid()
+    g = row_group[r]
+    i = row_node[r]
+    k = row_comp[r]
+    rhs[r] = wp.float64(0.0)
+    vpresc[r] = wp.float64(0.0)
+    if active[g] != 0:
+        s0 = wp.float64(index[0])/wp.float64(substeps)
+        s1 = wp.float64(index[0]+1)/wp.float64(substeps)
+        X = node_X[i]
+        x0 = group_target(kind[g], q0[g], q1[g], b0[g], b1[g], A0[g], A1[g], s0, X)
+        x1 = group_target(kind[g], q0[g], q1[g], b0[g], b1[g], A0[g], A1[g], s1, X)
+        vp = (x1-x0)/dt
+        vpresc[r] = vp[k]
+        rhs[r] = wp.float64(gp[i][k])-wp.float64(gm[i])*vp[k]
+
+
+@wp.kernel
+def _proj_solve(row_block: wp.array(dtype=int), row_local: wp.array(dtype=int), block_offset: wp.array(dtype=int),
+                block_size: wp.array(dtype=int), inv_offset: wp.array(dtype=int), inv: wp.array(dtype=wp.float64),
+                rhs: wp.array(dtype=wp.float64), row_node: wp.array(dtype=int), row_comp: wp.array(dtype=int),
+                row_group: wp.array(dtype=int), active: wp.array(dtype=int), mu_node: wp.array2d(dtype=wp.float64),
+                mu: wp.array(dtype=wp.float64)):
+    """F8: mu = A^-1 rhs per block (dense float64 inverse of the constant consistent-mass block; fixed-order gather,
+    deterministic on any device); scattered to the node's component (each (node, component) is in one block)."""
+    r = wp.tid()
+    b = row_block[r]
+    acc = wp.float64(0.0)
+    if active[row_group[r]] != 0:
+        n = block_size[b]
+        base = inv_offset[b]+row_local[r]*n
+        off = block_offset[b]
+        for c in range(n):
+            acc += inv[base+c]*rhs[off+c]
+    mu[r] = acc
+    mu_node[row_node[r], row_comp[r]] = acc
+
+
+@wp.kernel
+def _proj_particles(v: wp.array(dtype=wp.vec3), nodes: wp.array2d(dtype=int), weights: wp.array2d(dtype=float),
+                    mu_node: wp.array2d(dtype=wp.float64)):
+    """F8: v_p -= sum_I w_pI mu_I (mu is zero on unconstrained nodes and components)."""
+    p = wp.tid()
+    d = wp.vec3d()
+    for c in range(8):
+        i = nodes[p, c]
+        w = wp.float64(weights[p, c])
+        d += wp.vec3d(w*mu_node[i, 0], w*mu_node[i, 1], w*mu_node[i, 2])
+    v[p] = wp.vec3(wp.vec3d(v[p])-d)
+
+
+@wp.kernel
+def _proj_reaction(row_node: wp.array(dtype=int), row_comp: wp.array(dtype=int), row_group: wp.array(dtype=int),
+                   node_X: wp.array(dtype=wp.vec3d), gm: wp.array(dtype=float), mu: wp.array(dtype=wp.float64),
+                   vpresc: wp.array(dtype=wp.float64), index: wp.array(dtype=int), substeps: int,
+                   kind: wp.array(dtype=int), active: wp.array(dtype=int), q0: wp.array(dtype=wp.quatd),
+                   q1: wp.array(dtype=wp.quatd), b0: wp.array(dtype=wp.vec3d), b1: wp.array(dtype=wp.vec3d),
+                   A0: wp.array(dtype=wp.mat33d), A1: wp.array(dtype=wp.mat33d), origin: wp.array(dtype=wp.vec3d),
+                   reaction: wp.array(dtype=wp.spatial_vectord), work: wp.array(dtype=wp.float64)):
+    """F8: impulse on the material -m_I mu_I e_k, its moment about the group origin (lever: target node position, as
+    ``bc_reaction``) and the constraint work impulse . v_presc."""
+    r = wp.tid()
+    g = row_group[r]
+    if active[g] != 0:
+        i = row_node[r]
+        s1 = wp.float64(index[0]+1)/wp.float64(substeps)
+        x1 = group_target(kind[g], q0[g], q1[g], b0[g], b1[g], A0[g], A1[g], s1, node_X[i])
+        o1 = group_target(kind[g], q0[g], q1[g], b0[g], b1[g], A0[g], A1[g], s1, origin[g])
+        j = wp.vec3d()
+        j[row_comp[r]] = -wp.float64(gm[i])*mu[r]
+        tau = wp.cross(x1-o1, j)
+        wp.atomic_add(reaction, g, wp.spatial_vectord(j[0], j[1], j[2], tau[0], tau[1], tau[2]))
+        wp.atomic_add(work, 0, j[row_comp[r]]*vpresc[r])
+
+
+@wp.kernel
+def _traction_work_grid(x: wp.array(dtype=wp.vec3), x_start: wp.array(dtype=wp.vec3), mass: wp.array(dtype=float),
+                        particle_traction: wp.array(dtype=int), traction_force: wp.array(dtype=wp.vec3),
+                        traction_mass: wp.array(dtype=float), work: wp.array(dtype=wp.float64)):
+    """F9: traction work j_p . (x_p(end) - x_p(start)) / dt = f_t (m_p / M_t) . dx_p (grid-consistent displacement)."""
+    p = wp.tid()
+    t = particle_traction[p]
+    if t >= 0:
+        f = wp.vec3d(traction_force[t])*(wp.float64(mass[p])/wp.float64(traction_mass[t]))
+        wp.atomic_add(work, 0, wp.dot(f, wp.vec3d(x[p])-wp.vec3d(x_start[p])))
+
+
+@wp.kernel
+def _deformation_f64(F: wp.array(dtype=wp.mat33), F64: wp.array(dtype=wp.mat33d), nodes: wp.array2d(dtype=int),
+                     gradients: wp.array2d(dtype=wp.vec3), velocity: wp.array(dtype=wp.vec3), dt: wp.float64):
+    """F10: F64 += dt sum_I v_I (x) grad N_I in float64 (the frozen ``_deformation`` formula), F = float32(F64)."""
+    p = wp.tid()
+    grad = wp.mat33d()
+    for c in range(8):
+        grad += wp.outer(wp.vec3d(velocity[nodes[p, c]]), wp.vec3d(gradients[p, c]))
+    f = F64[p]+dt*grad
+    F64[p] = f
+    F[p] = wp.mat33(f)
+
+
+@wp.kernel
+def _positions_f64(x: wp.array(dtype=wp.vec3), x64: wp.array(dtype=wp.vec3d), nodes: wp.array2d(dtype=int),
+                   weights: wp.array2d(dtype=float), velocity: wp.array(dtype=wp.vec3), dt: wp.float64):
+    """F10: x64 += dt sum_I w_pI v_I (the ``tlmpm_v6._grid_positions`` formula), x = float32(x64)."""
+    p = wp.tid()
+    vg = wp.vec3d()
+    for c in range(8):
+        vg += wp.float64(weights[p, c])*wp.vec3d(velocity[nodes[p, c]])
+    y = x64[p]+dt*vg
+    x64[p] = y
+    x[p] = wp.vec3(y)
+
+
+def projection_blocks(scene, mass_value):
+    """F8: constant consistent-mass blocks A = m sum_p w_pI w_pJ over the constrained (node, component) pairs of each
+    group, and their float64 inverses (rows ordered by group, component, node id)."""
+    W = {}
+    nodes, weights = scene.nodes, scene.weights.astype(np.float64)
+    rows, blocks = [], []
+    for g in range(len(scene.groups)):
+        for k in range(3):
+            sel = np.flatnonzero((scene.node_group == g) & ((scene.node_mask >> k) & 1 == 1))
+            if sel.size == 0:
+                continue
+            if sel.size > PROJECTION_MAX_BLOCK:
+                raise ValueError(f"consistent_mass_projection_v1: block of {sel.size} constrained nodes > "
+                                 f"{PROJECTION_MAX_BLOCK} (dense inverse limit)")
+            local = {int(n): i for i, n in enumerate(sel)}
+            touching = np.flatnonzero(np.isin(nodes, sel).any(1))
+            A = np.zeros((sel.size, sel.size))
+            for p in touching:
+                idx = [(local[int(n)], w) for n, w in zip(nodes[p], weights[p]) if int(n) in local]
+                for a, wa in idx:
+                    for b, wb in idx:
+                        A[a, b] += float(mass_value)*wa*wb
+            np.linalg.cholesky(A)          # SPD check (raises if a constrained node has no mass support)
+            blocks.append({"group": g, "comp": k, "nodes": sel, "inv": np.linalg.inv(A),
+                           "cond": float(np.linalg.cond(A))})
+    return blocks
 
 
 # ----------------------------------------------------------------------------- segmented diagnostics (shared)
@@ -426,8 +599,15 @@ class TLMPMRubber:
 
     def __init__(self, scene, material, dt, *, substeps=1, gravity=(0.0, 0.0, -9.81), device="cpu", pic=0.0,
                  j_domain=(0.2, 5.0), contact_stiffness=0.1, contact_radius_scale=0.9, table_plane=None,
-                 fixture_boxes=None, stable_step_guard=None):
+                 fixture_boxes=None, stable_step_guard=None, dirichlet="lumped_v1",
+                 traction_work="particle_velocity_v1", state_precision="float32_v1"):
         from .rubber_material import mass_per_particle
+        for name, value, modes in (("dirichlet", dirichlet, DIRICHLET_MODES),
+                                   ("traction_work", traction_work, TRACTION_WORK_MODES),
+                                   ("state_precision", state_precision, STATE_PRECISION_MODES)):
+            if value not in modes:
+                raise ValueError(f"{name}={value!r} not in {modes}")
+        self.dirichlet, self.traction_work, self.state_precision = dirichlet, traction_work, state_precision
         if pic != 0.0:
             raise ValueError("tlmpm_rubber_v1 refuses pic != 0: rubber runs pure FLIP (ADR 0023 §2 E3, D4)")
         dt = float(dt)
@@ -531,9 +711,62 @@ class TLMPMRubber:
             self.node_offset = wp.array(np.array([0, self.node_count], np.int32), dtype=int)
             self.marker_offsets = wp.array(scene.marker_offsets, dtype=int)
             self.marker_particles = wp.array(scene.marker_particles, dtype=int)
+        self._init_options()
         self.diagnostics = SegmentedRubberDiagnostics(self, [self.n], [self.cells], [self.node_count])
         for module in (v5.__name__, "robotic_cutting_sim.tlmpm_v6", rc.__name__, __name__):
             wp.load_module(module=module, device=self.device)
+
+    def _init_options(self):
+        """Arrays of the opt-in options (none for the defaults: the v1 array set is unchanged)."""
+        self.projection_receipt = None
+        with wp.ScopedDevice(self.device):
+            if self.dirichlet == "consistent_mass_projection_v1":
+                blocks = projection_blocks(self.scene, self.mass_value)
+                rows = sum(len(b["nodes"]) for b in blocks)
+                row_node, row_comp, row_group, row_block, row_local = [], [], [], [], []
+                block_offset, block_size, inv_offset, inv = [], [], [], []
+                off = ioff = 0
+                for bi, b in enumerate(blocks):
+                    n = len(b["nodes"])
+                    row_node += b["nodes"].tolist()
+                    row_comp += [b["comp"]]*n
+                    row_group += [b["group"]]*n
+                    row_block += [bi]*n
+                    row_local += list(range(n))
+                    block_offset.append(off)
+                    block_size.append(n)
+                    inv_offset.append(ioff)
+                    inv.append(b["inv"].reshape(-1))
+                    off += n
+                    ioff += n*n
+                rows1 = max(rows, 1)
+                as_i = lambda a: wp.array(np.asarray(a or [0], np.int32), dtype=int)       # noqa: E731
+                self.proj_rows = rows
+                self.proj_row_node, self.proj_row_comp = as_i(row_node), as_i(row_comp)
+                self.proj_row_group, self.proj_row_block = as_i(row_group), as_i(row_block)
+                self.proj_row_local = as_i(row_local)
+                self.proj_block_offset, self.proj_block_size = as_i(block_offset), as_i(block_size)
+                self.proj_inv_offset = as_i(inv_offset)
+                self.proj_inv = wp.array(np.concatenate(inv) if inv else np.zeros(1), dtype=wp.float64)
+                self.proj_rhs = wp.zeros(rows1, dtype=wp.float64)
+                self.proj_vpresc = wp.zeros(rows1, dtype=wp.float64)
+                self.proj_mu = wp.zeros(rows1, dtype=wp.float64)
+                self.proj_mu_node = wp.zeros((self.node_count, 3), dtype=wp.float64)
+                self.projection_receipt = {"blocks": [{"group": b["group"], "component": "xyz"[b["comp"]],
+                                                       "nodes": int(len(b["nodes"])), "condition": b["cond"]}
+                                                      for b in blocks], "rows": rows,
+                                           "inverse_bytes": int(self.proj_inv.capacity)}
+            if self.traction_work == "grid_displacement_v1":
+                self.work_scratch = wp.zeros(1, dtype=wp.float64)    # receives the v1 accumulation (discarded)
+            if self.state_precision == "f64_shadow_v1":
+                self.F64 = wp.array(np.tile(np.eye(3), (self.n, 1, 1)), dtype=wp.mat33d)
+                self.x64 = wp.array(self.scene.X.astype(np.float64), dtype=wp.vec3d)
+
+    def sync_shadow(self):
+        """F10: set the float64 shadows from the current float32 F and x (after an external state assignment)."""
+        if self.state_precision == "f64_shadow_v1":
+            self.F64.assign(self.F.numpy().astype(np.float64))
+            self.x64.assign(self.x.numpy().astype(np.float64))
 
     # ------------------------------------------------------------------ inputs
 
@@ -585,6 +818,8 @@ class TLMPMRubber:
 
     def step(self):
         n, nn, dt = self.n, self.node_count, self.dt
+        projection = self.dirichlet == "consistent_mass_projection_v1"
+        work_v1 = self.work if self.traction_work == "particle_velocity_v1" else self.work_scratch
         with wp.ScopedDevice(self.device):
             wp.copy(self.x_start, self.x)
             wp.launch(rc.cell_jbar, self.cells, [self.cell_node, self.cell_offsets, self.cell_particles, self.F,
@@ -599,23 +834,54 @@ class TLMPMRubber:
             wp.launch(_loads, n, [self.x, self.v, self.mass, self.impulse, self.particle_traction, self.traction_force,
                                   self.traction_mass, dt, self.damping_rate, self.radius, self.contact_stiffness,
                                   self.material.friction_table, self.use_plane, self.plane, self.boxes, self.box_c,
-                                  self.box_h, self.work])
+                                  self.box_h, work_v1])
             self.gm.zero_(); self.gp.zero_(); self.gj.zero_()
             wp.launch(v5._p2g, (n, 8), [self.v, self.mass, self.slot, self.stress, self.impulse, self.nodes,
                                         self.weights, self.gradients, self.gm, self.gp, self.gj, 1, self.volume, dt,
                                         self.gravity])
             wp.launch(v5._grid_update, (1, nn), [self.gm, self.gp, self.gj, self.old, self.new_v, self.slot_code, 1])
-            self._launch_bc(1)
+            if not projection:
+                self._launch_bc(1)
             wp.launch(v5._g2p, n, [self.x, self.v, self.slot, self.nodes, self.weights, self.old, self.new_v, 1, dt,
                                    self.pic])
             self.gp.zero_(); self.gj.zero_()
             wp.launch(v5._musl, (n, 8), [self.v, self.mass, self.slot, self.nodes, self.weights, self.gp, 1])
+            if projection and self.proj_rows:
+                self._launch_projection()
+                self.gp.zero_()
+                wp.launch(v5._musl, (n, 8), [self.v, self.mass, self.slot, self.nodes, self.weights, self.gp, 1])
             wp.launch(v5._grid_update, (1, nn), [self.gm, self.gp, self.gj, self.old, self.new_v, self.slot_code, 1])
             self._launch_bc(0)
-            wp.launch(v5._deformation, n, [self.F, self.slot, self.nodes, self.gradients, self.new_v, 1, dt])
-            wp.launch(_grid_positions, n, [self.x, self.x_start, self.slot, self.nodes, self.weights, self.new_v, 1,
-                                           dt])
+            if self.state_precision == "f64_shadow_v1":
+                wp.launch(_deformation_f64, n, [self.F, self.F64, self.nodes, self.gradients, self.new_v,
+                                                wp.float64(dt)])
+                wp.launch(_positions_f64, n, [self.x, self.x64, self.nodes, self.weights, self.new_v, wp.float64(dt)])
+            else:
+                wp.launch(v5._deformation, n, [self.F, self.slot, self.nodes, self.gradients, self.new_v, 1, dt])
+                wp.launch(_grid_positions, n, [self.x, self.x_start, self.slot, self.nodes, self.weights, self.new_v,
+                                               1, dt])
+            if self.traction_work == "grid_displacement_v1" and self.Gt:
+                wp.launch(_traction_work_grid, n, [self.x, self.x_start, self.mass, self.particle_traction,
+                                                   self.traction_force, self.traction_mass, self.work])
             wp.launch(v5._advance, 1, [self.index])
+
+    def _launch_projection(self):
+        """F8 (see the module docstring); launched between the MUSL scatter and its repetition."""
+        r = self.proj_rows
+        groups = [self.group_kind, self.group_active, self.group_q0, self.group_q1, self.group_b0, self.group_b1,
+                  self.group_A0, self.group_A1]
+        wp.launch(_proj_rhs, r, [self.proj_row_node, self.proj_row_comp, self.proj_row_group, self.node_X, self.gm,
+                                 self.gp, self.index, self.substeps, wp.float64(self.dt)]+groups
+                  + [self.proj_rhs, self.proj_vpresc])
+        self.proj_mu_node.zero_()
+        wp.launch(_proj_solve, r, [self.proj_row_block, self.proj_row_local, self.proj_block_offset,
+                                   self.proj_block_size, self.proj_inv_offset, self.proj_inv, self.proj_rhs,
+                                   self.proj_row_node, self.proj_row_comp, self.proj_row_group, self.group_active,
+                                   self.proj_mu_node, self.proj_mu])
+        wp.launch(_proj_particles, self.n, [self.v, self.nodes, self.weights, self.proj_mu_node])
+        wp.launch(_proj_reaction, r, [self.proj_row_node, self.proj_row_comp, self.proj_row_group, self.node_X,
+                                      self.gm, self.proj_mu, self.proj_vpresc, self.index, self.substeps]
+                  + groups + [self.group_origin, self.reaction, self.work])
 
     def _launch_bc(self, record):
         if self.G == 0:
@@ -658,6 +924,9 @@ class TLMPMRubber:
             self.group_A0.assign(np.tile(np.eye(3), (G1, 1, 1)))
             self.group_A1.assign(np.tile(np.eye(3), (G1, 1, 1)))
             self.group_active.fill_(1)
+            if self.state_precision == "f64_shadow_v1":
+                self.F64.assign(np.tile(np.eye(3), (self.n, 1, 1)))
+                self.x64.assign(self.scene.X.astype(np.float64))
         self.damping_rate = 0.0
 
     # ------------------------------------------------------------------ queries
@@ -709,4 +978,6 @@ class TLMPMRubber:
                 "stable_step_guard": (None if self.cfl_guard_limit is None else
                                       {"id": rc.STABLE_STEP_GUARD_ID, "limit": self.cfl_guard_limit,
                                        "quantity": "max_p dt c_bound(F_p, Jbar) / dx, every substep"}),
+                "options": {"dirichlet": self.dirichlet, "traction_work": self.traction_work,
+                            "state_precision": self.state_precision, "projection": self.projection_receipt},
                 "source_sha256": source_sha256(), "device": self.device, "warp_version": wp.config.version}

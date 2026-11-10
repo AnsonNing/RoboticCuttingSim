@@ -78,10 +78,11 @@ class _Float64Markers:
 
 def relax_to_static(live, *, method="mass_proportional", omega1=None, rate=None, check_interval=None,
                     max_time=None, stationarity_tol=1e-4, consecutive=3, reaction_tol=1e-3,
-                    kinetic_check_substeps=10, stop_rule=STOP_RULE, min_time=None):
+                    kinetic_check_substeps=10, stop_rule=STOP_RULE, min_time=None, keep_history=False):
     """Relax ``live`` (a ``LiveRubberMaterial`` just reset) to static equilibrium; returns a receipt dict.
     ``stop_rule``: ``static_stop_v2`` (protocol v2, default; float32 markers) or ``static_stop_v3`` (float64 markers,
-    minimum relaxation time ``min_time``, default 3 T1)."""
+    minimum relaxation time ``min_time``, default 3 T1). ``keep_history=True`` returns every check row (with the tip
+    marker position, float64 under static_stop_v3) as ``history`` (P2-2 F10 diagnostics; the stop is unchanged)."""
     if method not in METHOD_IDS:
         raise ValueError(f"method {method!r} not in {sorted(METHOD_IDS)}")
     if stop_rule not in STOP_RULES:
@@ -139,7 +140,8 @@ def relax_to_static(live, *, method="mass_proportional", omega1=None, rate=None,
         residual = abs(reaction[2]+weight)/weight if use_reaction else 0.0
         history.append({"t_s": substeps*s.dt, "marker_change_m": change, "max_marker_displacement_m": displacement,
                         "reaction_residual": float(residual), "max_grid_speed_m_s": diag["max_grid_speed_m_s"],
-                        "max_particle_speed_m_s": diag["max_speed_m_s"]})
+                        "max_particle_speed_m_s": diag["max_speed_m_s"], "tip_m": markers[-1].tolist(),
+                        "elastic_j": diag["elastic"]})
         if diag["nonfinite"] or not np.isfinite(displacement):
             break
         streak = streak+1 if stationary else 0
@@ -165,4 +167,5 @@ def relax_to_static(live, *, method="mass_proportional", omega1=None, rate=None,
             "time_s": substeps*s.dt, "substeps": substeps, "rate_1_s": rate, "check_interval_s": chunk*s.dt,
             "max_time_s": max_time, "stationarity_tol": stationarity_tol, "consecutive": consecutive,
             "reaction_tol": reaction_tol, "weight_n": weight, "cfl": cfl, "wall_s": time.perf_counter()-start,
-            "nonfinite": bool(final["nonfinite"]), "final": last, "history_tail": history[-5:]}
+            "nonfinite": bool(final["nonfinite"]), "final": last, "history_tail": history[-5:],
+            **({"history": history} if keep_history else {})}
