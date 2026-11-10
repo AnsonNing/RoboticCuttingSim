@@ -13,13 +13,20 @@ import numpy as np
 import pytest
 pytest.importorskip("pxr", reason="needs OpenUSD (pxr): .venv or Lab venv; NOT_RUN in the Torch venv")
 
-# NOT_RUN where the robot-batching inputs are absent (e.g. CI): the official Franka USD asset cache and Newton's USD
-# importer (newton[importers]) are local-only; the tests run in .venv and the Lab venv on the workstation.
-from pathlib import Path as _Path  # noqa: E402
+# NOT_RUN where the robot-batching inputs are absent (e.g. CI): the official Franka USD asset cache and the Newton
+# USD importer (`newton-usd-schemas`, the `robot` extra) are local-only. Only the tests that build the USD scene
+# carry these markers; option refusals, fidelity labels and pure kernel checks run everywhere.
+import importlib.util as _ilu  # noqa: E402
+from robotic_cutting_sim.recording import ROOT as _ROOT  # noqa: E402
 from robotic_cutting_sim.workcell import ASSETS as _ASSETS  # noqa: E402
-if not (_Path(__file__).resolve().parents[1]/"artifacts/workcell_asset_cache"/_ASSETS["franka"]).exists():
-    pytest.skip("NOT_RUN: Franka USD asset cache (artifacts/workcell_asset_cache) not present", allow_module_level=True)
-pytest.importorskip("newton_usd_schemas", reason="NOT_RUN: Newton USD importer (newton[importers]) not installed")
+_FRANKA_CACHE = (_ROOT/"artifacts/workcell_asset_cache"/_ASSETS["franka"]).exists()
+_NEWTON_USD = _ilu.find_spec("newton_usd_schemas") is not None
+NEEDS_FRANKA_CACHE = pytest.mark.skipif(
+    not _FRANKA_CACHE, reason="NOT_RUN: Franka USD asset cache (artifacts/workcell_asset_cache) not present")
+NEEDS_USD_SCENE = pytest.mark.skipif(
+    not (_FRANKA_CACHE and _NEWTON_USD),
+    reason="NOT_RUN: needs the Franka USD asset cache and the Newton USD importer (newton-usd-schemas)")
+
 
 from pxr import Sdf, Usd, UsdGeom, UsdPhysics
 
@@ -106,6 +113,7 @@ def test_batched_tool_equals_frozen_author_newton_tool_after_rebasing():
     assert "FRANKA/PhysicalGripMaterial" in b
 
 
+@NEEDS_FRANKA_CACHE
 def test_rigid_mount_fixed_joint_structure():
     from robotic_cutting_sim.physical_tool import ToolGraspConfig
     root = "/World/envs/env_0/Franka_0"
@@ -132,6 +140,7 @@ def test_rigid_mount_fixed_joint_structure():
     assert tool.GetCustomDataByKey("research:tool_attachment_mode") == "rigid_mount_v1"
 
 
+@NEEDS_USD_SCENE
 @pytest.mark.parametrize("mount", lab_scene.TOOL_MOUNTS)
 def test_no_rigid_body_under_shared_paths_and_per_world_bodies(mount):
     sc = lab_scene.build_newton_rigid_scene(task(), 2, mount, device="cpu")

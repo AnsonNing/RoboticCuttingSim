@@ -17,13 +17,20 @@ from scipy.spatial.transform import Rotation
 
 pytest.importorskip("pxr", reason="needs OpenUSD (pxr): .venv or Lab venv; NOT_RUN in the Torch venv")
 
-# NOT_RUN where the robot-batching inputs are absent (e.g. CI): the official Franka USD asset cache and Newton's USD
-# importer (newton[importers]) are local-only; the tests run in .venv and the Lab venv on the workstation.
-from pathlib import Path as _Path  # noqa: E402
+# NOT_RUN where the robot-batching inputs are absent (e.g. CI): the official Franka USD asset cache and the Newton
+# USD importer (`newton-usd-schemas`, the `robot` extra) are local-only. Only the tests that build the USD scene
+# carry these markers; option refusals, fidelity labels and pure kernel checks run everywhere.
+import importlib.util as _ilu  # noqa: E402
+from robotic_cutting_sim.recording import ROOT as _ROOT  # noqa: E402
 from robotic_cutting_sim.workcell import ASSETS as _ASSETS  # noqa: E402
-if not (_Path(__file__).resolve().parents[1]/"artifacts/workcell_asset_cache"/_ASSETS["franka"]).exists():
-    pytest.skip("NOT_RUN: Franka USD asset cache (artifacts/workcell_asset_cache) not present", allow_module_level=True)
-pytest.importorskip("newton_usd_schemas", reason="NOT_RUN: Newton USD importer (newton[importers]) not installed")
+_FRANKA_CACHE = (_ROOT/"artifacts/workcell_asset_cache"/_ASSETS["franka"]).exists()
+_NEWTON_USD = _ilu.find_spec("newton_usd_schemas") is not None
+NEEDS_FRANKA_CACHE = pytest.mark.skipif(
+    not _FRANKA_CACHE, reason="NOT_RUN: Franka USD asset cache (artifacts/workcell_asset_cache) not present")
+NEEDS_USD_SCENE = pytest.mark.skipif(
+    not (_FRANKA_CACHE and _NEWTON_USD),
+    reason="NOT_RUN: needs the Franka USD asset cache and the Newton USD importer (newton-usd-schemas)")
+
 
 from robotic_cutting_sim.batched import lab_scene
 from robotic_cutting_sim.batched import robot_kernels as rk
@@ -70,6 +77,7 @@ def ulp32(a, b):
     return np.abs(ia-ib)
 
 
+@NEEDS_USD_SCENE
 @pytest.mark.parametrize("mount", lab_scene.TOOL_MOUNTS)
 def test_index_tables_resolve_per_world(mount):
     sc = scene(mount)
@@ -110,6 +118,7 @@ def _edge_launch(body_q_np, frames_chain, hand_from_edge, source, hand):
     return meas.numpy(), nom.numpy(), status.numpy()
 
 
+@NEEDS_USD_SCENE
 @pytest.mark.parametrize("mount", lab_scene.TOOL_MOUNTS)
 def test_edge_kernel_matches_frozen_numpy_compose(mount):
     sc = scene(mount)
@@ -153,6 +162,7 @@ def _pads(sc):
     return discover_pads(sc.stage, hand)
 
 
+@NEEDS_USD_SCENE
 @pytest.mark.parametrize("mount", lab_scene.TOOL_MOUNTS)
 def test_pad_box_kernel_matches_pad_boxes_edge(mount):
     from robotic_cutting_sim.finger_geometry import pad_boxes_edge
@@ -189,6 +199,7 @@ def test_pad_box_kernel_matches_pad_boxes_edge(mount):
     assert worst <= 1, f"pad boxes differ from finger_geometry.pad_boxes_edge by {worst} f32 ulp"
 
 
+@NEEDS_USD_SCENE
 @pytest.mark.parametrize("mount", lab_scene.TOOL_MOUNTS)
 def test_wrench_kernel_isolated_per_world_and_lever_arm(mount):
     sc = scene(mount)
@@ -231,6 +242,7 @@ def test_wrench_kernel_isolated_per_world_and_lever_arm(mount):
     assert not body_f.numpy().any() and not frames.applied_material.numpy().any()
 
 
+@NEEDS_USD_SCENE
 def test_masked_reset_of_wrench_buffers_touches_only_masked_rows():
     sc = scene("rigid_mount_v1")
     tables = rk.resolve_index_tables(sc.model.body_label, sc.model.body_world.numpy(), N, "rigid_mount_v1")
@@ -248,6 +260,7 @@ def test_masked_reset_of_wrench_buffers_touches_only_masked_rows():
     assert not pad[1].any() and pad[0].all() and pad[2].all()
 
 
+@NEEDS_USD_SCENE
 def test_rigid_validity_flags_only_the_bad_world():
     sc = scene("rigid_mount_v1")
     tables = rk.resolve_index_tables(sc.model.body_label, sc.model.body_world.numpy(), N, "rigid_mount_v1")
@@ -268,6 +281,7 @@ def test_rigid_validity_flags_only_the_bad_world():
     assert rk.decode_rigid_reason(reason.numpy()[1]) == ["RIGID_NONFINITE_STATE"]
 
 
+@NEEDS_USD_SCENE
 def test_grasp_monitor_kernel_matches_host_monitor():
     from robotic_cutting_sim.grasp_monitor import GraspMonitor
     from robotic_cutting_sim.scene_frames import compose_pose, invert_transform, pose_matrix
