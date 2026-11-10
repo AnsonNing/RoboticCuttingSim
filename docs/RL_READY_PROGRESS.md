@@ -51,6 +51,8 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
     fixed with `material_input_domain_v1` (device-side per-env hold + sticky `INPUT_OUT_OF_DOMAIN`, bit 128 on this
     branch / 64 on the B2 branch; CPU bitwise isolation PASS; guarded N=4 crash configuration completes). Remaining:
     `grip_contact_profile` passthrough in `open_vector_env`, ADR 0022 §5.1 update, B2 G1/G3 deterministic, G4, G5.
+    Tests on the merge 52dfcf6: full CPU suite 2265 passed / 28 skipped / 6 xfailed; Isaac Lab venv
+    (`test_rl_lab_*` + contract, pytest overlay) 55 passed.
   - Running now:
     P1-6 R0 DONE and merged here (87cfa3b; [report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
     `run_perf_acceptance.py` (one material per child process), `judge_perf_acceptance.py`, `acceptance_v1.json`,
