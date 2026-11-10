@@ -656,3 +656,56 @@ Report sections "Stages S2 and S3" of `docs/reports/rl_ready/P1_1B_ROBOT_BATCHIN
 7. **Warp HashGrid hazard (P1-3a).** No P1-1b process held more than one CUDA HashGrid (census in the evidence);
    probes now record their grid census.
 8. **CUT for `tlmpm_v7_2`:** NOT_RUN, no declared configured CUT scene uses `tlmpm_v7_2`.
+
+### P1 consolidation: B2 grip profile and material input domain, 2026-11-10
+
+Branch `claude/rl-p1-consolidate`. Records what the B2 grasp follow-up (`docs/reports/rl_ready/P1_1B_ROBOT_BATCHING.md`,
+"B2 grasp follow-up", evidence `docs/evidence/rl_ready/p1_1b_b2_001.json`) added to §5.1, §7 and §10. The sections
+above are unchanged.
+
+1. **§5.1, B2 grip contact profile.** `physical_grasp_v1` takes a `grip_contact_profile`: `legacy_point_contact`
+   (default, the single Lab env's point profile), `finite_pad_patch_v3` (the single env's patch profile), or the opt-in
+   `mjwarp_grip_v1` (`batched/lab_scene.CONTACT_SOLVER_PROFILES`). `mjwarp_grip_v1` keeps the point-profile authoring
+   (geometry, mass, friction 0.6, condim 3, solref/solimp, finger drive 2000 N/m and 20 N). It changes two global
+   MuJoCo-Warp options of the B2 model:
+   - `DisableBit.NATIVECCD`, so box-box pairs use MuJoCo's `box_box` collider with per-point depth and normal;
+   - `impratio` 10 with elliptic cones.
+
+   They are applied at bind, before any graph capture, and re-checked at `reset()`. The default point profile's
+   pad/handle manifold collapses under the TRIM reorientation and the grasp is lost. With `mjwarp_grip_v1`, S3
+   passes in N=2 and N=4. The grasp still slips about 1.5 mm and turns about 15 mrad, against about 1 µm in Native.
+   The profile is a listed difference (`fidelity()["listed_differences"]["contact_solver_profile"]`) and is not a
+   calibrated grip (`physical_calibration: NOT_VALIDATED`). B1 refuses every profile but the point profile
+   (`UNSUPPORTED_TOOL_MOUNT`).
+2. **Vector-env pass-through.** `open_vector_env(backend="isaac_lab_newton", tool_mount="physical_grasp_v1",
+   grip_contact_profile="mjwarp_grip_v1")` forwards the profile to `BatchedLabOptions`. It checks the profile in
+   `rl.lab_vector_env.check_grip_contact_profile` before Isaac Lab is imported:
+   - unknown profile: `UNSUPPORTED_GRIP_CONTACT_PROFILE` (new vector-env code; `BatchedLabOptions.validate` keeps
+     its S2 code `UNSUPPORTED_ACTUATOR_OVERRIDE` for direct callers);
+   - non-default profile without B2: `UNSUPPORTED_TOOL_MOUNT`;
+   - workload A refuses `tool_mount` / `grip_contact_profile` with `UNSUPPORTED_OPTION`.
+
+   `receipt()["grip"]` records the profile and its solver options. `fidelity()` gains `grip_contact_profile` and
+   `contact_solver_profile`. `receipt()["lab"]["contact_solver"]` reads the flags back from the live model.
+   Tests: `tests/test_rl_consolidation_cpu.py` (`.venv`) and
+   `tests/test_rl_lab_grip_profile.py::test_open_vector_env_passes_mjwarp_grip_v1_to_the_lab_env` (Isaac Lab venv,
+   Warp CPU).
+3. **§7, material input domain (`material_input_domain_v1`, `batched/material_batch.py`).** A device kernel runs
+   after the pose interpolation and before the substep graph. It checks, per env:
+   - the edge is within 1.5 m of the workpiece frame;
+   - the per-control-step edge speed is at most 3.4 m/s and 5 rad/s;
+   - pad-box centres are within 0.5 m of the edge, with half extents in (0, 0.25] m.
+
+   A violation sets the sticky material bit `INPUT_OUT_OF_DOMAIN` (128; it was 64 on the B2 branch) and holds that
+   env's substep inputs until its reset: the blade stays at its last in-domain pose with zero twist, the cut is
+   disarmed, and the pads stay at their last in-domain boxes. Envs inside the domain are bitwise unchanged. The
+   guard targets the material-graph SIGSEGV seen after a lost grasp. With it, the paired N=4 crash configuration
+   completes. That it removes every SIGSEGV path is not proven.
+4. **Termination mapping (`rl.termination`, `material_invalid_termination_v1`).** Both backends map the material
+   `invalid_reason` through one function, `material_termination_bits`:
+   - every material bit, `INPUT_OUT_OF_DOMAIN` included, sets `MATERIAL_INVALID` (2);
+   - `FOREIGN_DEVICE_HASHGRID` (256, a process-level misuse) also sets `INFRASTRUCTURE_ERROR` (64).
+
+   Which material bit fired stays in `info["invalid_reason"]` and in `decode_termination_detail`. The Lab env's
+   `_get_dones` uses the same function as workload A. A test iterates `material_batch.INVALID_REASONS`, so a new
+   bit cannot stay unmapped.

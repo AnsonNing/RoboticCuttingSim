@@ -17,6 +17,13 @@ about 350 MB per 1e5-particle env for a 1200-step episode). Device storage only;
 ``evaluate_frozen`` is the one place both backends build the evaluator input. Modes (``evaluation_mode`` in each
 result): ``two_frame_reset_and_current_v1`` (the default, unchanged since P1-2: reset reference state at t = 0 plus
 the current state) and ``evaluation_stream_v1`` (the recorded samples plus the current state when it is newer).
+
+``integrity_failure_result`` (``INTEGRITY_FAILURE_VERSION``, P1 consolidation) is what ``evaluate()`` of both backends
+returns for an env whose episode is not numerically valid: its material ``invalid_reason`` has a non-finite bit
+(``NONFINITE_STATE`` / ``NONFINITE_WRENCH``) or a host snapshot / stream sample it would score is non-finite
+(``NonFiniteSnapshot``). The frozen evaluator is NOT called for that env (it cannot take non-finite positions):
+verdict ``FAIL_INTEGRITY`` (the frozen evaluator's own word for a failed integrity layer), the decoded material and
+termination reasons, and no physics metrics. The other envs of the call are evaluated normally.
 """
 from dataclasses import asdict, dataclass
 import hashlib
@@ -28,6 +35,19 @@ import warp as wp
 STREAM_VERSION = "evaluation_stream_v1"
 DEFAULT_MODE = "two_frame_reset_and_current_v1"
 NATIVE_RECORD_EVERY = 10
+INTEGRITY_FAILURE_VERSION = "nonfinite_env_integrity_failure_v1"
+# material invalid_reason bits that make an episode numerically invalid (batched.material_batch INVALID_NONFINITE_*)
+NONFINITE_MATERIAL_BITS = 1 | 16
+
+
+class NonFiniteSnapshot(ValueError):
+    """A host snapshot or stream sample of one env holds non-finite positions or velocities (raised before the
+    WORLD transform; a ``ValueError`` like ``scene_frames.transform_points``'s own refusal)."""
+
+
+def finite_or_raise(x, v, what):
+    if not (np.isfinite(x).all() and np.isfinite(v).all()):
+        raise NonFiniteSnapshot(f"Expected finite (...,3) points: non-finite {what}")
 
 
 @dataclass(frozen=True)
@@ -211,6 +231,7 @@ class EvaluationStream:
         v = self.v[base:base + n, p0:p1].cpu().clone().numpy()
         code = self.code[base:base + n, p0:p1].cpu().clone().numpy()
         T = np.asarray(T_world_local, float)
+        finite_or_raise(x, v, f"stream sample of env {e}")
         return [dict(positions=transform_points(T, x[k]), velocities=v[k].astype(np.float64) @ T[:3, :3].T,
                      codes=np.asarray(code[k]), step_count=int(steps[k]), time_s=int(steps[k]) * float(control_dt))
                 for k in range(n)], int(self.dropped[c].item())
@@ -267,6 +288,7 @@ class TerminalCapture:
         T = np.asarray(T_world_local, float)
         x = self.x[p0:p1].cpu().clone().numpy()
         v = self.v[p0:p1].cpu().clone().numpy().astype(np.float64)
+        finite_or_raise(x, v, f"terminal state of env {e}")
         return dict(positions=transform_points(T, x), velocities=v @ T[:3, :3].T,
                     codes=self.code[p0:p1].cpu().clone().numpy(), step_count=step, time_s=step * float(control_dt),
                     episode=int(self.episode[e].item()))
@@ -313,5 +335,35 @@ def evaluate_frozen(task, reference, final, series=None, *, mode=DEFAULT_MODE, e
     return out
 
 
+def integrity_failure_result(task, *, env, step_count, control_dt, mode, cause, invalid_reason=None,
+                             termination_reason=None, extra=None):
+    """Structured ``evaluate()`` result of an env whose episode is not numerically valid (module docstring).
+
+    ``invalid_reason`` / ``termination_reason``: the env's current material / termination bits (None when not
+    captured, e.g. ``episode="last_completed"`` after the same-step autoreset cleared them). The frozen evaluator is
+    not called; ``result`` carries only the integrity layer, labelled as this module's, never as the evaluator's."""
+    from .termination import decode_material_invalid, decode_termination
+    from .vector_env import summarize_evaluation
+    checks = {"finite_material_state": False}
+    result = {"verdict": "FAIL_INTEGRITY", "success": False, "task_id": task.task_id,
+              "integrity": {"status": "FAIL", "checks": checks, "cause": cause},
+              "outcome": {"status": "NOT_EVALUATED", "checks": None, "metrics": {}},
+              "source": f"rl.evaluation_stream.{INTEGRITY_FAILURE_VERSION} (frozen evaluator not called: "
+                        "non-finite material state)"}
+    out = dict(env=env, task_id=task.task_id, step_count=int(step_count), time_s=int(step_count) * float(control_dt),
+               frames=0, evaluation_mode=mode, reference_frame_at_t0=None, final_codes_sha256=None, labelled=None,
+               verdict="FAIL_INTEGRITY", integrity_failure=INTEGRITY_FAILURE_VERSION, integrity_cause=cause,
+               invalid_reason=None if invalid_reason is None else int(invalid_reason),
+               invalid_reasons=None if invalid_reason is None else decode_material_invalid(invalid_reason),
+               termination_reason=None if termination_reason is None else int(termination_reason),
+               termination_reasons=None if termination_reason is None else decode_termination(termination_reason),
+               physics_metrics=None, summary=summarize_evaluation(result), result=result,
+               evaluator="not called (integrity failure: non-finite material state); no physics metrics")
+    out.update(extra or {})
+    out["wall_s"] = 0.
+    return out
+
+
 __all__ = ["EvaluationStream", "EvaluationStreamConfig", "TerminalCapture", "evaluate_frozen", "stream_config", "STREAM_VERSION",
-           "DEFAULT_MODE", "NATIVE_RECORD_EVERY"]
+           "DEFAULT_MODE", "NATIVE_RECORD_EVERY", "INTEGRITY_FAILURE_VERSION", "NONFINITE_MATERIAL_BITS",
+           "NonFiniteSnapshot", "finite_or_raise", "integrity_failure_result"]
