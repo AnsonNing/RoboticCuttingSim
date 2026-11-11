@@ -23,7 +23,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 TASK_CONFIG = ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v2.json"
-TASK_CONFIG_SHA256 = None             # pinned by the P6.0 v2 declaration
+TASK_CONFIG_SHA256 = "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb"   # P6.0 v2 pin (400f5c5)
 # superseded, never run formally (K2-1: the v3 contact law is wrong for spin / sideways drag); kept loadable by path
 TASK_CONFIG_V1_SHA256 = "fba43424372e17fe926fad697ff8336ea7c5ed0c2d8ecdbdefb9978a994f4397"
 FAMILY_VERSION = "rubber_strip_task_family_v1"
@@ -77,6 +77,8 @@ class RubberStripTaskFamily:
 
     def __init__(self, slots=None, *, num_envs=None, slot_seed=0, config="rubber_strip_drag_v2", variant=None,
                  max_episode_steps=None, resolution=None, expected_sha256=TASK_CONFIG_SHA256):
+        if config == "rubber_strip_drag_v1" and expected_sha256 == TASK_CONFIG_SHA256:
+            expected_sha256 = TASK_CONFIG_V1_SHA256          # superseded v1 (never run formally), by id only
         cfg, path, sha = load_task_config(config, expected_sha256)
         if cfg.get("schema") != "rcs_rubber_rl_task_v1":
             raise ValueError("task config schema must be rcs_rubber_rl_task_v1")

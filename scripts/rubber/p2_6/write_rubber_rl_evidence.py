@@ -13,8 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT/"docs"/"evidence"/"rl_ready"/"p2_6_rubber_rl_001.json"
-PROTOCOL_SHA = "8e4b2593e968532e10808d4828f093df964747c18c8b98d260d1eae68535fd4c"
-TASK_SHA = "fba43424372e17fe926fad697ff8336ea7c5ed0c2d8ecdbdefb9978a994f4397"
+PROTOCOL_SHA = "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548"
+TASK_SHA = "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb"
 ROWS = ("RL01", "RL02b", "RL02c", "RL03", "RL04b", "RL05", "RL06", "RL07", "RL08")
 DROP = ("receipt", "reports", "rows", "samples")
 
@@ -68,8 +68,8 @@ def main():
           "labels": {"coupling": "kinematic_grip_ideal_tracking", "perception": "ideal_marker_tracking",
                      "self_contact": "NOT_IMPLEMENTED_V1 (detector surface_grid_v1)",
                      "robot_feedback_coupling": "NOT_IMPLEMENTED_PHASE2"},
-          "protocol": {"path": "configs/rubber/rubber_rl_tests_v1.json", "sha256": PROTOCOL_SHA},
-          "task_config": {"path": "configs/rubber/rl/rubber_strip_drag_v1.json", "sha256": TASK_SHA},
+          "protocol": {"path": "configs/rubber/rubber_rl_tests_v2.json", "sha256": PROTOCOL_SHA},
+          "task_config": {"path": "configs/rubber/rl/rubber_strip_drag_v2.json", "sha256": TASK_SHA},
           "gpu_runs": runs, "gpu_rows": rows, "cpu_tests": cpu,
           "not_in_this_evidence": {"RL-09": "Native (P6.4 / P6.5, separate task)", "RL-10 / RL-11": "P6.6"}}
     OUT.write_text(json.dumps(ev, indent=1, default=float)+"\n")

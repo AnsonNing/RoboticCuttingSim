@@ -184,10 +184,16 @@ def test_rl03_ks_2000_samples_per_parameter():
         d = fam.sample(seed, fam.slot_ids[seed % 9])["draws"]
         for k in DRAW_ORDER:
             draws[k].append(d[k])
+    tested = 0
     for k in DRAW_ORDER:
         lo, hi = fam.ranges[k]
+        if lo == hi:                                     # friction_table: degenerate [0.3, 0.3] (not randomised)
+            assert all(x == lo for x in draws[k]), k
+            continue
         p = stats.kstest(np.asarray(draws[k]), "uniform", args=(lo, hi-lo)).pvalue
         assert p >= 0.001, (k, p)
+        tested += 1
+    assert tested == 11 and fam.ranges["friction_table"] == (0.3, 0.3)
 
 
 def test_rl03_seeded_slot_selection_and_refusals():

@@ -1,4 +1,4 @@
-"""P6.3 GPU rows of ``configs/rubber/rubber_rl_tests_v1.json`` (P2-6, ADR 0023 §23.2 decision 7).
+"""P6.3 GPU rows of ``configs/rubber/rubber_rl_tests_v2.json`` (P2-6, ADR 0023 §23.2 decision 7).
 
 Rows (``--rows``, comma list, run in this order in one process): RL01 (contract N 1 / N 8, both profiles), RL02b (L2
 every step, N 8), RL02c (L3 rubber_l3_band_v4: N 8 batch vs 20 + 10 single GPU repeats for envs 0 / 1), RL03 (device
@@ -33,9 +33,9 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT/"src"))
-PROTOCOL = ROOT/"configs"/"rubber"/"rubber_rl_tests_v1.json"
-PROTOCOL_SHA = "8e4b2593e968532e10808d4828f093df964747c18c8b98d260d1eae68535fd4c"
-TASK_SHA = "fba43424372e17fe926fad697ff8336ea7c5ed0c2d8ecdbdefb9978a994f4397"
+PROTOCOL = ROOT/"configs"/"rubber"/"rubber_rl_tests_v2.json"
+PROTOCOL_SHA = "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548"
+TASK_SHA = "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb"
 MIN_FREE_MB = 4096
 ROWS = ("RL01", "RL02b", "RL02c", "RL03", "RL04b", "RL05", "RL06", "RL07", "RL08", "RL08b")
 FULL_ORDER = ("L100_t4", "L100_t5", "L100_t6", "L125_t4", "L125_t5", "L125_t6", "L150_t4", "L150_t5", "L150_t6")
@@ -232,7 +232,7 @@ class Runner:
                   "batch_wall_s": batch_wall, "invalid_batch": invalid_batch, "envs": {}}
         ref_all, cand_all = {}, {"batch": {}}
         for e in (0, 1):
-            live = fam.build_life(L3_SLOTS[e], materials[e], device=self.device)
+            live = fam.build_life(fam.env_slots[e], materials[e], device=self.device)
             runs = []
             t1 = time.perf_counter()
             for i in range(n_ref+n_held):
@@ -565,11 +565,33 @@ class Runner:
         opts = {k: fam.profile[k] for k in ("dirichlet", "constraint_work", "traction_work", "state_precision")}
         q = {"L_over_t": 37.5, "t_m": 0.004, "W_over_t": 4.0, "mu_pa": 4e5, "alpha": 0.05}
         rows = {}
+        from robotic_cutting_sim import rubber_reference as RR
+        from robotic_cutting_sim.live_rubber_material import LiveRubberMaterial
+        from robotic_cutting_sim.rubber_initializer import relax_to_static
         for n_t in (4, 6, 8):
+            # rubber_refinement.case_q1 step by step, with the device passed (case_q1's _live builds on the CPU)
             run = {"n_t": n_t, "cfl": 0.5, "beta": 20.0, "ppc": 2}
-            r = RF.case_q1(q, run, device=self.device, options=opts, guard=fam.profile["stable_step_guard"])
-            rows[n_t] = {k: r[k] for k in ("Q", "converged", "init_time_s", "particles", "substeps", "dx_m",
-                                           "invalid", "wall_s", "delta_EB_beta_m", "gravity_m_s2")}
+            t0 = time.perf_counter()
+            t, L, W = q["t_m"], q["L_over_t"]*q["t_m"], q["W_over_t"]*q["t_m"]
+            E20 = RF.material(q["mu_pa"]).young_effective()
+            A, I = RR.rect_section(W, t)
+            g = q["alpha"]*E20*I/(RF.RHO*A*L**3)
+            mat = RF.material(q["mu_pa"], run["beta"])
+            live = LiveRubberMaterial(RF._spec(run, length=L, width=W, thickness=t, case="A"), material=mat,
+                                      control_dt=1e-3, gravity=(0.0, 0.0, -g), cfl=run["cfl"],
+                                      stable_step_guard=fam.profile["stable_step_guard"], strict=False,
+                                      device=self.device, **opts)
+            E = mat.young_effective()
+            f1 = RR.cantilever_f1(RF.RHO, W, t, L, E)
+            init = relax_to_static(live, omega1=2*math.pi*f1, stop_rule="static_stop_v3")
+            delta = float(live.scene.marker_reference[-1][2]-np.asarray(init["markers_f64_m"])[-1][2])
+            rows[n_t] = {"Q": delta, "converged": bool(init["converged"]), "init_time_s": init["time_s"],
+                         "particles": int(live.scene.n), "substeps": int(live.substeps), "dx_m": float(live.scene.dx),
+                         "invalid": int(live.invalid_reason), "wall_s": time.perf_counter()-t0,
+                         "delta_EB_beta_m": RR.euler_bernoulli_sag(RF.RHO, g, W, t, L, E), "gravity_m_s2": g,
+                         "f1_hz": f1}
+            r = rows[n_t]
+            del live
             self.note({"RL08b": n_t, "Q": r["Q"], "converged": r["converged"], "wall_s": r["wall_s"]})
             gc.collect()
         st = study((1/8, 1/6, 1/4), [rows[8]["Q"], rows[6]["Q"], rows[4]["Q"]])
@@ -598,7 +620,7 @@ def main():
     out = Path(args.out)
     if out.exists():
         sys.exit(f"refusing to overwrite {out}")
-    for path, pin in ((PROTOCOL, PROTOCOL_SHA), (ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v1.json", TASK_SHA)):
+    for path, pin in ((PROTOCOL, PROTOCOL_SHA), (ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v2.json", TASK_SHA)):
         if hashlib.sha256(path.read_bytes()).hexdigest() != pin:
             sys.exit(f"{path} does not match its pin")
     vis = os.environ.get("CUDA_VISIBLE_DEVICES", "")
