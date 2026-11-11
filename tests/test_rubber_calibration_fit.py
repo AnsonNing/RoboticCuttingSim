@@ -317,3 +317,29 @@ def test_reveal_checks_the_sealed_sha(tmp_path):
                               "density_kg_m3": (1100.0, 1200.0)}, 123)
     assert th == rcs.draw_truth({**BOUNDS, "g2": (0.06, 0.15), "density_kg_m3": (1100.0, 1200.0)}, 123)[0]
     assert 1100 <= rho <= 1200 and all(BOUNDS[k][0] <= th[k] <= BOUNDS[k][1] for k in BOUNDS)
+
+
+def test_lockstep_starts_equal_sequential_starts(tmp_path):
+    """Lockstep (one forward population per round over every active start) gives the per-start results of the
+    sequential fit, bitwise, with fewer forward calls."""
+    path = make_dataset(tmp_path)
+    sp = space()
+    starts = sp.latin_hypercube(3, seed=9)
+    seq_fwd, lock_fwd = ToyForward(), ToyForward()
+    seq = rcf.fit_trf(rcf.Objective(path, forward=seq_fwd), sp, starts, max_nfev=12, fd_step=1e-4)
+    lock = rcf.fit_trf_lockstep(rcf.Objective(path, forward=lock_fwd), sp, starts, max_nfev=12, fd_step=1e-4)
+    for a, b in zip(seq["starts"], lock["starts"]):
+        assert a["u"] == b["u"] and a["cost"] == b["cost"] and a["nfev"] == b["nfev"]
+        assert np.array_equal(a["jac"], b["jac"])
+    assert lock["best"] == seq["best"] and len(lock_fwd.calls) < len(seq_fwd.calls)
+    assert max(lock_fwd.calls) == 3*(sp.p+1)
+
+
+def test_material_dedup_shares_envs():
+    """mu_table has no effect without contact: candidates differing only in mu_table share one env."""
+    a = rce.material_from_theta(TRUTH, 1150.0)
+    b = rce.material_from_theta(dict(TRUTH, mu_table=0.7), 1150.0)
+    tens = {"id": "T", "type": "tensile_load_unload"}
+    fric = {"id": "F", "type": "friction_sliding"}
+    assert rce.material_key(tens, a) == rce.material_key(tens, b)
+    assert rce.material_key(fric, a) != rce.material_key(fric, b)

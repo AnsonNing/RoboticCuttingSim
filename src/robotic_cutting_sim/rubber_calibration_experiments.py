@@ -385,10 +385,19 @@ def run_single(exp, material, cfg, *, device="cpu"):
     return finalize_record(record)
 
 
+def material_key(exp, m):
+    """Physics-relevant identity of a material for one experiment: the table friction acts only in the friction
+    experiment (no contact elsewhere), so candidates that differ only in mu_table share one env there."""
+    key = (float(m.mu0), float(m.kappa), float(m.density), tuple(m.prony))
+    return key+(float(m.friction_table),) if CLASS_OF_TYPE[exp["type"]] == "F" else key
+
+
 class PopulationEvaluator:
-    """Population forward model over a set of experiments: one ``ExperimentBatch`` per experiment (built lazily, kept).
-    ``evaluate(materials_per_candidate)`` with ``materials_per_candidate[j][exp_id]`` -> ``records[j][exp_id]``; a
-    shorter candidate list is padded with copies of the first candidate (results of the padding are dropped)."""
+    """Population forward model over a set of experiments: one ``ExperimentBatch`` per experiment (built lazily at the
+    number of distinct materials of the first call, rebuilt larger if a later call needs more, padded otherwise).
+    ``evaluate(candidates)`` with ``candidates[j][exp_id]`` = ``MaterialValues`` -> ``records[j][exp_id]``. Candidates
+    with the same physics-relevant material for an experiment (``material_key``) share one env (exact: the same
+    material gives the same record)."""
 
     def __init__(self, experiments, densities, cfg, population, *, device="cuda:0", parity_mode=False):
         self.experiments = list(experiments)
@@ -396,23 +405,38 @@ class PopulationEvaluator:
         self.cfg, self.population, self.device, self.parity_mode = cfg, int(population), device, parity_mode
         self.batches = {}
         self.calls = 0
+        self.env_evaluations = 0
 
-    def batch(self, exp):
-        if exp["id"] not in self.batches:
-            self.batches[exp["id"]] = ExperimentBatch(exp, self.densities[exp["id"]], self.cfg, self.population,
-                                                      device=self.device, parity_mode=self.parity_mode)
-        return self.batches[exp["id"]]
+    def batch(self, exp, size):
+        b = self.batches.get(exp["id"])
+        if b is None or b.population < size:
+            self.batches[exp["id"]] = None
+            b = self.batches[exp["id"]] = ExperimentBatch(exp, self.densities[exp["id"]], self.cfg, size,
+                                                          device=self.device, parity_mode=self.parity_mode)
+        return b
 
     def evaluate(self, candidates):
         n = len(candidates)
         if not 1 <= n <= self.population:
             raise ValueError(f"{n} candidates for a population of {self.population}")
-        padded = list(candidates)+[candidates[0]]*(self.population-n)
         out = [dict() for _ in range(n)]
         for exp in self.experiments:
-            recs = self.batch(exp).run([c[exp["id"]] for c in padded])
+            eid = exp["id"]
+            keys, unique = [], {}
+            for c in candidates:
+                k = material_key(exp, c[eid])
+                if k not in unique:
+                    unique[k] = len(unique)
+                keys.append(unique[k])
+            mats = [None]*len(unique)
+            for c, k in zip(candidates, keys):
+                mats[k] = mats[k] or c[eid]
+            b = self.batch(exp, len(mats))
+            recs = b.run(mats+[mats[0]]*(b.population-len(mats)))
+            done = [finalize_record(recs[i]) for i in range(len(mats))]
             for j in range(n):
-                out[j][exp["id"]] = finalize_record(recs[j])
+                out[j][eid] = done[keys[j]]
+            self.env_evaluations += b.population
         self.calls += 1
         return out
 
@@ -458,6 +482,16 @@ def observables(exp, record, cfg):
         out["plane_fx_n"] = np.r_[0.0, record["plane"][:, 0, 0]]
         out["plane_fn_n"] = np.r_[0.0, -record["plane"][:, 0, 2]]
     return out
+
+
+def translation_check(obs):
+    """Friction scope check (K2-1: law v3 is valid for translational sliding only): the largest lateral drift of the
+    block centroid (y) and the largest change of the spread in y of the 9 cross-section centroids (a yaw / in-plane
+    bending proxy) over the record, in m."""
+    y = obs["markers"][:, :, 1]
+    spread = y.max(1)-y.min(1)
+    return {"max_centroid_y_drift_m": float(np.abs(y.mean(1)-y[0].mean()).max()),
+            "max_marker_y_spread_change_m": float(np.abs(spread-spread[0]).max())}
 
 
 def video_times(T_end, fps=VIDEO_FPS):
@@ -571,16 +605,15 @@ def _parabolic(t, y, i):
     return t[i]+d*h, y1-0.25*(y0-y2)*d
 
 
-def rebound_features(t, z, t_release, smooth_frames):
+def rebound_features(t, z, t_release, smooth_frames, direction=1.0):
     """Rebound extraction (declared): moving average over ``smooth_frames`` frames; p0 = z at the release frame;
-    p1 = first local extremum after release opposite to the release offset (the first rebound peak), p2 = the next
-    extremum; parabolic refinement. Rebound time = first crossing of the midpoint (p0 + p1) / 2 after release (linear
-    interpolation), log decrement = 2 ln(|p1 - p0| / |p1 - p2|)."""
+    p1 = first local maximum of ``direction`` z after release (the tip load acts in -z, so the rebound is upward:
+    direction +1), p2 = the next local minimum; parabolic refinement. Rebound time = first crossing of the midpoint
+    (p0 + p1) / 2 after release (linear interpolation), log decrement = 2 ln(|p1 - p0| / |p1 - p2|)."""
     zs = _moving_average(np.asarray(z, float), smooth_frames)
     i0 = int(np.searchsorted(t, t_release-1e-12))
     p0 = zs[i0]
-    up = zs[min(i0+3, len(zs)-1)] > p0           # direction of the rebound
-    sign = 1.0 if up else -1.0
+    sign = 1.0 if direction > 0 else -1.0
     y = sign*zs
     peaks = []
     i = i0+1

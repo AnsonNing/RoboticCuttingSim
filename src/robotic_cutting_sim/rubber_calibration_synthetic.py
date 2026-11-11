@@ -142,6 +142,7 @@ def seal(sealed_dir, payload):
     if sealed_dir.name != "sealed":
         raise ValueError("the sealed truth lives in a directory named 'sealed'")
     sealed_dir.mkdir(parents=True, exist_ok=True)
+    os.chmod(sealed_dir, 0o700)
     path = sealed_dir/"truth.json"
     text = json.dumps(payload, sort_keys=True)+"\n"
     with open(path, "x") as fh:
@@ -150,8 +151,14 @@ def seal(sealed_dir, payload):
     return path, hashlib.sha256(text.encode()).hexdigest()
 
 
-def reveal(sealed_path, expected_sha256):
-    """Return the sealed truth after checking its SHA-256 against the manifest's ``sealed_truth_sha256``."""
+def reveal(sealed_path, expected_sha256, reason="reveal"):
+    """Return the sealed truth after checking its SHA-256 against the manifest's ``sealed_truth_sha256``. Every read
+    is appended to ``read_log.txt`` next to the sealed file (UTC, pid, reason). The seal is procedural: the file is
+    read-only in an owner-only directory on the same filesystem as the fitting process."""
+    import datetime
+    log = Path(sealed_path).parent/"read_log.txt"
+    with open(log, "a") as fh:
+        fh.write(f"{datetime.datetime.now(datetime.timezone.utc).isoformat()} pid {os.getpid()} {reason}\n")
     data = Path(sealed_path).read_bytes()
     sha = hashlib.sha256(data).hexdigest()
     if sha != expected_sha256:

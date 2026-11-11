@@ -123,7 +123,7 @@ def test_rebound_and_slip_extractors():
     zeta = delta/(2*math.pi)
     z = np.where(t < t_rel, -4e-3, -4e-3*np.exp(-zeta*w*(t-t_rel))*np.cos(w*(t-t_rel)))
     f = rce.rebound_features(t, z, t_rel, 1)
-    assert abs(f["log_decrement"]-delta) < 0.03
+    assert abs(f["log_decrement"]-delta) < 0.03 and f["p1"] > f["p0"]
     assert abs(f["rebound_time_s"]-0.025) < 0.004               # quarter period of 10 Hz
     x = np.where(t < 0.2, 0.0, np.minimum((t-0.2)*0.05, 0.01))
     s = rce.slip_features(t, x, 0.15, 5e-4)

@@ -381,6 +381,109 @@ def fit_trf(objective, space, starts_u, *, max_nfev=40, xtol=1e-4, ftol=1e-8, gt
                          "jacobian": "forward differences in u, one population of p + 1 per evaluation"}}
 
 
+class LockstepPool:
+    """Evaluates the requests of several optimiser threads as ONE forward population: a worker's ``request(thetas)``
+    blocks until every active worker has posted its request (or finished); the coordinator (the calling thread of
+    ``run``) concatenates them, calls ``objective.residuals_population`` once and hands each worker its slice. The
+    result of every worker is identical to running it alone (the forward model is per candidate)."""
+
+    def __init__(self, objective, workers):
+        import threading
+        self.objective = objective
+        self.cv = threading.Condition()
+        self.pending = {}
+        self.results = {}
+        self.active = set(range(workers))
+        self.errors = {}
+        self.population_sizes = []
+
+    def request(self, wid, thetas):
+        with self.cv:
+            self.pending[wid] = list(thetas)
+            self.cv.notify_all()
+            while wid not in self.results and not self.errors:
+                self.cv.wait()
+            if self.errors and wid not in self.results:
+                raise RuntimeError(f"lockstep coordinator failed: {self.errors}")
+            return self.results.pop(wid)
+
+    def finish(self, wid, error=None):
+        with self.cv:
+            self.active.discard(wid)
+            if error is not None:
+                self.errors[wid] = error
+            self.cv.notify_all()
+
+    def run(self):
+        while True:
+            with self.cv:
+                while self.active and set(self.pending) != self.active:
+                    self.cv.wait()
+                if not self.active:
+                    return
+                order = sorted(self.pending)
+                batch = [(w, self.pending.pop(w)) for w in order]
+            flat = [th for _, ths in batch for th in ths]
+            try:
+                res = self.objective.residuals_population(flat)
+            except Exception as exc:             # recorded, re-raised in every worker
+                with self.cv:
+                    self.errors["coordinator"] = repr(exc)
+                    self.cv.notify_all()
+                raise
+            self.population_sizes.append(len(flat))
+            with self.cv:
+                i = 0
+                for w, ths in batch:
+                    self.results[w] = res[i:i+len(ths)]
+                    i += len(ths)
+                self.cv.notify_all()
+
+
+class _WorkerObjective:
+    def __init__(self, pool, wid):
+        self.pool, self.wid = pool, wid
+
+    def residuals_population(self, thetas):
+        return self.pool.request(self.wid, thetas)
+
+
+def fit_trf_lockstep(objective, space, starts_u, **kw):
+    """``fit_trf`` with every start in its own thread and every evaluation of all active starts run as one forward
+    population (``LockstepPool``). Same per-start results as ``fit_trf``; fewer, larger forward calls."""
+    import threading
+    pool = LockstepPool(objective, len(starts_u))
+    out = [None]*len(starts_u)
+
+    def work(i):
+        kwi = dict(kw)
+        if kw.get("log"):
+            kwi["log"] = lambda m, i=i: kw["log"](m.replace("[start 0]", f"[start {i}]", 1))
+        try:
+            out[i] = fit_trf(_WorkerObjective(pool, i), space, [starts_u[i]], **kwi)["starts"][0]
+            out[i]["start"] = i
+            pool.finish(i)
+        except Exception as exc:
+            pool.finish(i, repr(exc))
+            raise
+    threads = [threading.Thread(target=work, args=(i,), daemon=True) for i in range(len(starts_u))]
+    for th in threads:
+        th.start()
+    pool.run()
+    for th in threads:
+        th.join()
+    if pool.errors:
+        raise RuntimeError(f"lockstep fit failed: {pool.errors}")
+    best = min(out, key=lambda x: x["cost"])
+    return {"method": "scipy.optimize.least_squares trf", "formal": True, "starts": out, "best": best["start"],
+            "settings": {**out[0].get("settings", {}), "max_nfev": kw.get("max_nfev", 40),
+                         "xtol": kw.get("xtol", 1e-4), "ftol": kw.get("ftol", 1e-8), "gtol": kw.get("gtol", 1e-8),
+                         "fd_step_u": kw.get("fd_step", 1e-3),
+                         "jacobian": "forward differences in u, one population of p + 1 per start and evaluation",
+                         "lockstep": f"{len(starts_u)} starts evaluated together"},
+            "population_sizes": pool.population_sizes}
+
+
 def covariance(space, u_hat, J_u, residuals, rcond=1e-10):
     """Gauss-Newton covariance: cov_u = s^2 (J^T J)^-1, s^2 = chi2 / (n - p), by eigen-decomposition; directions with
     an eigenvalue below ``rcond`` x the largest are unidentifiable and get infinite variance (never the zero variance
@@ -522,7 +625,15 @@ def freeze_fit(path, *, objective, space, trf, provenance, extra=None):
     best = trf["starts"][trf["best"]]
     cov, sigma, s2 = covariance(space, best["u"], best["jac"], best["residuals"])
     starts = [{k: v for k, v in s.items() if k not in ("jac", "residuals")} for s in trf["starts"]]
+    cfg = getattr(objective, "cfg", None)
+    resolution = None if cfg is None else {
+        "label": "RESOLUTION_SPECIFIC", "resolution_profile": cfg.resolution_profile, "n_t": cfg.n_t, "cfl": cfg.cfl,
+        "statement": "theta_hat is specific to this fit-model resolution; rubber_ref_v1 (n_t 4) carries the measured "
+                     "wide-strip sag bias Q1w +0.62 % (+0.50 ... +0.78 %; known_limitation "
+                     "rubber_phys_11_v5_q1w_gci_2.16pct); never carry theta_hat to n_t 3 or 6 without the bias shift "
+                     "(K2 review, Q1w condition 4)"}
     receipt = {"schema": FIT_RECEIPT_SCHEMA, **LABELS, "validation_kind": objective.manifest["validation_kind"],
+               "resolution": resolution,
                "recipe_promoted": False, "objective": objective.receipt(), "parameter_space": space.receipt(),
                "method": trf["method"], "formal_method": True, "settings": trf["settings"],
                "theta_hat": best["theta"], "u_hat": best["u"], "covariance_theta": cov.tolist(),
