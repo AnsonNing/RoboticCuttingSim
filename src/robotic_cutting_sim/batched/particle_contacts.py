@@ -42,7 +42,7 @@ launch, no kernel or graph change), so neither mode keeps the hazard for its own
 Nothing here edits a frozen module; the kernels below are the frozen ``_particle_contacts_b`` body with the
 listed changes only.
 """
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import math
 
 import numpy as np
@@ -55,7 +55,13 @@ from .layout import STATS_WIDTH
 
 DEFAULT_MODE = "frozen_v1"
 ALIAS_FREE_MODE = "alias_free_v1"
-MODES = (DEFAULT_MODE, ALIAS_FREE_MODE)
+ALIAS_FREE_V2_MODE = "alias_free_v2"
+MODES = (DEFAULT_MODE, ALIAS_FREE_MODE, ALIAS_FREE_V2_MODE)
+# alias_free_v2 (P1-6 cycle p16c1, see the module docstring): the per-env speed below which the query box shrinks.
+DEFAULT_SHRINK_SPEED_M_S = 0.25
+# Relative and absolute slack on the shrunken query reach (float32 rounding of distances, speeds and floor()).
+SHRINK_RELATIVE_SLACK = 1.0e-5
+SHRINK_ABSOLUTE_SLACK_M = 1.0e-7
 SPEED_GUARDS = ("fallback", "flag", "off")
 # The frozen grid dims (tlmpm_v5.py:798, tlmpm_v7_2_batch.py:613): the reference of every parity claim.
 FROZEN_HASH_DIMS = (64, 64, 32)
@@ -75,6 +81,8 @@ class ParticleContactConfig:
     margin_m: float = DEFAULT_MARGIN_M
     reference_hash_dims: tuple = FROZEN_HASH_DIMS
     speed_bound_m_s: float = None
+    env_major_grid: bool = False       # alias_free_v2 only
+    shrink_speed_m_s: float = None     # alias_free_v2 only (None: no query shrink)
 
     @property
     def is_default(self):
@@ -97,6 +105,8 @@ def resolve(mode=DEFAULT_MODE, options=None):
         return ParticleContactConfig()
     known = {"skip_zero_impulse_atomics", "alias_free_hash_dims", "speed_guard", "margin_m", "reference_hash_dims",
              "speed_bound_m_s"}
+    if mode == ALIAS_FREE_V2_MODE:
+        return _resolve_v2(options, known)
     unknown = set(options)-known
     if unknown:
         raise UnsupportedBatchConfiguration("UNSUPPORTED_PARTICLE_CONTACT_MODE", f"unknown options {sorted(unknown)}")
@@ -125,6 +135,46 @@ def resolve(mode=DEFAULT_MODE, options=None):
     return ParticleContactConfig(mode=mode, skip_zero_impulse_atomics=c1, alias_free_hash_dims=c2,
                                  speed_guard=guard, margin_m=margin, reference_hash_dims=dims,
                                  speed_bound_m_s=bound)
+
+
+def _resolve_v2(options, known):
+    """``alias_free_v2`` = ``alias_free_v1`` (C1 + C2 + fallback guard, fixed on) plus two sub-flags:
+    ``env_major_grid`` (default True) and ``shrink_speed_m_s`` (default ``DEFAULT_SHRINK_SPEED_M_S``; ``None`` or
+    0 turns the query shrink off). The shrink needs the env-major grid and the guard (it reuses its speed pass)."""
+    known = set(known) | {"env_major_grid", "shrink_speed_m_s"}
+    unknown = set(options)-known
+    if unknown:
+        raise UnsupportedBatchConfiguration("UNSUPPORTED_PARTICLE_CONTACT_MODE", f"unknown options {sorted(unknown)}")
+    fixed = {"skip_zero_impulse_atomics": True, "alias_free_hash_dims": True, "speed_guard": "fallback"}
+    for k, want in fixed.items():
+        if k in options and options[k] != want:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_PARTICLE_CONTACT_MODE",
+                                                f"{ALIAS_FREE_V2_MODE} needs {k}={want!r} (use {ALIAS_FREE_MODE})")
+    base = resolve(ALIAS_FREE_MODE, {k: v for k, v in options.items() if k not in ("env_major_grid",
+                                                                                   "shrink_speed_m_s")})
+    env_major = bool(options.get("env_major_grid", True))
+    shrink = options.get("shrink_speed_m_s", DEFAULT_SHRINK_SPEED_M_S)
+    if shrink is not None:
+        shrink = float(shrink)
+        if not (math.isfinite(shrink) and shrink >= 0.0):
+            raise ValueError("shrink_speed_m_s must be finite and >= 0")
+        if shrink == 0.0:
+            shrink = None
+    if shrink is not None and not env_major:
+        raise UnsupportedBatchConfiguration("UNSUPPORTED_PARTICLE_CONTACT_MODE",
+                                            "shrink_speed_m_s needs env_major_grid")
+    if not env_major:
+        raise UnsupportedBatchConfiguration("UNSUPPORTED_PARTICLE_CONTACT_MODE",
+                                            f"{ALIAS_FREE_V2_MODE} with every v2 sub-flag off is {ALIAS_FREE_MODE}")
+    return replace(base, mode=ALIAS_FREE_V2_MODE, env_major_grid=env_major, shrink_speed_m_s=shrink)
+
+
+def shrunken_reach(radius, dt, shrink_speed_m_s):
+    """float32 query reach of an env whose particle speeds are all <= ``shrink_speed_m_s`` (see the module
+    docstring): ``min(2.4 r, (2r + 2 dt V)(1 + 1e-5) + 1e-7 m)``, never above the frozen float32 ``2.4 r``."""
+    frozen = np.float32(np.float32(2.4)*np.float32(radius))
+    cut = (2.0*float(radius)+2.0*float(dt)*float(shrink_speed_m_s))*(1.0+SHRINK_RELATIVE_SLACK)+SHRINK_ABSOLUTE_SLACK_M
+    return float(min(frozen, np.float32(cut)))
 
 
 # ----------------------------------------------------------------------------- dims and certificate
@@ -390,6 +440,147 @@ class FallbackGrid:
             self.inv, self.dims, self.cells, self.starts, self.ends, self.ids], device=self.device)
 
 
+# ----------------------------------------------------------------------------- alias_free_v2: env-major buckets
+
+@wp.kernel
+def _speed_guard_v2_b(x: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3), env_of_particle: wp.array(dtype=int),
+                      bound_sq: float, guard_flag: wp.array(dtype=int), guard_any: wp.array(dtype=int),
+                      shrink_sq: float, fast_flag: wp.array(dtype=int)):
+    """``_speed_guard_b`` plus the query-shrink check: ``fast_flag[e] = 1`` when a particle of env e is faster
+    than the shrink speed (or not finite). Plain stores of 1; the flags are zero between substeps."""
+    p = wp.tid()
+    xp = x[p]
+    e = env_of_particle[p]
+    speed_sq = wp.length_sq(v[p])
+    finite = wp.isfinite(xp[0]) and wp.isfinite(xp[1]) and wp.isfinite(xp[2])
+    if not (speed_sq <= bound_sq) or not finite:
+        guard_flag[e] = 1
+        guard_any[0] = 1
+    if not (speed_sq <= shrink_sq) or not finite:
+        fast_flag[e] = 1
+
+
+@wp.kernel
+def _clear_flags_b(flags: wp.array(dtype=int)):
+    flags[wp.tid()] = 0
+
+
+@wp.kernel
+def _env_major_ranges_b(keys: wp.array(dtype=int), n: int, starts: wp.array(dtype=int), ends: wp.array(dtype=int)):
+    """Bucket bounds of the sorted keys. No memset: a lookup of key k is valid iff ``keys[starts[k]] == k``
+    (an absent key can never pass, a present key was rewritten in this build)."""
+    i = wp.tid()
+    k = keys[i]
+    if i == 0:
+        starts[k] = i
+    elif keys[i-1] != k:
+        starts[k] = i
+    if i == n-1:
+        ends[k] = i+1
+    elif keys[i+1] != k:
+        ends[k] = i+1
+
+
+@wp.kernel
+def _particle_contacts_env_major_b(x: wp.array(dtype=wp.vec3), reference: wp.array(dtype=wp.vec3),
+                                   v: wp.array(dtype=wp.vec3), mass: wp.array(dtype=float),
+                                   code: wp.array(dtype=int), impulse: wp.array(dtype=wp.vec3),
+                                   stats_sum: wp.array(dtype=float), stats_max: wp.array(dtype=float),
+                                   radius: float, reference_exclusion: float, dt: float,
+                                   params: wp.array2d(dtype=float), env_of_particle: wp.array(dtype=int),
+                                   guard_flag: wp.array(dtype=int), inv: float, dims: wp.vec3i, cells: int, n: int,
+                                   keys: wp.array(dtype=int), starts: wp.array(dtype=int),
+                                   ends: wp.array(dtype=int), ids: wp.array(dtype=int), shrink: int,
+                                   fast_flag: wp.array(dtype=int), reach_slow: float):
+    """``_particle_contacts_skip_zero_b`` (C1, guard-flagged envs skipped) walking env-major buckets of the
+    alias-free dims exactly as ``hash_grid_query(grid, x[p], 2.4*radius, e)`` walks the grouped grid (cells x
+    fastest, then y, then z; ascending ids per bucket), without the per-cell group binary searches. With
+    ``shrink`` an env whose ``fast_flag`` is 0 uses ``reach_slow`` (<= 2.4 r): a sub-box of the same cells."""
+    p = wp.tid()
+    e = env_of_particle[p]
+    if guard_flag[e] != 0:
+        return
+    stiffness = params[e, P_PARTICLE_STIFFNESS]
+    friction = params[e, P_FRICTION]
+    xp = x[p]
+    reach = 2.4*radius
+    if shrink != 0:
+        if fast_flag[e] == 0:
+            reach = reach_slow
+    x0 = int(wp.floor((xp[0]-reach)*inv))
+    y0 = int(wp.floor((xp[1]-reach)*inv))
+    z0 = int(wp.floor((xp[2]-reach)*inv))
+    x1 = wp.min(int(wp.floor((xp[0]+reach)*inv)), x0+dims[0]-1)
+    y1 = wp.min(int(wp.floor((xp[1]+reach)*inv)), y0+dims[1]-1)
+    z1 = wp.min(int(wp.floor((xp[2]+reach)*inv)), z0+dims[2]-1)
+    base = e*cells
+    for cz in range(z0, z1+1):
+        for cy in range(y0, y1+1):
+            for cx in range(x0, x1+1):
+                k = base+_cell_index(cx, cy, cz, dims)
+                first = starts[k]
+                if first >= 0 and first < n:
+                    if keys[first] == k:
+                        for i in range(first, ends[k]):
+                            q = ids[i]
+                            if q > p:
+                                if v5._conflict_packed(code[p], code[q]) or wp.length_sq(reference[p]-reference[q]) > reference_exclusion**2.0:
+                                    delta = xp-x[q]
+                                    distance = wp.length(delta)
+                                    if distance > 1.0e-10:
+                                        normal = delta/distance
+                                        effective = mass[p]*mass[q]/(mass[p]+mass[q])
+                                        ji = v5._contact_impulse(distance-2.0*radius, normal, v[p]-v[q], effective,
+                                                                 dt, stiffness, friction)
+                                        if ji[0] != 0.0 or ji[1] != 0.0 or ji[2] != 0.0:
+                                            wp.atomic_add(impulse, p, ji)
+                                            wp.atomic_sub(impulse, q, ji)
+                                        if wp.length_sq(ji) > 0.0:
+                                            wp.atomic_add(stats_sum, e*ST+4, 1.0)
+                                            wp.atomic_add(stats_sum, e*ST+5, wp.length(ji))
+                                            wp.atomic_max(stats_max, e*ST+6, wp.max(2.0*radius-distance, 0.0))
+
+
+class EnvMajorGrid:
+    """alias_free_v2 buckets: particle ids stably radix-sorted by ``env*C + cell`` (Warp's ``hash_grid_index``
+    arithmetic on the alias-free dims, Warp's float32 ``cell_width_inv``), ``starts/ends[N*C]`` validated by the
+    sorted keys instead of a per-substep memset. Graph-capture safe (kernels + ``wp.utils.radix_sort_pairs``)."""
+
+    def __init__(self, solver, dims, cell_width):
+        s = solver
+        self.dims = wp.vec3i(*dims)
+        self.cells = int(np.prod(dims))
+        N, n = s.num_envs, s.total_particles
+        if N*self.cells >= 2**31:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_INT32_OVERFLOW", f"env-major keys N*C = {N*self.cells}")
+        self.inv = float(np.float32(1.0)/np.float32(cell_width))
+        self.end_bit = max(int(N*self.cells-1).bit_length(), 1)
+        self.n = n
+        self.device = wp.get_device(s.device)
+        with wp.ScopedDevice(s.device):
+            self.keys = wp.zeros(2*n, dtype=int)
+            self.ids = wp.zeros(2*n, dtype=int)
+            self.starts = wp.zeros(N*self.cells, dtype=int)
+            self.ends = wp.zeros(N*self.cells, dtype=int)
+
+    def nbytes(self):
+        return int(sum(a.capacity for a in (self.keys, self.ids, self.starts, self.ends)))
+
+    def build(self, s):
+        n = s.total_particles
+        with wp.ScopedDevice(self.device):
+            wp.launch(_fallback_keys_b, n, [s.x, s.env_of_particle, self.inv, self.dims, self.cells, self.keys,
+                                            self.ids], device=self.device)
+            wp.utils.radix_sort_pairs(self.keys, self.ids, n, 0, self.end_bit)
+            wp.launch(_env_major_ranges_b, n, [self.keys, n, self.starts, self.ends], device=self.device)
+
+    def launch_contacts(self, s, r, dt, shrink, fast_flag, reach_slow):
+        wp.launch(_particle_contacts_env_major_b, s.total_particles, [s.x, s.reference, s.v, s.mass, s.code,
+            s.impulse, s.stats_sum, s.stats_max, r, 3*s.dx, dt, s.params, s.env_of_particle, s.contact_guard_flag,
+            self.inv, self.dims, self.cells, self.n, self.keys, self.starts, self.ends, self.ids, int(shrink),
+            fast_flag, reach_slow], device=self.device)
+
+
 @wp.kernel
 def _guard_invalid_b(violations: wp.array(dtype=int), invalid_reason: wp.array(dtype=int), flag: int):
     """Material, once per control step before ``_validity_b``: a counted guard substep sets the sticky bit."""
@@ -452,7 +643,18 @@ class AliasFreeContacts:
                 s.contact_guard_violations = wp.zeros(N, dtype=int)
         if config.speed_guard == "fallback":
             self.fallback_grid = FallbackGrid(s, config.reference_hash_dims, self.cell_width)
+        # alias_free_v2: env-major buckets on the alias-free dims and the per-env query shrink (own arrays, not
+        # solver attributes: the shrink flag is zero between substeps, the buckets are rebuilt every substep).
+        self.env_grid, self.fast_flag, self.reach_slow = None, None, None
+        if config.env_major_grid:
+            self.env_grid = EnvMajorGrid(s, self.dims, self.cell_width)
+            with wp.ScopedDevice(s.device):
+                self.fast_flag = wp.zeros(N, dtype=int)
+            if config.shrink_speed_m_s is not None:
+                self.reach_slow = shrunken_reach(s.radius, s.dt, config.shrink_speed_m_s)
         wp.load_module(module=__name__, device=s.device)
+        if self.env_grid is not None:
+            self.env_grid.build(s)   # first sort outside any capture (reserves the sort's temp buffer)
         # Bound arrays used only for argument lists when the guard is off (never read then).
         self._no_flags = wp.zeros(N, dtype=int, device=s.device) if config.speed_guard == "off" else None
 
@@ -470,6 +672,9 @@ class AliasFreeContacts:
         h = self.cell_width
         guarded = c.speed_guard != "off"
         flags = s.contact_guard_flag if guarded else self._no_flags
+        if self.env_grid is not None:
+            self._launch_v2(s, r, dt)
+            return
         if guarded:
             wp.launch(_speed_guard_b, n, [s.x, s.v, s.env_of_particle, self.speed_bound_m_s**2,
                                           s.contact_guard_flag, s.contact_guard_any])
@@ -489,6 +694,20 @@ class AliasFreeContacts:
             wp.launch(_guard_consume_b, s.num_envs, [s.contact_guard_flag, s.contact_guard_any,
                                                      s.contact_guard_violations])
 
+    def _launch_v2(self, s, r, dt):
+        """alias_free_v2: guard (+ shrink flags), env-major build, contacts, frozen fallback, flag clear."""
+        c = self.config
+        n = s.total_particles
+        shrink = self.reach_slow is not None
+        shrink_sq = float(c.shrink_speed_m_s)**2 if shrink else -1.0
+        wp.launch(_speed_guard_v2_b, n, [s.x, s.v, s.env_of_particle, self.speed_bound_m_s**2,
+                                         s.contact_guard_flag, s.contact_guard_any, shrink_sq, self.fast_flag])
+        self.env_grid.build(s)
+        self.env_grid.launch_contacts(s, r, dt, shrink, self.fast_flag,
+                                      self.reach_slow if shrink else 0.0)
+        wp.capture_if(s.contact_guard_any, on_true=self._fallback, s=s, r=r, dt=dt)
+        wp.launch(_clear_flags_b, s.num_envs, [self.fast_flag])
+
     def _fallback(self, s, r, dt):
         """Flagged envs: the frozen body over the reference-dims candidate sequence (``FallbackGrid``)."""
         self.fallback_grid.build(s)
@@ -500,7 +719,10 @@ class AliasFreeContacts:
 
     def receipt(self, solver=None):
         c = self.config
-        out = {"particle_contact_mode": c.mode, **{k: v for k, v in asdict(c).items() if k != "mode"},
+        v2_keys = ("env_major_grid", "shrink_speed_m_s")
+        out = {"particle_contact_mode": c.mode,
+               **{k: v for k, v in asdict(c).items() if k != "mode" and (k not in v2_keys
+                                                                       or c.mode == ALIAS_FREE_V2_MODE)},
                "reference_hash_dims": list(c.reference_hash_dims), "hash_dims": list(self.dims),
                "hash_cells": int(np.prod(self.dims)), "cell_width_m": self.cell_width,
                "env_cell_spans": self.env_cell_spans,
@@ -519,6 +741,18 @@ class AliasFreeContacts:
                                  if c.speed_guard == "fallback" else None),
                "fallback_grid_bytes": self.fallback_grid.nbytes() if self.fallback_grid is not None else 0,
                "hashgrid_descriptor_guard": "single_grid_and_host_rebuild_before_graph_launch_v1"}
+        if c.mode == ALIAS_FREE_V2_MODE:
+            out.update(parity_level="A_bitwise_given_certificate",
+                       env_major_grid_bytes=self.env_grid.nbytes() if self.env_grid is not None else 0,
+                       env_major_grid=("EnvMajorGrid: keys env*C+cell on the alias-free dims, stable radix sort "
+                                       f"(end_bit {self.env_grid.end_bit}), key-validated buckets, no binary search"
+                                       if self.env_grid is not None else None),
+                       query_reach_frozen_m=float(np.float32(np.float32(2.4)*np.float32(solver.radius)))
+                       if solver is not None else None,
+                       query_reach_slow_m=self.reach_slow,
+                       shrink_certificate=("per-env per-substep |v| <= shrink_speed_m_s (else the frozen reach); "
+                                           "non-zero pair impulse needs d < 2r + 2 dt V"
+                                           if self.reach_slow is not None else None))
         if solver is not None and c.speed_guard != "off":
             out["guard_violation_substeps"] = solver.contact_guard_violations.numpy().tolist()
         return out
