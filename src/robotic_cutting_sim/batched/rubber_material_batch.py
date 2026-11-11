@@ -465,12 +465,17 @@ class BatchedRubberMaterial:
         self._proj_inv_initial = s.proj_inv.numpy().copy() if s.projection else None
         self._proj_inv_host = self._proj_inv_initial.copy() if s.projection else None
         self._proj_inv_cache = {}
+        self._proj_structure = {}
 
     def _projection_inverse(self, e, mass):
-        """Concatenated float64 inverses of env e's blocks for particle mass ``mass`` (float32), in row order."""
+        """Concatenated float64 inverses of env e's blocks for particle mass ``mass`` (float32), in row order.
+        ``projection_assembly_v2`` (P2-6 reset cost): the mass-independent block structure is cached per scene and the
+        blocks are accumulated with ``np.add.at`` in the exact order of the single solver's
+        ``tlmpm_rubber_v1.projection_blocks`` loop (same products, same sequence of float64 additions), so the
+        inverses are byte-identical to it (tests/test_rubber_projection_assembly.py)."""
         key = (e, np.float32(mass).tobytes())
         if key not in self._proj_inv_cache:
-            blocks = T.projection_blocks(self._proj_scenes[e], np.float32(mass))
+            blocks = projection_blocks_v2(self._proj_scenes[e], np.float32(mass), self._proj_structure, e)
             self._proj_inv_cache[key] = np.concatenate([b["inv"].reshape(-1) for b in blocks])
         return self._proj_inv_cache[key]
 
@@ -932,6 +937,61 @@ def resolution_summary(env_receipts):
             labels[res["resolution_profile"]] = {k: full[k] for k in ("label", "measured_bias", "known_limitation")}
     return {"per_env": per_env, "cells_through_thickness": [r["scene"]["resolution"]["cells_through_thickness"]
                                                             for r in env_receipts], "profiles": labels}
+
+
+def projection_structure(scene):
+    """Mass-independent structure of the F8 blocks of ``tlmpm_rubber_v1.projection_blocks``: per block (group,
+    component) the constrained nodes and the flattened (a, b, w_a, w_b) entries of its accumulation loop in loop order
+    (particles ``touching`` ascending, stencil corners a then b in corner order, constrained corners only)."""
+    nodes, weights = scene.nodes, scene.weights.astype(np.float64)
+    out = []
+    for g in range(len(scene.groups)):
+        for k in range(3):
+            sel = np.flatnonzero((scene.node_group == g) & ((scene.node_mask >> k) & 1 == 1))
+            if sel.size == 0:
+                continue
+            if sel.size > T.PROJECTION_MAX_BLOCK:
+                raise ValueError(f"consistent_mass_projection_v1: block of {sel.size} constrained nodes > "
+                                 f"{T.PROJECTION_MAX_BLOCK} (dense inverse limit)")
+            local = np.full(int(nodes.max())+1, -1, np.int64)
+            local[sel] = np.arange(sel.size)
+            touching = np.flatnonzero(np.isin(nodes, sel).any(1))
+            loc = local[nodes[touching]]                         # [P, 8], -1 = not constrained
+            w = weights[touching]                                # [P, 8]
+            mask = loc >= 0
+            # per particle: the constrained corners in corner order; all ordered pairs (a, b) of them
+            P = len(touching)
+            A_idx = np.repeat(loc[:, :, None], 8, 2)              # [P, 8(a), 8(b)]
+            B_idx = np.repeat(loc[:, None, :], 8, 1)
+            WA = np.repeat(w[:, :, None], 8, 2)
+            WB = np.repeat(w[:, None, :], 8, 1)
+            ok = mask[:, :, None] & mask[:, None, :]
+            ia, ib, wa, wb = A_idx[ok], B_idx[ok], WA[ok], WB[ok]   # C order: p, then a, then b
+            out.append({"group": g, "comp": k, "nodes": sel, "size": sel.size, "flat": ia*sel.size+ib,
+                        "wa": wa, "wb": wb, "particles": P})
+    return out
+
+
+def projection_blocks_v2(scene, mass_value, cache=None, key=None):
+    """``tlmpm_rubber_v1.projection_blocks`` with a vectorised, order-preserving accumulation (see
+    ``BatchedRubberMaterial._projection_inverse``); returns the same block dicts (group, comp, nodes, inv, cond)."""
+    if cache is not None and key in cache:
+        structure = cache[key]
+    else:
+        structure = projection_structure(scene)
+        if cache is not None:
+            cache[key] = structure
+    blocks = []
+    m = float(mass_value)
+    for st in structure:
+        n = st["size"]
+        A = np.zeros(n*n)
+        np.add.at(A, st["flat"], (m*st["wa"])*st["wb"])      # sequential float64 additions in loop order
+        A = A.reshape(n, n)
+        np.linalg.cholesky(A)
+        blocks.append({"group": st["group"], "comp": st["comp"], "nodes": st["nodes"], "inv": np.linalg.inv(A),
+                       "cond": float(np.linalg.cond(A))})
+    return blocks
 
 
 def prony_scales(initial, prony):

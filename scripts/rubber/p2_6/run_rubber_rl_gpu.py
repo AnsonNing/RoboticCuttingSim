@@ -466,8 +466,9 @@ class Runner:
                       "cold_s": v["walls"][0]}
         out["s1_cost_rel"] = out["profile"]["ms_per_substep"]/out["s1_off"]["ms_per_substep"]-1
         out["plane_contact_cost_rel"] = out["profile"]["ms_per_substep"]/out["contact_off"]["ms_per_substep"]-1
-        out["arms"] = ("profile: contact v3 table plane + S1; s1_off: contact, no detector; contact_off: S1, no "
-                       "ContactSpec (the strip falls through the table: cost only, never physics)")
+        out["arms"] = (f"profile: contact law {fam.law} table plane + S1; s1_off: contact, no detector; contact_off: "
+                       "S1, no ContactSpec (the strip falls through the table: cost only, never physics)")
+        out["contact_law"] = fam.law
         del arms
         gc.collect()
         return out
@@ -646,6 +647,8 @@ def main():
             "warp": wp.config.version, "torch": torch.__version__, "python": platform.python_version(),
             "free_mb_at_start": fm, "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "rows": rows,
             "sources_sha256": source_sha256(), "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+            "blas_threads_env": {k: os.environ.get(k) for k in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS",
+                                                                "MKL_NUM_THREADS")},
             "lock": "caller holds flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu<N>.lock"}
     (out/"meta.json").write_text(json.dumps(meta, indent=1))
     runner = Runner(args)

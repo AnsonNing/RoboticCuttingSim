@@ -1,0 +1,14 @@
+{
+ "schema": "rcs_rl_ready_evidence_note_v1",
+ "id": "p2_6_rubber_rl_001_note_001",
+ "amends": {
+  "path": "docs/evidence/rl_ready/p2_6_rubber_rl_001.json",
+  "sha256": "9d7a4708e7d12270cff1c6144294c4a9302b810a0cc042fcd9e293acfbb845da",
+  "mode": "additive (the evidence file and the raw row stay unchanged)"
+ },
+ "row": "RL07 (gpu_rl_b_001/rows/RL07.json, commit 3807912)",
+ "erratum": "cost_arms.arms reads 'profile: contact v3 table plane + S1'. The arms were built by RubberStripTaskFamily('rubber_strip_drag_v2').build_life, whose contact law is grid_node_penalty_coulomb_v2 (task config contact.law; the family's ContactSpec has no zeta_d): the label text was a stale string in scripts/rubber/p2_6/run_rubber_rl_gpu.py. The measured costs are those of law v2: S1 cost -0.0008, plane-only contact cost +0.170 (profile 1.4446 vs contact_off 1.2345 ms per substep, N 8 uniform L125_t4).",
+ "verification": "every RL07 throughput row and the cost arms ran with rubber_strip_drag_v2 (gpu_rl_b_001 meta.task_config_sha256 7395e610); the env receipt recorded by RL02b with the same task config (gpu_rl_a_001/rows/RL02b.json receipt.contact_law and the batch's contact spec) is grid_node_penalty_coulomb_v2; the task config's contact.law is grid_node_penalty_coulomb_v2 and the family builds every ContactSpec from it",
+ "fix": "the script now writes the family's law into the arms text and a contact_law field (next runs only)",
+ "date": "2026-11-12"
+}
