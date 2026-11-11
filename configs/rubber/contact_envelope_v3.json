@@ -1,0 +1,350 @@
+{
+ "schema": "rcs_rubber_contact_envelope_v1",
+ "id": "contact_envelope_v3",
+ "task": "ENV2 for the P2-6 fallback law after K2-1: contact_envelope_v2 + the formal check rubber_contact_envelope_v2 (law v2 at n_t 4 / 5 / 6, spin-down scored) + the K2-1 scope of the v3 rows",
+ "declared": "2026-11-11, written by scripts/rubber/p2_6/write_contact_envelope_v3.py from contact_envelope_v2_001 (commit 40ad8d4, clean tree); SHA-pinned in tests/test_rubber_contact_envelope.py; contact_envelope_v1 / v2 unchanged",
+ "supersedes": {
+  "contact_envelope_v2": "46f74efa880cf7121e50070a0cf5fb2358e87d7e390f67cd7b608802f9f03b78"
+ },
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (friction coefficients are declared numerical values of the contact law, not measured rubber friction)",
+ "rules": {
+  "what_counts": "a (law, n_t) row is ESTABLISHED only by formally scored PASS rows of a declared, SHA-pinned contact protocol run on a clean tree; sliding_mu_max = the largest scored mu whose slip rows (RUBBER-CONT-01 b, -04 a) and every lower scored mu pass; static_mu_max = the largest scored mu whose holds at tan(theta) = 0.95 mu (RUBBER-CONT-01 a) pass",
+  "diagnostic_rows": "DIAGNOSTIC evidence may only NARROW an established row, never widen it or establish a row",
+  "not_established": "a row with status NOT_ESTABLISHED has no envelope: every friction value is refused for it",
+  "unlisted": "a (law, n_t) pair without a row is refused (in particular grid_node_penalty_coulomb_v1, superseded, and every n_t outside the listed set)",
+  "absolute_limit": "mu >= 1.0 is refused for every row (label contact_coulomb_ill_posed, ADR 0023 \u00a722.9-\u00a722.11)",
+  "refusal_code": "UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE",
+  "p2_6_range": "friction_table ~ U[0.3, min over the slot set's n_t of sliding_mu_max(law, n_t)] (0.3 = the recipe's lower bound); BLOCKED if any slot's row is not established; friction_pad and friction_self fixed at the recipe values and declared unused (no pads, no self-contact physics)",
+  "scope": "a row with scope translational_sliding_only supports only scenes whose contact slip is a pure translation; rl.rubber_family refuses it for P2-6 (rotation, in-plane bending in slip)"
+ },
+ "rows": [
+  {
+   "law": "grid_node_penalty_coulomb_v2",
+   "n_t": 3,
+   "status": "ESTABLISHED",
+   "sliding_mu_max": 0.6,
+   "static_mu_max": 0.8,
+   "scored": {
+    "sliding_mu": [
+     0.4,
+     0.6
+    ],
+    "sliding_fail_mu": [
+     0.8
+    ],
+    "static_mu": [
+     0.6,
+     0.8
+    ],
+    "scenes": "INC (16 x 8 x 4 mm) and INC2 (24 x 12 x 6 mm, unseen in v2), n_t 3",
+    "tests": "RUBBER-CONT-01 a (stick, elastic + P2 at 0.95 mu), b (slip, ratios 1.1-1.3), c (onset), e (validity); RUBBER-CONT-04 a (dissipation)"
+   },
+   "run_id": "contact_v2_001",
+   "run_commit": "ffb099f",
+   "protocol": "configs/rubber/rubber_contact_tests_v2.json",
+   "protocol_sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x1_001.json (formal_run_v2, mu_envelope); ADR 0023 \u00a722.9",
+   "known_limitations": [
+    "RUBBER-CONT-01 b / -04 FAIL at mu 0.8 (sliding outside the row, declared expected)",
+    "RUBBER-CONT-01 d stick-run books FAIL (\u00a722.10 static-jitter residual)",
+    "RUBBER-CONT-05 pinch slip ratio FAIL at mu_pad 0.5"
+   ],
+   "diagnostic_narrowing": "none at n_t 3 (X2, \u00a722.10: the v2 envelope holds at n_t 3 on INC / INC2)"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v2",
+   "n_t": 4,
+   "status": "ESTABLISHED",
+   "sliding_mu_max": 0.3,
+   "static_mu_max": 0.4,
+   "scored": {
+    "sliding_mu": [
+     0.3,
+     0.4
+    ],
+    "static_mu": [
+     0.3,
+     0.4
+    ],
+    "spin_down": {
+     "SPIN_nt4_mu0.3": {
+      "pass": true,
+      "decel_ratio_5ms": 0.9723083532163336,
+      "decel_ratio_10ms": 0.972021270878639,
+      "min_omega": 5.895691394521088
+     },
+     "SPIN_nt4_mu0.4": {
+      "pass": true,
+      "decel_ratio_5ms": 0.9734866660487189,
+      "decel_ratio_10ms": 0.969355707842231,
+      "min_omega": 4.542609447499793
+     }
+    },
+    "scenes": "INC2 (24 x 12 x 6 mm), STRIP (48 x 16 x t mm), SPIN (16 x 16 x 4 mm), n_t 4",
+    "tests": "ENV-01 b, d04, e; ENV-02 a, f, e; ENV-04 a, b, c (K2-1 spin-down)"
+   },
+   "run_id": "contact_envelope_v2_001",
+   "run_commit": "40ad8d4",
+   "protocol": "configs/rubber/rubber_contact_envelope_v2.json",
+   "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18",
+   "evidence": "docs/evidence/rl_ready/p2_6_contact_envelope_002.json",
+   "known_limitations": [
+    "friction-normal flutter above the row (ADR 0023 \u00a722.9 / \u00a722.10)",
+    "RUBBER-CONT-01 d stick-run books residual (\u00a722.10), reported only",
+    "lateral drag (K2-1 b) reported, no independent reference"
+   ],
+   "diagnostic_narrowing": "none"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v2",
+   "n_t": 5,
+   "status": "ESTABLISHED",
+   "sliding_mu_max": 0.4,
+   "static_mu_max": 0.4,
+   "scored": {
+    "sliding_mu": [
+     0.3,
+     0.4
+    ],
+    "static_mu": [
+     0.3,
+     0.4
+    ],
+    "spin_down": {
+     "SPIN_nt5_mu0.3": {
+      "pass": true,
+      "decel_ratio_5ms": 0.9697957582239396,
+      "decel_ratio_10ms": 0.9663277508234522,
+      "min_omega": 5.919718943140184
+     },
+     "SPIN_nt5_mu0.4": {
+      "pass": true,
+      "decel_ratio_5ms": 0.9669042225298126,
+      "decel_ratio_10ms": 0.977430992511569,
+      "min_omega": 4.497131520239746
+     }
+    },
+    "scenes": "INC2 (24 x 12 x 6 mm), STRIP (48 x 16 x t mm), SPIN (16 x 16 x 4 mm), n_t 5",
+    "tests": "ENV-01 b, d04, e; ENV-02 a, f, e; ENV-04 a, b, c (K2-1 spin-down)"
+   },
+   "run_id": "contact_envelope_v2_001",
+   "run_commit": "40ad8d4",
+   "protocol": "configs/rubber/rubber_contact_envelope_v2.json",
+   "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18",
+   "evidence": "docs/evidence/rl_ready/p2_6_contact_envelope_002.json",
+   "known_limitations": [
+    "friction-normal flutter above the row (ADR 0023 \u00a722.9 / \u00a722.10)",
+    "RUBBER-CONT-01 d stick-run books residual (\u00a722.10), reported only",
+    "lateral drag (K2-1 b) reported, no independent reference"
+   ],
+   "diagnostic_narrowing": "none"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v2",
+   "n_t": 6,
+   "status": "ESTABLISHED",
+   "sliding_mu_max": 0.3,
+   "static_mu_max": 0.4,
+   "scored": {
+    "sliding_mu": [
+     0.3,
+     0.4
+    ],
+    "static_mu": [
+     0.3,
+     0.4
+    ],
+    "spin_down": {
+     "SPIN_nt6_mu0.3": {
+      "pass": true,
+      "decel_ratio_5ms": 0.969363004304927,
+      "decel_ratio_10ms": 0.9681378645143838,
+      "min_omega": 5.912076994944821
+     },
+     "SPIN_nt6_mu0.4": {
+      "pass": true,
+      "decel_ratio_5ms": 0.9712552166485184,
+      "decel_ratio_10ms": 0.9797343677506937,
+      "min_omega": 4.484177067286042
+     }
+    },
+    "scenes": "INC2 (24 x 12 x 6 mm), STRIP (48 x 16 x t mm), SPIN (16 x 16 x 4 mm), n_t 6",
+    "tests": "ENV-01 b, d04, e; ENV-02 a, f, e; ENV-04 a, b, c (K2-1 spin-down)"
+   },
+   "run_id": "contact_envelope_v2_001",
+   "run_commit": "40ad8d4",
+   "protocol": "configs/rubber/rubber_contact_envelope_v2.json",
+   "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18",
+   "evidence": "docs/evidence/rl_ready/p2_6_contact_envelope_002.json",
+   "known_limitations": [
+    "friction-normal flutter above the row (ADR 0023 \u00a722.9 / \u00a722.10)",
+    "RUBBER-CONT-01 d stick-run books residual (\u00a722.10), reported only",
+    "lateral drag (K2-1 b) reported, no independent reference"
+   ],
+   "diagnostic_narrowing": "none"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v3",
+   "n_t": 3,
+   "status": "ESTABLISHED",
+   "law_status": "EXPERIMENTAL_NOT_ACCEPTED until the K2 review (ADR 0023 \u00a722.11)",
+   "sliding_mu_max": 0.8,
+   "static_mu_max": 0.8,
+   "scored": {
+    "sliding_mu": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ],
+    "sliding_fail_mu": [],
+    "static_mu": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ],
+    "scenes": "INC (16 x 8 x 4 mm) and INC2 (24 x 12 x 6 mm), n_t 3; P2 holds at 0.95 mu for mu 0.6 / 0.8",
+    "tests": "RUBBER-CONT-01 a, b, c, e, f (load-ramp slip); RUBBER-CONT-04 a"
+   },
+   "run_id": "contact_v3_001",
+   "run_commit": "c631cca",
+   "protocol": "configs/rubber/rubber_contact_tests_v3.json",
+   "protocol_sha256": "36d70beaf63a0ef73195dcc47c62e522596779bb95b423a5544e5f7dc9e6a856",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x3_001.json; ADR 0023 \u00a722.11",
+   "known_limitations": [
+    "RUBBER-CONT-01 d stick-run books FAIL (declared expected; \u00a722.10 residual, until X5)",
+    "mu 1.0 rows reported only (contact_coulomb_ill_posed)",
+    "v3 declared limitations (i)-(v) of \u00a722.11: slip rate equalised over a patch; one patch per obstacle face"
+   ],
+   "diagnostic_narrowing": "none",
+   "scope": "translational_sliding_only",
+   "scope_reason": "K2-1 (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md, claude/rl-rubber @60e9119): the patch slip-rate equalisation exerts an unbounded, mu-independent torque and removes rotation and in-plane bending in slip; the limits hold for translational sliding only (rows with rotation about the normal, in-plane bending in slip or several contact regions on one face are outside: label contact_slip_rate_equalised)"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v3",
+   "n_t": 4,
+   "status": "ESTABLISHED",
+   "law_status": "EXPERIMENTAL_NOT_ACCEPTED until the K2 review (ADR 0023 \u00a722.11)",
+   "sliding_mu_max": 0.8,
+   "static_mu_max": 0.8,
+   "scored": {
+    "sliding_mu": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ],
+    "sliding_fail_mu": [],
+    "static_mu": [
+     0.2,
+     0.4,
+     0.6,
+     0.8
+    ],
+    "scenes": "INC (16 x 8 x 4 mm) and INC2 (24 x 12 x 6 mm), n_t 4; P2 holds at 0.95 mu for mu 0.6 / 0.8",
+    "tests": "RUBBER-CONT-01 a, b, c, e, f (load-ramp slip); RUBBER-CONT-04 a"
+   },
+   "run_id": "contact_v3_001",
+   "run_commit": "c631cca",
+   "protocol": "configs/rubber/rubber_contact_tests_v3.json",
+   "protocol_sha256": "36d70beaf63a0ef73195dcc47c62e522596779bb95b423a5544e5f7dc9e6a856",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x3_001.json; ADR 0023 \u00a722.11",
+   "known_limitations": [
+    "RUBBER-CONT-01 d stick-run books FAIL (declared expected; \u00a722.10 residual, until X5)",
+    "mu 1.0 rows reported only (n_t 4: +2.4 % INC, +0.68 % INC2; contact_coulomb_ill_posed)",
+    "v3 declared limitations (i)-(v) of \u00a722.11"
+   ],
+   "diagnostic_narrowing": "none",
+   "env2_check": {
+    "run_id": "contact_envelope_v1_001",
+    "protocol": "configs/rubber/rubber_contact_envelope_v1.json",
+    "protocol_sha256": "d7ecbd3164409cce12d229504864297677baf3307f9763bb7797329506ffe92c",
+    "scenes": [
+     "STRIP"
+    ],
+    "sliding_mu_max": 0.8,
+    "static_mu_max": 0.8,
+    "failing_levels": []
+   },
+   "scope": "translational_sliding_only",
+   "scope_reason": "K2-1 (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md, claude/rl-rubber @60e9119): the patch slip-rate equalisation exerts an unbounded, mu-independent torque and removes rotation and in-plane bending in slip; the limits hold for translational sliding only (rows with rotation about the normal, in-plane bending in slip or several contact regions on one face are outside: label contact_slip_rate_equalised)"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v3",
+   "n_t": 5,
+   "status": "ESTABLISHED",
+   "law_status": "EXPERIMENTAL_NOT_ACCEPTED until the K2 review (ADR 0023 \u00a722.11)",
+   "sliding_mu_max": 0.8,
+   "static_mu_max": 0.8,
+   "scored": {
+    "sliding_mu": [
+     0.3,
+     0.4,
+     0.6,
+     0.8
+    ],
+    "static_mu": [
+     0.3,
+     0.4,
+     0.6,
+     0.8
+    ],
+    "sliding_fail_mu": [],
+    "scenes": "INC2 (24 x 12 x 6 mm) and the unseen STRIP (48 x 16 x t mm, dx 1 mm), n_t 5; P2 hold at 0.95 x 0.8",
+    "tests": "ENV-01 b (slip), d04 (dissipation), e (validity); ENV-02 a (stick), f (load-ramp slip), e"
+   },
+   "run_id": "contact_envelope_v1_001",
+   "run_commit": "a79f7db",
+   "protocol": "configs/rubber/rubber_contact_envelope_v1.json",
+   "protocol_sha256": "d7ecbd3164409cce12d229504864297677baf3307f9763bb7797329506ffe92c",
+   "evidence": "docs/evidence/rl_ready/p2_6_contact_envelope_001.json",
+   "known_limitations": [
+    "RUBBER-CONT-01 d stick-run books residual (\u00a722.10) reported, not scored",
+    "mu >= 1.0 refused (contact_coulomb_ill_posed)",
+    "v3 declared limitations (i)-(v) of ADR 0023 \u00a722.11"
+   ],
+   "diagnostic_narrowing": "none",
+   "scope": "translational_sliding_only",
+   "scope_reason": "K2-1 (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md, claude/rl-rubber @60e9119): the patch slip-rate equalisation exerts an unbounded, mu-independent torque and removes rotation and in-plane bending in slip; the limits hold for translational sliding only (rows with rotation about the normal, in-plane bending in slip or several contact regions on one face are outside: label contact_slip_rate_equalised)"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v3",
+   "n_t": 6,
+   "status": "ESTABLISHED",
+   "law_status": "EXPERIMENTAL_NOT_ACCEPTED until the K2 review (ADR 0023 \u00a722.11)",
+   "sliding_mu_max": 0.8,
+   "static_mu_max": 0.8,
+   "scored": {
+    "sliding_mu": [
+     0.3,
+     0.4,
+     0.6,
+     0.8
+    ],
+    "static_mu": [
+     0.3,
+     0.4,
+     0.6,
+     0.8
+    ],
+    "sliding_fail_mu": [],
+    "scenes": "INC2 (24 x 12 x 6 mm) and the unseen STRIP (48 x 16 x t mm, dx 1 mm), n_t 6; P2 hold at 0.95 x 0.8",
+    "tests": "ENV-01 b (slip), d04 (dissipation), e (validity); ENV-02 a (stick), f (load-ramp slip), e"
+   },
+   "run_id": "contact_envelope_v1_001",
+   "run_commit": "a79f7db",
+   "protocol": "configs/rubber/rubber_contact_envelope_v1.json",
+   "protocol_sha256": "d7ecbd3164409cce12d229504864297677baf3307f9763bb7797329506ffe92c",
+   "evidence": "docs/evidence/rl_ready/p2_6_contact_envelope_001.json",
+   "known_limitations": [
+    "RUBBER-CONT-01 d stick-run books residual (\u00a722.10) reported, not scored",
+    "mu >= 1.0 refused (contact_coulomb_ill_posed)",
+    "v3 declared limitations (i)-(v) of ADR 0023 \u00a722.11"
+   ],
+   "diagnostic_narrowing": "none",
+   "scope": "translational_sliding_only",
+   "scope_reason": "K2-1 (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md, claude/rl-rubber @60e9119): the patch slip-rate equalisation exerts an unbounded, mu-independent torque and removes rotation and in-plane bending in slip; the limits hold for translational sliding only (rows with rotation about the normal, in-plane bending in slip or several contact regions on one face are outside: label contact_slip_rate_equalised)"
+  }
+ ]
+}

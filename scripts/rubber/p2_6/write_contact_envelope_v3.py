@@ -30,6 +30,7 @@ K2_1 = ("K2-1 (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md, claude/rl-rubber 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True)
+    ap.add_argument("--drag-rerun", default=None, help="labelled partial rerun of the reported DRAG row")
     a = ap.parse_args()
     run = Path(a.run) if Path(a.run).is_absolute() else ROOT/a.run
     for path, sha in ((PROTOCOL, PROTOCOL_SHA), (ENV2, ENV2_SHA)):
@@ -95,6 +96,12 @@ def main():
                   "errors": summary["errors"]},
           "verdict": summary["verdict"], "ENV-01": summary["ENV-01"], "ENV-02": summary["ENV-02"],
           "ENV-04": summary["ENV-04"], "ENV-05": summary["ENV-05"], "envelope": summary["envelope"],
+          "ENV-05_note": ("the DRAG row of the formal run recorded zero displacements: its reference markers were a "
+                          "view of the live CPU Warp array (recording bug, runner fixed at 7a36690); the reported "
+                          "row is the labelled partial rerun below (DRAG is reported, never scored)"),
+          "ENV-05_drag_rerun": (None if a.drag_rerun is None else {
+              "dir": a.drag_rerun, "meta": json.loads((ROOT/a.drag_rerun/"meta.json").read_text()),
+              "rows": json.loads((ROOT/a.drag_rerun/"partial.json").read_text())["DRAG_nt4_mu0.4"]["rows"]}),
           "p2_6_friction_range": summary["p2_6_friction_range"], "levels": summary["levels"],
           "output": {"path": "configs/rubber/contact_envelope_v3.json",
                      "sha256": hashlib.sha256(OUT_ENV.read_bytes()).hexdigest()},

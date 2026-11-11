@@ -14,7 +14,8 @@ from robotic_cutting_sim.rubber_contact_envelope import (FrictionOutOfEnvelope, 
 from robotic_cutting_sim.rubber_material import ROOT
 
 PINS = {"configs/rubber/contact_envelope_v1.json": "08f68f704a8052213be4448f964f1b0fc31da867470d7cc0274f93c71ba1a77a",
-        "configs/rubber/contact_envelope_v2.json": "46f74efa880cf7121e50070a0cf5fb2358e87d7e390f67cd7b608802f9f03b78"}
+        "configs/rubber/contact_envelope_v2.json": "46f74efa880cf7121e50070a0cf5fb2358e87d7e390f67cd7b608802f9f03b78",
+        "configs/rubber/contact_envelope_v3.json": "036008efd2a0c39526c54ec5a8f992da71b2df8f874b7ceaeaf9aa7631643763"}
 V2, V3 = "grid_node_penalty_coulomb_v2", "grid_node_penalty_coulomb_v3"
 EVID = ROOT/"docs"/"evidence"/"rl_ready"
 
@@ -122,3 +123,28 @@ def test_v2_adds_only_the_env2_rows():
     for mu in (0.81, 1.0):
         with pytest.raises(FrictionOutOfEnvelope):
             v2.check_friction(V3, 6, mu)
+
+
+def test_v3_envelope_after_k2_1():
+    """contact_envelope_v3 (rubber_contact_envelope_v2, run contact_envelope_v2_001, FAIL at the 0.4 target): law v2
+    at n_t 4 / 5 / 6 sliding 0.3 / 0.4 / 0.3, static 0.4; the v3 rows keep their limits but are scoped to
+    translational sliding (K2-1) and refused for general slip; P2-6 range [0.3, 0.3]."""
+    v3 = load_envelope(ROOT/"configs"/"rubber"/"contact_envelope_v3.json",
+                       expected_sha256=PINS["configs/rubber/contact_envelope_v3.json"])
+    ev = json.loads((EVID/"p2_6_contact_envelope_002.json").read_text())
+    assert ev["verdict"] == "FAIL" and ev["run"]["meta"]["dirty"] is False and not ev["run"]["errors"]
+    assert ev["ENV-04"]["verdict"] == "PASS" and ev["ENV-02"]["verdict"] == "PASS"
+    assert sorted(ev["ENV-01"]["failing_levels"]) == ["STRIP_nt4_mu0.4", "STRIP_nt6_mu0.4"]
+    assert ev["output"]["sha256"] == PINS["configs/rubber/contact_envelope_v3.json"]
+    for n_t, slide in ((4, 0.3), (5, 0.4), (6, 0.3)):
+        r = v3.established(V2, n_t, general_slip=True)
+        assert (r["sliding_mu_max"], r["static_mu_max"]) == (slide, 0.4)
+        assert ev["envelope"][str(n_t)]["sliding_mu_max"] == slide
+    assert v3.friction_range(V2, [4, 5, 6], general_slip=True) == (0.3, 0.3)
+    for n_t in (3, 4, 5, 6):
+        assert v3.row(V3, n_t)["scope"] == "translational_sliding_only"
+        assert v3.established(V3, n_t)["sliding_mu_max"] == 0.8                  # translational use only
+        with pytest.raises(FrictionOutOfEnvelope):
+            v3.established(V3, n_t, general_slip=True)
+    with pytest.raises(FrictionOutOfEnvelope):
+        v3.check_friction(V2, 4, 0.31, general_slip=True)
