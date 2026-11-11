@@ -14,6 +14,7 @@ split, n - p degrees of freedom.
 """
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -81,7 +82,7 @@ def main():
     r = np.concatenate(res)
     p = len(protocol["parameter_space"]["params"])
     chi2_pilot = float(r @ r)/(r.size-p)
-    per_exp_chi2 = {e["id"]: float(x @ x)/x.size for e, x in zip([e for e in exps if e["split"] == "fit"], res)}
+    per_exp_chi2 = {e["id"]: float(x @ x)/max(1, x.size) for e, x in zip([e for e in exps if e["split"] == "fit"], res)}
     settings = protocol["metrics"]["settings"]
     floors = {m: protocol["metrics"][m]["floor"] for m in protocol["metrics"] if m.startswith("M")}
     tol = {}
@@ -104,7 +105,7 @@ def main():
     thresholds = {"schema": "rcs_rubber_calib_thresholds_v1", "id": "rubber_calib_thresholds_v1",
                   "protocol": "rubber_calib_tests_v1", "protocol_sha256": psha, **C.LABELS,
                   "rule": protocol["tolerance_rule"]["formula"],
-                  "pilot": {"dataset_id": manifest["dataset_id"], "manifest": str(mpath.relative_to(C.ROOT)),
+                  "pilot": {"dataset_id": manifest["dataset_id"], "manifest": os.path.relpath(mpath.absolute(), C.ROOT),
                             "sealed_truth_sha256": manifest["synthetic"]["sealed_truth_sha256"],
                             "generator_commit": gen["tree"]["commit"], "evaluation_commit": tree["commit"],
                             "theta_pilot": theta_pilot, "rho_pilot_kg_m3": truth["rho_star_kg_m3"],
