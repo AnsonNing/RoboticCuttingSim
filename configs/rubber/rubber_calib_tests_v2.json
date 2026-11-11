@@ -1,0 +1,183 @@
+{
+ "schema": "rcs_rubber_protocol_v1",
+ "id": "rubber_calib_tests_v2",
+ "status": "DECLARED_BEFORE_ANY_V2_FIT_RECEIPT (committed alone, then SHA-pinned)",
+ "date": "2026-11-12",
+ "task": "P2-5 task P5.6, fit procedure v2 (orchestrator decision option (b), 2026-11-12)",
+ "supersedes": "rubber_calib_tests_v1 (sha256 1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b) ONLY for the fit procedure (v1 'fit.formal_method', 'fit.comparison_method', the negative-control fit procedure of CAL-07 and the convergence clause of CAL-04) and adds a hard compute budget. Everything else is inherited from v1 unchanged and stays pinned: the frozen formal dataset (manifest freeze 3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9, sealed truth e5b5c7183199493223ea52089ee4c6688b71fd57b623ba462ae1de980fcd9899), rubber_calib_thresholds_v1 (sha256 40be2f8bb7053199ef6b29776e0a7f125dff350e224124c10b07e965182caa36, 31 held-out tolerances, chi2_pilot 1.2732), the models, experiments, sensors, metrics, the CAL-01..CAL-09 definitions and labels.",
+ "why": "The v1 formal TRF (fit_001, 3 starts from a prior-box Latin hypercube, x_scale 1, forward-difference step 1e-3 in u, GPU forward model with non-deterministic float atomics) was stopped by the agent after 7 lockstep rounds of ~28 min (3.3 GPU0-h): cost 3.2e4-4.6e4 against an expected floor ~1.5e3, -2...-13 % per round, i.e. ~15 more GPU0-h to the v1 budget (~6x the plan's P5.6 allowance). No v1 fit receipt exists, the held-out ledger is unused and the formal sealed truth has never been read; fit_001 is recorded as 'v1 formal fit aborted for compute, no receipt' (artifacts/rl_ready/p2_5/fit_001/*/ABORTED.json, logs preserved). Method development for v2 used the PILOT dataset only (method_development below).",
+ "labels": {
+  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+  "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+  "resolution_specific": "inherited from v1 (theta_hat RESOLUTION_SPECIFIC to rubber_ref_v1 n_t 4)"
+ },
+ "fit": {
+  "method": "staged bounded TRF: rubber_calibration_fit.fit_staged (code commits 015af80, 96ec658), script scripts/rubber/p2_5/run_fit_v2.py",
+  "deterministic": "default",
+  "deterministic_rule": "Warp 1.17 DeterministicMode.RUN_TO_RUN was tried and is refused at compile time by the frozen Phase 1 kernel tlmpm_v5._particle_contacts (mixed add / max atomics on one array); no cheap deterministic mode exists without editing frozen code, so the default (non-deterministic float atomics) GPU mode is used and the FD step is chosen against the measured noise",
+  "fd_step_u": 0.01,
+  "fd_rule": "Measured on the pilot at theta_pilot (v2_repeatability.py, 3 identical envs x 2 runs per fit experiment): rms spread of the weighted residuals 1.8e-7...5.3e-6 for T1 / T2 / R1 / C1 / G1 and 3.9e-4 for F1 (contact); rms FD signal at h = 1e-3: weakest relevant 1.3e-4 (G1 g1 / tau1), F1 tau1 7.4e-4 / tau2 8.2e-4. Rule: h = 1e-2 in u, so that for every (experiment, parameter that affects it) the rms FD residual change is >= 10x the rms GPU spread (F1 tau columns ~19x, every other pair >= 100x).",
+  "bounds": "the u-image of the v1 prior box (mu_eq log [2e5, 3.5e5] Pa, g1 logit(g1 / 0.5) [0.08, 0.2], g2 logit(g2 / (0.5 - g1)) [0.06 / 0.42, 0.15 / 0.30], tau1 log [5, 15] ms, tau2 log [60, 200] ms, mu_table [0.4, 0.6]); the hidden truth lies inside it by construction",
+  "x_scale": "jac",
+  "tolerances": {
+   "xtol": 0.0001,
+   "ftol": 1e-08,
+   "gtol": 1e-08
+  },
+  "start": "the prior-box centre (geometric mean for mu_eq, tau1, tau2; arithmetic mean for g1, g2, mu_table)",
+  "stages_formal": [
+   {
+    "name": "S1_elastic",
+    "params": [
+     "mu_eq_pa"
+    ],
+    "experiments": [
+     "T1"
+    ],
+    "starts": 1,
+    "max_nfev": 8
+   },
+   {
+    "name": "S2_visco",
+    "params": [
+     "g1",
+     "tau1_s",
+     "g2",
+     "tau2_s"
+    ],
+    "experiments": [
+     "R1",
+     "T2"
+    ],
+    "starts": 3,
+    "start_design": "Latin hypercube over the stage box, numpy default_rng(2513 + stage index 1), lockstep",
+    "max_nfev": 15
+   },
+   {
+    "name": "S3_friction",
+    "params": [
+     "mu_table"
+    ],
+    "experiments": [
+     "F1"
+    ],
+    "starts": 1,
+    "max_nfev": 8
+   },
+   {
+    "name": "S4_joint_polish",
+    "params": [
+     "mu_eq_pa",
+     "g1",
+     "tau1_s",
+     "g2",
+     "tau2_s",
+     "mu_table"
+    ],
+    "experiments": "the whole fit split (T1, T2, R1, C1, G1, F1)",
+    "starts": 1,
+    "max_nfev": 6
+   }
+  ],
+  "stages_negative_control": [
+   {
+    "name": "S1_elastic",
+    "params": [
+     "mu_eq_pa"
+    ],
+    "experiments": [
+     "T2"
+    ],
+    "starts": 1,
+    "max_nfev": 8
+   },
+   {
+    "name": "S2_visco",
+    "params": [
+     "g1",
+     "tau1_s",
+     "g2",
+     "tau2_s"
+    ],
+    "experiments": [
+     "T2"
+    ],
+    "starts": 3,
+    "start_design": "as formal",
+    "max_nfev": 15
+   },
+   {
+    "name": "S4_joint_polish",
+    "params": [
+     "mu_eq_pa",
+     "g1",
+     "tau1_s",
+     "g2",
+     "tau2_s",
+     "mu_table"
+    ],
+    "experiments": [
+     "T2",
+     "C1"
+    ],
+    "starts": 1,
+    "max_nfev": 6
+   }
+  ],
+  "stage_rule": "each stage fits its parameters with the others fixed at the current estimate, on its experiments only; the stage result is its best evaluated point; S2 uses visco information from relaxation and the fast tensile test (the cantilever enters in the joint polish, where the estimate is already close; trajectory matching of a ~4-period oscillation from a far start is the suspected cause of the v1 stall); the theta_hat is the best evaluated point of S4 on the whole fit split, its Jacobian (from the same population) gives the covariance",
+  "starts_justification": "S2 is the only stage with several nonlinear parameters before the cantilever enters; 3 starts there (lockstep, cheap tensile / relaxation records). S1 and S3 are one-dimensional and monotone in their data; S4 starts at the staged estimate.",
+  "budget_s": {
+   "formal": 10800,
+   "negative_control": 5400
+  },
+  "budget_rule": "Budget per fit counted on the run's OWN GPU-lock hold time (run_fit_v2.py takes the blocking flock on rcs_rl_runner/gpu0.lock per forward evaluation and releases it in between so that queued jobs interleave; waiting time is not counted). A new forward population is not started when elapsed + the duration of the previous population would exceed the budget; the remaining stages are then skipped, except that the final stage always runs at least one population (the full residual and Jacobian at the current estimate). When the budget is exhausted the best iterate so far of the final stage IS the fit result and is scored normally against the frozen thresholds: CAL-04..CAL-07 then get PASS or FAIL, never NOT_RUN for budget reasons. The duration of the previous population is carried across stages; the budget can therefore be exceeded by at most the guaranteed final-stage population.",
+  "cmaes": "OPTIONAL comparison, reported only, run only if it fits the remaining GPU budget; otherwise reported as NOT_RUN (budget).",
+  "device": "GPU0 only, blocking flock per forward evaluation (not for the whole fit), >= 4 GB free checked after every acquisition; the process keeps its CUDA context and batch memory between evaluations; GPU1 is not used; PID 642659 untouched"
+ },
+ "cal_changes": {
+  "CAL-04": "pass: chi2_reduced(theta_hat) <= 1.5 x chi2_pilot (= 1.9097, unchanged) AND the S4 stage terminated by scipy's xtol / ftol / gtol criterion, by its max_nfev, or by the budget rule (status reported)",
+  "CAL-07": "the negative control uses stages_negative_control (fit on T2 + C1 only) with the budget above; must FAIL CAL-05 on at least one held-out viscous metric (M1, M2, M5 or M6), else CAL-07 FAILs",
+  "CAL-08": "order: v1 protocol < pilot < thresholds < formal dataset + manifest freeze < v2 protocol commit (after the v1 fit was stopped without a receipt, unseen) < v2 fit receipt commit < one-shot held-out < reveal",
+  "unchanged": [
+   "CAL-01",
+   "CAL-02",
+   "CAL-03",
+   "CAL-05",
+   "CAL-06",
+   "CAL-09"
+  ]
+ },
+ "run_order": [
+  "formal fit (v2)",
+  "commit the fit receipt",
+  "negative-control fit (v2)",
+  "commit its receipt",
+  "one-shot held-out of both (run_heldout.py, ledger)",
+  "reveal",
+  "recovery (CAL-06)",
+  "evidence docs/evidence/rl_ready/p2_5_calib_synthetic_001.json",
+  "report / ADR 0023 \u00a723.6 update"
+ ],
+ "run_order_note": "Corrected order (orchestrator decision 2026-11-12): formal fit -> commit its receipt -> negative-control fit -> commit its receipt -> ONE held-out call scoring both receipts -> reveal -> recovery -> evidence. Reason: evaluate_heldout is one-shot per manifest freeze and scores every committed receipt in one call; a negative-control held-out after the primary one would have to be a labelled audit re-run, and a negative-control fit after the reveal would be fitted with the truth known.",
+ "method_development": {
+  "data": "PILOT dataset p2_5_pilot_001 only; the formal dataset and its sealed truth were neither read nor used",
+  "gpu_s": {
+   "repeatability": 1527,
+   "pilot_validation": 4369,
+   "pilot_heldout_check": 420
+  },
+  "v1_stall_explanation": "no pilot FIT existed in v1 (chi2_pilot is the fit model at the true theta); the v1 formal TRF stalled because x_scale 1 with Jacobian columns spanning ~200x (mu_eq vs tau1) limits the spherical trust region by the stiff direction, the starts were 20-400x above the floor, and F1's tau columns were GPU-noise-dominated at h 1e-3 (S/N ~2)",
+  "pilot_validation": "artifacts/rl_ready/p2_5/v2_dev/pilot_validation_001 (commit 7f23ea0; budget 4800 s wall, one external flock): S1 cost 743.5, S2 233.1 (3 starts, one basin), S3 294.8, S4 1 population (budget); reduced chi2 1.170 < chi2_pilot 1.273 at the true theta",
+  "pilot_recovery_v1_rule": "mu_eq +0.47 % PASS, mu_table +0.27 % PASS; g1 -15.4 %, tau1 -10.8 %, g2 +8.4 %, tau2 -14.5 % with sigma_hat ~1 % FAIL: the n_t 4 chi2 optimum lies ~10 % from the n_t 6 truth in the Prony parameters (resolution bias, not convergence)",
+  "pilot_heldout_diagnostic": "circular (thresholds from the same pilot): 27 / 31 PASS; FAIL T4 M2 0.104 > 0.076, T4 M9 0.072 > 0.02, C2 M9 0.0201 > 0.02, C3 M9 0.0231 > 0.02",
+  "decision": "orchestrator 2026-11-12: option (a), declare as drafted and run; changing CAL-05 / CAL-06 after the pilot would move the goalposts; a pre-registered formal negative result about resolution-specific identifiability is a valid outcome"
+ },
+ "predictions": {
+  "status": "PRE-REGISTERED PREDICTIONS, NOT CRITERIA: every verdict is scored exactly as v1 defines it (CAL-04 with the v2 termination clause)",
+  "CAL-04": "expected PASS (pilot: reduced chi2 1.170 vs the limit 1.9097)",
+  "CAL-06": "expected FAIL on g1 / tau1 / g2 / tau2 (pilot: -15 / -11 / +8 / -15 % at n_t 4 against the n_t 6 truth, sigma_hat ~1 %); mu_eq and mu_table expected PASS",
+  "CAL-05": "at risk on T4 (20 /s rate extrapolation: M2, M9) and on M9 (dissipated energy) of the cantilever rows",
+  "CAL-07": "no prediction (the negative control was not run on the pilot)",
+  "headline_if_confirmed": "pipeline validated as an optimiser; theta recovery at n_t 4 against an n_t 6 truth FAILS for the Prony parameters; fitted theta is resolution-specific"
+ }
+}
