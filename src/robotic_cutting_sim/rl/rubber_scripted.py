@@ -6,7 +6,16 @@ torch code (one call for all envs) and keep a small per-env state that ``reset(e
 
 - ``rubber_scripted_drag_v1`` (``scripted_drag_v1``): a[0:2] = clip((goal - tip) / max_translation, -1, 1), the rest 0.
   The RL-05 controller of ``rubber_rl_tests_v1`` / ``_v2`` (v2 RL-05 FAIL: it ignores the strip's rotation).
-- ``rubber_scripted_tow_v1`` (``ScriptedTowV1``): see its docstring (declared by ``rubber_rl_tests_v3``).
+- ``rubber_scripted_pivot_v1`` (``scripted_pivot_v1`` -> ``ScriptedTowV1(mode="pivot_grip", k_radial=0.5, k_yaw=0.5,
+  k_fine=0.5, r_fine=0.015, eps=0.004)``): the RL-05 controller declared by ``rubber_rl_tests_v3``. The strip is stiff
+  in its own plane and lies on the table with friction: dragged sideways it rotates about its tip, pushed it ruckles,
+  but rotated about the grip it sweeps its tip. Per step: the grip yaw psi_g (from the observed grip quaternion) is
+  turned toward the bearing of the goal from the grip at k_yaw x the heading error (0.05 rad per step at most), and the
+  grip moves along its own x axis by k_radial x (rho - l) (rho = |goal - grip|, l = |marker 8 - marker 0|, the strip's
+  current length); within r_fine of the goal the grip only translates by k_fine x (goal - tip) and keeps its yaw;
+  within eps nothing moves. The heading loop never closes through the strip's own (whipping) heading. Development:
+  ``scripts/rubber/p2_6/diag_rl05_controller.py`` (DIAGNOSTIC, coarse CPU stand-in, seeds 5000-5011).
+- ``ScriptedTowV1`` modes ``tow`` / ``push`` / ``hybrid`` / ``pivot``: development candidates (not declared).
 
 Observation layout (``rl.rubber_env.POLICY_TERMS``): grip position 0:3, grip quaternion 3:7, twist 7:13, time 13,
 previous action 14:20, markers 20:47 (marker k at 20 + 3k), marker velocities 47:74, goal 74:77, preload flag 77.
@@ -59,13 +68,18 @@ class ScriptedTowV1:
     Parameters are fixed at construction (declared values in ``rubber_rl_tests_v3``)."""
 
     def __init__(self, num_envs, device, max_translation, max_rotation, *, mode="hybrid", k_tow=0.5, k_side=0.5,
-                 k_push=0.5, k_yaw=0.5, c_pull=0.5, c_push=0.5, eps=0.004):
-        if mode not in ("tow", "push", "hybrid"):
+                 k_push=0.5, k_yaw=0.5, c_pull=0.5, c_push=0.5, eps=0.004, workspace_xy=None, margin=0.005,
+                 k_radial=0.5, k_fine=0.5, r_fine=0.015):
+        if mode not in ("tow", "push", "hybrid", "pivot", "pivot_grip"):
             raise ValueError(f"mode {mode!r}")
         self.N, self.device, self.mode = num_envs, device, mode
         self.max_translation, self.max_rotation = float(max_translation), float(max_rotation)
         self.k_tow, self.k_side, self.k_push, self.k_yaw = k_tow, k_side, k_push, k_yaw
         self.c_pull, self.c_push, self.eps = c_pull, c_push, eps
+        # workspace_xy: ((x_lo, y_lo), (x_hi, y_hi)) of the grip origin in world coordinates (the task config's
+        # declared box plus the grip origin's reference); the commanded grip target is kept ``margin`` inside it
+        self.workspace_xy, self.margin = workspace_xy, float(margin)
+        self.k_radial, self.k_fine, self.r_fine = k_radial, k_fine, r_fine
 
     def reset(self, env_ids=None):
         """Stateless (kept for the controller interface)."""
@@ -73,7 +87,8 @@ class ScriptedTowV1:
     def params(self):
         return {"id": "rubber_scripted_tow_v1", "mode": self.mode, "k_tow": self.k_tow, "k_side": self.k_side,
                 "k_push": self.k_push, "k_yaw": self.k_yaw, "c_pull": self.c_pull, "c_push": self.c_push,
-                "eps_m": self.eps}
+                "eps_m": self.eps, "workspace_xy": self.workspace_xy, "margin_m": self.margin,
+                "k_radial": self.k_radial, "k_fine": self.k_fine, "r_fine_m": self.r_fine}
 
     def __call__(self, obs):
         import torch
@@ -99,7 +114,31 @@ class ScriptedTowV1:
                                self.k_side*(to_target*normal).sum(1, keepdim=True)*normal)
         # pushing: the grip moves by the tip error (the strip roughly along the approach line)
         push_move = self.k_push*e
-        if self.mode == "tow":
+        if self.mode == "pivot_grip":
+            # pivot on the GRIP heading: yaw the grip so that its x axis points at the goal, move the grip along
+            # its own x axis by the radial error (rho - l); near the goal small translations by the tip error. The
+            # loop never closes through the (whipping) strip heading
+            q = obs[:, GRIP_Q].double()
+            psi_g = torch.atan2(2*(q[:, 3]*q[:, 2]+q[:, 0]*q[:, 1]), 1-2*(q[:, 1]**2+q[:, 2]**2))
+            ug = torch.stack((torch.cos(psi_g), torch.sin(psi_g)), 1)
+            bearing = g-grip
+            rho = torch.linalg.vector_norm(bearing, dim=1, keepdim=True)
+            psi_bear = torch.atan2(bearing[:, 1], bearing[:, 0])
+            fine = dist <= self.r_fine
+            move = torch.where(fine, self.k_fine*e, self.k_radial*(rho-ell)*ug)
+            psi = psi_g
+            psi_star = torch.where(fine[:, 0], psi_g, psi_bear)
+        elif self.mode == "pivot":
+            # pivot: point the strip at the goal from the grip (yaw about the grip sweeps the tip), fix the radial
+            # error by moving the grip along the strip axis; near the goal small translations by the tip error
+            bearing = g-grip
+            rho = torch.linalg.vector_norm(bearing, dim=1, keepdim=True)
+            psi_bear = torch.atan2(bearing[:, 1], bearing[:, 0])
+            radial = self.k_radial*(rho-ell)*u
+            fine = dist <= self.r_fine
+            move = torch.where(fine, self.k_fine*e, radial)
+            psi_star = torch.where(fine[:, 0], psi, psi_bear)
+        elif self.mode == "tow":
             move, psi_star = tow_move, psi_tow
         elif self.mode == "push":
             move, psi_star = push_move, psi_push
@@ -109,6 +148,10 @@ class ScriptedTowV1:
             psi_star = torch.where(pushing[:, 0], psi_push, psi_tow)
         active = dist > self.eps
         move = torch.where(active, move, torch.zeros_like(move))
+        if self.workspace_xy is not None:                 # keep the commanded grip inside the declared box
+            lo = torch.tensor(self.workspace_xy[0], dtype=f64, device=obs.device)+self.margin
+            hi = torch.tensor(self.workspace_xy[1], dtype=f64, device=obs.device)-self.margin
+            move = torch.minimum(torch.maximum(grip+move, lo), hi)-grip
         dpsi = torch.where(active[:, 0], _wrap(psi_star-psi), torch.zeros_like(psi))
         a = torch.zeros((obs.shape[0], 6), dtype=f64, device=obs.device)
         a[:, :2] = move/self.max_translation
@@ -116,4 +159,12 @@ class ScriptedTowV1:
         return a.clamp(-1.0, 1.0).to(torch.float32)
 
 
-__all__ = ["scripted_drag_v1", "ScriptedTowV1"]
+PIVOT_V1 = {"mode": "pivot_grip", "k_radial": 0.5, "k_yaw": 0.5, "k_fine": 0.5, "r_fine": 0.015, "eps": 0.004}
+
+
+def scripted_pivot_v1(num_envs, device, max_translation, max_rotation):
+    """``rubber_scripted_pivot_v1`` (rubber_rl_tests_v3 RL-05): ``ScriptedTowV1`` with the declared ``PIVOT_V1``."""
+    return ScriptedTowV1(num_envs, device, max_translation, max_rotation, **PIVOT_V1)
+
+
+__all__ = ["scripted_drag_v1", "ScriptedTowV1", "scripted_pivot_v1", "PIVOT_V1"]

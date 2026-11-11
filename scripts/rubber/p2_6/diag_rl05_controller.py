@@ -56,6 +56,9 @@ def _controller(name, fam, device):
     for item in filter(None, rest.split(",")):
         k, _, v = item.partition("=")
         kw[k] = v if k == "mode" else float(v)
+    if kw.pop("clip", 0.0):
+        lo, hi = fam.workspace_box
+        kw["workspace_xy"] = ((lo[0], fam.width/2+lo[1]), (hi[0], fam.width/2+hi[1]))
     return RS.ScriptedTowV1(1, device, fam.max_translation, fam.max_rotation, **kw)
 
 
@@ -113,9 +116,15 @@ def main():
                                              "argv": sys.argv, "items": len(items), "pid": os.getpid(),
                                              "start": time.strftime("%Y-%m-%d %H:%M:%S")}, indent=1))
     res = []
+    (out/"jobs").mkdir()
+    from concurrent.futures import as_completed
     with ProcessPoolExecutor(a.jobs) as ex:
-        for r in ex.map(job, items):
+        futs = [ex.submit(job, it) for it in items]
+        for f in as_completed(futs):
+            r = f.result()
             res.append(r)
+            name = f"{r['controller'].replace(':', '_').replace(',', '_').replace('=', '')}_{r['slot']}_{r['seed']}"
+            (out/"jobs"/f"{name}.json").write_text(json.dumps(r, default=float))
             print(r["controller"], r["slot"], r["seed"], r.get("error") or
                   f"ret {r['return']:.2f} final_d {r['final_d']*1e3:.1f} mm success {r['success']} "
                   f"{r['wall_s']:.0f} s", flush=True)
