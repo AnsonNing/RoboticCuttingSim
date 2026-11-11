@@ -64,8 +64,8 @@ The authorship trailer of the two optimizer commits is known and accepted, so it
 | Default / `frozen_v1` / `alias_free_v1` byte-for-byte | **PASS** | §3.1. `tlmpm_v7_2_batch.py` and `material_batch.py` are unchanged. The `frozen_v1` receipt is hard-coded (`tlmpm_v7_2_batch.py:775-778`). v1 skips the new dispatch: `env_grid is None` (`particle_contacts.py:697`), asserted in the test at `:263`. The v1 receipt keeps its keys and their order. `FROZEN_BATCH_KERNEL_SHA256` pin: PASS. G8 (default plan): PASS. |
 | Search radius (speed-bound shrink) | **PASS** | §3.2. The check runs per env and per substep, on the same `x` and `v` the kernel reads (`:719-731`). An env above V falls back to the frozen reach; nothing is dropped. Above the certified bound, guard bit 64 applies (unchanged). Reset, teleport and the first step after a partial reset are covered because the stage keeps no state between substeps. |
 | Regrouping and ordering, parity | **PASS** | §3.3. The radix sort is stable over ascending ids. Each bound is written exactly once. The key check makes stale bounds unusable. Candidate sequences equal Warp's grouped query on CPU (test) and CUDA (my probe). Accepted episodes: codes and labels equal Native (G6, G7). |
-| Multi-env isolation, partial reset | **PASS** | §3.4. The key carries the env prefix `e*C`. My GPU probe found 0 foreign candidates. The per-env shrink flag is isolated, shown at substep 1 of the necessity test. Partial reset: CPU v2 equals `frozen_v1` (no particle contacts in that scene, finding 1). |
-| HashGrid guard, descriptor hazard, device pinning | **PASS_WITH_LIMITATIONS** | §3.5. v2 adds no `wp.HashGrid` and puts no `HashGrid.build` in its graph. The guard tests pass. Limitation: finding 3, an audit of a grid v2 does not query, and a dead host rebuild. |
+| Multi-env isolation, partial reset | **PASS** | §3.4. The key carries the env prefix `e*C`. My GPU probe found 0 foreign candidates. The per-env shrink flag is isolated, shown at substep 1 of the necessity test. Partial reset: CPU v2 equals `frozen_v1` (no particle contacts in that scene, finding 1). GPU material probe, partial reset under the CUDA graph: v2 final codes equal v1 per env (§7). |
+| HashGrid guard, descriptor hazard, device pinning | **PASS_WITH_LIMITATIONS** | §3.5. v2 adds no `wp.HashGrid` and puts no `HashGrid.build` in its graph. The guard tests pass. On CUDA a second v2 material is refused with `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` (§7). Limitation: finding 3, an audit of a grid v2 does not query, and a dead host rebuild. |
 | Memory | **PASS_WITH_LIMITATIONS** | §3.6. Fixed allocation at construction; no growth per step. The cost is O(N·C), about 8.1 MiB/env allocated and 4.3 MiB/env measured. int32 limit N ≤ 2495 (finding 2). |
 | New tests test the claims | **PASS_WITH_LIMITATIONS** | §3.7. The regrouping tests are strong. The CPU evidence for the shrink under contact is 2 env-substeps per block scene. The TRIM tests have zero particle contacts. Two assertions are vacuous (finding 1). |
 | PR body against evidence | **PASS_WITH_LIMITATIONS** | §4. The gate table, ratios, rows and SHARED_GPU label are correct. Limitations specific to the PR are missing: findings 1 and 2, plus that the speed-up depends on slow particles. The wording "samestate reruns bitwise" holds for dev only (finding 5). |
@@ -407,7 +407,7 @@ Still NOT_RUN: `test_vector_env_gpu_stream.py` (CUDA hidden).
 | `slack_domain.py` | float32 bound: 0 misses (§3.2) |
 | `native_speeds.py` (WP-17 records, read-only) | §4 |
 | `coords.py` | TRIM local \|x\| ≤ 0.0795 m; dims (189, 69, 66); certified bound 150.5 m/s |
-| `gpu_material.py` (material-level CUDA run of v2 and v1 with partial reset) | See §7 |
+| `gpu_material_002.py` (material-level CUDA run of v2 and v1 with partial reset, GPU0 under the lock) | See §7. `gpu_material_001_failed_host_reference_needs_parity_mode.log` is preserved: a probe error, not a PR failure. |
 
 ## 7. GitHub CI and GPU material probe
 
@@ -418,9 +418,30 @@ Still NOT_RUN: `test_vector_env_gpu_stream.py` (CUDA hidden).
   completed successfully.
 - The last `main` run (`bfe6d5e`) took 108 min and succeeded.
 
-**GPU material probe.** `gpu_material.py` was queued behind `gpu0.lock`. The lock is held by the P2-5 rubber fit job
-(`run_fit_v2.py --kind formal --gpu-index 0`); GPU1's lock is held as well. Following the one-job-per-GPU rule, it
-waits. Its status is recorded in the commit that adds this report. It is optional and not needed for the verdict.
+**GPU material probe: PASS** (optional; `probes/gpu_material_002*`, GPU0 under `gpu0.lock`, 21:54 UTC, 10 s).
+
+*Set-up:*
+- `BatchedCuttingMaterial` on `cuda:0`, with one CUDA graph per control step (200 substeps).
+- N=3 coarse TRIM fixture (`T1.CONFIGS`, alias-free dims 77×64×32), device interpolation.
+- 6 control steps with cut digits 0, 0, 1, 1, 0, 0; `reset([1])` after step 2.
+- `alias_free_v2` and `alias_free_v1` run in separate processes.
+
+*Both modes:*
+- `invalid_reason` [0, 0, 0] and guard violations [0, 0, 0];
+- 6 descriptor refreshes; `device_hashgrid` status OK;
+- the same 6,655 B of net mempool growth during capture;
+- a second material in the same process is refused with `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS`.
+
+*v2 against v1:*
+- Final codes are equal for every env (272, 81 and 260 non-zero codes).
+- Final positions agree within 9.7e-8 m (float atomic order).
+- Per-step tool-contact counts (slot 1) are identical.
+
+*Limitation:* this short scene has 0 particle–particle contacts (finding 1), so it checks graph capture, partial
+reset, the guard and isolation under v2, not the contact sums.
+
+The first attempt (`gpu_material.py`) waited 9.7 min for the lock, held by the P2-5 fit job, and then failed in my probe:
+`host_reference` interpolation requires `parity_mode`. Its log is preserved.
 
 ## 8. Conditions and recommendations
 
