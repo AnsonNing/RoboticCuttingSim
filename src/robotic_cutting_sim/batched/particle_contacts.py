@@ -39,6 +39,28 @@ grid's descriptor even when other grids exist in the process. Since review fix F
 DEVICE_HASHGRID_REFRESH``) the material does the same for ``frozen_v1`` (host rebuild of ``solver.hash`` before every
 launch, no kernel or graph change), so neither mode keeps the hazard for its own graph.
 
+``alias_free_v2`` (P1-6 cycle p16c1, opt-in; ``alias_free_v1`` and ``frozen_v1`` are unchanged and remain the
+rollback) keeps C1 + C2 + the fallback guard and changes only how the alias-free query enumerates candidates:
+
+* ``env_major_grid`` (always on in v2, analysis C4): ``EnvMajorGrid`` keys each particle by ``env*C + cell``
+  (Warp's ``hash_grid_index`` arithmetic on the alias-free dims, Warp's float32 ``cell_width_inv``), sorts the ids
+  with the stable ``wp.utils.radix_sort_pairs`` over ``ceil(log2(N*C))`` bits instead of the grouped grid's 64-bit
+  keys, and stores bucket bounds ``starts/ends[N*C]`` without a per-substep memset (a lookup of key k is used only
+  if ``keys[starts[k]] == k``, which an absent key never satisfies and a present key was rewritten for). The
+  contact kernel walks the virtual cells in Warp's order (x fastest, then y, then z) and each bucket in ascending
+  id order, i.e. exactly the candidate sequence of ``hash_grid_query(grid, x_p, 2.4 r, e)`` on the grouped grid,
+  without the two binary searches per visited cell that the grouped query spends on the env range.
+* ``shrink_speed_m_s`` V (default 0.25 m/s, ``None`` turns it off; analysis C3): the speed guard pass also sets a
+  per-env flag when a particle of the env is faster than V (or not finite). Unflagged envs query with reach
+  ``min(2.4 r, (2r + 2 dt V)(1 + 1e-5) + 1e-7 m)`` instead of ``2.4 r``. A pair impulse is non-zero only if
+  ``d - 2r + dt*min(v_rel.n, 0) < 0``, i.e. ``d < 2r + dt |v_rel| <= 2r + 2 dt V``; every such q lies in the
+  smaller box, whose cells are a sub-box of the frozen box (floor is monotone), so the candidate sequence is an
+  order-preserving subsequence of the frozen one and every dropped candidate contributes exactly zero (skipped by
+  C1 anyway). Flagged envs use ``2.4 r``. The flag is cleared at the end of the stage (zero between substeps).
+
+Both are Level A given the certificates (bitwise on CPU against the frozen single,
+``tests/test_batched_particle_contacts_v2.py``). The new arrays live on the contact object, not on the solver.
+
 Nothing here edits a frozen module; the kernels below are the frozen ``_particle_contacts_b`` body with the
 listed changes only.
 """
