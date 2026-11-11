@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _common as C  # noqa: E402
 
 PROTOCOL_SHA = "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b"     # rubber_calib_tests_v1 (c5054b9)
-THRESHOLDS_SHA = None   # set by the commit that pins the thresholds
+THRESHOLDS_SHA = "40be2f8bb7053199ef6b29776e0a7f125dff350e224124c10b07e965182caa36"   # rubber_calib_thresholds_v1 (4d7d2c4)
 
 
 def main():
