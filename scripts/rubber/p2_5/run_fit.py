@@ -29,10 +29,14 @@ def start_box(protocol, space):
     """u-image of the prior box (protocol fit.formal_method.start_design)."""
     pb, G = protocol["prior_box"], space.G
     lg = lambda p: math.log(p/(1-p))   # noqa: E731
-    lo = [math.log(pb["mu_eq_pa"][0]), lg(pb["g1"][0]/G), lg(pb["g2"][0]/(G-pb["g1"][0])), math.log(pb["tau1_s"][0]),
-          math.log(pb["tau2_s"][0]), pb["mu_table"][0]]
-    hi = [math.log(pb["mu_eq_pa"][1]), lg(pb["g1"][1]/G), lg(pb["g2"][1]/(G-pb["g1"][1])), math.log(pb["tau1_s"][1]),
-          math.log(pb["tau2_s"][1]), pb["mu_table"][1]]
+    lo = {"mu_eq_pa": math.log(pb["mu_eq_pa"][0]), "g1": lg(pb["g1"][0]/G), "g2": lg(pb["g2"][0]/(G-pb["g1"][0])),
+          "tau1_s": math.log(pb["tau1_s"][0]), "tau2_s": math.log(pb["tau2_s"][0]), "mu_table": pb["mu_table"][0]}
+    hi = {"mu_eq_pa": math.log(pb["mu_eq_pa"][1]), "g1": lg(pb["g1"][1]/G), "g2": lg(pb["g2"][1]/(G-pb["g1"][1])),
+          "tau1_s": math.log(pb["tau1_s"][1]), "tau2_s": math.log(pb["tau2_s"][1]), "mu_table": pb["mu_table"][1]}
+    from robotic_cutting_sim.rubber_calibration_fit import PARAMS
+    lo, hi = [lo[k] for k in PARAMS], [hi[k] for k in PARAMS]       # u order = PARAMS order
+    if not (space.inside(lo) and space.inside(hi)):
+        raise SystemExit("start box outside the fit box")
     return np.array(lo), np.array(hi)
 
 
