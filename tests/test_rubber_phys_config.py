@@ -192,7 +192,11 @@ def test_workload_e_v2_full_row_is_n_t4_and_the_n_t3_row_is_labelled():
     assert rl["material"]["resolution_profile"] == "rubber_rl_v1"
     assert rl["reduced_fidelity_reasons"] == ["thickness_resolution_n_t3"]
     assert RESOLUTION_PROFILES["rubber_rl_v1"]["label"] == "reduced_fidelity: thickness_resolution_n_t3"
-    assert RESOLUTION_PROFILES["rubber_ref_v1"]["label"] == "full"
+    # K2 review K2-2 / Q1w decision (c): the n_t 4 profile stays the full-fidelity grid but its label names the
+    # RUBBER-PHYS-11 v5 Q1w limitation (was "full" before K2-2; workload_e_v2.json is frozen and keeps "full")
+    assert RESOLUTION_PROFILES["rubber_ref_v1"]["label"] == \
+        "full_with_known_limitation: rubber_phys_11_v5_q1w_gci_2.16pct"
+    assert RESOLUTION_PROFILES["rubber_ref_v1"]["known_limitation"]["id"] == "rubber_phys_11_v5_q1w_gci_2.16pct"
     for key in ("geometry_m", "randomisation", "control_dt_s", "bulk_ratio_beta", "cfl"):
         assert full["material"][key] == rl["material"][key], key
     v5 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v5.json").read_text())["workload_e_v2_gpu"]

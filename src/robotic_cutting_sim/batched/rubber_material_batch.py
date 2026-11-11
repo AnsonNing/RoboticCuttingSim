@@ -50,6 +50,7 @@ import numpy as np
 import warp as wp
 
 from .. import tlmpm_rubber_v1 as T
+from .. import rubber_material as rm
 from .. import rubber_self_penetration as rsp
 from .. import rubber_visco_constitutive as rvc
 from . import constitutive_rubber as cr
@@ -903,7 +904,8 @@ class BatchedRubberMaterial:
         return {"runtime": RUNTIME, "version": VERSION, "device": self.device, "parity_mode": self.parity_mode,
                 "strict": self.strict, "graph": self.capture_receipt, "control_dt_s": self.control_dt,
                 "layout": self.packed.layout_receipt(), "solver": self.solver.solver_receipt(),
-                "envs": self.packed.receipts, "ranges": self.ranges, "memory_bytes": self.memory_bytes(),
+                "envs": self.packed.receipts, "resolution": resolution_summary(self.packed.receipts),
+                "ranges": self.ranges, "memory_bytes": self.memory_bytes(),
                 "build_wall_s": self.build_wall_s, "calibration": "SIMULATOR_ONLY_UNCALIBRATED",
                 "device_hashgrid_guard": "not_applicable_no_hashgrid (rubber v1 has no self-contact)",
                 "coupling": "kinematic Dirichlet groups (no robot feedback in P2-1)",
@@ -916,6 +918,20 @@ class BatchedRubberMaterial:
                    else {}),
                 "open_vector_env": "deferred to P2-6 (P1-5 owns the configured-scene dispatch)",
                 "diagnostics_groups": DIAG_GROUPS}
+
+
+def resolution_summary(env_receipts):
+    """Per-env resolution profiles and the distinct profile labels (``measured_bias`` / ``known_limitation``, K2-2) of
+    a batch; the full block of each env is also in ``envs[e].scene.resolution``."""
+    per_env = [r["scene"]["resolution"]["resolution_profile"] for r in env_receipts]
+    labels = {}
+    for r in env_receipts:
+        res = r["scene"]["resolution"]
+        if res["resolution_profile"] not in labels:
+            full = rm.resolution_label(res["resolution_profile"], res["cells_through_thickness"])
+            labels[res["resolution_profile"]] = {k: full[k] for k in ("label", "measured_bias", "known_limitation")}
+    return {"per_env": per_env, "cells_through_thickness": [r["scene"]["resolution"]["cells_through_thickness"]
+                                                            for r in env_receipts], "profiles": labels}
 
 
 def prony_scales(initial, prony):

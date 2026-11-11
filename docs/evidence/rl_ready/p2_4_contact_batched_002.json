@@ -754,5 +754,10 @@
   "P1 contact kernel cost",
   "X2 (friction-normal flutter, defect 2)",
   "independent review (R1)"
- ]
+ ],
+ "k2_review_notes": {
+  "header": "Additive notes of the K2 combined review fixes (2026-11-11; findings in docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md). No recorded value, verdict or command of this file is changed; no GPU job was re-run for these notes.",
+  "K2-3": "324 of the 1,566 scored scalars of gpu_cont09_v2_001 (18 summary columns x 6 control steps x envs 0 / 2 / 3) carried no information. K2-3: the criterion-b floor eps_rel * max_{i,c} |A_i[c]| is taken over the whole observable vector; for the 18-column energies summary (tlmpm_rubber_v1.DIAG_COLUMNS) that maximum is the integer column particles (41,220; cells 5,175), so the floor is ~0.04 in mixed units, 10^2-10^3 x the elastic and kinetic energies of the out-of-reach envs. The summary scalars could not fail: they carried no information. The isolation claim rests on the markers (floor ~1.4e-7 m), the group (clamp) and contact wrenches (clamp wrench floor <= 9e-7 N), criterion a (exact-zero contact rows), criterion c (audits) and the CPU L1 byte tests (RUBBER-CONT-08). Versioned check with a per-quantity floor and the count / flag columns compared exactly: scripts/rubber/p2_4b/gpu_contact_batched_check_rule_v3.py (CPU tests tests/test_rubber_cont09_rule_v3.py); not run on a GPU; DIAGNOSTIC until a declared -09 version names it. The raw per-episode observables were not saved, so this run cannot be re-scored with it.",
+  "K2-7_ab": "K2-7 (a): the declared observables have 1,566 scalars (846 with s > 0), not <= 648: the union-bound family-wise H0 rate at 5.5e-6 per scalar is 0.86 % (0.47 % over the scalars with s > 0), not <= 0.4 %. The frozen protocol rubber_contact_tests_v3.json (RUBBER-CONT-09 calibration) copies the stale text; it is not edited, the correction is recorded in ADR 0023 section 22.9 / 22.11 (errata). (b) The <= 5.5e-6 per-scalar false-reject rate holds for the four continuous noise families simulated (Gaussian, Laplace, Student-t(3), uniform); two-point (atomic-order) noise gives ~1.9e-3 per scalar (K2 sub-review Monte Carlo, not re-run here), for which the union bound over 846 noisy scalars is uninformative. 'A shift > (lam + 1) s = 5 s is always rejected' holds only with the floor term: a shift > 5 s + floor."
+ }
 }

@@ -32,26 +32,122 @@ CALIBRATION_DIR = ROOT/"configs"/"rubber"/"calibration"
 # (ADR 0023 §19A): rubber_ref_v1 is the full-fidelity grid for bending-dominated scenes; rubber_rl_v1 (n_t 3) is a
 # labelled reduced-fidelity profile whose receipts carry its measured bending bias (the earlier label "full
 # (<= 0.5 % bending error, E1)" generalised the L/t 10 rows of E1 and is refuted at L/t 20 and for wide strips).
+#
+# K2 review (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md, K2-2 and the Q1w decision, option (c)): EVERY profile
+# carries ``measured_bias`` (schema rcs_resolution_bias_v1) and ``known_limitation`` (an ``id`` plus a summary with
+# width / slenderness qualifiers), and every rubber scene receipt carries them (``rubber_scene.resolution_label``).
+# Profiles are bands of n_t = t / dx (``cells_through_thickness_band`` [lo, hi)); the scene compiler refuses a profile
+# whose band does not contain the scene's n_t. Numbers (percent, phi(n_t) / phi_true - 1, positive = the grid is too
+# soft in bending) are from protocol v5 RUBBER-PHYS-11 (refinement_v5_001, four grids n_t 3 / 4 / 6 / 8) and the
+# RUBBER-PHYS-02 rows (v5: n_t 4 / 6; v4: n_t 3), evidence docs/evidence/rl_ready/p2_2_v5_001.json and
+# p2_2_rubber_001.json. Point value: against the p_eff = 2 extrapolation of n_t 4 / 6 / 8; range: lower end against
+# the n_t 8 value itself (monotone convergence from above), upper end against the p = 1 extrapolation of n_t 6 / 8.
+_BIAS_SOURCE = ("protocol v5 RUBBER-PHYS-11 (refinement_v5_001, artifacts/rl_ready/p2_2_v5; evidence "
+                "docs/evidence/rl_ready/p2_2_v5_001.json refinement_v5.table): phi(n_t) / phi_true - 1, point value "
+                "against the p_eff = 2 Richardson extrapolation of n_t 4 / 6 / 8, range from the n_t 8 value (lower "
+                "magnitude) to the p = 1 extrapolation of n_t 6 / 8 (upper magnitude); width / slenderness rows from "
+                "RUBBER-PHYS-02 (v5 rows n_t 4 / 6, v4 rows n_t 3): range from the n_t 6 value to the -02 two-grid "
+                "(n_t 4 / 6, p 2) extrapolation, identical for t 3 / 4 / 6 mm")
+_BIAS_SCOPE = {"case": "A clamp under gravity (static sag Q1 / Q1w, f1 Q2, large-deflection tip drop Q4)",
+               "L_over_t": [10, 20], "W_over_t": [1, 4], "t_m": [0.003, 0.006], "alpha_small_deflection": 0.05,
+               "alpha_large_deflection": 9.0, "beta": 20, "cfl": 0.5, "particles_per_cell_axis": 2,
+               "model": "neo_hookean_jbar_v1 (elastic; Q1 / Q1w mu 0.4 MPa, Q2 mu 2 MPa, Q4 mu 0.2 MPa)",
+               "outside_measured_class": "L/t > 20 (the deviation grows with L/t; the P2-6 slots reach L/t 37.5), "
+                                         "W/t outside [1, 4], another n_t, CFL or beta, Prony terms, contact and "
+                                         "moving grips are not measured: these numbers are not evidence there "
+                                         "(K2 Q1w condition 3: RL-08 measures the bias on the RL geometry)"}
+
+
+def _signed(geometry, point, lo, hi, **extra):
+    return {"geometry": geometry, "sign": "signed", "bias_pct": point, "bias_range_pct": [lo, hi],
+            "text": f"{point:+.2f} % ({lo:+.2f} ... {hi:+.2f} %)", **extra}
+
+
+def _oscillatory(geometry, abs_max, estimates, **extra):
+    return {"geometry": geometry, "sign": "OSCILLATORY (no signed bias: the n_t 4 / 6 / 8 triplet is oscillatory)",
+            "bias_pct": None, "abs_bias_pct_max": abs_max, "point_estimates_pct": estimates,
+            "text": f"oscillatory, |bias| <= {abs_max:.2f} % (not a signed value)", **extra}
+
+
+_Q1 = "static sag, L/t 20, W = t, t 4 mm, alpha 0.05 (RUBBER-PHYS-11 Q1)"
+_Q1W = "static sag, L/t 20, W = 4t, t 4 mm, alpha 0.05 (RUBBER-PHYS-11 Q1w, the workload E geometry class)"
+_Q2 = "first bending frequency f1, 60 x 6 x 6 mm (RUBBER-PHYS-11 Q2)"
+_Q4 = "large-deflection tip drop, L/t 20, alpha 9 (RUBBER-PHYS-11 Q4)"
+
 RESOLUTION_PROFILES = {
-    "rubber_ref_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 4, "label": "full",
-                      "use": "full-fidelity production grid for bending-dominated scenes (acceptance tests, P2-5 "
-                             "calibration fits, the Full Native reference)"},
-    "rubber_rl_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 3,
-                     "label": "reduced_fidelity: thickness_resolution_n_t3",
-                     "measured_bias": {
-                         "source": "protocol v5 RUBBER-PHYS-11 (refinement_v5_001, artifacts/rl_ready/p2_2_v5): "
-                                   "phi(n_t 3) / phi_ext - 1 with phi_ext the p_eff = 2 extrapolation of n_t 4 / 6 / 8, "
-                                   "beta 20, CFL 0.5, 2 particles per cell; reported, not scored",
-                         "static_sag_L_over_t_10": "<= 0.5 % (ADR 0023 E1)",
-                         "static_sag_L_over_t_20_W_t": "+0.97 % (Q1; v4 vs (3, 4, 6): +1.08 %)",
-                         "static_sag_L_over_t_20_W_4t": "+1.39 % (Q1w, the workload E geometry class)",
-                         "first_bending_frequency": "-0.83 % (Q2)",
-                         "large_deflection_tip_drop": "+0.08 % (Q4)",
-                         "uniaxial_stress": "grid independent (RUBBER-PHYS-11 v4 Q3)",
-                         "n_t_4_for_comparison": "rubber_ref_v1 itself: Q1 +0.39 %, Q1w +0.62 %, Q2 -0.39 %, Q4 "
-                                                 "-0.05 % against the same extrapolation"}},
-    "rubber_coarse_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 2,
-                         "label": "reduced_fidelity: coarse_thickness_resolution"},
+    "rubber_ref_v1": {
+        "particles_per_cell_axis": 2, "min_cells_through_thickness": 4, "cells_through_thickness_band": [4, None],
+        "label": "full_with_known_limitation: rubber_phys_11_v5_q1w_gci_2.16pct",
+        "use": "full-fidelity production grid for bending-dominated scenes (acceptance tests, P2-5 calibration fits, "
+               "the Full Native reference), with its measured wide-strip sag bias labelled (K2 Q1w decision (c))",
+        "measured_bias": {
+            "schema": "rcs_resolution_bias_v1", "measured_at_cells_through_thickness": 4, "source": _BIAS_SOURCE,
+            "scope": _BIAS_SCOPE,
+            "observables": {
+                "Q1": _signed(_Q1, 0.39, 0.33, 0.47, p_obs_point_pct=0.35, gci_production_pct=1.48),
+                "Q1w": _signed(_Q1W, 0.62, 0.50, 0.78, p_obs_point_pct=0.56, gci_production_pct=2.16, fs=3.0,
+                               p_obs=3.12, verdict="RUBBER-PHYS-11 v5 FAIL (GCI 2.16 % > 2 %; Fs 3 because p_obs "
+                                               "3.12 lies outside [1, 3]); kept recorded, no v6 rule"),
+                "Q2": _signed(_Q2, -0.39, -0.50, -0.31, p_obs_point_pct=-0.36, gci_production_pct=0.56),
+                "Q4": _oscillatory(_Q4, 0.05, [-0.015, -0.029, -0.050], gci_production_pct=0.07),
+                "Q3_uniaxial_stress": {"sign": "grid independent", "bias_pct": None,
+                                       "text": "grid independent (RUBBER-PHYS-11 v4 Q3, GCI 0.01 %)"}},
+            "width_and_slenderness_RUBBER_PHYS_02": {
+                "L_over_t_10_W_t": [0.06, 0.11], "L_over_t_10_W_4t": [0.30, 0.53],
+                "L_over_t_20_W_t": [0.28, 0.50], "L_over_t_20_W_4t": [0.40, 0.73],
+                "unit": "percent static sag bias of n_t 4 (range, see source)"}},
+        "known_limitation": {
+            "id": "rubber_phys_11_v5_q1w_gci_2.16pct",
+            "summary": "n_t 4 overestimates small-deflection static sag of wide strips: +0.62 % (+0.50 ... +0.78 %) "
+                       "at L/t 20, W = 4t (RUBBER-PHYS-11 v5 Q1w FAIL, GCI 2.16 %, Fs 3, p_obs 3.12); narrow strips "
+                       "W = t: +0.39 % (+0.33 ... +0.47 %) at L/t 20, +0.06 ... +0.11 % at L/t 10; W = 4t at L/t 10: "
+                       "+0.30 ... +0.53 %; f1 -0.39 % (-0.50 ... -0.31 %); large-deflection tip drop oscillatory, "
+                       "|bias| <= 0.05 %; the deviation grows with L/t and W/t and is unmeasured beyond L/t 20 / W/t 4",
+            "decision": "K2 Q1w decision option (c) (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md §3): accepted as "
+                        "a labelled limitation; RUBBER-PHYS-11 v5 stays FAIL",
+            "cite_when": "sub-percent small-deflection stiffness, sag or f1 of wide or slender strips; Native analytic "
+                         "comparisons; bending-dominated calibration fits (fitted parameters are specific to this "
+                         "profile, never carried to n_t 3 or 6 without the bias shift)"}},
+    "rubber_rl_v1": {
+        "particles_per_cell_axis": 2, "min_cells_through_thickness": 3, "cells_through_thickness_band": [3, 4],
+        "label": "reduced_fidelity: thickness_resolution_n_t3",
+        "measured_bias": {
+            "schema": "rcs_resolution_bias_v1", "measured_at_cells_through_thickness": 3, "source": _BIAS_SOURCE,
+            "scope": _BIAS_SCOPE,
+            "observables": {
+                "Q1": _signed(_Q1, 0.97, 0.91, 1.06, p_obs_point_pct=0.93, v4_point_pct=1.08,
+                              gci_triplet_3_4_6_pct=3.98),
+                "Q1w": _signed(_Q1W, 1.39, 1.27, 1.56, p_obs_point_pct=1.34, gci_triplet_3_4_6_pct=2.19),
+                "Q2": _signed(_Q2, -0.83, -0.94, -0.76, p_obs_point_pct=-0.80, gci_triplet_3_4_6_pct=1.28),
+                "Q4": _oscillatory(_Q4, 0.12, [0.119, 0.105, 0.083], gci_triplet_3_4_6_pct=0.92),
+                "Q3_uniaxial_stress": {"sign": "grid independent", "bias_pct": None,
+                                       "text": "grid independent (RUBBER-PHYS-11 v4 Q3, GCI 0.01 %)"}},
+            "width_and_slenderness_RUBBER_PHYS_02": {
+                "L_over_t_10_W_t": [0.44, 0.49], "L_over_t_10_W_4t": [1.05, 1.29],
+                "L_over_t_20_W_t": [0.86, 1.08], "L_over_t_20_W_4t": [1.18, 1.50],
+                "unit": "percent static sag bias of n_t 3 (range, see source)"}},
+        "known_limitation": {
+            "id": "rubber_rl_v1_n_t3_bending_bias_1.39pct",
+            "summary": "reduced fidelity: n_t 3 overestimates small-deflection static sag by +0.97 % "
+                       "(+0.91 ... +1.06 %) at L/t 20, W = t and +1.39 % (+1.27 ... +1.56 %) at L/t 20, W = 4t; at "
+                       "L/t 10: +0.44 ... +0.49 % (W = t; the old '<= 0.5 % (E1)' holds only here) and +1.05 ... "
+                       "+1.29 % (W = 4t); f1 -0.83 % (-0.94 ... -0.76 %); large-deflection tip drop oscillatory, "
+                       "|bias| <= 0.12 %; unmeasured beyond L/t 20 / W/t 4",
+            "decision": "R2.5 review decision (a) (ADR 0023 §19A): a labelled reduced-fidelity profile",
+            "cite_when": "every bending-dominated observable; never a full-fidelity row"}},
+    "rubber_coarse_v1": {
+        "particles_per_cell_axis": 2, "min_cells_through_thickness": 2, "cells_through_thickness_band": [2, 3],
+        "label": "reduced_fidelity: coarse_thickness_resolution",
+        "measured_bias": {"schema": "rcs_resolution_bias_v1", "measured_at_cells_through_thickness": None,
+                          "status": "NOT_MEASURED", "observables": {},
+                          "text": "no refinement study covers n_t 2; its bending bias is unknown and larger than "
+                                  "n_t 3's (+0.97 ... +1.39 % static sag at L/t 20)"},
+        "known_limitation": {
+            "id": "rubber_coarse_v1_bias_not_measured",
+            "summary": "coarse n_t 2 grid: bending bias not measured (expected larger than n_t 3); for unit tests and "
+                       "declared reduced-fidelity rows only (e.g. the contact impact books of rubber_contact_tests_v2)",
+            "decision": "ADR 0023 §8 coarse profile; never a production or acceptance grid",
+            "cite_when": "always"}},
 }
 
 _TOP_KEYS = {"schema", "id", "calibration_status", "material_identity", "density_kg_m3", "model", "elastic",
@@ -482,8 +578,48 @@ def load_recipe(path=DEFAULT_RECIPE, **kwargs):
     return parse_recipe(json.loads(data), source_sha256=hashlib.sha256(data).hexdigest(), **kwargs)
 
 
+def profile_for_n_t(n_t):
+    """The resolution profile whose band [lo, hi) of cells through the thickness contains ``n_t`` (K2-2); raises for
+    n_t < 2 (no profile)."""
+    n_t = float(n_t)
+    for name, prof in RESOLUTION_PROFILES.items():
+        lo, hi = prof["cells_through_thickness_band"]
+        if n_t >= lo-1e-9 and (hi is None or n_t < hi-1e-9):
+            return name
+    _refuse(f"no resolution profile covers {n_t:.4g} cells through the thickness (bands: "
+            f"{ {k: v['cells_through_thickness_band'] for k, v in RESOLUTION_PROFILES.items()} })")
+
+
+def resolution_label(name, n_t, compact=False):
+    """The receipt block of profile ``name`` at ``n_t`` cells through the thickness (K2-2): profile, label,
+    ``measured_bias`` and ``known_limitation``. Refuses an unknown name and a profile whose band does not contain n_t
+    (e.g. n_t 3 labelled ``rubber_ref_v1`` or n_t 4 labelled ``rubber_rl_v1``). ``compact`` (the per-env scene
+    receipt) keeps ``known_limitation`` whole and reduces ``measured_bias`` to its per-observable texts and a pointer to
+    the full block (carried once per run by the live / batched receipts)."""
+    if name not in RESOLUTION_PROFILES:
+        _refuse(f"unknown resolution profile {name!r} (known: {sorted(RESOLUTION_PROFILES)})")
+    expected = profile_for_n_t(n_t)
+    if name != expected:
+        lo, hi = RESOLUTION_PROFILES[name]["cells_through_thickness_band"]
+        _refuse(f"resolution profile {name!r} covers n_t in [{lo}, {'inf' if hi is None else hi}); this scene has "
+                f"n_t = {float(n_t):.4g} cells through the thickness, i.e. {expected!r}")
+    prof = RESOLUTION_PROFILES[name]
+    bias = prof["measured_bias"]
+    measured = bias["measured_at_cells_through_thickness"]
+    if compact:
+        bias = {"schema": bias["schema"], "measured_at_cells_through_thickness": measured,
+                **({"status": bias["status"]} if "status" in bias else {}),
+                "observables": {k: v["text"] for k, v in bias["observables"].items()},
+                "full": f"robotic_cutting_sim.rubber_material.RESOLUTION_PROFILES[{name!r}]['measured_bias']"}
+    return {"resolution_profile": name, "label": prof["label"], "cells_through_thickness": float(n_t),
+            "measured_at_cells_through_thickness": measured,
+            "bias_measured_at_this_n_t": measured is not None and abs(float(n_t)-measured) < 1e-9,
+            "measured_bias": bias, "known_limitation": prof["known_limitation"]}
+
+
 def resolution_check(recipe, thickness_min, dx, profile=None):
-    """n_t = t_min / dx against the profile's minimum (ADR §8); returns the label or raises."""
+    """n_t = t_min / dx against the profile's minimum (ADR §8); returns the label or raises. The returned block also
+    carries the profile's ``measured_bias`` and ``known_limitation`` (K2-2)."""
     name = recipe.resolution_profile if profile is None else profile
     if name not in RESOLUTION_PROFILES:
         _refuse(f"unknown resolution profile {name!r}")
@@ -491,10 +627,9 @@ def resolution_check(recipe, thickness_min, dx, profile=None):
     required = RESOLUTION_PROFILES[name]["min_cells_through_thickness"]
     if n_t < required-1e-9:
         _refuse(f"{name}: {n_t:.3f} cells through the thickness < {required}")
-    out = {"resolution_profile": name, "cells_through_thickness": n_t, "label": RESOLUTION_PROFILES[name]["label"]}
-    if "measured_bias" in RESOLUTION_PROFILES[name]:
-        out["measured_bias"] = RESOLUTION_PROFILES[name]["measured_bias"]
-    return out
+    return {"resolution_profile": name, "cells_through_thickness": n_t, "label": RESOLUTION_PROFILES[name]["label"],
+            "measured_bias": RESOLUTION_PROFILES[name]["measured_bias"],
+            "known_limitation": RESOLUTION_PROFILES[name]["known_limitation"]}
 
 
 def lattice_check(length, spacing):
