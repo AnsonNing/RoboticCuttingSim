@@ -43,6 +43,14 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   to + 10 ms);
   U3 per-cycle budget: research agent $20 / 6 h plus one xhigh review (~1 working day, 3–5 GPU-h);
   U4 the research agent gets no web access.
+- Phase 2 defaults in force until the user decides otherwise (none blocks work; plan `docs/reports/rl_ready/P2_REMAINING_PLAN.md` / ADR 0023 §23 on the rubber branches):
+  U-P2-1 robot-coupled rubber (rubber pad wrenches fed back to the Isaac Lab robot, tasks B3 + C1) stays out of
+  Phase 2; P2-6 uses kinematic grips (no coupling error; the 20 ms handoff was assessed significant, CONT-07);
+  U-P2-2 RUBBER-PHYS-11 Q1w (wide-strip sag GCI 2.16 % vs 2 % at n_t 4): accept n_t 4 with its measured +0.62 %
+  bias as a labelled limitation (the v5 FAIL stays recorded; a v6 rule passing the existing data would be loosening
+  after seeing results; n_t 6 costs ~5× per step); final call in the combined rubber review;
+  U-P2-3 rubber friction is supported only within the formally tested sliding envelope (target μ ≤ 0.8 with the
+  opt-in v3 contact law); μ ≥ 1.0 sliding is a labelled limitation (high-μ friction flutter, X2 negative result).
 - P1-5 defaults (none blocks work; [P1_5_PLAN.md](reports/rl_ready/P1_5_PLAN.md)):
   U-P15-1 the frozen `tlmpm_v5` CUT is **not** batched in Phase 1 (option (a), ~3–4 agent-days, deferred): the batched
   path runs CUT on a new opt-in `bar_flat_board_tlmpm_v7_2_v1` scene, the frozen v5 CUT runs single-env headless
