@@ -25,7 +25,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _common as C  # noqa: E402
 
-PROTOCOL_SHA = None     # set by the commit that pins the protocol (tests/test_rubber_p2_5_protocol.py)
+PROTOCOL_SHA = "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b"     # rubber_calib_tests_v1 (c5054b9)
 
 
 def main():
