@@ -46,8 +46,12 @@ def load_replays(d, band=20):
 
 
 def camera_summary(rows):
-    out = {}
+    """Per camera over the captures after step 0. Step 0 of native_rubber_001 projected the uncomputed marker
+    diagnostics buffer (all markers at one point; fixed in run_native_rubber.py afterwards), so it is excluded."""
+    out = {"excluded": "step 0 (marker diagnostics not computed before the first advance)"}
     for row in rows:
+        if row["step"] == 0:
+            continue
         for cam, c in row["cameras"].items():
             o = out.setdefault(cam, {"captures": 0, "visible_markers": 0, "residual_min_m": None,
                                      "residual_max_m": None})

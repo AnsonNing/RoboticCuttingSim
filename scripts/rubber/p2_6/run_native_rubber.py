@@ -109,7 +109,10 @@ def main():
         def capture(k):
             t = time.perf_counter()
             frames = scene.capture()
-            markers_world = placement.to_world(np.asarray(live.markers(), np.float64))
+            # before the first advance the marker diagnostics buffer is not computed yet (native_rubber_001 used it
+            # at step 0: all 9 markers at one point); the reference cross-section centroids are the step-0 markers
+            markers = live.scene.marker_reference if k == 0 else live.markers()
+            markers_world = placement.to_world(np.asarray(markers, np.float64))
             row = {"step": k, "capture_wall_s": None, "cameras": {}}
             from PIL import Image
             for name, d in frames.items():
