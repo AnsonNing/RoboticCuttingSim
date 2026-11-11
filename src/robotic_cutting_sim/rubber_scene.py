@@ -47,6 +47,7 @@ class RubberStripSpec:
     center: tuple = (0.0, 0.0, 0.0)  # case "block": block centre
     traction_regions: tuple = ()     # ((name, (lo xyz), (hi xyz)), ...) in strip coordinates
     resolution_profile: str = "rubber_rl_v1"
+    quadrature_check: bool = False   # ppc 3 only with this flag: the refinement study's labelled quadrature check
 
     def grid_dx(self):
         return float(self.thickness)/int(self.n_t) if self.dx is None else float(self.dx)
@@ -147,7 +148,9 @@ class RubberStripScene:
                 "markers": {"count": MARKERS, "particles": int(len(self.marker_particles)),
                             "reference_x_m": self.marker_reference[:, 0].tolist()},
                 "surface_particles": int(self.surface.sum()), "free_length_m": self.free_length,
-                "array_sha256": sha.hexdigest()}
+                "array_sha256": sha.hexdigest(),
+                **({"quadrature_check": "ppc 3, refinement study only (ADR 0023 §14.4); not a production scene"}
+                   if s.quadrature_check else {})}
 
 
 def compile_strip(spec):
@@ -157,6 +160,11 @@ def compile_strip(spec):
     if spec.ppc not in (2, 3):
         raise ValueError("rubber_strip_v1 uses 2 particles per cell per axis (ADR 0023 §8); 3 only as the labelled "
                          "quadrature check of the refinement study (§14.4)")
+    if spec.ppc == 3 and spec.quadrature_check is not True:
+        raise ValueError("rubber_strip_v1: ppc 3 is refused outside the refinement study's declared quadrature check "
+                         "(RubberStripSpec(quadrature_check=True); ADR 0023 §14.4, R2.5 review F9)")
+    if spec.quadrature_check and spec.ppc != 3:
+        raise ValueError("quadrature_check=True labels a ppc 3 scene; got ppc %d" % spec.ppc)
     dx = spec.grid_dx()
     s = dx/spec.ppc
     jaw = 0.0

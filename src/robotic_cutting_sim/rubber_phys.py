@@ -1,6 +1,8 @@
 """RUBBER-PHYS protocol implementations (ADR 0023 §14.3; frozen protocols
-``configs/rubber/rubber_phys_tests_v2.json`` and ``rubber_phys_tests_v3.json``; v3 = P2-1 follow-up:
-static_stop_v3 for -02/-03/-05, the redesigned -07, the guard regression -12, see ADR 0023 §18).
+``configs/rubber/rubber_phys_tests_v2.json`` .. ``rubber_phys_tests_v5.json``; v3 = P2-1 follow-up:
+static_stop_v3 for -02/-03/-05, the redesigned -07, the guard regression -12, see ADR 0023 §18; v4 = P2-2 solver
+options (§19); v5 = R2.5 review decisions: n_t 4 for bending-dominated tests, guard on -04 / -09, -08 with the
+declared deformation reserve (ADR 0023 §19A)).
 
 Each ``case_*`` function runs one configuration in the single-env reference and returns a JSON-able dict of
 measurements (never a verdict); each ``evaluate_*`` function applies the pre-declared criteria of the frozen config to
@@ -24,7 +26,8 @@ from .rubber_initializer import relax_to_static
 CONFIG = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v2.json"
 CONFIG_V3 = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v3.json"
 CONFIG_V4 = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v4.json"
-PROTOCOLS = {"v2": CONFIG, "v3": CONFIG_V3, "v4": CONFIG_V4}
+CONFIG_V5 = rm.ROOT/"configs"/"rubber"/"rubber_phys_tests_v5.json"
+PROTOCOLS = {"v2": CONFIG, "v3": CONFIG_V3, "v4": CONFIG_V4, "v5": CONFIG_V5}
 RHO = 1150.0
 BETA = 20.0
 
@@ -37,6 +40,19 @@ def guard_limit(cfg):
     """The protocol's stable-step guard limit (v3: common.stable_step_guard.limit; v2: off)."""
     g = cfg["common"].get("stable_step_guard")
     return None if g is None else float(g["limit"])
+
+
+def test_guard(cfg, test):
+    """v5: the guard limit for a test whose setup declares ``stable_step_guard`` (-04, -09); None before v5 (those
+    tests ran without the guard, their v2 protocol)."""
+    if cfg.get("version", 2) >= 5 and "stable_step_guard" in cfg["tests"][test]["setup"]:
+        return guard_limit(cfg)
+    return None
+
+
+def deformation_reserve(cfg, test):
+    """The declared ``setup.deformation_reserve`` of a test (v5 -08: 1.5); 1.0 (the v1 step rule) otherwise."""
+    return float(cfg["tests"][test]["setup"].get("deformation_reserve", 1.0))
 
 
 def solver_options(cfg, test):
@@ -144,13 +160,16 @@ def evaluate_01(results, cfg):
 
 # ----------------------------------------------------------------------------- RUBBER-PHYS-08 simple shear
 
-def case_shear(gamma, device="cpu", mu=4e5, substeps=200, stable_step_guard=None):
+def case_shear(gamma, device="cpu", mu=4e5, substeps=200, stable_step_guard=None, deformation_reserve=1.0):
+    """``substeps``: the control interval in units of dt_max(r = 1) (v2-v5: 200); with ``deformation_reserve`` r the
+    step rule gives ceil(r substeps) substeps over the same interval (v5: r 1.5, 300 substeps)."""
     mat = material(mu)
     spec = _block()
     dt_max = 0.5*spec.grid_dx()/mat.c_p()
     live = LiveRubberMaterial(spec, material=mat, control_dt=substeps*dt_max*(1-1e-9), gravity=(0, 0, 0),
-                              device=device, stable_step_guard=stable_step_guard, strict=stable_step_guard is None)
-    assert live.substeps == substeps
+                              device=device, stable_step_guard=stable_step_guard, strict=stable_step_guard is None,
+                              deformation_reserve=deformation_reserve)
+    assert live.substeps == math.ceil(substeps*float(deformation_reserve)*(1-1e-9))
     Ft = R.simple_shear(gamma, mu)["F"]
     live.advance({0: {"affine": Ft, "translation": np.zeros(3)}})
     live.solver.nodal_internal_force()
@@ -158,7 +177,11 @@ def case_shear(gamma, device="cpu", mu=4e5, substeps=200, stable_step_guard=None
     P = live.solver.stress.numpy().astype(np.float64)
     sigma = np.einsum("pij,pkj->pik", P, F)/np.linalg.det(F)[:, None, None]
     m = sigma.mean(0)
-    return {"gamma": gamma, "substeps": substeps, "sigma_mean_pa": m.tolist(), "sigma_12_pa": float(m[0, 1]),
+    return {"gamma": gamma, "substeps": live.substeps, "control_dt_s": live.control_dt, "dt_s": live.dt,
+            "deformation_reserve": float(deformation_reserve), "cfl_actual": live.step_rule["cfl_actual"],
+            "cfl_eff_max_end": live.last_diagnostics.get("cfl_eff_max"),
+            "invalid_flags": decode_reason(live.invalid_reason),
+            "sigma_mean_pa": m.tolist(), "sigma_12_pa": float(m[0, 1]),
             "invalid": int(live.invalid_reason), "stable_step_guard": stable_step_guard,
             "N1_pa": float(m[0, 0]-m[1, 1]), "sigma_12_ref_pa": mu*gamma, "N1_ref_pa": mu*gamma**2,
             "sigma_12_rel_error": float(m[0, 1]/(mu*gamma)-1), "N1_rel_error": float((m[0, 0]-m[1, 1])/(mu*gamma**2)-1),
@@ -234,11 +257,12 @@ def evaluate_02(results, cfg):
     groups = {}
     for r in results:
         groups.setdefault(key(r), {})[r["n_t"]] = r
+    n_c, n_f = sorted(cfg["tests"]["RUBBER-PHYS-02"]["setup"]["n_t"])          # v2-v4: 3 / 4; v5: 4 / 6
     for k, by_nt in sorted(groups.items()):
-        if 3 not in by_nt or 4 not in by_nt:
+        if n_c not in by_nt or n_f not in by_nt:
             ok["extrapolated"] = False
             continue
-        ex = R.richardson_two_grid(by_nt[3]["delta_m"], by_nt[4]["delta_m"], 4/3, 2.0)
+        ex = R.richardson_two_grid(by_nt[n_c]["delta_m"], by_nt[n_f]["delta_m"], n_f/n_c, 2.0)
         for n_t, r in sorted(by_nt.items()):
             lo, hi = R.plate_bracket(r["delta_EB_m"], r["nu_eff"])
             row = {"label": r["label"], "ratio_EB": r["ratio_EB"], "ratio_extrap": r["delta_m"]/ex,
@@ -321,7 +345,8 @@ def vibration_setup(cfg):
     return cfg["tests"]["RUBBER-PHYS-04"]["setup"]
 
 
-def case_vibration(run_id, cfg, device="cpu", L=None, W=None, mu=None, rho=RHO, substeps=None, record_records=False):
+def case_vibration(run_id, cfg, device="cpu", L=None, W=None, mu=None, rho=RHO, substeps=None, record_records=False,
+                   stable_step_guard=None):
     st = vibration_setup(cfg)
     L = st["L_m"] if L is None else L
     W = st["W_m"] if W is None else W
@@ -331,12 +356,15 @@ def case_vibration(run_id, cfg, device="cpu", L=None, W=None, mu=None, rho=RHO, 
     E = mat.young_effective()
     f_eb = R.cantilever_f1(rho, W, t, L, E)
     spec = rs.RubberStripSpec(length=L, width=W, thickness=t, n_t=n_t, case="A")
+    guard_kw = {} if stable_step_guard is None else {"stable_step_guard": stable_step_guard, "strict": False}
     live = LiveRubberMaterial(spec, material=mat, control_dt=st["record_interval_s"], substeps=substeps,
-                              gravity=(0, 0, -st["gravity_m_s2"]), device=device, record=True)
+                              gravity=(0, 0, -st["gravity_m_s2"]), device=device, record=True, **guard_kw)
     steps = int(math.ceil(6/f_eb/live.control_dt))
     start = time.perf_counter()
+    cfl_eff_max = 0.0
     for _ in range(steps):
         live.advance()
+        cfl_eff_max = max(cfl_eff_max, float(live.last_diagnostics.get("cfl_eff_max") or 0.0))
     wall = time.perf_counter()-start
     recs = live.records[1:]
     tip_z = np.array([r["markers_m"][-1][2] for r in recs])-live.scene.marker_reference[-1][2]
@@ -349,7 +377,9 @@ def case_vibration(run_id, cfg, device="cpu", L=None, W=None, mu=None, rho=RHO, 
            "cfl": live.step_rule["cfl_actual"], "steps": steps, "record_interval_s": live.control_dt,
            "tip_z_m": tip_z.tolist(), "energy_total_j": energy.tolist(), "energy_total_gridke_j": energy_grid.tolist(),
            "elastic_j": psi.tolist(), "wall_s": wall, "device": live.device,
-           "invalid": live.invalid_reason, "Jbar_range": [min(r["j_stats"]["Jbar_min"] for r in recs),
+           "invalid": live.invalid_reason, "invalid_flags": decode_reason(live.invalid_reason),
+           "stable_step_guard": stable_step_guard, "cfl_eff_max": cfl_eff_max if stable_step_guard else None,
+           "Jbar_range": [min(r["j_stats"]["Jbar_min"] for r in recs),
                                                           max(r["j_stats"]["Jbar_max"] for r in recs)]}
     out.update(vibration_metrics(tip_z, energy, psi, live.control_dt))
     if record_records:
@@ -714,20 +744,20 @@ def configs_09(cfg):
             for t in st["t_m"] for Wt in st["W_over_t"]]
 
 
-def case_records(scenario, t, Wt, cfg, device="cpu"):
+def case_records(scenario, t, Wt, cfg, device="cpu", stable_step_guard=None):
     st = cfg["tests"]["RUBBER-PHYS-09"]["setup"]
     L, W, n_t, steps = st["L_over_t"]*t, Wt*t, st["n_t"], st["control_steps"]
     start = time.perf_counter()
     if scenario in ("cantilever_gravity", "free_vibration"):
         spec = rs.RubberStripSpec(length=L, width=W, thickness=t, n_t=n_t, case="A")
         live = LiveRubberMaterial(spec, material=material(2e6), control_dt=st["control_dt_s"], gravity=(0, 0, -9.81),
-                                  device=device, record=True, strict=False)
+                                  device=device, record=True, strict=False, stable_step_guard=stable_step_guard)
         for _ in range(steps):
             live.advance()
     else:
         spec = rs.RubberStripSpec(length=L, width=W, thickness=t, n_t=n_t, case="C", end_mask="x")
         live = LiveRubberMaterial(spec, material=material(4e5), control_dt=st["control_dt_s"], gravity=(0, 0, 0),
-                                  device=device, record=True, strict=False)
+                                  device=device, record=True, strict=False, stable_step_guard=stable_step_guard)
         for k in range(steps):
             if k < 2:
                 lam = cosine_path((k+1)*live.control_dt, 2*live.control_dt, 1.5)
@@ -740,6 +770,9 @@ def case_records(scenario, t, Wt, cfg, device="cpu"):
     return {"scenario": scenario, "t_m": t, "W_m": W, "L_m": L, "particles": live.scene.n, "steps": steps,
             "substeps": live.substeps, "problems": problems, "valid": not problems,
             "invalid_flags": live.records[-1]["invalid_flags"], "surface_particles": int(live.scene.surface.sum()),
+            "stable_step_guard": stable_step_guard,
+            "step_flags": [{"step": i, "flags": r["invalid_flags"], "nonfinite": r["nonfinite"]}
+                           for i, r in enumerate(live.records[1:], 1)],
             "wall_s": time.perf_counter()-start, "device": live.device,
             "record_bytes": len(json.dumps(live.records))}
 
@@ -748,3 +781,28 @@ def evaluate_09(results, cfg):
     ok = len(results) == 18 and all(r["valid"] for r in results)
     return {"records": _verdict(ok)}, {"runs": len(results), "valid": sum(r["valid"] for r in results),
                                        "problems": [p for r in results for p in r["problems"]][:20]}
+
+
+def evaluate_09_v5(results, cfg):
+    """v5 -09: the unchanged records criterion; cantilever / vibration runs without any invalid flag; in every run
+    that becomes non-finite a CFL or J flag precedes it; stretch_release flags reported, not scored."""
+    verdicts, measured = evaluate_09(results, cfg)
+    bad, late = [], []
+    for r in results:
+        label = f"{r['scenario']}_t{r['t_m']*1e3:g}mm_W{r['W_m']*1e3:g}mm"
+        if r["scenario"] != "stretch_release" and r["invalid_flags"]:
+            bad.append(label)
+        steps = r.get("step_flags", [])
+        first_nf = next((x["step"] for x in steps if x["nonfinite"] or "NONFINITE_STATE" in x["flags"]), None)
+        first_flag = next((x["step"] for x in steps if {"RUBBER_CFL_EXCEEDED", "RUBBER_J_DOMAIN"} & set(x["flags"])),
+                          None)
+        if first_nf is not None and (first_flag is None or first_flag >= first_nf):
+            late.append(label)
+    verdicts["valid"] = _verdict(not bad and len(results) == 18)
+    verdicts["guard_before_nonfinite"] = _verdict(not late and len(results) == 18
+                                                  and all("step_flags" in r for r in results))
+    measured = dict(measured, invalid_cantilever_or_vibration=bad, nonfinite_without_earlier_flag=late,
+                    flags_reported={f"{r['scenario']}_t{r['t_m']*1e3:g}mm_W{r['W_m']*1e3:g}mm": r["invalid_flags"]
+                                    for r in results},
+                    guard=sorted({r.get("stable_step_guard") for r in results}, key=str))
+    return verdicts, measured

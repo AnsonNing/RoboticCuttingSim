@@ -1,6 +1,6 @@
 """R0.4: the pre-declared RUBBER-PHYS tests are frozen at commit (ADR 0023 §14.3).
 
-A failure means a frozen file was edited. Never update a pin: declare the next version (v4) instead.
+A failure means a frozen file was edited. Never update a pin: declare the next version (v6) instead.
 """
 import hashlib
 import json
@@ -13,6 +13,9 @@ PINS = {
     "configs/rubber/rubber_phys_tests_v2.json": "e4ff8502817458fe723295ead88d9531757b1cff5c771d5d8c352828bab83060",
     "configs/rubber/rubber_phys_tests_v3.json": "c7fdfc95f8bd024cca82a8dd00f6949a0410a0f2c65beae262c32696a848dbd9",
     "configs/rubber/rubber_phys_tests_v4.json": "f1cecee63375fb3cfef7a1319e851df472bd2f7e3e2611a2a172b108b06b38f0",
+    "configs/rubber/rubber_phys_tests_v5.json": "7e02f57bd8c7a09c6163fe26d7c7d37f46689314b7e119714fe7285a8ad867f0",
+    "configs/rubber/workload_e_v1.json": "17ade5b1156b2419af0de22bc921ad1baf6b1eb16641e95682c5b8ea6d00a0e3",
+    "configs/rubber/workload_e_v2.json": "199e25b16c0759be3623ee0b0fe292f3681cf7c5bf68ecc9245b7d2b21d9df55",
 }
 
 
@@ -108,3 +111,89 @@ def test_v4_differs_from_v3_only_in_the_declared_items():
     g3, g4 = c3.pop("stable_step_guard"), c4.pop("stable_step_guard")
     assert g3["limit"] == g4["limit"] == 1.0
     assert c3 == c4
+
+
+def test_v5_differs_from_v4_only_in_the_declared_items():
+    """R2.5 review decisions (a) / (b), F7, F9 (ADR 0023 section 19A): production grid n_t 4 for the bending-dominated
+    tests, guard on for -04 / -09, -08 with the derived deformation reserve, -11 v5; the -11 rule block, thresholds,
+    CFL set, guard and verdict CFL byte-identical to v4; every threshold of every test unchanged."""
+    v4 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v4.json").read_text())
+    v5 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v5.json").read_text())
+    assert v5["supersedes"]["sha256"] == PINS["configs/rubber/rubber_phys_tests_v4.json"]
+    assert v5["version"] == 5 and v5["id"] == "rubber_phys_tests_v5" and set(v5["tests"]) == set(v4["tests"])
+    for tid in v4["tests"]:
+        assert v5["tests"][tid]["thresholds"] == v4["tests"][tid]["thresholds"], tid
+    for tid in ("RUBBER-PHYS-01", "RUBBER-PHYS-06", "RUBBER-PHYS-07", "RUBBER-PHYS-10", "RUBBER-PHYS-12"):
+        assert v5["tests"][tid] == v4["tests"][tid], tid
+    # -11: the rule block, thresholds, CFL set, guard and verdict CFL stay byte-identical (serialised)
+    s4, s5 = v4["tests"]["RUBBER-PHYS-11"]["setup"], v5["tests"]["RUBBER-PHYS-11"]["setup"]
+    for key in ("rule", "cfl", "stable_step_guard", "verdict_cfl", "particles_per_cell_axis"):
+        assert json.dumps(s5[key]) == json.dumps(s4[key]), key
+    assert v5["tests"]["RUBBER-PHYS-11"]["thresholds"] == {"gci": 0.02, "dt_rel": 0.001}
+    assert s5["grids_n_t"] == [3, 4, 6, 8] and s5["production_n_t"] == 4 and s5["triplet_finest"] == [4, 6, 8]
+    assert set(s5["observables"]) == {"Q1", "Q1w", "Q2", "Q4"}
+    for q in ("Q1", "Q2", "Q4"):
+        assert s5["observables"][q] == s4["observables"][q], q
+    q1w = dict(s5["observables"]["Q1w"])
+    assert q1w.pop("W_over_t") == 4 and q1w.pop("kind")
+    assert q1w == {k: v for k, v in s4["observables"]["Q1"].items() if k not in ("W_over_t", "kind")}
+    assert s5["solver_options"]["Q1w"] == {"state_precision": "f64_shadow_v1"}
+    # bending-dominated tests at n_t 4 (-02 extrapolation pair 4 / 6), geometry otherwise unchanged
+    t = {tid: json.loads(json.dumps(v5["tests"][tid])) for tid in v5["tests"]}
+    assert t["RUBBER-PHYS-02"]["setup"].pop("n_t") == [4, 6]
+    assert t["RUBBER-PHYS-03"]["setup"].pop("n_t") == 4 and t["RUBBER-PHYS-05"]["setup"].pop("n_t") == 4
+    assert t["RUBBER-PHYS-04"]["setup"].pop("n_t") == 4
+    assert t["RUBBER-PHYS-03"]["setup"]["series_t"].pop("L_m") == 0.096
+    for tid in ("RUBBER-PHYS-02", "RUBBER-PHYS-05"):
+        a, b = dict(t[tid]["setup"]), dict(v4["tests"][tid]["setup"])
+        b.pop("n_t")
+        assert a == b, tid
+    # -08: r from the declared rule, everything else of the measurement unchanged
+    s8 = t["RUBBER-PHYS-08"]["setup"]
+    assert s8["deformation_reserve"] == 1.5 == s8["deformation_reserve_rule"]["r"]
+    assert s8["gamma"] == v4["tests"]["RUBBER-PHYS-08"]["setup"]["gamma"] and s8["gamma_max"] == 2.0
+    assert t["RUBBER-PHYS-08"]["criteria"]["shear"] == v4["tests"]["RUBBER-PHYS-08"]["criteria"]["shear"]
+    assert t["RUBBER-PHYS-08"]["measurement"] == v4["tests"]["RUBBER-PHYS-08"]["measurement"]
+    c4, c5 = dict(v4["common"]), dict(v5["common"])
+    c5.pop("production_grid")
+    g4, g5 = c4.pop("stable_step_guard"), c5.pop("stable_step_guard")
+    assert g4.pop("applies_to") and g5.pop("applies_to") and g4 == g5 and g5["limit"] == 1.0
+    assert c4 == c5
+    for key in ("throughput_v4", "batched_gpu_v4", "batched_l0_v4", "p2_2_scope"):
+        assert v5[key] == v4[key], key
+
+
+def test_v5_deformation_reserve_follows_the_declared_rule():
+    """-08 v5: r = ceil(2 CFL_eff,max(r = 1) / (0.9 limit)) / 2 at gamma_max 2 (R2.5 review decision (b))."""
+    import math
+
+    from robotic_cutting_sim import rubber_reference as R
+    from robotic_cutting_sim.rubber_constitutive import wave_modulus_bound_np
+    v5 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v5.json").read_text())
+    s8 = v5["tests"]["RUBBER-PHYS-08"]["setup"]
+    mu, kappa, rho = s8["mu_pa"], 20.0*s8["mu_pa"], 1150.0
+    F = R.simple_shear(s8["gamma_max"], mu)["F"]
+    cfl1 = 0.5*math.sqrt(wave_modulus_bound_np(F, mu, kappa, 1.0)/rho)/math.sqrt((kappa+4*mu/3)/rho)
+    limit = v5["common"]["stable_step_guard"]["limit"]
+    assert math.ceil(2*cfl1/(0.9*limit))/2 == s8["deformation_reserve"] == 1.5
+    assert abs(cfl1-1.2966) < 1e-4 and cfl1/1.5 < 0.9*limit
+
+
+def test_workload_e_v2_full_row_is_n_t4_and_the_n_t3_row_is_labelled():
+    """R2.5 review decision (a): workload E v2 (full fidelity) is n_t 4 / rubber_ref_v1; the n_t 3 row is reduced
+    fidelity with its measured bias; v1 unchanged; the v5 GPU check names the full row."""
+    from robotic_cutting_sim.rubber_material import RESOLUTION_PROFILES
+    w = json.loads((ROOT/"configs"/"rubber"/"workload_e_v2.json").read_text())
+    assert w["supersedes"]["sha256"] == PINS["configs/rubber/workload_e_v1.json"]
+    full, rl = w["workloads"]
+    assert full["reduced_fidelity"] is False and full["material"]["n_t"] == 4
+    assert full["material"]["resolution_profile"] == "rubber_ref_v1" and full["N"] == [1, 4, 8]
+    assert rl["reduced_fidelity"] is True and rl["material"]["n_t"] == 3
+    assert rl["material"]["resolution_profile"] == "rubber_rl_v1"
+    assert rl["reduced_fidelity_reasons"] == ["thickness_resolution_n_t3"]
+    assert RESOLUTION_PROFILES["rubber_rl_v1"]["label"] == "reduced_fidelity: thickness_resolution_n_t3"
+    assert RESOLUTION_PROFILES["rubber_ref_v1"]["label"] == "full"
+    for key in ("geometry_m", "randomisation", "control_dt_s", "bulk_ratio_beta", "cfl"):
+        assert full["material"][key] == rl["material"][key], key
+    v5 = json.loads((ROOT/"configs"/"rubber"/"rubber_phys_tests_v5.json").read_text())["workload_e_v2_gpu"]
+    assert "workload_e_v2.json row E_full" in v5["workload"] and v5["N"] == full["N"]
