@@ -37,7 +37,7 @@ PROTOCOL = ROOT/"configs"/"rubber"/"rubber_rl_tests_v1.json"
 PROTOCOL_SHA = "8e4b2593e968532e10808d4828f093df964747c18c8b98d260d1eae68535fd4c"
 TASK_SHA = "fba43424372e17fe926fad697ff8336ea7c5ed0c2d8ecdbdefb9978a994f4397"
 MIN_FREE_MB = 4096
-ROWS = ("RL01", "RL02b", "RL02c", "RL03", "RL04b", "RL05", "RL06", "RL07", "RL08")
+ROWS = ("RL01", "RL02b", "RL02c", "RL03", "RL04b", "RL05", "RL06", "RL07", "RL08", "RL08b")
 FULL_ORDER = ("L100_t4", "L100_t5", "L100_t6", "L125_t4", "L125_t5", "L125_t6", "L150_t4", "L150_t5", "L150_t6")
 L3_SLOTS = ["L100_t4", "L100_t6", "L125_t4", "L125_t5", "L125_t6", "L150_t4", "L150_t5", "L150_t6"]
 
@@ -554,6 +554,33 @@ class Runner:
                                                                "limits": {"dO1_over_L": 1e-3, "dO3_rel": 0.01}},
                 "spacing_reported": sp, "spacing_rule": "rubber_gci.study (RUBBER-PHYS-11 rule block; reported only)",
                 "cases": out}
+
+    def RL08b(self):
+        """K2 Q1w condition 3: the RUBBER-PHYS-11 Q1 static sag on the P2-6 geometry L/t 37.5, W/t 4, t 4 mm at
+        n_t 4 / 6 / 8 (rubber_refinement.case_q1, alpha 0.05, mu0 0.4 MPa, beta 20, CFL 0.5, static_stop_v3), the
+        -11 rule block (rubber_gci.study) and the declared fallback trigger |bias(n_t 4)| > 1 %."""
+        from robotic_cutting_sim import rubber_refinement as RF
+        from robotic_cutting_sim.rubber_gci import study
+        fam = self.family(["L150_t4"])
+        opts = {k: fam.profile[k] for k in ("dirichlet", "constraint_work", "traction_work", "state_precision")}
+        q = {"L_over_t": 37.5, "t_m": 0.004, "W_over_t": 4.0, "mu_pa": 4e5, "alpha": 0.05}
+        rows = {}
+        for n_t in (4, 6, 8):
+            run = {"n_t": n_t, "cfl": 0.5, "beta": 20.0, "ppc": 2}
+            r = RF.case_q1(q, run, device=self.device, options=opts, guard=fam.profile["stable_step_guard"])
+            rows[n_t] = {k: r[k] for k in ("Q", "converged", "init_time_s", "particles", "substeps", "dx_m",
+                                           "invalid", "wall_s", "delta_EB_beta_m", "gravity_m_s2")}
+            self.note({"RL08b": n_t, "Q": r["Q"], "converged": r["converged"], "wall_s": r["wall_s"]})
+            gc.collect()
+        st = study((1/8, 1/6, 1/4), [rows[8]["Q"], rows[6]["Q"], rows[4]["Q"]])
+        ext = st.get("phi_ext")
+        bias = (rows[4]["Q"]/ext-1.0) if ext else None
+        trigger = bias is None or abs(bias) > 0.01
+        ok = all(r["converged"] and r["invalid"] == 0 for r in rows.values())
+        return {"verdict": "REPORTED" if ok else "ERROR", "geometry": q, "rows": rows, "study": st,
+                "bias_n_t4": bias, "fallback_trigger_1pct": trigger,
+                "decision": ("TRIGGERED: the t 4 mm slot class moves to option (a) (rubber_rl_tests_v3, (6, 8, 12))"
+                             if trigger else "not triggered: the measured bias is added to the receipts' label")}
 
 
 def main():

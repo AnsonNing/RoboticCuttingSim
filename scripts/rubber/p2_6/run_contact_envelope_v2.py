@@ -122,7 +122,7 @@ def job_drag(name):
     t0 = time.perf_counter()
     for _ in range(2 if R.SMOKE else int(round(sc["settle_s"]/cdt))):
         st.advance()
-    m0 = live.markers()
+    m0 = np.array(live.markers(), copy=True)          # .numpy() of a CPU Warp array is a view: copy (bug in contact_envelope_v2_001)
     rows = []
     for k in range(1, (2 if R.SMOKE else int(round(sc["drag_s"]/cdt)))+1):
         y = sc["speed_m_s"]*k*cdt
@@ -236,6 +236,7 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--jobs", type=int, default=32)
     ap.add_argument("--smoke", action="store_true")
+    ap.add_argument("--only", default="", help="comma list of job-name prefixes (a labelled partial rerun)")
     a = ap.parse_args()
     sha = hashlib.sha256(PROTOCOL.read_bytes()).hexdigest()
     if sha != PROTOCOL_SHA:
@@ -257,6 +258,10 @@ def main():
     (out/"meta.json").write_text(json.dumps(meta, indent=1))
     _setup(a.smoke)
     table = jobs(cfg)
+    if a.only:
+        table = {n: j for n, j in table.items() if n.startswith(tuple(a.only.split(",")))}
+        meta["label"] += f" (partial rerun: {a.only})"
+        (out/"meta.json").write_text(json.dumps(meta, indent=1))
     size = lambda kv: (kv[1][0] == "inc" and kv[1][1][0] == "STRIP", kv[1][1][1] if kv[1][0] == "inc" else 0)  # noqa
     order = sorted(table.items(), key=lambda kv: (not size(kv)[0], -size(kv)[1], kv[0]))
     R_ = {}
@@ -270,6 +275,10 @@ def main():
     meta["wall_s"] = time.perf_counter()-t0
     meta["jobs"] = len(table)
     (out/"meta.json").write_text(json.dumps(meta, indent=1))
+    if a.only:
+        (out/"partial.json").write_text(json.dumps({n: r for n, r in R_.items()}, default=float))
+        print("partial rerun written", list(R_))
+        return
     summary = evaluate(cfg, R_)
     (out/"summary.json").write_text(json.dumps(summary, indent=1, default=float))
     print("VERDICT", summary["verdict"], json.dumps(summary["envelope"]), "P2-6 range", summary["p2_6_friction_range"])
