@@ -160,6 +160,78 @@ class ScriptedTowV1:
         return a.clamp(-1.0, 1.0).to(torch.float32)
 
 
+class ScriptedPivotHoldV1:
+    """``rubber_scripted_pivot_hold_v1``: the v3 pivot approach plus a latched hold phase (rubber_rl_tests_v4).
+
+    Deployable observation only (grip pose, markers, marker velocities, goal). State per env: ``hold`` (latched).
+
+    - Approach (not holding): exactly ``rubber_scripted_pivot_v1`` without its fine zone: grip yaw toward the goal
+      bearing (k_yaw), grip translation along its own axis by k_radial (rho - l).
+    - Latch: ``hold`` becomes True when the tip distance falls to ``r_in`` and stays True until it exceeds ``r_out``
+      (hysteresis; the v3 controller switched its yaw loop on and off at one radius, which re-excited the swing).
+    - Hold: no yaw; the grip translates by k_hold (e - k_v v_tip dt) where e = goal - tip and v_tip is the observed tip
+      marker velocity (damping: the tip's own motion over the next control step is subtracted from the correction), and
+      not at all while |e - k_v v_tip dt| <= ``deadband``.
+
+    Every parameter may be a float or a per-env list (development batches); the declared controller uses floats."""
+
+    NAMES = ("k_radial", "k_yaw", "r_in", "r_out", "k_hold", "k_v", "deadband")
+
+    def __init__(self, num_envs, device, max_translation, max_rotation, control_dt=0.02, *, k_radial=0.5,
+                 k_yaw=0.5, r_in=0.008, r_out=0.03, k_hold=0.3, k_v=1.0, deadband=0.003):
+        import torch
+        self.N, self.device = num_envs, device
+        self.max_translation, self.max_rotation, self.dt = float(max_translation), float(max_rotation), float(control_dt)
+        self.raw = dict(k_radial=k_radial, k_yaw=k_yaw, r_in=r_in, r_out=r_out, k_hold=k_hold, k_v=k_v,
+                        deadband=deadband)
+        for k, v in self.raw.items():
+            t = torch.as_tensor(v, dtype=torch.float64, device=device).reshape(-1, 1)
+            setattr(self, k, t.expand(num_envs, 1) if t.shape[0] == 1 else t)
+        self.hold = torch.zeros((num_envs, 1), dtype=torch.bool, device=device)
+
+    def reset(self, env_ids=None):
+        if env_ids is None:
+            self.hold.zero_()
+        else:
+            self.hold[list(env_ids)] = False
+
+    def params(self):
+        return {"id": "rubber_scripted_pivot_hold_v1", **{k: (v if not hasattr(v, "__len__") else list(v))
+                                                          for k, v in self.raw.items()}}
+
+    def __call__(self, obs):
+        import torch
+        f64 = torch.float64
+        m = _markers(obs)
+        tip = m[:, 8, :2]
+        v_tip = obs[:, 47+24:47+26].double()
+        ell = torch.linalg.vector_norm(m[:, 8, :2]-m[:, 0, :2], dim=1, keepdim=True)
+        g = obs[:, GOAL][:, :2].double()
+        grip = obs[:, GRIP_P][:, :2].double()
+        e = g-tip
+        dist = torch.linalg.vector_norm(e, dim=1, keepdim=True)
+        preload = obs[:, PRELOAD:PRELOAD+1] > 0.5
+        self.hold = torch.where(preload, torch.zeros_like(self.hold),
+                                torch.where(dist <= self.r_in, torch.ones_like(self.hold),
+                                            torch.where(dist > self.r_out, torch.zeros_like(self.hold), self.hold)))
+        q = obs[:, GRIP_Q].double()
+        psi_g = torch.atan2(2*(q[:, 3]*q[:, 2]+q[:, 0]*q[:, 1]), 1-2*(q[:, 1]**2+q[:, 2]**2))
+        ug = torch.stack((torch.cos(psi_g), torch.sin(psi_g)), 1)
+        bearing = g-grip
+        rho = torch.linalg.vector_norm(bearing, dim=1, keepdim=True)
+        approach = self.k_radial*(rho-ell)*ug
+        dpsi = _wrap(torch.atan2(bearing[:, 1], bearing[:, 0])-psi_g)[:, None]*self.k_yaw
+        corr = e-self.k_v*v_tip*self.dt
+        hold_move = torch.where(torch.linalg.vector_norm(corr, dim=1, keepdim=True) > self.deadband,
+                                self.k_hold*corr, torch.zeros_like(corr))
+        move = torch.where(self.hold, hold_move, approach)
+        yaw = torch.where(self.hold, torch.zeros_like(dpsi), dpsi)
+        a = torch.zeros((obs.shape[0], 6), dtype=f64, device=obs.device)
+        a[:, :2] = move/self.max_translation
+        a[:, 5:6] = yaw/self.max_rotation
+        return a.clamp(-1.0, 1.0).to(torch.float32)
+
+
 PIVOT_V1 = {"mode": "pivot_grip", "k_radial": 0.5, "k_yaw": 0.5, "k_fine": 0.5, "r_fine": 0.015, "eps": 0.004}
 
 
@@ -168,4 +240,4 @@ def scripted_pivot_v1(num_envs, device, max_translation, max_rotation):
     return ScriptedTowV1(num_envs, device, max_translation, max_rotation, **PIVOT_V1)
 
 
-__all__ = ["scripted_drag_v1", "ScriptedTowV1", "scripted_pivot_v1", "PIVOT_V1"]
+__all__ = ["scripted_drag_v1", "ScriptedTowV1", "scripted_pivot_v1", "PIVOT_V1", "ScriptedPivotHoldV1"]
