@@ -55,7 +55,7 @@ def main():
     steps = int(nat["completed"])
     episode = dict(H.EPISODE)
     family = RubberStripTaskFamily([episode["slot"]], config=a.task_config, expected_sha256=a.task_config_sha256)
-    episode.update(task_config=family.id, protocol={"path": str(protocol.relative_to(ROOT)),
+    episode.update(steps=steps, task_config=family.id, protocol={"path": str(protocol.relative_to(ROOT)),
                                                     "sha256": a.protocol_sha256})
     meta = NM.run_meta(a.gpu_index, protocol=protocol, task_config=family.config_path, extra={
         "out": str(out.relative_to(ROOT)), "native_run": str(native.relative_to(ROOT)), "native_arrays_sha256": NM.sha256(native/"native_arrays.npz"),
