@@ -518,3 +518,73 @@ stands (task X5).
 tests/test_repo_naming.py` at `b019684` (src and tests unchanged since `2b2221b`): **455 passed** with
 `CUDA_VISIBLE_DEVICES=''` (608 s) and **455 passed** with `=0` under the GPU0 lock (606 s); logs
 `artifacts/rl_ready/p2_4/cpu_tests_x2_001/`.
+
+## 11. Task X3 — law `grid_node_penalty_coulomb_v3`, the μ ≤ 0.8 envelope at the acceptance profile (ADR 0023 §22.11)
+
+Material status **SIMULATOR_ONLY_UNCALIBRATED**. Law `b668bdc` (opt-in; v1 / v2 kernels byte-identical, v1 default).
+Protocol `configs/rubber/rubber_contact_tests_v3.json`, sha256 `36d70bea…a856`, declared and pinned alone at `e19f488`
+before any formal run (every v2 threshold copied verbatim; new -01 f load-ramp slip at 0.01 s; scored μ 0.2–0.8 on INC
+and INC2 at n_t 3 and n_t 4; PINCH at n_t 3 and 4; μ 1.0 rows reported with labels only; -01 d unchanged). Evidence
+`docs/evidence/rl_ready/p2_4_contact_x3_001.json`.
+
+### 11.1 Law
+
+v2 plus the patch slip-rate equalisation (X2 dev mode 13, ζ_d = 1): per env and obstacle face (each plane, each face
+of each box; rows e·Q + q, Q = P + 6FB), the slipping nodes of a patch with μ > 0 get −dt c_d (v_t − v̄) outside the
+Coulomb cap and the slider, c_d = 2ζ_d√(k_t m_I), v̄ their mass-weighted mean realised tangential velocity in the same
+substep. The impulses sum to zero per patch (patch total ≤ μΣF_n); stick nodes, slip onset and static friction are v2's.
+Two passes (`node_penalty_contact_v3_normal` / `_tangential`), one source for the single and the batched solver.
+
+### 11.2 Formal CPU run `contact_v3_001`
+
+`CUDA_VISIBLE_DEVICES='' PYTHONPATH=src .venv/bin/python scripts/rubber/p2_4/run_contact_v3.py --out
+artifacts/rl_ready/p2_4/contact_v3_001 --jobs 48` — commit `c631cca`, clean tree, 137 jobs, 133 s; smoke
+`contact_v3_smoke_001` preserved (SMOKE).
+
+| Group | slip runs: max \|err\| / g cosθ | D04 range | stick runs: max \|disp\| / s | load-ramp max / s | books max (stick) |
+|---|---|---|---|---|---|
+| INC n_t 3 | 9.1e-8 | 0.99994–0.99997 | 6.2e-5 | 2.9e-4 | 1.64 % (9 FAIL) |
+| INC n_t 4 | 1.7e-7 | 0.99995–0.99997 | 8.9e-5 | 4.0e-4 | 2.05 % (11 FAIL) |
+| INC2 n_t 3 | 1.8e-7 | 0.99989–0.99995 | 9.1e-5 | 4.4e-4 | 0.51 % |
+| INC2 n_t 4 | 1.2e-7 | 0.99991–0.99996 | 1.3e-4 | 5.9e-4 | 0.62 % |
+
+| Test | v2 (`contact_v2_001`) | v3 (`contact_v3_001`) |
+|---|---|---|
+| -01 a / b / c / e | b FAIL at μ 0.8 | **PASS** (n_t 3 and 4, INC and INC2, μ 0.2–0.8, P2 holds) |
+| -01 d books | FAIL (stick runs) | **FAIL** (20 INC stick runs, 1.03–2.05 % of S, ≤ 5.2e-12 J; declared expected, not redefined) |
+| -01 f load-ramp slip | – | **PASS** (≤ 5.9e-4 s) |
+| -02 / -03 | PASS | **PASS** (frictionless: v3 = v2) |
+| -04 | FAIL (μ 0.8: 0.87–0.94) | **PASS** (≥ 0.9999) |
+| -05 (n_t 3 / n_t 4) | FAIL a (0.964) | **PASS**: ratios 1.000 / 0.999 / 0.989 and 1.000 / 0.988 / 0.986; cone ≤ 1.000; window balance ≤ 1.4 % |
+| μ 1.0 (reported) | – | n_t 3 exact; n_t 4 INC r1.1 +2.4 %, INC2 r1.1 +0.68 % (D04 0.91–0.95): `contact_coulomb_ill_posed` |
+
+### 11.3 Batched path and GPU
+
+- RUBBER-CONT-08 (`tests/test_rubber_contact_v3.py`, 16 tests): **PASS** — L0 byte-wise N = 1 and N = 3 heterogeneous
+  (incline, pinch, pinch P2, impact; patch rows and per-pad wrenches included), equalisation exercised in the L0 run,
+  L1 isolation (pad motion / friction / plane), masked reset = fresh env, vars()-complete, v2 / v3 mix refused; kernel
+  level net-zero (residual 2e-23 against 1e-7 impulses) and env-indexed patch sums; ζ_d = 0 reproduces v2 byte-wise.
+- RUBBER-CONT-09 (`gpu_cont09_v3_001`, `scripts/rubber/p2_4/gpu_contact_batched_check_v3.py` = the B2-v2 script with the
+  v3 protocol and law; GPU0 lock, SHARED_GPU, co-tenants 3468960 / 642659 untouched): **PASS** — a exact zeros; b 1,566
+  scalars, 0 failing, worst d / limit 0.35; c audits 0 incl. the patch-row audit. Smoke `gpu_cont09_v3_smoke_001`
+  preserved (SMOKE).
+- RUBBER-CONT-11 (reported): batched v3 vs v2 (B2-v2 rows) 0.579 vs 0.562 ms per substep (N 4, -09 configuration),
+  0.620 vs 0.597 (N 4 all pinched), 0.323 vs 0.309 (N 1), 0.398 vs 0.397 (no contact); single env workload E
+  (`scripts/rubber/p2_4/gpu_contact_cost_v3.py`, `gpu_contact_cost_x3_v2_001` / `_v3_001`): contact 0.322 → 0.332 ms
+  per substep (+3.1 %), out of reach 0.306 → 0.313, VRAM 712 → 718 MB.
+
+### 11.4 Decision
+
+v3 is the law for scored rubber contact with μ ≤ 0.8 at n_t 3 and 4 (opt-in; v1 stays the frozen default). Every
+criterion of `rubber_contact_tests_v3` passes except -01 d (stick-run books, declared expected, not redefined; X5).
+μ > 0.8 sliding rows carry `contact_friction_flutter`, μ ≥ 1.0 also `contact_coulomb_ill_posed`. Declared limitations:
+slip-rate waves inside a slipping patch are suppressed; disjoint contact regions on one obstacle face share one patch; a
+net patch torque remains. All earlier FAILs (`contact_v1_001`, `contact_v2_001`, `gpu_cont09_001`) and the X2 negative
+result stay.
+
+### 11.5 CPU suites
+
+`tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py
+tests/test_repo_naming.py` at `eab4ef4` (src unchanged since `b668bdc`): **478 passed** with `CUDA_VISIBLE_DEVICES=''`
+(592 s) and **478 passed** with `=0` under the GPU0 lock (585 s); logs `artifacts/rl_ready/p2_4/cpu_tests_x3_001/`. New:
+`tests/test_rubber_contact_v3.py` (16), the v3 protocol pin. None of the tests needs local artifacts.
