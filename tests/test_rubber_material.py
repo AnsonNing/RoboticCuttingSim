@@ -151,8 +151,10 @@ def test_resolution_and_lattice_checks():
     r = rm.load_recipe()
     # R2.5 review decision (a): n_t 3 (rubber_rl_v1, the recipe default) is labelled reduced fidelity with its bias
     assert rm.resolution_check(r, 0.004, 0.004/3)["label"] == "reduced_fidelity: thickness_resolution_n_t3"
-    assert "static_sag_L_over_t_20_W_4t" in r.resolution()["measured_bias"]
-    assert rm.resolution_check(r, 0.004, 0.001, profile="rubber_ref_v1")["label"] == "full"
+    # K2-2: the measured_bias is structured (rcs_resolution_bias_v1); Q1w is the W = 4t, L/t 20 static sag
+    assert r.resolution()["measured_bias"]["observables"]["Q1w"]["bias_pct"] == 1.39
+    assert rm.resolution_check(r, 0.004, 0.001, profile="rubber_ref_v1")["label"] == \
+        "full_with_known_limitation: rubber_phys_11_v5_q1w_gci_2.16pct"
     with pytest.raises(rm.RubberRecipeError):
         rm.resolution_check(r, 0.004, 0.002)
     assert rm.resolution_check(r, 0.004, 0.002, profile="rubber_coarse_v1")["label"].startswith("reduced_fidelity")

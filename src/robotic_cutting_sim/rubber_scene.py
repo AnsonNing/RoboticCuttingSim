@@ -17,12 +17,20 @@ The stencil is the frozen TLMPM formula (trilinear weights, gradients (2 bit - 1
 evaluated with exact lattice fractions (0.25 / 0.75 at 2 particles per cell). Also compiled: the constant cell CSR of
 the J-bar gather (cell = stencil corner-0 node, cells in order of first appearance, particles ascending), K = 9 marker
 cross-sections (CSR), surface-particle flags, traction groups and the scene receipt (schema ``rcs_rubber_scene_v1``).
+
+Resolution label (K2 review K2-2, Q1w decision condition 2): the compiler resolves ``resolution_profile`` against
+n_t = t / dx (``rubber_material.resolution_label``): ``None`` selects the profile whose band holds n_t, a name whose
+band does not hold n_t (or an unknown name) is refused, and the receipt carries ``resolution`` = profile, label,
+``measured_bias`` and ``known_limitation`` (the label reaches every live / batched receipt through the scene receipt).
+Before K2-2 the field defaulted to ``rubber_rl_v1`` for every n_t and was not validated.
 """
 from dataclasses import dataclass, field
 import hashlib
 import math
 
 import numpy as np
+
+from .rubber_material import profile_for_n_t, resolution_label
 
 SCENE_SCHEMA = "rcs_rubber_scene_v1"
 SCENE_FAMILY = "rubber_strip_v1"
@@ -46,7 +54,7 @@ class RubberStripSpec:
     ppc: int = 2
     center: tuple = (0.0, 0.0, 0.0)  # case "block": block centre
     traction_regions: tuple = ()     # ((name, (lo xyz), (hi xyz)), ...) in strip coordinates
-    resolution_profile: str = "rubber_rl_v1"
+    resolution_profile: str = None   # None: the profile whose n_t band holds t / dx (K2-2); a name is validated
     quadrature_check: bool = False   # ppc 3 only with this flag: the refinement study's labelled quadrature check
 
     def grid_dx(self):
@@ -92,6 +100,7 @@ class RubberStripScene:
     surface: np.ndarray              # [n] bool
     free_length: float
     receipt_extra: dict = field(default_factory=dict)
+    resolution: dict = None          # resolution_label(...) of the compiled n_t (K2-2)
 
     @property
     def n(self):
@@ -138,7 +147,8 @@ class RubberStripScene:
                 "geometry_m": {"length": s.length, "width": s.width, "thickness": s.thickness,
                                "jaw_length": float(self.receipt_extra.get("jaw_length", 0.0))},
                 "dx_m": self.dx, "particle_spacing_m": self.spacing, "particles_per_cell_axis": s.ppc,
-                "cells_through_thickness": s.thickness/self.dx, "resolution_profile": s.resolution_profile,
+                "cells_through_thickness": s.thickness/self.dx,
+                "resolution_profile": self.resolution["resolution_profile"], "resolution": self.resolution,
                 "lattice": list(self.lattice), "particles": self.n, "nodes": self.node_count,
                 "nodes_with_mass": int(self.node_has_mass.sum()), "cells": len(self.cell_node),
                 "grid_origin_m": self.grid_origin.tolist(), "grid_dims": [int(v) for v in self.grid_dims],
@@ -166,6 +176,9 @@ def compile_strip(spec):
     if spec.quadrature_check and spec.ppc != 3:
         raise ValueError("quadrature_check=True labels a ppc 3 scene; got ppc %d" % spec.ppc)
     dx = spec.grid_dx()
+    n_t = float(spec.thickness)/dx
+    resolution = resolution_label(spec.resolution_profile if spec.resolution_profile is not None
+                                  else profile_for_n_t(n_t), n_t, compact=True)
     s = dx/spec.ppc
     jaw = 0.0
     if spec.case == "A":
@@ -289,7 +302,7 @@ def compile_strip(spec):
         node_mask=node_mask.astype(np.int32), groups=groups, particle_traction=particle_traction.astype(np.int32),
         traction_groups=traction_groups, marker_offsets=marker_offsets.astype(np.int32),
         marker_particles=np.concatenate(marker_lists).astype(np.int32), marker_reference=np.asarray(marker_ref),
-        surface=surface, free_length=free_length, receipt_extra={"jaw_length": jaw})
+        surface=surface, free_length=free_length, receipt_extra={"jaw_length": jaw}, resolution=resolution)
 
 
 _RECEIPT_KEYS = {"schema", "family", "case", "geometry_m", "dx_m", "particle_spacing_m", "particles_per_cell_axis",
@@ -299,10 +312,16 @@ _RECEIPT_KEYS = {"schema", "family", "case", "geometry_m", "dx_m", "particle_spa
 
 
 def validate_scene_receipt(receipt):
-    """Schema check of a scene receipt (``rcs_rubber_scene_v1``); raises ValueError."""
+    """Schema check of a scene receipt (``rcs_rubber_scene_v1``); raises ValueError. The ``resolution`` block (K2-2) is
+    optional so that receipts recorded before K2-2 still validate; when present, its profile must equal
+    ``resolution_profile`` and it must carry ``measured_bias`` and ``known_limitation``."""
     missing = _RECEIPT_KEYS-set(receipt)
     if missing:
         raise ValueError(f"scene receipt missing {sorted(missing)}")
+    res = receipt.get("resolution")
+    if res is not None and (res.get("resolution_profile") != receipt["resolution_profile"]
+                            or "measured_bias" not in res or "known_limitation" not in res):
+        raise ValueError("scene receipt resolution label")
     if receipt["schema"] != SCENE_SCHEMA or receipt["family"] != SCENE_FAMILY or receipt["case"] not in CASES:
         raise ValueError("scene receipt schema/family/case")
     if receipt["markers"]["count"] != MARKERS or not receipt["particles"] > 0:
