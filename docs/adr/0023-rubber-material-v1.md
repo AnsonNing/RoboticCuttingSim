@@ -1858,3 +1858,153 @@ declared labels stay. Two qualifications are recorded (DIAGNOSTIC, not re-scorin
 | X4 (rcs-xhigh) | Stability of steady Coulomb sliding of the declared continuum with unilateral contact (separation allowed) for μ < 1, to decide whether the dx-growing deficit is a discretisation artefact or continuum physics | M |
 | X5 | Source of the static stick jitter (5–12 µm/s) and of the -01 d books drift; an a-priori drift-rate books criterion | S–M |
 | P2-5 | Calibrated rubber sets must include high-frequency loss (DIAGNOSTIC: one Prony term at τ 100 µs removes most of the μ 0.8 deficit) | – |
+
+## 23. P2-4 completion, P2-5 and P2-6: decisions and plan (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: the remaining P2-4 integration items (B3, S1, P1, the μ envelope), the P2-5 calibration interface and its
+synthetic numerical validation, the P2-6 RL-ready rubber environment and its Full Native verification, the Q1w
+decision of protocol v5, the Phase 2 Done mapping and the task list. Planning only: no `src/`, `tests/` or `configs/`
+change, no GPU job; two CPU probes. Branch `claude/rl-rubber-p24b` at `6b36b65` (B2-v2 + X1 / X2). The full plan,
+including the protocol tables, the probe records and the sized task list, is
+`docs/reports/rl_ready/P2_REMAINING_PLAN.md`; this section holds the binding decisions. Nothing frozen changes (§22
+list; Phase 1 `frozen_paths` / `evaluator_files` of `acceptance_v1` / `acceptance_v2`; rubber protocols v1–v5,
+moving-grip v1, visc v1–v2, contact v1–v2). Material status: `SIMULATOR_ONLY_UNCALIBRATED`.
+
+Numbering: X3's results belong in §22.11. When `claude/rl-rubber-v5` is consolidated, its §21 (protocol v5) becomes
+**§19A** (task K1), because this lineage's §21 is P2-3.
+
+### 23.1 Verified facts the decisions rest on
+
+- **Batch packing.** A rubber batch packs heterogeneous slots when dx and dt are uniform: t 4 / 5 / 6 mm at dx 1 mm,
+  i.e. n_t 4 / 5 / 6, with M = 2 Prony, a table plane, a tip traction region and the protocol options (probe 2;
+  `batched/rubber_layout.py:12-14`).
+- **Step rule.** μ0 ≤ 0.8 MPa and ρ ≥ 1000 kg/m³ give dt 3.827 µs, i.e. 5,226 substeps per 20 ms (probe 1).
+- **Resampled reset.** Host-staged. A density change rebuilds the F8 inverses on the host: 0.27 s per env at
+  65k particles (`rubber_material_batch.py:420-426, 580-627`).
+- **Grip motion.** Host-staged (`:489-505`).
+- **Contact cost.** With no frames the contact kernel skips the per-node slerp that dominated the pad-scene cost
+  (`rubber_contact.py:416-470`).
+- **Dispatch.** `open_vector_env` on `main` dispatches on `backend` only. Its file is outside `frozen_paths` and
+  `evaluator_files`; `tests/test_perf_acceptance.py:152` asserts it stays changeable.
+- **Native.** Native constructs the frozen `LiveCuttingMaterial` with cutting task, tool and pads
+  (`isaac_sim_runner.py:690-712`), and advances it with the measured pose after PhysX (`:1568`).
+- **REAL gate.** The calibration manifest v1 has no data origin, and the `REAL_CALIBRATED` gate checks only status and
+  verdict (`rubber_material.py:431-444`).
+- **Optimisers.** scipy only; no CMA-ES or BO package.
+
+### 23.2 Decisions
+
+1. **B3 deferred, not required for P2-6.** P2-6 uses kinematic grips (ideal tracking; no wrench feedback, hence no
+   coupling error, §22.4).
+   - RUBBER-CONT-07 found the 20 ms handoff significant at every envelope point, so B3 without C1 could only produce
+     labelled rows.
+   - The Lab `MaterialCoupling` surface is defined over an edge pose and a cut digit, so a rubber Lab task would be
+     needed as well.
+   - B3 + C1 + P1 form a post-Phase-2 robot-coupled rubber package, subject to a user decision. Receipt label:
+     `robot_feedback_coupling: NOT_IMPLEMENTED_PHASE2`.
+2. **S1 required before P2-6.** Option `self_penetration_check = surface_grid_v1` (default `off_v1`: no array, no
+   launch).
+   - Test: surface pairs of one env with |x_p − x_q| < s and |X_p − X_q| > 3·dx.
+   - Grid: an env-grouped sort grid on the Phase 1 `FallbackGrid` pattern, re-implemented in a Phase 2 module; no
+     `wp.HashGrid`.
+   - Cadence: inside the graph every `check_substeps` (declared 256, ≈ 1 ms), plus a reported blind-interval counter.
+   - Output: sticky bit `RUBBER_SELF_CONTACT_UNRESOLVED = 8`, which terminates the env in training.
+   - It is a detector: self-contact physics stays `NOT_IMPLEMENTED_V1`.
+3. **P1 deferred.** The P2-6 scene has no contact frames; the plane-only contact cost is measured in RL-07. A
+   bounding-volume early-out, byte-identical on CPU, is allowed before the P2-6 GPU runs if the plane-only cost exceeds
+   +25 %.
+4. **μ envelope.** `configs/rubber/contact_envelope_v1.json` (task ENV1) maps each (law, n_t) to the formally scored
+   sliding and static limits; DIAGNOSTIC rows may only narrow them.
+   - **P2-6 range.** P2-6 randomises `friction_table ~ U[0.3, min over its slots' n_t of μ_slide,max]`. Pad and self
+     frictions are fixed and declared unused.
+   - **ENV2.** P2-6 slots have n_t 4–6, so ENV2 declares and runs a formal envelope check at n_t 5 / 6 (and n_t 4 if v2
+     is the law) before P2-6 is declared.
+   - **Expected bounds.** 0.8 with law v3 if `rubber_contact_tests_v3` passes; 0.4 with v2. If nothing is scored, the
+     friction axis is BLOCKED.
+   - **Refusal.** Values ≥ 1.0 or above the bound raise `UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE`; μ ≥ 1.0 remains the
+     labelled limitation `contact_coulomb_ill_posed`.
+5. **Q1w (RUBBER-PHYS-11 v5 FAIL): recommendation to the reviewer (task K2) is (c),** accept n_t 4 with its measured
+   bias as a labelled limitation.
+   - The v5 FAIL (2.16 % under the unchanged rule; p_obs 3.12 ⇒ Fs 3) stays recorded.
+   - `rubber_ref_v1` gains a `measured_bias` block (Q1 +0.39 %, Q1w +0.62 %, Q2 −0.39 %, Q4 −0.05 %) and
+     `known_limitation: rubber_phys_11_v5_q1w_gci_2.16pct` in every receipt. Phase 2 Done box 2 is then
+     PASS_WITH_LIMITATIONS for this item.
+   - (b), a v6 rule that passes the existing data, is rejected as evaluator loosening.
+   - (a), n_t 6 for wide strips, costs ≈ 5× per env-step on every wide-strip scene and needs an n_t 12 verification
+     run, to remove a bias ≈ 4× below the declared β = 20 model-form error. It is the fallback if (c) is rejected,
+     declared as v6 (6 / 8 / 12) before any run.
+6. **P2-5: calibration interface + synthetic numerical validation `rubber_calib_tests_v1`.**
+   - **Manifest.** `rcs_rubber_calibration_dataset_v2` adds `data_origin`, per-experiment sensor models and a sealed
+     truth SHA. Synthetic manifests use `SYNTHETIC_*` statuses and live outside `configs/rubber/calibration/`. A test
+     asserts that no synthetic manifest can satisfy `REAL_CALIBRATED`. The v1 module and the gate code stay unchanged.
+   - **Forward models.** Population-batched (candidate × experiment → env).
+   - **Fit API.** Formal method scipy `least_squares` TRF with a batched FD Jacobian and 3 starts; an in-repo CMA-ES
+     (reported); an ask/tell hook for the external agentic optimizer or BO. The objective uses fit-split data only and
+     no RL term. The held-out evaluation is one-shot, and sealed paths are refused.
+   - **Synthetic truth.** Same model family at n_t 6 / CFL 0.25, sensor sampling and noise, and hidden parameters drawn
+     with a secret seed whose SHA alone enters the manifest.
+   - **Splits.** Fit: tensile at 2 rates, relaxation, cantilever rebound, gravity sag, friction sliding. Held out:
+     other rates (incl. extrapolation), length, thickness, initial deformation and normal load.
+   - **Metrics.** Force–displacement nRMSE, hysteresis energy, relaxation, tip trajectory, rebound time, decay, slip
+     distance, volume, energy.
+   - **Tolerances.** tol = max(2·(noise floor + discretisation floor), declared floor), evaluated on a separate pilot
+     dataset and committed before the formal dataset exists.
+   - **Power and order.** A negative control (single-rate, single-geometry fit) must fail the held-out split. An order
+     audit runs: protocol < pilot < thresholds < dataset freeze < fit receipt < held-out < reveal.
+   - **Labels.** `NUMERICAL_VALIDATION_SYNTHETIC`; never a calibration. The real-data protocol is declared but
+     NOT_RUN; it requires a high-frequency Prony term (§22.10).
+7. **P2-6: `RubberStripTaskFamily` behind `open_vector_env(backend="kinematic_grip_batched")`** (`rl/rubber_family.py`,
+   `rl/rubber_env.py`, `rl/rubber_contract.py`).
+   - **Dispatch.** The only Phase 1 file touched is a lazy-import branch at the top of `open_vector_env` in the
+     non-frozen `rl/vector_env.py`, made last on the consolidated tree.
+   - **Task `rubber_strip_drag_v1`.**
+     - Scene: a case-A strip on a table, a tip traction and no frames.
+     - Slots: L 100 / 125 / 150 mm × W 16 mm × t 4 / 5 / 6 mm at dx 1 mm, `rubber_ref_v1`.
+     - Per reset: μ0 [0.3, 0.8] MPa, ρ [1000, 1300], Prony g-scale [0.5, 1.5] and τ-scale [0.5, 2], friction per
+       decision 4, and a tip traction.
+     - Initial deformation: a 10-step seeded simulated preload with actions ignored.
+     - Goal: a tip goal at ≥ 30 mm initial distance.
+   - **Actions.** `grip_delta_v1` (6: ≤ 5 mm, ≤ 0.05 rad per step, workspace clamp keeping the jaw above the table).
+   - **Observations.** A 78-dim deployable `policy` (grip pose, twist, time, previous action, ideal-tracked markers and
+     velocities, goal, preload flag; no force or material state) and an opt-in privileged `critic`.
+   - **Reward and success.** `rubber_tip_tracking_v1` (provisional shaping); success only from `rubber_tracking_eval_v1`.
+   - **Termination.** Through `rl.termination` (rubber bits → `TERM_MATERIAL_INVALID`).
+   - **Not in v1.** `autoreset="same_step"`, cameras.
+   - **Profile `rubber_rl_env_v1`.** F8 + kick-average + F9 + F10 + guard 1.0 + S1 + the ENV1 law. Step staging is
+     device-side (new opt-in methods, byte-identical to the host path); resets stay host-staged with reported p95.
+   - **Acceptance protocol.** `rubber_rl_tests_v1`, RL-01…RL-11 (plan §4.8):
+     - contract, parity (L0 / L2 / L3) and randomisation;
+     - isolation (L1 + the -09 v2 rule) and episode semantics incl. S1;
+     - long rollout, throughput / VRAM vs Phase 1 (scored: N 8 gain over N 1, VRAM ≤ 4 GB) and dt / spacing
+       (dt scored, spacing reported with the -11 rule);
+     - Native, provenance and Phase 1 non-regression.
+8. **Full Native verification.** A new `native_rubber_host.py` hosts `LiveRubberMaterial` (the same recipe, slot,
+   profile and law) in the Kit process. It reuses `launch_app`, the static workcell (Frankas at the safe park, camera
+   rig v5), `DynamicSurfaceBridge` and the overview RGB-D. `isaac_sim_runner.py` and `live_material.py` stay unchanged.
+   - **Loop** (the TLMPM bridge's shape): kinematic clamp target, PhysX step, measured clamp pose,
+     `advance(motions)`, surface update, record. No feedback.
+   - **Run.** One 100-step episode: settle, lift + yaw, hold with tip contact.
+   - **Comparison** with 20 headless GPU replays of the recorded poses (+ 10 held-out):
+     - receipts and inputs bitwise equal;
+     - every physics statistic inside `rubber_l3_band_v4`;
+     - bridge integrity scored;
+     - render and camera consistency reported, not scored.
+
+### 23.3 Phase 2 Done (summary; mapping in the plan §6)
+
+| Box | Expected at close |
+|---|---|
+| 1. models with reproducible evidence | PASS after X3, K1, K2 |
+| 2. physics and numerics tests pass | PASS_WITH_LIMITATIONS: Q1w bias; μ ≥ 1.0; -01 d unless X5; self-contact not implemented, detected |
+| 3. RL headless (≥ 8 envs) and Full Native | PASS if `rubber_rl_tests_v1` passes |
+| 4. REAL_CALIBRATED only after a real held-out pass | PASS: status stays SIMULATOR_ONLY_UNCALIBRATED; P2-5 is synthetic numerical validation only |
+| 5. old baselines unbroken | PASS via RL-11 |
+| 6. merged, external pin updated | PASS after Z2 (PR to `main`) and Z3 (new versioned descriptor, SYNCED) |
+
+### 23.4 Tasks
+
+The plan §7 has the full table: X3 (running); K1 consolidation; K2 combined review; S1; ENV1 / ENV2; P5.1–P5.7;
+P6.0–P6.7; Z1–Z3. Deferred: B3, C1, P1, X4, X5, Q1W-A, and the real-data protocol.
+
+Estimate: ≈ 20 nominal agent-days (≈ 9-day critical path), ≈ 3–5 calendar days at the velocity observed in P2-3 /
+P2-4, ≈ 11 GPU-hours (mostly GPU0; the Native run needs ≥ 14 GiB free). Add 0.5–1 day per protocol v2 cycle.
