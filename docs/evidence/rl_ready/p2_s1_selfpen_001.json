@@ -1,0 +1,659 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_s1_selfpen_001",
+ "work_package": "P2-4 completion task S1: self-penetration detector surface_grid_v1 (ADR 0023 section 23.2 decision 2 and section 23.5; plan P2_REMAINING_PLAN.md section 2.2)",
+ "report": "docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md section 12",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "self_contact_physics": "NOT_IMPLEMENTED_V1 (detector only, no force)",
+ "commits": {
+  "code_and_cpu_tests": "a1bdeac",
+  "check_declaration": "5effd81",
+  "gpu_script": "bca572d"
+ },
+ "declaration": {
+  "file": "configs/rubber/rubber_selfpen_check_v1.json",
+  "sha256": "cc5cf3339e0c69cff13517686833e2293c101c4242b3702ef9980bb5d08b8bc0",
+  "pinned_in": "tests/test_rubber_s1_protocol.py"
+ },
+ "gpu_run": {
+  "dir": "artifacts/rl_ready/p2_s1/gpu_selfpen_001",
+  "commit": "bca572d551bf9504d0786e3c59846321080a0d80",
+  "dirty_tree": false,
+  "protocol_sha256": "cc5cf3339e0c69cff13517686833e2293c101c4242b3702ef9980bb5d08b8bc0",
+  "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+  "physical_gpu": 0,
+  "warp": "1.17.0",
+  "python": "3.12.12",
+  "free_mb_at_start": 30943.0,
+  "gpu_label": "SHARED_GPU",
+  "co_tenant_pids": [
+   "642659"
+  ],
+  "co_tenant_samples": [
+   {
+    "t": "2026-11-11T18:53:32+0900",
+    "gpu": "1169 MiB, 32607 MiB, 0 %",
+    "apps": [
+     "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766 MiB"
+    ]
+   },
+   {
+    "t": "2026-11-11T18:53:55+0900",
+    "gpu": "2152 MiB, 32607 MiB, 100 %",
+    "apps": [
+     "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766 MiB",
+     "3571613, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 978 MiB"
+    ]
+   },
+   {
+    "t": "2026-11-11T18:55:34+0900",
+    "gpu": "3118 MiB, 32607 MiB, 100 %",
+    "apps": [
+     "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766 MiB",
+     "3571613, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1944 MiB"
+    ]
+   },
+   {
+    "t": "2026-11-11T18:55:40+0900",
+    "gpu": "3118 MiB, 32607 MiB, 65 %",
+    "apps": [
+     "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766 MiB",
+     "3571613, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1944 MiB"
+    ]
+   },
+   {
+    "t": "2026-11-11T18:57:21+0900",
+    "gpu": "4040 MiB, 32607 MiB, 54 %",
+    "apps": [
+     "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766 MiB",
+     "3571613, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 2866 MiB"
+    ]
+   }
+  ],
+  "command": "/home/ningan/RoboticCuttingSim-rl-rubber/.venv/bin/python scripts/rubber/p2_s1/gpu_selfpen_check.py --out artifacts/rl_ready/p2_s1/gpu_selfpen_001",
+  "started": "2026-11-11T18:53:32+0900",
+  "finished": "2026-11-11T18:57:21+0900",
+  "lock": "flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock (blocking)"
+ },
+ "verdict": {
+  "L2": true,
+  "TRIP": true,
+  "NO_FALSE_TRIP": true,
+  "COST": "reported",
+  "check": "PASS"
+ },
+ "cost_rows": [
+  {
+   "N": 1,
+   "particles_per_env": 65024,
+   "substeps": 5226,
+   "dt_s": 3.827018752391887e-06,
+   "control_hz": 50,
+   "cameras": 0,
+   "recording": false,
+   "graph_chunk_on": 256,
+   "graph_chunk_off": 500,
+   "ms_per_substep_on": 0.32084,
+   "ms_per_substep_off": 0.321,
+   "overhead_ms_per_substep": -0.0001543,
+   "overhead_rel": -0.0004808,
+   "env_steps_per_s_on": 0.5964,
+   "env_steps_per_s_off": 0.5961,
+   "warm_walls_s_on": [
+    1.675,
+    1.677,
+    1.677,
+    1.677,
+    1.677
+   ],
+   "warm_walls_s_off": [
+    1.676,
+    1.678,
+    1.678,
+    1.678,
+    1.677
+   ],
+   "memory_bytes_on": 50833228,
+   "memory_bytes_off": 49641668,
+   "detector_bytes": 1191560,
+   "warm_cold": "1 cold + 5 warm control steps per arm, interleaved on/off; median warm"
+  },
+  {
+   "N": 8,
+   "particles_per_env": 65024,
+   "substeps": 5226,
+   "dt_s": 3.827018752391887e-06,
+   "control_hz": 50,
+   "cameras": 0,
+   "recording": false,
+   "graph_chunk_on": 256,
+   "graph_chunk_off": 500,
+   "ms_per_substep_on": 1.4404,
+   "ms_per_substep_off": 1.4335,
+   "overhead_ms_per_substep": 0.006839,
+   "overhead_rel": 0.004771,
+   "env_steps_per_s_on": 1.063,
+   "env_steps_per_s_off": 1.068,
+   "warm_walls_s_on": [
+    7.518,
+    7.519,
+    7.527,
+    7.53,
+    7.528
+   ],
+   "warm_walls_s_off": [
+    7.475,
+    7.485,
+    7.492,
+    7.493,
+    7.494
+   ],
+   "memory_bytes_on": 406663556,
+   "memory_bytes_off": 397131076,
+   "detector_bytes": 9532480,
+   "warm_cold": "1 cold + 5 warm control steps per arm, interleaved on/off; median warm"
+  }
+ ],
+ "L2": {
+  "pass": true,
+  "per_N": {
+   "1": {
+    "finite": true,
+    "mass_unchanged": true,
+    "audits_zero": true,
+    "invalid_reason": [
+     0
+    ],
+    "hits": [
+     0
+    ],
+    "checks": [
+     126
+    ],
+    "checks_expected": 126,
+    "blind_steps": [
+     0
+    ],
+    "pass": true
+   },
+   "8": {
+    "finite": true,
+    "mass_unchanged": true,
+    "audits_zero": true,
+    "invalid_reason": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "hits": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "checks": [
+     126,
+     126,
+     126,
+     126,
+     126,
+     126,
+     126,
+     126
+    ],
+    "checks_expected": 126,
+    "blind_steps": [
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    "pass": true
+   }
+  }
+ },
+ "trip": {
+  "pass": true,
+  "single_gpu": {
+   "device": "cuda:0",
+   "substeps": 98,
+   "bits_final": 8,
+   "first_bit8_step": 139,
+   "other_bit_before_8": false,
+   "detector": {
+    "hits": 233,
+    "first_hit_check": 1795,
+    "first_hit_control_step": 139,
+    "first_hit_substep": 16,
+    "checks": 1820,
+    "blind_steps": 0
+   }
+  },
+  "single_cpu": {
+   "device": "cpu",
+   "substeps": 98,
+   "bits_final": 8,
+   "first_bit8_step": 137,
+   "other_bit_before_8": false,
+   "detector": {
+    "hits": 169,
+    "first_hit_check": 1776,
+    "first_hit_control_step": 137,
+    "first_hit_substep": 72,
+    "checks": 1820,
+    "blind_steps": 0
+   }
+  },
+  "batched_n3_gpu": {
+   "bits_final": [
+    0,
+    8,
+    0
+   ],
+   "first_bit8_step": [
+    null,
+    136,
+    null
+   ],
+   "other_bit_before_8": [
+    false,
+    false,
+    false
+   ],
+   "detector": [
+    {
+     "hits": 0,
+     "first_hit_check": null,
+     "first_hit_control_step": null,
+     "first_hit_substep": null,
+     "checks": 1820,
+     "blind_steps": 0
+    },
+    {
+     "hits": 222,
+     "first_hit_check": 1761,
+     "first_hit_control_step": 136,
+     "first_hit_substep": 56,
+     "checks": 1820,
+     "blind_steps": 0
+    },
+    {
+     "hits": 0,
+     "first_hit_check": null,
+     "first_hit_control_step": null,
+     "first_hit_substep": null,
+     "checks": 1820,
+     "blind_steps": 0
+    }
+   ],
+   "fold_env": 1
+  },
+  "note": "GPU P2G / MUSL use float atomics (order-nondeterministic), so the GPU hit time is reported next to the CPU value, not scored"
+ },
+ "no_false_trip": {
+  "pass": true,
+  "runs": [
+   {
+    "scene": "phys09_cantilever_gravity_t3mm_Wt1",
+    "scored": true,
+    "particles": 2304,
+    "substeps": 7705,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 155,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 3.482
+   },
+   {
+    "scene": "phys09_cantilever_gravity_t3mm_Wt4",
+    "scored": true,
+    "particles": 9216,
+    "substeps": 7705,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 155,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 4.579
+   },
+   {
+    "scene": "phys09_cantilever_gravity_t4mm_Wt1",
+    "scored": true,
+    "particles": 2304,
+    "substeps": 5779,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 115,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 2.645
+   },
+   {
+    "scene": "phys09_cantilever_gravity_t4mm_Wt4",
+    "scored": true,
+    "particles": 9216,
+    "substeps": 5779,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 115,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 3.47
+   },
+   {
+    "scene": "phys09_cantilever_gravity_t6mm_Wt1",
+    "scored": true,
+    "particles": 2304,
+    "substeps": 3853,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 80,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 1.766
+   },
+   {
+    "scene": "phys09_cantilever_gravity_t6mm_Wt4",
+    "scored": true,
+    "particles": 9216,
+    "substeps": 3853,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 80,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 2.314
+   },
+   {
+    "scene": "phys09_free_vibration_t3mm_Wt1",
+    "scored": true,
+    "particles": 2304,
+    "substeps": 7705,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 155,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 3.47
+   },
+   {
+    "scene": "phys09_free_vibration_t3mm_Wt4",
+    "scored": true,
+    "particles": 9216,
+    "substeps": 7705,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 155,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 4.578
+   },
+   {
+    "scene": "phys09_free_vibration_t4mm_Wt1",
+    "scored": true,
+    "particles": 2304,
+    "substeps": 5779,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 115,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 2.638
+   },
+   {
+    "scene": "phys09_free_vibration_t4mm_Wt4",
+    "scored": true,
+    "particles": 9216,
+    "substeps": 5779,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 115,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 3.462
+   },
+   {
+    "scene": "phys09_free_vibration_t6mm_Wt1",
+    "scored": true,
+    "particles": 2304,
+    "substeps": 3853,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 80,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 1.772
+   },
+   {
+    "scene": "phys09_free_vibration_t6mm_Wt4",
+    "scored": true,
+    "particles": 9216,
+    "substeps": 3853,
+    "steps": 5,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 80,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 2.322
+   },
+   {
+    "scene": "phys09_stretch_release_t3mm_Wt1",
+    "scored": false,
+    "particles": 2160,
+    "substeps": 3446,
+    "steps": 5,
+    "invalid_flags": [
+     "RUBBER_CFL_EXCEEDED"
+    ],
+    "pass": true,
+    "hits": 0,
+    "checks": 70,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 2,
+    "wall_s": 1.579
+   },
+   {
+    "scene": "phys09_stretch_release_t3mm_Wt4",
+    "scored": false,
+    "particles": 8640,
+    "substeps": 3446,
+    "steps": 5,
+    "invalid_flags": [
+     "RUBBER_CFL_EXCEEDED"
+    ],
+    "pass": true,
+    "hits": 0,
+    "checks": 70,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 2,
+    "wall_s": 1.743
+   },
+   {
+    "scene": "phys09_stretch_release_t4mm_Wt1",
+    "scored": false,
+    "particles": 2160,
+    "substeps": 2585,
+    "steps": 5,
+    "invalid_flags": [
+     "RUBBER_J_DOMAIN",
+     "RUBBER_CFL_EXCEEDED"
+    ],
+    "pass": true,
+    "hits": 0,
+    "checks": 55,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 2,
+    "wall_s": 1.191
+   },
+   {
+    "scene": "phys09_stretch_release_t4mm_Wt4",
+    "scored": false,
+    "particles": 8640,
+    "substeps": 2585,
+    "steps": 5,
+    "invalid_flags": [
+     "RUBBER_CFL_EXCEEDED"
+    ],
+    "pass": true,
+    "hits": 0,
+    "checks": 55,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 2,
+    "wall_s": 1.312
+   },
+   {
+    "scene": "phys09_stretch_release_t6mm_Wt1",
+    "scored": false,
+    "particles": 2160,
+    "substeps": 1723,
+    "steps": 5,
+    "invalid_flags": [
+     "RUBBER_J_DOMAIN",
+     "RUBBER_CFL_EXCEEDED"
+    ],
+    "pass": true,
+    "hits": 0,
+    "checks": 35,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 3,
+    "wall_s": 0.8452
+   },
+   {
+    "scene": "phys09_stretch_release_t6mm_Wt4",
+    "scored": false,
+    "particles": 8640,
+    "substeps": 1723,
+    "steps": 5,
+    "invalid_flags": [
+     "RUBBER_CFL_EXCEEDED"
+    ],
+    "pass": true,
+    "hits": 0,
+    "checks": 35,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 2,
+    "wall_s": 0.9365
+   },
+   {
+    "scene": "visc_v03_strip_16hz",
+    "scored": true,
+    "particles": 4320,
+    "substeps": 35,
+    "steps": 1875,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 1875,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 12.13
+   },
+   {
+    "scene": "visc_v02_creep",
+    "scored": true,
+    "particles": 4320,
+    "substeps": 35,
+    "steps": null,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 4000,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 26.3
+   },
+   {
+    "scene": "visc_v04b_cantilever_x1",
+    "scored": true,
+    "particles": 5376,
+    "substeps": 173,
+    "steps": null,
+    "invalid_flags": [],
+    "pass": true,
+    "hits": 0,
+    "checks": 550,
+    "first_hit_control_step": null,
+    "first_hit_substep": null,
+    "blind_steps": 0,
+    "wall_s": 18.75
+   }
+  ]
+ },
+ "cpu_tests": {
+  "dir": "artifacts/rl_ready/p2_s1/cpu_tests_s1_001",
+  "suites": "tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py tests/test_repo_naming.py tests/test_native_source_freeze.py tests/test_wp12_phase5_frozen.py",
+  "cuda_visible_devices_empty": [
+   "540 passed, 2 warnings in 778.42s (0:12:58)",
+   "exit=0 wall_s=779 CUDA_VISIBLE_DEVICES=''"
+  ],
+  "cuda_visible_devices_0": [
+   "540 passed, 2 warnings in 778.31s (0:12:58)",
+   "exit=0 wall_s=778 CUDA_VISIBLE_DEVICES='0'"
+  ]
+ },
+ "limitations": [
+  "detector only: a crossing is flagged (sticky bit 8, training mode terminates in P2-6), never resolved",
+  "checks every 256 substeps (~1 ms) and at the end of each control step: a pass-through faster than about (t - s) / (2 dt_check) between two checks can be missed; blind_steps counts control steps where 2 v_max dt_check >= t - s",
+  "the RUBBER-PHYS-09 lambda 1.5 release scene trips bit 8 in the same control step as J_DOMAIN / CFL (the fold compresses distant material together); the bit order inside that control step is not resolved",
+  "material parameters provisional; status SIMULATOR_ONLY_UNCALIBRATED"
+ ],
+ "frozen": "unchanged: Phase 1 modules (batched/constitutive.py, errors.py, material_batch.py, particle_contacts.py), configs/rl_benchmark/*, scripts/rl_ready/*, tlmpm_rubber_v1.py, rubber_constitutive.py, tlmpm_rubber_visco_v1.py, rubber_visco_constitutive.py, rubber_constraint_work.py, rubber protocols"
+}

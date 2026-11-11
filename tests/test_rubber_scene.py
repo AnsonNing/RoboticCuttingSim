@@ -110,9 +110,17 @@ def test_refusals():
 
 
 def test_ppc3_quadrature_check_lattice():
-    """ADR 0023 §14.4: 3 particles per cell per axis only as the refinement study's quadrature check; the exact
-    stencil keeps the partition of unity and zero gradient sum, 27 particles per cell."""
-    sc = rs.compile_strip(rs.RubberStripSpec(length=0.03, width=0.003, thickness=0.003, ppc=3))
+    """ADR 0023 §14.4: 3 particles per cell per axis only as the refinement study's quadrature check (refused
+    without the explicit flag, R2.5 review F9; labelled in the receipt); the exact stencil keeps the partition of
+    unity and zero gradient sum, 27 particles per cell."""
+    with pytest.raises(ValueError, match="quadrature check"):
+        rs.compile_strip(rs.RubberStripSpec(length=0.03, width=0.003, thickness=0.003, ppc=3))
+    with pytest.raises(ValueError, match="labels a ppc 3"):
+        rs.compile_strip(rs.RubberStripSpec(length=0.03, width=0.003, thickness=0.003, quadrature_check=True))
+    sc = rs.compile_strip(rs.RubberStripSpec(length=0.03, width=0.003, thickness=0.003, ppc=3, quadrature_check=True))
+    assert "quadrature_check" in sc.receipt()
+    assert "quadrature_check" not in rs.compile_strip(rs.RubberStripSpec(length=0.03, width=0.003,
+                                                                         thickness=0.003)).receipt()
     assert sc.spacing == pytest.approx(0.001/3) and set(sc.cell_count.tolist()) == {27}
     assert np.allclose(sc.weights.sum(1), 1.0, atol=1e-6)
     assert np.abs(sc.gradients.sum(1)).max() < 1e-3

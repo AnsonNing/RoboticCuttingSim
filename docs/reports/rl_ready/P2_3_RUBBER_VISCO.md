@@ -9,7 +9,8 @@ Protocol: `configs/rubber/rubber_visc_tests_v1.json` (sha256 `95ad1f94…f080`, 
 outputs: `artifacts/rl_ready/p2_3/` (not committed).
 **Protocol v2** (`rubber_visc_tests_v2.json`, sha256 `212fe7af…4663`, ADR 0023 §21.7) re-scores RUBBER-VISC-03 and -05
 after the v1 FAILs: formal run `visc_v2_001`, evidence `docs/evidence/rl_ready/p2_3_visco_002.json`, results in §8. The
-v1 results of §3 (including both FAILs) are preserved unchanged.
+v1 results of §3 (including both FAILs) are preserved unchanged. Cite RUBBER-VISC-03 and -05 as
+"v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848)" (review R2, `c9d771f`; ADR §21.7.7).
 
 Nothing frozen changed: `tlmpm_rubber_v1.py` (`28fc5189…`) and `rubber_constitutive.py` (`c12cc77e…`) are byte-identical,
 as are the Phase 1 modules (`batched/constitutive.py`, `batched/errors.py`, …), `configs/rl_benchmark/*`,
@@ -29,7 +30,7 @@ as are the Phase 1 modules (`batched/constitutive.py`, `batched/errors.py`, …)
 | R3.8 GPU cost rows (VISC-10) | **DONE (reported)** | P2 stress pass +9…+19 % ms/substep; energy option +65…+123 %; SHARED_GPU (§4) |
 | R3.9 report / evidence / ADR §21.6 | **DONE** | review by rcs-review (xhigh) **NOT_RUN** |
 | v2 decision (ADR §21.7, rcs-xhigh) | **DONE** | diagnosis verified on v1 raw data; v2 justified for -03 and -05; no threshold changed |
-| v2 protocol, option, formal run | -03 **PASS**, -05 **PASS** (v2) | `visc_v2_001`: de-embedded E′ −0.40…−0.41 %; books ≤ 0.035 %; dynamics byte-identical to v1 (§8) |
+| v2 protocol, option, formal run | -03, -05: **v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848)** | `visc_v2_001`: de-embedded E′ −0.40…−0.41 %; books ≤ 0.035 %; dynamics byte-identical to v1 (§8) |
 
 ## 1. Implementation (commits on `claude/rl-rubber-p23`)
 
@@ -189,7 +190,7 @@ of them needs artifacts, torch or CUDA. GPU-only paths are exercised by the cost
 ## 6. Open items
 
 - -03 and -05 v2 protocol decisions (§3.1, §3.2), and the `branch_work_kick_average_v2` option. rcs-xhigh decides; the v1
-  FAILs stay the v1 results. **Decided and run: §8** (v2 PASS for both; the v1 FAILs remain the v1 results).
+  FAILs stay the v1 results. **Decided and run: §8** (-03 / -05: v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848); the v1 FAILs remain the v1 results).
 - The visco guard bound holds with 0.9 % margin, and its PSD premise is false. A guard v2 is needed only if a future
   state set exceeds 1.
 - `visco_energy = branch_work_v1` uses one float64 atomic per particle-substep (dissipation) plus a branch-work pass
@@ -278,7 +279,7 @@ reproduce every recorded v1 column except `branch_work` byte-for-byte: the full 
 creep, cantilevers and blocks, and the v1 prefix of 1875 / 1719 rows for the longer 16 / 32 Hz runs, the ×2 run and
 the g = 0 run. Their left-point W_b equals the v1 `branch_work` column byte-for-byte.
 
-**RUBBER-VISC-03: PASS** (a, a-validity, b, c, e).
+**RUBBER-VISC-03: v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848)** (v2 criteria a, a-validity, b, c, e).
 
 | Rate | window (periods / samples) | E′ de-embedded (1 %) | E″ (3 %) | loss / cycle (3 %) | grip 0 vs 1 E′ (0.2 %) | not de-embedded E′ | v1 estimator on the v2 series |
 |---|---|---|---|---|---|---|---|
@@ -294,7 +295,7 @@ the g = 0 run. Their left-point W_b equals the v1 `branch_work` column byte-for-
 fit (reported) mispredicts E″ by −33 / +44 / −23 %. (e) Block 1.33e-7 / 1.39e-7 (limit 1e-4). De-embedding converged
 in 3–8 iterations.
 
-**RUBBER-VISC-05: PASS** (a–d).
+**RUBBER-VISC-05: v1 FAIL, v2 PASS (post-hoc measurement correction: the diagnostic re-analysis b9baa57 computed the v2 outcome on v1 data before v2 was declared in dca4848)** (v2 criteria a–d).
 
 | Run | max \|B_N\|/S_N, v2 kick-paired (0.5 %) | v1 left-point on the same run (reported) | W_b − (D + Ψ_v) at end / S_N (reported) |
 |---|---|---|---|
@@ -326,12 +327,13 @@ byte identity implies.
   −0.867 % (32 Hz), while E′ and the energy-based loss stay at −0.40 … −0.43 %. The control-step wrench is the mean of
   the substep forces at t_{k−1} + j·dt, j = 0 … n − 1, centred dt/2 before the declared stamp t_k − Δt_c/2. Re-stamped
   by dt/2, the same `visc_v2_001` data give E″ −0.411, −0.411, −0.412, −0.395, −0.404, −0.419 %: flat, and equal to E′
-  and the loss. v2 keeps the v1 stamps (stamps and thresholds never move after a result), and E″ passes with them. A
-  later protocol may adopt the corrected stamp.
+  and the loss. v2 keeps the v1 stamps (stamps and thresholds never move after a result), and E″ passes with them. The
+  next visco protocol that scores E″ adopts the dt/2-corrected stamp (review R3, ADR §21.7.7).
 - The early window of the v1-data re-analysis carried +0.12 % in E″ at 16 / 32 Hz (−0.508 / −0.750 there vs
   −0.625 / −0.867 % here), as the exact transient analysis predicted (+0.13 %).
 - The finite-strain model form (−0.40 % against the small-strain E*) remains inside the budget, not removed.
-- Not run: GPU strip / cantilever runs; independent rcs-review (xhigh) of the v2 decision and run.
+- Not run: GPU strip / cantilever runs. The independent rcs-review (xhigh) of the v2 decision and run has since run
+  (`c9d771f`, PASS_WITH_LIMITATIONS); its follow-ups R1–R4 are in ADR §21.7.7.
 - `branch_work_kick_average_v2` adds one mat33d per particle (72 B) to `branch_work_v1`'s arrays and is still a
   verification option (per-particle float64 atomics); it is not for training throughput.
 - Material status unchanged: **SIMULATOR_ONLY_UNCALIBRATED**.

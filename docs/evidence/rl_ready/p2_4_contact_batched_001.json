@@ -1,0 +1,438 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_4_contact_batched_001",
+ "phase": "P2-4 rubber contact, batched path (tasks B1 / B2)",
+ "adr": "docs/adr/0023-rubber-material-v1.md sections 22.2, 22.5, 22.8",
+ "report": "docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md section 7",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "protocol": {
+  "path": "configs/rubber/rubber_contact_tests_v1.json",
+  "sha256": "4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c"
+ },
+ "implementation": {
+  "solver": "batched/rubber_contact_batch.BatchedTLMPMRubberContact (tlmpm_rubber_contact_v1_batch)",
+  "law_code": "the single solver's TLMPMRubberContact._launch_contact bound unchanged; rubber_contact kernels shared (node_penalty_contact, contact_work_end, node_displacement, slider_update, contact_energy)",
+  "frictions": "params columns friction_table / friction_pad (strided view)",
+  "outputs": "plane_wrench [N,P,6], box_wrench [N,F,B,6], pad_wrench [N,G*B,6] (strip-local), pending_wrench [N,6] = 0; world transform + recipients = task B3 (not done)",
+  "contact_off": "lives without a ContactSpec build the unchanged BatchedTLMPMRubber"
+ },
+ "RUBBER-CONT-08": {
+  "verdict": "PASS",
+  "run": "artifacts/rl_ready/p2_4b/cont08_cpu_001",
+  "commit": "742858abc21a72a76fd834ef6fdd2f87ad841528",
+  "dirty_tree": false,
+  "command": "CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -p no:cacheprovider -v tests/test_rubber_contact_batched.py --junitxml artifacts/rl_ready/p2_4b/cont08_cpu_001/junit.xml",
+  "warp": "1.17.0",
+  "tests": 25,
+  "passed": 25,
+  "cases": [
+   {
+    "name": "test_l0_single_env_batch[imp]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l0_single_env_batch[inc]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l0_single_env_batch[pinch]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l0_single_env_batch[pinch_p2]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l0_heterogeneous_batch[imp]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l0_heterogeneous_batch[inc]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l0_heterogeneous_batch[pinch]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l0_heterogeneous_batch[pinch_p2]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l0_default_options_and_projection_law",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l1_perturbing_one_env_leaves_the_others_byte_unchanged[pad_motion]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l1_perturbing_one_env_leaves_the_others_byte_unchanged[friction]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_l1_perturbing_one_env_leaves_the_others_byte_unchanged[plane]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_reset_classification_is_vars_complete_with_contact",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_partial_reset_equals_fresh_env_and_keeps_others[pinch_p2]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_partial_reset_equals_fresh_env_and_keeps_others[inc]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_reset_with_resampled_friction_equals_the_single_reference",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_episodes_repeat_bytewise_after_full_reset",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_mixed_contact_configurations_are_refused",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_unknown_single_contact_array_is_refused",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_frame_motions_need_contact_frames",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_contact_off_builds_the_unchanged_batched_solver",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_empty_contact_spec_batch_is_byte_identical_to_the_batch_without_contact[elastic]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_empty_contact_spec_batch_is_byte_identical_to_the_batch_without_contact[prony_p2]",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_receipt_reports_the_contact_path",
+    "outcome": "passed"
+   },
+   {
+    "name": "test_contact_ownership_audit_is_zero",
+    "outcome": "passed"
+   }
+  ]
+ },
+ "RUBBER-CONT-09": {
+  "verdict": "FAIL",
+  "run": "artifacts/rl_ready/p2_4b/gpu_cont09_001",
+  "commit": "742858abc21a72a76fd834ef6fdd2f87ad841528",
+  "dirty_tree": false,
+  "command": "scripts/rubber/p2_4b/gpu_contact_batched_check.py --out artifacts/rl_ready/p2_4b/gpu_cont09_001",
+  "N": 4,
+  "particles_per_env": 41220,
+  "substeps": 2585,
+  "dt_s": 7.736943907156674e-06,
+  "control_steps_per_episode": 6,
+  "a_zero_rows": {
+   "pass": true,
+   "env1_contact_rows_nonzero_every_step": true
+  },
+  "b_perturbation_band": {
+   "pass": false,
+   "env1_differs_A_vs_B": true,
+   "repeat_A_vs_Aprime_bitwise_identical_all_envs": false,
+   "rows_total": 108,
+   "rows_failing": 1,
+   "failing_rows": [
+    {
+     "step": 2,
+     "env": 2,
+     "observable": "wrench",
+     "max_abs_A_minus_B": 1.2263698403319756e-07,
+     "max_abs_A_minus_Aprime": 2.0901958157348854e-08,
+     "scale_max_abs_A": 0.07084817597542609,
+     "limit": 9.175013413277494e-08,
+     "pass": false
+    }
+   ]
+  },
+  "c_audits": {
+   "pass": true,
+   "audits": {
+    "node_out_of_env": 0,
+    "cell_csr_out_of_env": 0,
+    "marker_out_of_env": 0,
+    "group_out_of_env": 0,
+    "traction_out_of_env": 0,
+    "contact_node_env_mismatch": 0,
+    "contact_obstacle_id_out_of_env": 0,
+    "contact_row_table_size_mismatch": 0,
+    "contact_env_table_size_mismatch": 0
+   },
+   "finite_every_step": true,
+   "invalid_bits_zero_every_step": true,
+   "guard_violations_after": [
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "diagnostic_not_verdict": {
+   "note": "added after the SMOKE run (reduced geometry) showed GPU float-atomic nondeterminism of the out-of-reach clamp wrench comparable to the single A vs A' sample; the -09 b verdict above is the declared per-step reading implemented before any run",
+   "repeat_envelope_3A_2B": {
+    "repeats_A": 3,
+    "repeats_B": 2,
+    "rows": 108,
+    "rows_within": 105,
+    "rows_outside": [
+     {
+      "step": 0,
+      "env": 2,
+      "observable": "wrench",
+      "max_AA": 2.640519781386269e-08,
+      "min_AB": 1.1833587253325117e-08,
+      "max_AB": 5.7940774181135246e-08,
+      "limit": 5.564141348775501e-08,
+      "max_AB_within_AA_envelope": false
+     },
+     {
+      "step": 0,
+      "env": 3,
+      "observable": "wrench",
+      "max_AA": 8.24076997569742e-08,
+      "min_AB": 1.4123490416247109e-08,
+      "max_AB": 1.2054558493849316e-07,
+      "limit": 1.1164391391500151e-07,
+      "max_AB_within_AA_envelope": false
+     },
+     {
+      "step": 2,
+      "env": 2,
+      "observable": "wrench",
+      "max_AA": 3.9591526897198026e-08,
+      "min_AB": 3.672471426963142e-08,
+      "max_AB": 1.2263698403319756e-07,
+      "limit": 1.1043970287262411e-07,
+      "max_AB_within_AA_envelope": false
+     }
+    ]
+   },
+   "aggregated_over_steps_pass_all": true,
+   "aggregated_failing": [],
+   "zero_rows_including_diagnostic_episodes": true
+  },
+  "pad_force_z_env1_A_last_step_N": [
+   4.82259286548778,
+   -4.79669638174471
+  ]
+ },
+ "RUBBER-CONT-11_batched_cost_rows": [
+  {
+   "row": "N4_no_contact",
+   "workload": "E (rubber_material_v1, case A 150 x 20 x 4 mm, n_t 3, rubber_rl_v1)",
+   "boundary": "batched_headless (BatchedRubberMaterial, material only)",
+   "N": 4,
+   "particles_per_env": 41220,
+   "nodes_per_env": 19200,
+   "control_hz": 50.0,
+   "material_dt_s": 7.736943907156674e-06,
+   "substeps_per_control_step": 2585,
+   "cameras": "none",
+   "recording": "none",
+   "robot_dof": 0,
+   "contacts": "none (no ContactSpec)",
+   "cold_wall_s": 1.038391683017835,
+   "warm_wall_s_median": 1.005552732036449,
+   "warm_steps": 3,
+   "ms_per_substep_warm": 0.3889952541727075,
+   "env_steps_per_s_warm": 3.9779117221422946,
+   "aggregate_sim_time_per_wall_warm": 0.07955823444284589,
+   "reset_p95_ms": 0.41374653228558644,
+   "reset_median_ms": 0.3336555091664195,
+   "reset_kind": "masked partial reset of one env (no material resampling), 20 resets",
+   "vram_peak_mb_process_cumulative": 776.0,
+   "memory_bytes_arrays": 90240828,
+   "physics_verdict": "L2_INVARIANTS_PASS",
+   "gpu_label": "SHARED_GPU",
+   "gpu": "NVIDIA GeForce RTX 5090",
+   "gpu_index_physical": 0,
+   "driver": "570.211.01",
+   "commit": "742858abc21a72a76fd834ef6fdd2f87ad841528",
+   "dirty_tree": false,
+   "protocol_sha256": "4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c",
+   "smoke_reduced_fidelity": false
+  },
+  {
+   "row": "N4_contact_cont09_config",
+   "workload": "E (rubber_material_v1, case A 150 x 20 x 4 mm, n_t 3, rubber_rl_v1)",
+   "boundary": "batched_headless (BatchedRubberMaterial, material only)",
+   "N": 4,
+   "particles_per_env": 41220,
+   "nodes_per_env": 19200,
+   "control_hz": 50.0,
+   "material_dt_s": 7.736943907156674e-06,
+   "substeps_per_control_step": 2585,
+   "cameras": "none",
+   "recording": "none",
+   "robot_dof": 0,
+   "contacts": "table plane + 2 pad frames x 1 box per env, envs in reach: [1]",
+   "cold_wall_s": 1.4921007989905775,
+   "warm_wall_s_median": 1.4363218180369586,
+   "warm_steps": 3,
+   "ms_per_substep_warm": 0.5556370669388622,
+   "env_steps_per_s_warm": 2.7848912059741995,
+   "aggregate_sim_time_per_wall_warm": 0.055697824119483985,
+   "reset_p95_ms": 0.4882247478235519,
+   "reset_median_ms": 0.40511804400011897,
+   "reset_kind": "masked partial reset of one env (no material resampling), 20 resets",
+   "vram_peak_mb_process_cumulative": 776.0,
+   "memory_bytes_arrays": 100075080,
+   "physics_verdict": "L2_INVARIANTS_PASS",
+   "gpu_label": "SHARED_GPU",
+   "gpu": "NVIDIA GeForce RTX 5090",
+   "gpu_index_physical": 0,
+   "driver": "570.211.01",
+   "commit": "742858abc21a72a76fd834ef6fdd2f87ad841528",
+   "dirty_tree": false,
+   "protocol_sha256": "4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c",
+   "smoke_reduced_fidelity": false
+  },
+  {
+   "row": "N4_contact_all_pinched",
+   "workload": "E (rubber_material_v1, case A 150 x 20 x 4 mm, n_t 3, rubber_rl_v1)",
+   "boundary": "batched_headless (BatchedRubberMaterial, material only)",
+   "N": 4,
+   "particles_per_env": 41220,
+   "nodes_per_env": 19200,
+   "control_hz": 50.0,
+   "material_dt_s": 7.736943907156674e-06,
+   "substeps_per_control_step": 2585,
+   "cameras": "none",
+   "recording": "none",
+   "robot_dof": 0,
+   "contacts": "table plane + 2 pad frames x 1 box per env, envs in reach: [0, 1, 2, 3]",
+   "cold_wall_s": 1.577405565069057,
+   "warm_wall_s_median": 1.4953947660978884,
+   "warm_steps": 3,
+   "ms_per_substep_warm": 0.5784892712177517,
+   "env_steps_per_s_warm": 2.67487896218714,
+   "aggregate_sim_time_per_wall_warm": 0.05349757924374279,
+   "reset_p95_ms": 0.4821574897505348,
+   "reset_median_ms": 0.4153330228291452,
+   "reset_kind": "masked partial reset of one env (no material resampling), 20 resets",
+   "vram_peak_mb_process_cumulative": 776.0,
+   "memory_bytes_arrays": 100075080,
+   "physics_verdict": "L2_INVARIANTS_PASS",
+   "gpu_label": "SHARED_GPU",
+   "gpu": "NVIDIA GeForce RTX 5090",
+   "gpu_index_physical": 0,
+   "driver": "570.211.01",
+   "commit": "742858abc21a72a76fd834ef6fdd2f87ad841528",
+   "dirty_tree": false,
+   "protocol_sha256": "4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c",
+   "smoke_reduced_fidelity": false
+  },
+  {
+   "row": "N1_contact_pinched",
+   "workload": "E (rubber_material_v1, case A 150 x 20 x 4 mm, n_t 3, rubber_rl_v1)",
+   "boundary": "batched_headless (BatchedRubberMaterial, material only)",
+   "N": 1,
+   "particles_per_env": 41220,
+   "nodes_per_env": 19200,
+   "control_hz": 50.0,
+   "material_dt_s": 7.736943907156674e-06,
+   "substeps_per_control_step": 2585,
+   "cameras": "none",
+   "recording": "none",
+   "robot_dof": 0,
+   "contacts": "table plane + 2 pad frames x 1 box per env, envs in reach: [0]",
+   "cold_wall_s": 0.8467699349857867,
+   "warm_wall_s_median": 0.7856191929895431,
+   "warm_steps": 3,
+   "ms_per_substep_warm": 0.3039145814272894,
+   "env_steps_per_s_warm": 1.2728813258681555,
+   "aggregate_sim_time_per_wall_warm": 0.02545762651736311,
+   "reset_p95_ms": 0.39108183700591365,
+   "reset_median_ms": 0.3246870473958552,
+   "reset_kind": "masked partial reset of one env (no material resampling), 20 resets",
+   "vram_peak_mb_process_cumulative": 776.0,
+   "memory_bytes_arrays": 25018836,
+   "physics_verdict": "L2_INVARIANTS_PASS",
+   "gpu_label": "SHARED_GPU",
+   "gpu": "NVIDIA GeForce RTX 5090",
+   "gpu_index_physical": 0,
+   "driver": "570.211.01",
+   "commit": "742858abc21a72a76fd834ef6fdd2f87ad841528",
+   "dirty_tree": false,
+   "protocol_sha256": "4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c",
+   "smoke_reduced_fidelity": false
+  }
+ ],
+ "gpu_meta": {
+  "device_name": "NVIDIA GeForce RTX 5090",
+  "physical_gpu_index": 0,
+  "driver": "570.211.01",
+  "warp": "1.17.0",
+  "shared_gpu": true,
+  "label_gpu": "SHARED_GPU",
+  "free_mb_at_start": 30959.0,
+  "started": "2026-11-11T05:01:15+0900",
+  "finished": "2026-11-11T05:02:28+0900",
+  "co_tenant_before": {
+   "time": "05:01:15",
+   "gpus": [
+    "0, NVIDIA GeForce RTX 5090, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1153, 32607, 0",
+    "1, NVIDIA GeForce RTX 5090, GPU-a278df44-8db0-7770-630f-4f298a570b35, 71, 32607, 0"
+   ],
+   "apps": [
+    "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766"
+   ]
+  },
+  "co_tenant_after": {
+   "time": "05:02:28",
+   "gpus": [
+    "0, NVIDIA GeForce RTX 5090, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 1870, 32607, 0",
+    "1, NVIDIA GeForce RTX 5090, GPU-a278df44-8db0-7770-630f-4f298a570b35, 71, 32607, 0"
+   ],
+   "apps": [
+    "642659, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 766",
+    "3093155, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad, 712"
+   ]
+  },
+  "smoke_reduced_fidelity": false
+ },
+ "cpu_suites": {
+  "run": "artifacts/rl_ready/p2_4b/cpu_tests_001",
+  "cuda_visible_devices_empty": [
+   "446 passed, 2 warnings in 578.78s (0:09:38)"
+  ],
+  "cuda_visible_devices_0": [
+   "446 passed, 2 warnings in 584.54s (0:09:44)"
+  ],
+  "meta": {
+   "commit": "742858abc21a72a76fd834ef6fdd2f87ad841528",
+   "dirty_tree_tracked": false,
+   "suite": "tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py tests/test_repo_naming.py",
+   "commands": [
+    "CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py tests/test_repo_naming.py",
+    "flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py tests/test_repo_naming.py"
+   ],
+   "started": "2026-11-11T05:02:46+09:00"
+  },
+  "cuda_visible_devices_empty_passed": 446,
+  "cuda_visible_devices_0_passed": 446
+ },
+ "not_done": [
+  "B3 MaterialCoupling adapter (strip-to-world wrenches, finger recipients)",
+  "P1 contact kernel cost (frame table, bounding-volume reject)",
+  "S1 self-penetration detector",
+  "independent review (R1)"
+ ]
+}

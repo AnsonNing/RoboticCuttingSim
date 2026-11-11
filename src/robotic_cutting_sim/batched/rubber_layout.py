@@ -115,7 +115,8 @@ def _validate(live):
     if not isinstance(live, LiveRubberMaterial):
         raise TypeError("pack_rubber takes LiveRubberMaterial instances (single-env references)")
     s = live.solver
-    if type(s) not in (TLMPMRubber, TLMPMRubberCW, TLMPMRubberVisco):
+    from ..tlmpm_rubber_contact_v1 import TLMPMRubberContact
+    if type(s) not in (TLMPMRubber, TLMPMRubberCW, TLMPMRubberVisco, TLMPMRubberContact):
         raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"{type(s).__name__}; only {SOLVER}")
     if s.device != "cpu":
         raise ValueError("pack_rubber reads single solvers built on the Warp CPU device (ADR 0021 §3.4)")
@@ -150,7 +151,26 @@ def uniform_signature(live):
             "stable_step_guard": s.cfl_guard_limit, "dirichlet": s.dirichlet, "traction_work": s.traction_work,
             "state_precision": s.state_precision, "projection_rows_nonzero": bool(getattr(s, "proj_rows", 0)),
             "constraint_work": constraint_work_of(s), "visco_terms": int(getattr(s, "M", 0)),
-            "visco_energy": getattr(s, "visco_energy", "off_v1") if getattr(s, "M", 0) else "off_v1"}
+            "visco_energy": getattr(s, "visco_energy", "off_v1") if getattr(s, "M", 0) else "off_v1",
+            "contact": contact_signature(s)}
+
+
+def contact_signature(solver):
+    """Uniform part of a contact solver's configuration (ADR 0023 §22; None without a ContactSpec): law, work and the
+    law's numerical parameters, the obstacle counts P / F / B, the frame kinds and every scalar ``ct_*`` attribute of
+    the single solver (copied onto the batched solver, so the single solver's contact launch runs unchanged).
+    Heterogeneous per env: plane values, box centres / half extents, frame origins, frictions (``params``)."""
+    contact = getattr(solver, "contact", None)
+    if contact is None:
+        return None
+    import warp as wp
+    receipt = contact.receipt()
+    scalars = {k: v for k, v in sorted(vars(solver).items())
+               if k.startswith("ct_") and not isinstance(v, wp.array)}
+    return {"law": receipt["law"], "work": receipt["work"], "P": contact.P, "F": contact.F, "B": contact.B,
+            "frame_kinds": tuple(f.kind for f in contact.frames),
+            "parameters": tuple((k, v) for k, v in receipt.items() if k not in ("planes", "frames", "P", "F", "B")),
+            "scalars": tuple(scalars.items())}
 
 
 def pack_rubber(lives, *, constitutive_model=None):
@@ -235,6 +255,8 @@ def pack_rubber(lives, *, constitutive_model=None):
     bc = np.flatnonzero(host["node_group"] >= 0).astype(np.int32) if G else np.zeros(0, np.int32)
     host["bc_nodes"] = bc if bc.size else np.zeros(1, np.int32)
     option_env = _pack_options(solvers, uniform, host, po, no, N, G)
+    if uniform["contact"] is not None:
+        option_env.update(_pack_contact(solvers, uniform["contact"], host))
     if uniform["visco_terms"]:
         for name in VISCO_STATE_ARRAYS:
             host[name] = np.concatenate([getattr(s, name).numpy() for s in solvers])
@@ -349,3 +371,55 @@ def range_audit(packed, host_arrays):
     held = pt >= 0
     out["traction_out_of_env"] = int(np.count_nonzero(held & ((pt < env_p*Gt) | (pt >= (env_p+1)*Gt)))) if Gt else 0
     return out
+
+
+# ----------------------------------------------------------------------------- contact (ADR 0023 §22, P2-4 B1)
+
+# Row kind of every device array ``ct_*`` of the single contact solver (``tlmpm_rubber_contact_v1``): "node" [nodes],
+# "env" [1, ...] -> [N, ...], "plane" [P], "frame" [F], "box" [F*B] (env e owns rows e*P+k, e*F+f, (e*F+f)*B+b),
+# "patch" [Q = P + 6 F B] (law v3 contact patches, env e owns rows e*Q+q; ADR 0023 §22.11);
+# "alias_*": the batched solver uses its own array (env_of_node, node_offset, params columns 3/4 for the frictions).
+# A single-solver contact array missing here is refused (a new law version needs its batched layout declared).
+CONTACT_ARRAY_KINDS = {
+    "ct_node_u": "node", "ct_jn": "node", "ct_jt": "node", "ct_xi": "node", "ct_obst": "node", "ct_vobs": "node",
+    "ct_work": "env", "ct_pen_max": "env", "ct_counts": "env", "ct_energy": "env",
+    "ct_planes": "plane", "ct_plane_reaction": "plane",
+    "ct_fkind": "frame", "ct_factive": "frame", "ct_fq0": "frame", "ct_fq1": "frame", "ct_fb0": "frame",
+    "ct_fb1": "frame", "ct_forigin": "frame",
+    "ct_box_c": "box", "ct_box_h": "box", "ct_box_reaction": "box",
+    "ct_bbest": "node", "ct_bprow": "node", "ct_bflag": "node", "ct_bfn": "node", "ct_bmu": "node", "ct_bn": "node",
+    "ct_blev": "node", "ct_pacc": "patch",
+    "ct_env_of_node": "alias_env_of_node", "ct_node_offset": "alias_node_offset", "ct_fric": "alias_params_friction"}
+
+
+def contact_arrays_of(solver):
+    import warp as wp
+    return {k: v for k, v in vars(solver).items() if k.startswith("ct_") and isinstance(v, wp.array)}
+
+
+def _pack_contact(solvers, sig, host):
+    """Contact arrays of the single references concatenated in env order (rows of env e at e*P, e*F, e*F*B; node rows
+    at the env's node offset; obstacle ids in ``ct_obst`` stay env-local, as the shared kernels write them). Returns
+    {"contact_dtypes": {name: warp dtype}}."""
+    P, F, B = sig["P"], sig["F"], sig["B"]
+    rows = {"plane": P, "frame": F, "box": F*B, "patch": P+6*F*B}
+    names = set(contact_arrays_of(solvers[0]))
+    unknown = names-set(CONTACT_ARRAY_KINDS)
+    if unknown or set(CONTACT_ARRAY_KINDS)-names:
+        raise UnsupportedBatchConfiguration(
+            "UNSUPPORTED_SOLVER", f"contact arrays without a batched layout: {sorted(unknown)}; missing in the single "
+                                  f"solver: {sorted(set(CONTACT_ARRAY_KINDS)-names)} (rubber_layout.CONTACT_ARRAY_KINDS)")
+    dtypes = {}
+    for name, kind in CONTACT_ARRAY_KINDS.items():
+        if kind.startswith("alias"):
+            continue
+        arrays = [getattr(s, name) for s in solvers]
+        dtypes[name] = arrays[0].dtype
+        if kind in ("node", "env"):
+            host[name] = np.concatenate([a.numpy() for a in arrays])
+        elif rows[kind]:
+            host[name] = np.concatenate([a.numpy()[:rows[kind]] for a in arrays])
+        else:
+            host[name] = arrays[0].numpy()[:1].copy()          # dummy row (P or F = 0: the kernels never read it)
+    return {"contact_dtypes": dtypes}
+
