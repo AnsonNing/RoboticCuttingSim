@@ -45,8 +45,8 @@ The review answers the follow-ups to findings 1, 3 and 4 of `P1_6_P16C1_PR14_REV
   - The two of the author's mutants I re-ran both fail (A, E).
   - Three new mutants: an unsafe 1.6 r reach, a reach of exactly 2 r, and a dropped dt check. The first and the
     third are caught; the 2 r mutant only by the unit inequality, as expected (§3.3).
-  - The unsafe-reach mutant now fails the new test's own bitwise check. Before this PR it was caught only as a side
-    effect of the control batch.
+  - The unsafe-reach mutant now fails the new test's own bitwise check. Before this PR it was caught only by the
+    necessity test's control batch and by the receipt test's unit inequality, not by any checked batch.
   - The slow-contact scene does what the report says (§3.4).
 - **Freeze compliance: PASS.**
   - No frozen path, config, script, threshold or evidence record changed.
@@ -293,7 +293,8 @@ The reset state has 0 particle contacts.
 - Every claim checked holds:
   - the counter's one writer;
   - the scene, its assertions and the control batch;
-  - the five mutants;
+  - the five mutants: A and E re-run here; B, C and D taken from the author's `mutations.log` and
+    `mutations_reasons.log`, whose `mutate.py` replacements I read;
   - the vacuous assertions replaced;
   - the r/dt refusal and its test;
   - finding 3 documented only;
