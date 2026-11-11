@@ -15,7 +15,8 @@ PINS = {"configs/rubber/rl/rubber_strip_drag_v1.json":
         "configs/rubber/rl/rubber_strip_drag_v2.json":
         "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb",
         "configs/rubber/rubber_rl_tests_v2.json": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
-        "configs/rubber/rubber_rl_tests_v3.json": "7dc077639ab8651e4ba6a92eac037486e4268834ec9f47f32b635cb4a93c6e2f"}
+        "configs/rubber/rubber_rl_tests_v3.json": "7dc077639ab8651e4ba6a92eac037486e4268834ec9f47f32b635cb4a93c6e2f",
+        "configs/rubber/rubber_rl_tests_v4.json": "ce8dcc1a5bfab15d96e02e2f94433f273229584b6295d8929b5ba5c9d93acc0b"}
 
 
 def _sha(path):
@@ -92,3 +93,17 @@ def test_v3_supersedes_rl05_only():
     assert "7000 + e" in r5["procedure"] and "2000 + e" not in r5["procedure"]
     assert r5["controller_v3"]["mode"] == "pivot_grip" and r5["controller_v3"]["k_radial"] == 0.5
     assert "5000-5011" in r5["development"]["development_seeds"]
+
+
+def test_v4_supersedes_rl05_only_and_is_final():
+    v2 = json.loads((ROOT/"configs"/"rubber"/"rubber_rl_tests_v2.json").read_text())
+    v4 = json.loads((ROOT/"configs"/"rubber"/"rubber_rl_tests_v4.json").read_text())
+    assert v4["supersedes"]["rubber_rl_tests_v3"]["sha256"] == PINS["configs/rubber/rubber_rl_tests_v3.json"]
+    assert "no v5" in v4["final_attempt"] and "success not demonstrated by a scripted controller" in v4["final_attempt"]
+    for k in v2["tests"]:
+        if k != "RL-05":
+            assert v4["tests"][k] == v2["tests"][k], k
+    r5 = v4["tests"]["RL-05"]
+    assert r5["pass"] == v2["tests"]["RL-05"]["pass"] and r5["formal_seed_base"] == 8000
+    from robotic_cutting_sim.rl.rubber_scripted import ScriptedPivotHoldV1
+    assert set(ScriptedPivotHoldV1.NAMES) <= set(r5["controller_v4"])
