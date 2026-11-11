@@ -22,7 +22,7 @@ _spec = importlib.util.spec_from_file_location("rl_gpu", ROOT/"scripts"/"rubber"
 G = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(G)
 G.PROTOCOL = ROOT/"configs"/"rubber"/"rubber_rl_tests_v4.json"
-G.PROTOCOL_SHA = "__V4SHA__"
+G.PROTOCOL_SHA = "ce8dcc1a5bfab15d96e02e2f94433f273229584b6295d8929b5ba5c9d93acc0b"
 G.ROWS = ("RL05v4",)
 
 
