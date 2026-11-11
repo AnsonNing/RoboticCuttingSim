@@ -1788,3 +1788,73 @@ block's energy scale. Status stays EXPERIMENTAL_NOT_ACCEPTED.
 | X2 (rcs-xhigh) | Defect 2: a contact formulation without the grid-scale friction–normal flutter (e.g. a B-consistent iterated normal constraint on the face, or a loading-safe normal-force memory — lag only in sustained macro-slip with a stick-preserving rule), under a new declared protocol; until then the μ envelope and labels apply and RL friction ranges are clipped or labelled | M–L |
 | B2-v2 | RUBBER-CONT-09 on GPU0 under the v2 rule (k 5 per side, interleaved), v2 law | S |
 | R1 | Independent rcs-review (xhigh) of §22, §22.9, `contact_v1_001`, `contact_v2_001` | – |
+
+### 22.10 Task X2 — defect 2 (friction–normal flutter): negative result, no v3; the μ envelope is resolution-qualified (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: remove defect 2 of §22.9 so that sliding at μ 0.8 and 1.0 closes within the v2 thresholds, robustly (dt / dx
+refinement, other geometry, batched), without regressing hold, onset, impact, penetration or pinch. Branch
+`claude/rl-rubber-p24` from `2b2221b`; DIAGNOSTIC scripts `scripts/rubber/p2_4/x2_dev_laws.py`, `diag_contact_x2.py`,
+`diag_x2_pattern.py` (`b019684`, modes 11–13 `331550c`); raw `artifacts/rl_ready/p2_4/x2_diag_001` (README; 14 + 8 rows
+rerun at the commits identical in every field except wall time); evidence `docs/evidence/rl_ready/p2_4_contact_x2_001.json`
+(writer `write_contact_x2_evidence.py`). Nothing in `src`, `tests` or `configs` changed: v1 / v2 kernels byte-identical,
+v2 stays the opt-in law, `rubber_contact_tests_v1` / `_v2` unchanged, no protocol v3, no formal run. CPU suites (rubber +
+batched + naming) 455 passed with `CUDA_VISIBLE_DEVICES=''` and with `=0` (GPU0 lock), logs `cpu_tests_x2_001`. Material
+status `SIMULATOR_ONLY_UNCALIBRATED`.
+
+**What the flutter is (refines §22.9 defect 2; v2 law, INC block, DIAGNOSTIC).**
+
+- Body-scale, not grid-scale: at μ 0.8 about 2 of the 91 bottom nodes are in contact at any substep (4.4 %), v_z rms
+  16 mm/s (13 % of the sliding speed), dominant 1.5–3 kHz, wavenumber spectrum broad with its peak at 1–3 waves over the
+  16 mm face. Frictionless sliding settles (100 % contact, v_z 2 µm/s); μ 0.2: 60 %, 0.7 mm/s.
+- Converged in dt, not in dx. μ 0.8, ratio 1.2: slip error 1.26 / 1.12 / 1.15 % of g cosθ at cfl 0.5 / 0.25 / 0.125, but
+  1.26 / 2.0 / 1.7 / 2.8 / 4.6 % at n_t 3 / 4 / 5 / 6 / 8; μ 1.0: 3.8 / 6.2 / 9.9 % at n_t 3 / 4 / 6; even μ 0.4 grows
+  (0.04 → 0.18 % at n_t 6). Consequence: a change of the contact's time integration alone (implicit or return-mapped
+  tangential update, per-node local solve, Moreau projection, augmented-Lagrangian or stiffer / decoupled normal) cannot
+  remove it — the deficit is a property of the semi-discrete model (κ_n 0.0005–1 in X1; κ 1 and ζ 1 here do not remove
+  it). The growth under dx refinement at every μ is the signature of short-wavelength growth; the §22.9 half-space
+  analysis (bilateral contact kept, stable below μ 1.000) does not cover the separating solutions the model produces, so
+  the §22.9 statement that defect 2 "is not continuum physics below μ = 1" is not supported and is withdrawn as unproven.
+- A realistic high-frequency loss in the material (one Prony term g 0.15, τ 100 µs on the elastic μ0) removes most of the
+  μ 0.8 deficit (≤ 0.28 % at n_t 3 / 4; INC2 ratio 1.1: 1.24 %) and restores the μ 0.8 hold at n_t 4; it does not fix
+  μ ≥ 1.0 (1.6–4.5 %, hold at μ 1.0 lost). Real rubber has such loss; the illustrative Prony sets do not.
+
+**Candidates (DIAGNOSTIC; every row in the evidence).**
+
+| Class (dev mode) | Best result | Failure | Verdict |
+|---|---|---|---|
+| Nonlocal cap, lattice radius 1–3 (Oden–Pires type, conservative) (1) | μ 0.8: 0.6–0.7 % | μ ≥ 1.0: 2.6–8 %; radius in nodes vanishes under refinement | rejected |
+| Patch-level cap μ ΣF_n · m_i/Σm (6) | μ 0.8 at n_t 3: 0.12–0.91 % | cfl 0.25: 1.16 %; INC2 D04 0.947; μ 0.9: 2.4 %; μ 1.0: 2.5 %; hold μ 1.2 lost | rejected |
+| Patch cap on a lagged patch total, τ 0.1–1 ms (10) | exact to μ 0.95 at n_t 3 and on INC2 | n_t 4: μ 0.8 +1.7 %, μ 0.9 +5.2 %; no recovery from a developed flutter; μ ≥ 1.0 4–44 % | rejected |
+| Per-node normal-force lag (Prakash–Clifton type), τ 0.25–3 ms (4) | τ 0.5 ms: μ 0.8 exact incl. n_t 4 / INC2; τ 3 ms exact to μ 1.5 | slips under proportional loading: hold ramp-phase displacement 10.5 µm (τ 0.5 ms) vs 0.19 µm (v2), 52 µm (1 ms), 0.2–0.5 mm after the ramp (3 ms); no recovery after a developed flutter (−12 %); τ 0.25 ms −7 … −20 % (sharp threshold) | rejected (X1 finding quantified) |
+| Memory kept across bounces, gated variant (8, 9) | from rest exact to μ 1.5 (τ 3 ms) | friction collapse once nodes bounce (+75 %), gated μ 1.5 +99 %, holds lost | rejected |
+| Loading-safe memories: max(F_n, F_lag), slip-distance gate, patch-slip gate (2, 3, 5, 7) | — | flutter not suppressed or −15 … +8 % | rejected |
+| **Patch slip-rate equalisation** (13, ζ_d 1): in slip only, outside the cap, a dashpot −2ζ_d√(k_t m_i)(v_t,i − v̄) on the deviation of the realised tangential velocity from the same-substep mean over the patch's slipping nodes (zero net force over the slipping set, patch total ≤ μΣF_n) | **μ 0.6 / 0.8 exact (≤ 0.01 %, D04 ≥ 0.993) at n_t 3 / 4 / 6, cfl 0.25, INC2; recovers from a developed flutter; hold ramp-phase 0.16 µm (v2 0.19); holds to μ 1.5 incl. μ 0.8 at n_t 4 (v2 slides 3.9 mm)** | μ 1.0 exact at n_t 3 / cfl 0.25 / INC2 but n_t 4: +2.4 %, n_t 6: +4.2 % (ratio 1.1); μ ≥ 1.2 sliding fails | promising, **not adopted** (requirement at μ 1.0 not met; src / batched / pad-box implementation and a declared protocol needed) |
+
+**Decision.** Negative result for the X2 requirement (sliding closed at μ 0.8 and 1.0, robust under refinement, supported
+range about 0.6–1.5): no `grid_node_penalty_coulomb_v3`, no `rubber_contact_tests_v3`, no formal run. v2 and the
+declared labels stay. Two qualifications are recorded (DIAGNOSTIC, not re-scoring any formal row):
+
+1. The v2 envelope (sliding μ ≤ 0.6, static μ ≤ 0.8; §22.9) was measured at n_t 3 (`rubber_rl_v1`) on INC / INC2 and holds
+   there. It does not hold at the acceptance profile `rubber_ref_v1` (n_t ≥ 4): the μ 0.8 hold at 0.95 slides 3.9 mm at
+   n_t 4; μ 0.6 sliding is +1.19 / +1.72 % on INC2 at n_t 4 and +1.06 % (D04 0.946) on INC at n_t 6 (ratio 1.1). On the
+   larger INC2 block at n_t 3, μ 0.8 slides with +2.5 / +5.7 / +8.3 % (the §22.9 error model, +1.3 … +2.5 %, was INC only).
+   Rows outside n_t 3 with sliding μ > 0.4 or static μ > 0.6 are therefore outside the established envelope and carry
+   `contact_friction_flutter`; RL friction ranges stay clipped or labelled as in §22.9.
+2. RUBBER-CONT-01 d (books of the stick runs). Max |B| is the end value, 2.3–4.3e-12 J against S 2.2–4.5e-10 J; B rises
+   steadily through the static hold (1.7–3.0e-11 W) and falls only ~40 % from cfl 0.5 to 0.125. The static block keeps a
+   sustained jitter (v_rms 5–12 µm/s, growing as dt shrinks) that the contact dashpots dissipate; the drift is the part of
+   that dissipation not matched by a booked energy change. This is a genuine residual of the discrete dynamics, more than
+   10 orders of magnitude above the float64 resolution of the books sums; an absolute floor tied to float64 resolution
+   would not change any verdict, and the relative criterion is not measuring float64 noise. Its weakness for static rows
+   is structural (the residual accumulates with the hold duration at fixed S). No rule is declared here (no v3 run); the
+   `contact_v2_001` FAIL stands; a future protocol may add an a-priori drift-rate criterion after the jitter source is
+   identified (task X5), never a floor fitted to seen data.
+
+**Tasks (rcs-impl unless stated).**
+
+| Task | Content | Size |
+|---|---|---|
+| X3 | `grid_node_penalty_coulomb_v3` = v2 + patch slip-rate equalisation (dev mode 13, ζ_d 1): normal pass (best obstacle, F_n, trial state, per-patch sums of m v_t over the slipping set, rows e·(P + F·B) + q), tangential pass; new node / patch arrays declared in `rubber_layout.CONTACT_ARRAY_KINDS`, masked reset, batched L0 N = 3; pads and moving boxes (pinch -05), then `rubber_contact_tests_v3` declared and SHA-pinned before its run with scored sliding μ ≤ 0.8 at n_t 3 **and** n_t 4 plus an unseen geometry; μ ≥ 1.0 stays labelled | L |
+| X4 (rcs-xhigh) | Stability of steady Coulomb sliding of the declared continuum with unilateral contact (separation allowed) for μ < 1, to decide whether the dx-growing deficit is a discretisation artefact or continuum physics | M |
+| X5 | Source of the static stick jitter (5–12 µm/s) and of the -01 d books drift; an a-priori drift-rate books criterion | S–M |
+| P2-5 | Calibrated rubber sets must include high-frequency loss (DIAGNOSTIC: one Prony term at τ 100 µs removes most of the μ 0.8 deficit) | – |

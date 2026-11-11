@@ -26,7 +26,7 @@ Nothing frozen changed: v1–v7_2, law 8, evaluators, every Phase 1 module (`bat
 | CPU suites | §5 | |
 | Task X1: law `grid_node_penalty_coulomb_v2` + μ envelope (ADR §22.9) | **DONE** (`0b33246`, protocol v2 `8842573`) | dashpots on the realised node velocity; sliding accurate μ ≤ 0.6, static μ ≤ 0.8; §8 |
 | Formal CPU run `contact_v2_001` (`ffb099f`, clean) | -02, -03 **PASS**; -01, -04, -05 **FAIL** (μ 0.8 sliding / pinch 60 µm outside the envelope, stick-run books); -07 CARRIED_OVER; -09 NOT_RUN (B2-v2) | §8 |
-| Task B2-v2: RUBBER-CONT-09 under the v2 rule, v2 law, GPU0 `gpu_cont09_v2_001` (`2b8cb9c`, clean, SHARED_GPU) | **PASS** (a, b, c) | 1,566 scalars, 0 failing, worst d / limit 0.34; v2-law batched cost rows reported; §9 |
+| Task B2-v2: RUBBER-CONT-09 under the v2 rule, v2 law, GPU0 `gpu_cont09_v2_001` (`2b8cb9c`, clean, SHARED_GPU) | **PASS** (a, b, c) | 1,566 scalars, 0 failing, worst d / limit 0.34; v2-law batched cost rows reported; §9A |
 
 ## 1. Decision probe (DIAGNOSTIC, before the protocol)
 
@@ -390,7 +390,11 @@ with `CUDA_VISIBLE_DEVICES=''` (579 s) and **455 passed** with `=0` under the GP
 warnings; logs `artifacts/rl_ready/p2_4/cpu_tests_x1_001/`. New: `tests/test_rubber_contact_v2.py` (8), the v2 protocol pin.
 None of the tests needs local artifacts, torch or CUDA.
 
-## 9. Task B2-v2 — RUBBER-CONT-09 under the v2 rule (branch `claude/rl-rubber-p24b`)
+## 9A. Task B2-v2 — RUBBER-CONT-09 under the v2 rule (branch `claude/rl-rubber-p24b`)
+
+Sections 9A and 9B were both numbered 9 on their branches (`claude/rl-rubber-p24b`, `claude/rl-rubber-p24`) and
+were renamed when `claude/rl-rubber-p24` was merged into `claude/rl-rubber-p24b`; "section 9" in
+`p2_4_contact_batched_002.json` means 9A, in `p2_4_contact_x2_001.json` 9B.
 
 Protocol `configs/rubber/rubber_contact_tests_v2.json` (sha256 `89bc7680…a339d0`, checked by the script before it runs;
 thresholds k_per_side 5, λ 4, eps_rel 1e-6 read from it), law **`grid_node_penalty_coulomb_v2`** as the protocol
@@ -437,7 +441,7 @@ Erratum §7.3 / §7.4: the "second co-tenant PID 3093155, 712 MB, at the end" of
 process (its `meta.pid`); the SHARED_GPU label stands because of PID 642659. The utilisation samples in §7.4 and below
 are GPU-wide and include this process.
 
-### 9.1 RUBBER-CONT-11 batched cost rows, v2 law (reported, not scored)
+### 9A.1 RUBBER-CONT-11 batched cost rows, v2 law (reported, not scored)
 
 Same run, rows sequential after -09, GPU0 RTX 5090, driver 570.211.01, **SHARED_GPU** (PID 642659 in every sample;
 GPU-wide utilisation before / after each row 47 / 36, 0 / 4, 0 / 72, 3 / 69 %), commit `2b8cb9c`, clean tree, protocol
@@ -457,10 +461,64 @@ The v2 law costs the same as v1 within the shared-GPU noise of these 3-step medi
 +2 % too). N = 4 with contact: 2.1× the env-steps/s of N = 1. Arrays in MB = 10^6 bytes; the byte counts are identical
 to the v1-law rows (§7.4 listed them in MiB as 86 / 95 / 24 MB).
 
-### 9.2 CPU tests
+### 9A.2 CPU tests
 
 `tests/test_rubber_cont09_rule_v2.py tests/test_rubber_contact_v2.py tests/test_rubber_contact_batched.py
 tests/test_rubber_p2_4_protocols.py tests/test_repo_naming.py` at `2b8cb9c` (clean): **46 passed** with
 `CUDA_VISIBLE_DEVICES=''` (27 s) and **46 passed** with `=0` under the GPU0 lock (28 s); logs
 `artifacts/rl_ready/p2_4b/cpu_tests_v2_001/`. No src change in B2-v2; the full suite was not rerun (last: 455 passed at
 `ffb099f`, §8.4). None of the tests needs local artifacts, torch or CUDA.
+
+## 9B. Task X2 — defect 2 (friction–normal flutter): negative result (ADR 0023 §22.10)
+
+Branch `claude/rl-rubber-p24` from `2b2221b`. Material status **SIMULATOR_ONLY_UNCALIBRATED**. Label **DIAGNOSTIC**: no
+law adopted, no protocol declared, no formal run. Evidence `docs/evidence/rl_ready/p2_4_contact_x2_001.json`; raw
+`artifacts/rl_ready/p2_4/x2_diag_001` (README); scripts `x2_dev_laws.py`, `diag_contact_x2.py`, `diag_x2_pattern.py`
+(`b019684`, `331550c`); identity reruns at both commits identical in every field except wall time. Nothing in `src`,
+`tests` or `configs` changed. Command per row: `CUDA_VISIBLE_DEVICES='' .venv/bin/python
+scripts/rubber/p2_4/diag_contact_x2.py <args>` (Warp 1.17.0 CPU, Python 3.12.12).
+
+### 9B.1 Character of the flutter (v2, INC)
+
+| Observation | Value |
+|---|---|
+| bottom nodes in contact per substep, μ 0 / 0.2 / 0.8 | 100 % / 60 % / 4.4 % |
+| v_z rms at μ 0.8 (sliding speed 0.12 m/s) | 16 mm/s; dominant 1.5–3 kHz; peak 1–3 waves over the face |
+| μ 0.8 slip error, cfl 0.5 / 0.25 / 0.125 | +1.26 / +1.12 / +1.15 % (dt-converged) |
+| μ 0.8 slip error, n_t 3 / 4 / 5 / 6 / 8 | +1.26 / +2.0 / +1.7 / +2.8 / +4.6 % (grows) |
+| μ 1.0 slip error, n_t 3 / 4 / 6 | +3.8 / +6.2 / +9.9 % |
+| HF loss probe (Prony g 0.15, τ 100 µs), μ 0.8 n_t 3 / 4 | ≤ 0.18 / ≤ 0.28 %; μ 1.0: +4.5 % |
+
+Because the deficit is converged in dt, time-integration changes of the contact (implicit / return-mapped tangential
+update, Moreau projection, augmented-Lagrangian or decoupled normal stiffness) cannot remove it; κ 1 and ζ 1 do not
+either. It grows under dx refinement at every μ tested, which the half-space analysis of §22.9 (contact kept) does not
+explain; that statement is withdrawn as unproven (task X4).
+
+### 9B.2 Candidates
+
+| Candidate | μ 0.8 sliding | μ 1.0 sliding | Hold 0.95 μ | Robustness | Verdict |
+|---|---|---|---|---|---|
+| nonlocal cap, radius 2–3 nodes | 0.6–0.7 % | 2.6–8 % | – | radius shrinks with dx | rejected |
+| patch-level cap | 0.12–0.91 % (n_t 3) | 2.5 % | to μ 1.0 | cfl 0.25: 1.16 %; INC2 D04 0.947; μ 0.9 2.4 % | rejected |
+| patch cap + lagged total τ 0.25 ms | exact (n_t 3) | 4–8 % | to μ 1.0 | n_t 4: +1.7 % (μ 0.8); no recovery | rejected |
+| per-node lag τ 0.5 / 1 / 3 ms | exact | −1.9 % / exact / exact | ramp-phase slip 10.5 / 52 µm / 0.2–0.5 mm (v2 0.19 µm) | no recovery (−12 %); τ 0.25 ms −7 … −20 % | rejected |
+| memory across bounces (± gate) | exact from rest | exact from rest | lost at τ ≥ 1 ms | friction collapse after bouncing (+75 %, +99 %) | rejected |
+| max / slip-distance / patch-slip-gated memories | −1.4 … −15 % | −14 … +0.4 % | – | flutter not suppressed | rejected |
+| **patch slip-rate equalisation (mode 13, ζ_d 1)** | **exact at n_t 3 / 4 / 6, cfl 0.25, INC2; recovers** | exact at n_t 3 / cfl 0.25 / INC2; **n_t 4 +2.4 %, n_t 6 +4.2 %** | to μ 1.5; ramp-phase 0.16 µm; μ 0.8 at n_t 4 holds | μ ≥ 1.2 fails | promising, not adopted |
+
+### 9B.3 Decision
+
+Negative result for the X2 requirement: no v3, no protocol v3, no formal run. v2, `rubber_contact_tests_v2` and the
+labels stay. The mode-13 design is the recommended v3 (task X3: src + batched + pads, then a declared protocol scoring
+μ ≤ 0.8 at n_t 3 and 4). Qualifications (ADR §22.10): the v2 envelope holds at n_t 3 on INC / INC2 but not at
+`rubber_ref_v1` (μ 0.8 hold slides 3.9 mm at n_t 4; μ 0.6 sliding +1.2 / +1.7 % on INC2 at n_t 4, +1.06 % on INC at
+n_t 6; INC2 at μ 0.8: +2.5 … +8.3 %). -01 d: the stick-run books residual (2.3–4.3e-12 J) is a real, slowly accumulating
+drift (static jitter 5–12 µm/s dissipated by the dashpots), far above float64 resolution; no rule change, the v2 FAIL
+stands (task X5).
+
+### 9B.4 CPU suites
+
+`tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py
+tests/test_repo_naming.py` at `b019684` (src and tests unchanged since `2b2221b`): **455 passed** with
+`CUDA_VISIBLE_DEVICES=''` (608 s) and **455 passed** with `=0` under the GPU0 lock (606 s); logs
+`artifacts/rl_ready/p2_4/cpu_tests_x2_001/`.
