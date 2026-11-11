@@ -23,9 +23,16 @@ spring-dashpot-slider (trial on g_n) with the Coulomb cap mu * capn of mode ``sm
     smode 8: F_lag of the node's normal force INCLUDING zeros while out of contact (memory kept across bounces)
     smode 9: smode 8 gated by the patch gate of smode 7 (closed: F_lag = F_n)
     smode 10: L_tau(sum_j F_n,j) m_i / sum_j m_j (patch-level cap on the lagged patch normal force)
+    smode 11: F_n,i (= v2 cap) plus, in slip only and outside the cap, a slip-fluctuation damper
+             -2 zd sqrt(k_t m_i) (v_t,i - vbar_t) about the patch mean realised tangential velocity of the previous
+             substep (zero net force for a uniformly sliding patch; booked as contact damping)
+    smode 13: smode 12 with the mean over the nodes whose v2 trial slips in this substep (zero net damper force over
+             the slipping set, so the patch-total friction never exceeds mu sum F_n)
+    smode 12: smode 11 with the patch mean of the SAME substep (sum m v_t / sum m over the nodes in contact with the
+             plane, realised velocities, computed before the tangential pass)
 
 ``switch_t``: the law is smode 0 (= v2) until t >= switch_t, then ``smode`` (recovery from a developed flutter).
-``install(live, smode, radius, tau, ds, vg, switch_t)`` replaces the solver's ``_launch_contact`` (the rest of the
+``install(live, smode, radius, tau, ds, vg, switch_t, zd)`` replaces the solver's ``_launch_contact`` (the rest of the
 substep unchanged). Every later mode was added without changing the code path of an earlier one.
 """
 import warp as wp
@@ -142,6 +149,65 @@ def x2_patch_lag(P: int, psum: wp.array2d(dtype=wp.float64), plag: wp.array(dtyp
 
 
 @wp.kernel
+def x2_patch_vt(gm: wp.array(dtype=float), old: wp.array(dtype=wp.vec3), bst: wp.array(dtype=int),
+                planes: wp.array(dtype=wp.vec4d), pacc: wp.array2d(dtype=wp.float64)):
+    """smode 12: this substep's patch sums of m v_t (realised tangential velocity) over the nodes in contact."""
+    i = wp.tid()
+    b = bst[i]
+    if b >= 0:
+        pl = planes[b]
+        n = wp.vec3d(pl[0], pl[1], pl[2])
+        vr = wp.vec3d(old[i])
+        vt = vr-wp.dot(vr, n)*n
+        md = wp.float64(gm[i])
+        wp.atomic_add(pacc, b, 0, md*vt[0])
+        wp.atomic_add(pacc, b, 1, md*vt[1])
+        wp.atomic_add(pacc, b, 2, md*vt[2])
+        wp.atomic_add(pacc, b, 3, md)
+
+
+@wp.kernel
+def x2_patch_vt_slip(gm: wp.array(dtype=float), old: wp.array(dtype=wp.vec3), bst: wp.array(dtype=int),
+                     planes: wp.array(dtype=wp.vec4d), fnb: wp.array(dtype=wp.float64), fric: wp.array2d(dtype=float),
+                     xi: wp.array(dtype=wp.vec3d), obst: wp.array(dtype=int), dt: wp.float64, kt_frac: wp.float64,
+                     zeta: wp.float64, pacc: wp.array2d(dtype=wp.float64)):
+    """smode 13: patch sums of m v_t over the nodes whose v2 trial SLIPS this substep (same trial as x2_tangential)."""
+    i = wp.tid()
+    b = bst[i]
+    if b >= 0:
+        pl = planes[b]
+        n = wp.vec3d(pl[0], pl[1], pl[2])
+        md = wp.float64(gm[i])
+        kt = kt_frac*md/(dt*dt)
+        ct = wp.float64(2.0)*zeta*wp.sqrt(kt*md)
+        xt = wp.vec3d()
+        if obst[i] == b:
+            xt = xi[i]
+        xt = xt-wp.dot(xt, n)*n
+        vr = wp.vec3d(old[i])
+        vt = vr-wp.dot(vr, n)*n
+        Ft = -kt*xt-ct*vt
+        if wp.length(Ft) > wp.float64(fric[0, 0])*fnb[i]:
+            wp.atomic_add(pacc, b, 0, md*vt[0])
+            wp.atomic_add(pacc, b, 1, md*vt[1])
+            wp.atomic_add(pacc, b, 2, md*vt[2])
+            wp.atomic_add(pacc, b, 3, md)
+
+
+@wp.kernel
+def x2_patch_mean(pacc: wp.array2d(dtype=wp.float64), pvm: wp.array(dtype=wp.vec3d)):
+    """smode 11: this substep's patch mean realised tangential velocity sum m v_t / sum m (used in the next substep);
+    accumulators cleared."""
+    k = wp.tid()
+    m = pacc[k, 3]
+    pvm[k] = wp.vec3d()
+    if m > wp.float64(0.0):
+        pvm[k] = wp.vec3d(pacc[k, 0], pacc[k, 1], pacc[k, 2])/m
+    for c in range(4):
+        pacc[k, c] = wp.float64(0.0)
+
+
+@wp.kernel
 def x2_gate(P: int, pacc: wp.array2d(dtype=wp.float64), vg: wp.float64, gate: wp.array(dtype=int)):
     """Patch gate for the next substep from this substep's patch slip velocity |sum m v_t| / sum m (hysteresis
     open >= vg, close < vg / 2); accumulators cleared."""
@@ -171,7 +237,8 @@ def x2_tangential(gm: wp.array(dtype=float), new_v: wp.array(dtype=wp.vec3), old
                   work: wp.array2d(dtype=wp.float64), counts: wp.array2d(dtype=int), capout: wp.array(dtype=wp.float64),
                   nf: wp.array(dtype=wp.float64), alpha: wp.float64, sacc: wp.array(dtype=wp.float64),
                   ds: wp.float64, psum: wp.array2d(dtype=wp.float64), pacc: wp.array2d(dtype=wp.float64),
-                  gate: wp.array(dtype=int), plag: wp.array(dtype=wp.float64)):
+                  gate: wp.array(dtype=int), plag: wp.array(dtype=wp.float64), pvm: wp.array(dtype=wp.vec3d),
+                  zd: wp.float64):
     i = wp.tid()
     zero3 = wp.vec3d()
     jt_out[i] = zero3
@@ -266,7 +333,7 @@ def x2_tangential(gm: wp.array(dtype=float), new_v: wp.array(dtype=wp.vec3), old
     vt = vr-wp.dot(vr, best_n)*best_n
     Ft = -kt*xt-ct*vt
     Lf = wp.length(Ft)
-    if smode == 7 or smode == 9:
+    if smode == 7 or smode == 9 or smode == 11:
         wp.atomic_add(pacc, best, 0, md*vt[0])
         wp.atomic_add(pacc, best, 1, md*vt[1])
         wp.atomic_add(pacc, best, 2, md*vt[2])
@@ -283,6 +350,11 @@ def x2_tangential(gm: wp.array(dtype=float), new_v: wp.array(dtype=wp.vec3), old
         xt = xt_new
         Ft = Ft_new
         state = rct.STATE_SLIP
+        if smode == 11 or smode == 12 or smode == 13:   # slip-fluctuation damper about the patch mean (outside cap)
+            dvt = vt-pvm[best]
+            cd = wp.float64(2.0)*zd*wp.sqrt(kt*md)
+            Ft = Ft-cd*dvt
+            wp.atomic_add(work, e, 5, dt*cd*wp.dot(dvt, dvt))
     else:
         if smode == 5:
             sacc[i] = zero
@@ -307,7 +379,7 @@ def x2_tangential(gm: wp.array(dtype=float), new_v: wp.array(dtype=wp.vec3), old
     wp.atomic_add(work, e, 1, half*wp.dot(Jt, o))
 
 
-def install(live, smode=1, radius=1, tau=1e-3, ds=5e-6, vg=1e-3, switch_t=0.0):
+def install(live, smode=1, radius=1, tau=1e-3, ds=5e-6, vg=1e-3, switch_t=0.0, zd=0.5):
     s = live.solver
     if s.ct_F:
         raise ValueError("dev law: planes only")
@@ -323,6 +395,7 @@ def install(live, smode=1, radius=1, tau=1e-3, ds=5e-6, vg=1e-3, switch_t=0.0):
     s.x2_pacc = wp.zeros((max(s.ct_P, 1), 4), dtype=wp.float64, device=dev)
     s.x2_gate = wp.zeros(max(s.ct_P, 1), dtype=int, device=dev)
     s.x2_plag = wp.zeros(max(s.ct_P, 1), dtype=wp.float64, device=dev)
+    s.x2_pvm = wp.zeros(max(s.ct_P, 1), dtype=wp.vec3d, device=dev)
     s.x2_pstart = wp.zeros(max(s.ct_P, 1), dtype=int, device=dev)
     alpha = min(1.0, float(s.dt)/float(tau))
 
@@ -343,6 +416,14 @@ def install(live, smode=1, radius=1, tau=1e-3, ds=5e-6, vg=1e-3, switch_t=0.0):
         if smode == 6 or smode == 10:
             s.x2_psum.zero_()
             wp.launch(x2_patch_sums, s.node_count, [s.gm, s.x2_bst, s.x2_fnb, s.x2_psum], device=dev)
+        if smode == 12:
+            wp.launch(x2_patch_vt, s.node_count, [s.gm, s.old, s.x2_bst, s.ct_planes, s.x2_pacc], device=dev)
+            wp.launch(x2_patch_mean, max(s.ct_P, 1), [s.x2_pacc, s.x2_pvm], device=dev)
+        if smode == 13:
+            wp.launch(x2_patch_vt_slip, s.node_count, [s.gm, s.old, s.x2_bst, s.ct_planes, s.x2_fnb, s.ct_fric,
+                                                       s.ct_xi, s.ct_obst, wp.float64(s.dt), wp.float64(s.ct_kt),
+                                                       wp.float64(s.ct_zeta), s.x2_pacc], device=dev)
+            wp.launch(x2_patch_mean, max(s.ct_P, 1), [s.x2_pacc, s.x2_pvm], device=dev)
         if smode == 10:
             wp.launch(x2_patch_lag, max(s.ct_P, 1), [s.ct_P, s.x2_psum, s.x2_plag, wp.float64(alpha), s.x2_pstart],
                       device=dev)
@@ -351,8 +432,10 @@ def install(live, smode=1, radius=1, tau=1e-3, ds=5e-6, vg=1e-3, switch_t=0.0):
                    wp.float64(s.ct_kt), wp.float64(s.ct_zeta), int(smode), int(radius), dims[0], dims[1], dims[2],
                    s.x2_fnb, s.x2_bst, s.x2_share, s.ct_xi, s.ct_obst, s.ct_vobs, s.ct_jn, s.ct_jt,
                    s.ct_plane_reaction, s.ct_work, s.ct_counts, s.x2_cap, s.x2_nf, wp.float64(alpha),
-                   s.x2_sacc, wp.float64(ds), s.x2_psum, s.x2_pacc, s.x2_gate, s.x2_plag],
-                  device=dev)
+                   s.x2_sacc, wp.float64(ds), s.x2_psum, s.x2_pacc, s.x2_gate, s.x2_plag, s.x2_pvm,
+                   wp.float64(zd)], device=dev)
+        if smode == 11:
+            wp.launch(x2_patch_mean, max(s.ct_P, 1), [s.x2_pacc, s.x2_pvm], device=dev)
         if smode == 7 or smode == 9:
             wp.launch(x2_gate, max(s.ct_P, 1), [s.ct_P, s.x2_pacc, wp.float64(vg), s.x2_gate], device=dev)
     s._launch_contact = launch

@@ -1,5 +1,5 @@
 """DIAGNOSTIC (task X2, ADR 0023 §22.10; NOT a protocol result): ``diag_contact_x1.py`` with the same instrumentation
-plus the X2 development laws (``dev=x2 smode=.. radius=.. tau=.. ds=.. vg=.. switch_t=..``, ``x2_dev_laws.py``) and
+plus the X2 development laws (``dev=x2 smode=.. radius=.. tau=.. ds=.. vg=.. switch_t=.. zd=..``, ``x2_dev_laws.py``) and
 custom Prony terms (``prony=g:tau,...`` on the elastic mu0: HF-loss probe). The X1 text follows unchanged.
 
 Root cause of the mu-dependent friction deficit of ``grid_node_penalty_coulomb_v1`` on the formal INC scene (block
@@ -67,7 +67,8 @@ def main(argv):
         import x2_dev_laws
         x2_dev_laws.install(live, smode=int(a.get("smode", 1)), radius=int(a.get("radius", 1)),
                             tau=float(a.get("tau", 1e-3)), ds=float(a.get("ds", 5e-6)),
-                            vg=float(a.get("vg", 1e-3)), switch_t=float(a.get("switch_t", 0.0)))
+                            vg=float(a.get("vg", 1e-3)), switch_t=float(a.get("switch_t", 0.0)),
+                            zd=float(a.get("zd", 0.5)))
     elif a.get("dev") == "1":
         import x1_dev_laws
         x1_dev_laws.install(live, vmode=int(a.get("vmode", 0)), capmode=int(a.get("capmode", 0)),
