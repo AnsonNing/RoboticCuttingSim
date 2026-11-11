@@ -1,0 +1,3236 @@
+{
+ "schema": "p1_6_acceptance_evidence_v1",
+ "cycle": "p16c1",
+ "optimizer": "the external agentic optimizer (P1-6)",
+ "baseline": {
+  "commit": "bfe6d5eaee0dd42ab6337acc8b6449f4b0da8eb0",
+  "variant": {
+   "particle_contact_mode": "alias_free_v1"
+  }
+ },
+ "candidate": {
+  "commit": "7053c9654d3ffd7bb19c3795a87345b85a052889",
+  "variant": {
+   "particle_contact_mode": "alias_free_v2"
+  },
+  "change_id": "alias_free_v2",
+  "parity_level": "A",
+  "parity_argument": "Same contributions, same per-particle candidate order, same float operations (P1-3 analysis section 2, level A given a certificate). Env-major buckets: the key uses Warp's own hash_grid_index arithmetic and float32 cell_width_inv, the sort is stable over ascending particle ids, and the kernel walks cells x fastest, then y, then z with Warp's x_end clamp, so every particle visits exactly the candidate sequence of hash_grid_query(grid, x_p, 2.4 r, e) on the grouped alias-free grid (CPU test: identical id sequences against a grouped wp.HashGrid for dims (5,5,5), (64,64,32), (7,3,4), also after a rebuild on moved points, which exercises the memset-free key validation). Query shrink: a pair impulse is non-zero only if d - 2r + dt*min(v_rel.n, 0) < 0, i.e. d < 2r + dt|v_rel| <= 2r + 2 dt V when both speeds are <= V; such q lie inside the shrunken box (relative 1e-5 and absolute 1e-7 m slack cover float32 rounding), whose cells are a sub-box of the frozen box since floor is monotone, so the visited candidates form an order-preserving subsequence and every dropped candidate contributes exactly zero, which C1 already skips (a +-0 add is the identity on the impulse). The per-env speed flag is computed every substep in the existing guard pass; a flagged env (any particle faster than V or non-finite) uses the frozen reach. Envs failing the alias certificate still go to the unchanged frozen fallback. CPU evidence (Warp CPU, np.array_equal on every array after every substep against the frozen single solver): heterogeneous block scenes at frozen and forced 5x5x5 aliasing dims with >= 2 non-zero contributions per particle, a full-resolution TRIM substep, an N=3 heterogeneous TRIM cutting sequence, partial reset against frozen_v1, and a necessity test: env particles at 20 m/s stay bitwise with the check, and differ when the speed check is disabled while the shrunken reach is kept. GPU dev: samestate reruns bitwise, s512 N=1 full episode final labels identical to alias_free_v1 (37958 labelled, 332 positive), no guard violations, invalid_reason 0.",
+  "rollback": "particle_contact_mode='alias_free_v1' (or the default 'frozen_v1'); both code paths are untouched and byte-identical in behaviour. Inside v2, particle_contact_options={'shrink_speed_m_s': None} turns the query shrink off (env-major buckets only)."
+ },
+ "expected_impact": {
+  "metric": "env_steps_per_s",
+  "num_envs": 16,
+  "ratio_low": 1.15,
+  "ratio_high": 1.35,
+  "stages": {
+   "particle_contact_kernel_us_per_substep_n8": {
+    "before": 988.0,
+    "after": 518.8,
+    "source": "nsys, measured"
+   },
+   "hash_build_sort_us_per_substep_n8": {
+    "before": 98.5,
+    "after": 44.9,
+    "source": "nsys, measured"
+   },
+   "all_kernels_us_per_substep_n8": {
+    "before": 2781.3,
+    "after": 2257.2,
+    "source": "nsys, measured"
+   },
+   "env_steps_per_s_n8_dev": {
+    "before": 13.46,
+    "after": 16.36,
+    "ratio": 1.216,
+    "source": "dev throughput, 2+2 runs, EXCLUSIVE_GPU"
+   },
+   "env_steps_per_s_n1_dev": {
+    "before": 8.611,
+    "after": 9.616,
+    "ratio": 1.117,
+    "source": "dev throughput, 1+1 runs, EXCLUSIVE_GPU"
+   },
+   "n16": "not measurable in dev (N <= 8); expected >= the N=8 ratio because the grouped binary searches removed here grow with N",
+   "vram_n16_mib": "about +135 MiB (bucket bounds 2 x N x C int32 = 108 MB, keys and ids 26 MB); +10 MiB measured at N=8"
+  }
+ },
+ "evaluator": {
+  "commit": "bfe6d5eaee0dd42ab6337acc8b6449f4b0da8eb0",
+  "files_sha256": "d6153fb80aa113827572c4ada7122d7f52d86827ee69bccd289b27ae2060bcda",
+  "files": 281,
+  "config": "configs/rl_benchmark/acceptance_v2.json",
+  "config_sha256": "b66ace2967b4aad8382ca4297032c0e513a4cf3ebe6564dad03494b8e7dd612a",
+  "config_version": "acceptance_v2",
+  "judge": {
+   "version": "judge_perf_acceptance_v1",
+   "commit": "bfe6d5eaee0dd42ab6337acc8b6449f4b0da8eb0",
+   "sha256": "09042388ae1a40cc9a0cad414e0f83d6c64c216f068791dfdae8b2c60908aa3b",
+   "python": "3.12.12",
+   "cuda_visible_devices": "",
+   "checkout": {
+    "role": "evaluator checkout (the frozen baseline)",
+    "commit": "bfe6d5eaee0dd42ab6337acc8b6449f4b0da8eb0"
+   },
+   "interpreter": {
+    "role": "rcs runtime python"
+   }
+  }
+ },
+ "layers": {
+  "INTEGRITY": "PASS",
+  "PERFORMANCE": "PASS",
+  "PHYSICS": "PASS"
+ },
+ "gates": [
+  {
+   "detail": "baseline failed 0, skipped 62",
+   "id": "G1",
+   "layer": "PHYSICS",
+   "status": "PASS",
+   "threshold": "0 failed; skips within the baseline's",
+   "value": {
+    "failed": 0,
+    "failed_ids": [],
+    "new_skips": [],
+    "skipped": 62,
+    "tests": 2545
+   }
+  },
+  {
+   "detail": "baseline failed 0, skipped 0",
+   "id": "G2",
+   "layer": "PHYSICS",
+   "status": "PASS",
+   "threshold": "0 failed; skips within the baseline's",
+   "value": {
+    "failed": 0,
+    "failed_ids": [],
+    "new_skips": [],
+    "skipped": 0,
+    "tests": 165
+   }
+  },
+  {
+   "detail": "2 env runs, checks ['impulse_k15', 'impulse_k32', 'impulse_k33', 'impulse_k34', 'impulse_k35', 'impulse_k36', 'impulse_k43', 'impulse_k60', 'impulse_k80', 'nonzero_sets_k15', 'nonzero_sets_k32', 'nonzero_sets_k33', 'nonzero_sets_k34', 'nonzero_sets_k35', 'nonzero_sets_k36', 'nonzero_sets_k43', 'nonzero_sets_k60', 'nonzero_sets_k80', 'replay_codes_e0', 'replay_contacts', 'replay_positions_e0', 'stats4_k15', 'stats4_k32', 'stats4_k33', 'stats4_k34', 'stats4_k35', 'stats4_k36', 'stats4_k43', 'stats4_k60', 'stats4_k80']",
+   "id": "G4",
+   "layer": "PHYSICS",
+   "plan_id": "G4_samestate",
+   "status": "PASS",
+   "threshold": [
+    "impulse_k15",
+    "impulse_k32",
+    "impulse_k33",
+    "impulse_k34",
+    "impulse_k35",
+    "impulse_k36",
+    "impulse_k43",
+    "impulse_k60",
+    "impulse_k80",
+    "nonzero_sets_k15",
+    "nonzero_sets_k32",
+    "nonzero_sets_k33",
+    "nonzero_sets_k34",
+    "nonzero_sets_k35",
+    "nonzero_sets_k36",
+    "nonzero_sets_k43",
+    "nonzero_sets_k60",
+    "nonzero_sets_k80",
+    "replay_codes_e0",
+    "replay_contacts",
+    "replay_positions_e0",
+    "stats4_k15",
+    "stats4_k32",
+    "stats4_k33",
+    "stats4_k34",
+    "stats4_k35",
+    "stats4_k36",
+    "stats4_k43",
+    "stats4_k60",
+    "stats4_k80"
+   ],
+   "value": [
+    {
+     "checks": {
+      "impulse_k15": true,
+      "impulse_k32": true,
+      "impulse_k33": true,
+      "impulse_k34": true,
+      "impulse_k35": true,
+      "impulse_k36": true,
+      "impulse_k43": true,
+      "impulse_k60": true,
+      "impulse_k80": true,
+      "nonzero_sets_k15": true,
+      "nonzero_sets_k32": true,
+      "nonzero_sets_k33": true,
+      "nonzero_sets_k34": true,
+      "nonzero_sets_k35": true,
+      "nonzero_sets_k36": true,
+      "nonzero_sets_k43": true,
+      "nonzero_sets_k60": true,
+      "nonzero_sets_k80": true,
+      "replay_codes_e0": true,
+      "replay_contacts": true,
+      "replay_positions_e0": true,
+      "stats4_k15": true,
+      "stats4_k32": true,
+      "stats4_k33": true,
+      "stats4_k34": true,
+      "stats4_k35": true,
+      "stats4_k36": true,
+      "stats4_k43": true,
+      "stats4_k60": true,
+      "stats4_k80": true
+     },
+     "env": 0,
+     "run": "G4_samestate_candidate_r0",
+     "seed": 15,
+     "side": "candidate",
+     "values": {
+      "contacts_total": [
+       233170,
+       233161
+      ],
+      "replay_e0": {
+       "different_codes": 0,
+       "max_position_diff_m": 6.612549734045175e-06
+      },
+      "samples": {
+       "15": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "32": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "33": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         11,
+         11
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "34": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         13,
+         13
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "35": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         18,
+         18
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "36": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         18,
+         18
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "43": {
+        "impulse_max_rel_diff": 4.9140903974447516e-08,
+        "nonzero": [
+         68,
+         68
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "60": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         9,
+         9
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "80": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         2,
+         2
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       }
+      }
+     }
+    },
+    {
+     "checks": {
+      "impulse_k15": true,
+      "impulse_k32": true,
+      "impulse_k33": true,
+      "impulse_k34": true,
+      "impulse_k35": true,
+      "impulse_k36": true,
+      "impulse_k43": true,
+      "impulse_k60": true,
+      "impulse_k80": true,
+      "nonzero_sets_k15": true,
+      "nonzero_sets_k32": true,
+      "nonzero_sets_k33": true,
+      "nonzero_sets_k34": true,
+      "nonzero_sets_k35": true,
+      "nonzero_sets_k36": true,
+      "nonzero_sets_k43": true,
+      "nonzero_sets_k60": true,
+      "nonzero_sets_k80": true,
+      "replay_codes_e0": true,
+      "replay_contacts": true,
+      "replay_positions_e0": true,
+      "stats4_k15": true,
+      "stats4_k32": true,
+      "stats4_k33": true,
+      "stats4_k34": true,
+      "stats4_k35": true,
+      "stats4_k36": true,
+      "stats4_k43": true,
+      "stats4_k60": true,
+      "stats4_k80": true
+     },
+     "env": 0,
+     "run": "G4_samestate_candidate_r0",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "contacts_total": [
+       152514,
+       152554
+      ],
+      "replay_e0": {
+       "different_codes": 0,
+       "max_position_diff_m": 2.71631772379037e-06
+      },
+      "samples": {
+       "15": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "32": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         12,
+         12
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "33": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         31,
+         31
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "34": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         18,
+         18
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "35": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         13,
+         13
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "36": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         13,
+         13
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "43": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "60": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "80": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "detail": "12 env runs, checks ['codes_equal_native', 'contacts_vs_baseline', 'evaluator_2_frames', 'evaluator_series', 'invariants', 'labelled_equal_native']",
+   "id": "G6",
+   "layer": "PHYSICS",
+   "plan_id": "G6_replay",
+   "status": "PASS",
+   "threshold": [
+    "codes_equal_native",
+    "contacts_vs_baseline",
+    "evaluator_2_frames",
+    "evaluator_series",
+    "invariants",
+    "labelled_equal_native"
+   ],
+   "value": [
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_baseline_r0",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 9.18038806811848e-05,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152485,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 2.5083824344498336e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 2.531797780234469e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_baseline_r0",
+     "seed": 15,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1632070,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 8.566092526489198e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.00010691117808723045,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_candidate_r0",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 5.245936038924845e-05,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152491,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 1.7027190192720573e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 1.7000000000000088e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_candidate_r0",
+     "seed": 15,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.003861966704859473,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1638373,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 0.0001511357150463767,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.00074364510874897,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_baseline_r1",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.000570495544233077,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152586,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 2.5832237513352935e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 2.5709920264366017e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_baseline_r1",
+     "seed": 15,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.002995582297327933,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1627181,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 5.521291398572758e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.00017720161964504728,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_candidate_r1",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0001049187207784969,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152515,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 9.272027678367614e-06,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 9.219544457292794e-06,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_candidate_r1",
+     "seed": 15,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0004803715526907547,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1632854,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 8.029840842058627e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.00040801569000115757,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_baseline_r2",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152499,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 7.713213563747282e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 7.702596964660666e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_baseline_r2",
+     "seed": 15,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0024533261440992113,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1636074,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 0.00013182722283635367,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.0006350057883708542,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_candidate_r2",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.00027541164204355437,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152457,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 2.2316392595509956e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 2.2583179581270245e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G6_replay_candidate_r2",
+     "seed": 15,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0009331707586071676,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1633593,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 8.227265471921198e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.00016224672569885897,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    }
+   ]
+  },
+  {
+   "detail": "8 env runs, checks ['codes_equal_native', 'contacts_vs_baseline', 'evaluator_2_frames', 'evaluator_series', 'invariants', 'labelled_equal_native']",
+   "id": "G7",
+   "layer": "PHYSICS",
+   "plan_id": "G7_batched",
+   "status": "PASS",
+   "threshold": [
+    "codes_equal_native",
+    "contacts_vs_baseline",
+    "evaluator_2_frames",
+    "evaluator_series",
+    "invariants",
+    "labelled_equal_native"
+   ],
+   "value": [
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G7_batched_baseline_r0",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0003474817408179589,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152579,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 1.741177963007326e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 1.7262676501632147e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 1,
+     "run": "G7_batched_baseline_r0",
+     "seed": 15,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0010914295334882413,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1628651,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 5.39515568186063e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 7.98060148109153e-05,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 2,
+     "run": "G7_batched_baseline_r0",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0003474817408179589,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152473,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 2.3705947144903063e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 2.4166091947189766e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 3,
+     "run": "G7_batched_baseline_r0",
+     "seed": 15,
+     "side": "baseline",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0010914295334882413,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1632210,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 0.00010732217776612105,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.00036063962905074487,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 0,
+     "run": "G7_batched_candidate_r0",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0002950316667322293,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152481,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 2.4269331753144586e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 2.4062418831033397e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 1,
+     "run": "G7_batched_candidate_r0",
+     "seed": 15,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0027278071650401535,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1634878,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 8.703140118710612e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.0005919312005437049,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 2,
+     "run": "G7_batched_candidate_r0",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0001245689259536079,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 152507,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 2.1398401195516578e-05,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 37958,
+        "negative": 37626,
+        "positive": 332
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 2.193171219946147e-05,
+      "position_band_high_m": 0.00012541239105114683,
+      "position_band_within": true,
+      "position_limit_m": 0.00012541239105114683,
+      "samples": 120,
+      "steps": 1200
+     }
+    },
+    {
+     "checks": {
+      "codes_equal_native": true,
+      "contacts_vs_baseline": true,
+      "evaluator_2_frames": true,
+      "evaluator_series": true,
+      "invariants": true,
+      "labelled_equal_native": true
+     },
+     "env": 3,
+     "run": "G7_batched_candidate_r0",
+     "seed": 15,
+     "side": "candidate",
+     "values": {
+      "contacts_rel_diff_vs_baseline": 0.0021390056184547577,
+      "contacts_rel_tol": 0.02,
+      "contacts_total": 1633918,
+      "different_code_particles": 0,
+      "digit_rewrites": 0,
+      "evaluator_2": "PASS",
+      "evaluator_series": "PASS",
+      "final_max_position_diff_m": 0.00013234635241307966,
+      "finite": true,
+      "invalid_reason": 0,
+      "l2_reported_clean": true,
+      "labelled": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "labelled_native": {
+       "0": {
+        "labelled": 85786,
+        "negative": 84288,
+        "positive": 1498
+       },
+       "1": {
+        "labelled": 0,
+        "negative": 0,
+        "positive": 0
+       }
+      },
+      "max_position_diff_m_over_samples": 0.0005893207451965841,
+      "position_band_high_m": 0.00024933874698766426,
+      "position_band_within": true,
+      "position_limit_m": 0.00024933874698766426,
+      "samples": 120,
+      "steps": 1200
+     }
+    }
+   ]
+  },
+  {
+   "detail": "1 env runs, checks ['impulse_k15', 'impulse_k32', 'impulse_k33', 'impulse_k34', 'impulse_k35', 'impulse_k36', 'impulse_k43', 'impulse_k60', 'impulse_k80', 'nonzero_sets_k15', 'nonzero_sets_k32', 'nonzero_sets_k33', 'nonzero_sets_k34', 'nonzero_sets_k35', 'nonzero_sets_k36', 'nonzero_sets_k43', 'nonzero_sets_k60', 'nonzero_sets_k80', 'replay_codes_e0', 'replay_contacts', 'replay_positions_e0', 'stats4_k15', 'stats4_k32', 'stats4_k33', 'stats4_k34', 'stats4_k35', 'stats4_k36', 'stats4_k43', 'stats4_k60', 'stats4_k80']",
+   "id": "G8",
+   "layer": "PHYSICS",
+   "plan_id": "G8_default",
+   "status": "PASS",
+   "threshold": [
+    "impulse_k15",
+    "impulse_k32",
+    "impulse_k33",
+    "impulse_k34",
+    "impulse_k35",
+    "impulse_k36",
+    "impulse_k43",
+    "impulse_k60",
+    "impulse_k80",
+    "nonzero_sets_k15",
+    "nonzero_sets_k32",
+    "nonzero_sets_k33",
+    "nonzero_sets_k34",
+    "nonzero_sets_k35",
+    "nonzero_sets_k36",
+    "nonzero_sets_k43",
+    "nonzero_sets_k60",
+    "nonzero_sets_k80",
+    "replay_codes_e0",
+    "replay_contacts",
+    "replay_positions_e0",
+    "stats4_k15",
+    "stats4_k32",
+    "stats4_k33",
+    "stats4_k34",
+    "stats4_k35",
+    "stats4_k36",
+    "stats4_k43",
+    "stats4_k60",
+    "stats4_k80"
+   ],
+   "value": [
+    {
+     "checks": {
+      "impulse_k15": true,
+      "impulse_k32": true,
+      "impulse_k33": true,
+      "impulse_k34": true,
+      "impulse_k35": true,
+      "impulse_k36": true,
+      "impulse_k43": true,
+      "impulse_k60": true,
+      "impulse_k80": true,
+      "nonzero_sets_k15": true,
+      "nonzero_sets_k32": true,
+      "nonzero_sets_k33": true,
+      "nonzero_sets_k34": true,
+      "nonzero_sets_k35": true,
+      "nonzero_sets_k36": true,
+      "nonzero_sets_k43": true,
+      "nonzero_sets_k60": true,
+      "nonzero_sets_k80": true,
+      "replay_codes_e0": true,
+      "replay_contacts": true,
+      "replay_positions_e0": true,
+      "stats4_k15": true,
+      "stats4_k32": true,
+      "stats4_k33": true,
+      "stats4_k34": true,
+      "stats4_k35": true,
+      "stats4_k36": true,
+      "stats4_k43": true,
+      "stats4_k60": true,
+      "stats4_k80": true
+     },
+     "env": 0,
+     "run": "G8_default_candidate_r0",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "contacts_total": [
+       152474,
+       152605
+      ],
+      "replay_e0": {
+       "different_codes": 0,
+       "max_position_diff_m": 9.308344824526029e-06
+      },
+      "samples": {
+       "15": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "32": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         12,
+         12
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "33": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         31,
+         31
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "34": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         18,
+         18
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "35": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         13,
+         13
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "36": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         13,
+         13
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "43": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "60": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       },
+       "80": {
+        "impulse_max_rel_diff": 0.0,
+        "nonzero": [
+         0,
+         0
+        ],
+        "nonzero_sets_identical": true,
+        "stats4_identical": true
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "detail": "candidate / baseline outer-clock env-steps/s per ABBA pair",
+   "id": "G9:n1",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": {
+    "median_min": 0.97
+   },
+   "value": {
+    "above_1": 3,
+    "median": 1.1681685183983523,
+    "pairs": [
+     1.1648300498889834,
+     1.1750708026483228,
+     1.1681685183983523
+    ]
+   }
+  },
+  {
+   "detail": null,
+   "id": "G9:n1:vram",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": {
+    "max_mib": 1274.6000000000001,
+    "rule": "C <= 1.10 x B + 256 MiB (config)"
+   },
+   "value": {
+    "baseline_max": 926.0,
+    "candidate_max": 936.0,
+    "source": "nvidia_smi_process"
+   }
+  },
+  {
+   "detail": null,
+   "id": "G9:n1:reset",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": {
+    "rule": "G9:<n>:reset on the per-side medians of reset p95 over all ABBA processes at N. Both sides EXCLUSIVE_GPU: FAIL if C > reset_p95_ratio_max x B + reset_p95_slack_ms. Either side SHARED_GPU (or UNKNOWN): PASS if C <= ratio x B + reset_p95_slack_ms; WARN shared_gpu_reset_bimodality (verdict.warnings, not a failure) if C <= ratio x B + reset_p95_shared_slack_ms; FAIL above that. Reason: on a shared GPU each process settles in a ~1 ms or ~7 ms reset mode independent of the variant (smoke_001: B 1.7 ms vs C 7.1 ms at N=1, reversed at N=2).",
+    "strict_max_ms": 223.6456832975382
+   },
+   "value": {
+    "baseline": [
+     176.49297558818944,
+     177.31654663803056,
+     180.46067450777628
+    ],
+    "baseline_median": 177.31654663803056,
+    "candidate": [
+     185.3596103785094,
+     182.2072644776199,
+     177.86153674242087
+    ],
+    "candidate_median": 182.2072644776199,
+    "regime": "exclusive",
+    "sharing": {
+     "baseline": [
+      "EXCLUSIVE_GPU",
+      "EXCLUSIVE_GPU",
+      "EXCLUSIVE_GPU"
+     ],
+     "candidate": [
+      "EXCLUSIVE_GPU",
+      "EXCLUSIVE_GPU",
+      "EXCLUSIVE_GPU"
+     ]
+    }
+   }
+  },
+  {
+   "detail": null,
+   "id": "G9:n1:work",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": "every run: W+K steps, final labelled counts = the first baseline run's",
+   "value": []
+  },
+  {
+   "detail": "candidate / baseline outer-clock env-steps/s per ABBA pair",
+   "id": "G9:n16",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": {
+    "median_min": 1.05,
+    "pairs_above_1_min": 3
+   },
+   "value": {
+    "above_1": 3,
+    "median": 1.279012043912085,
+    "pairs": [
+     1.279012043912085,
+     1.279557557824955,
+     1.1424382701738494
+    ]
+   }
+  },
+  {
+   "detail": null,
+   "id": "G9:n16:vram",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": {
+    "max_mib": 2678.2000000000003,
+    "rule": "C <= 1.10 x B + 256 MiB (config)"
+   },
+   "value": {
+    "baseline_max": 2202.0,
+    "candidate_max": 2276.0,
+    "source": "nvidia_smi_process"
+   }
+  },
+  {
+   "detail": null,
+   "id": "G9:n16:reset",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": {
+    "rule": "G9:<n>:reset on the per-side medians of reset p95 over all ABBA processes at N. Both sides EXCLUSIVE_GPU: FAIL if C > reset_p95_ratio_max x B + reset_p95_slack_ms. Either side SHARED_GPU (or UNKNOWN): PASS if C <= ratio x B + reset_p95_slack_ms; WARN shared_gpu_reset_bimodality (verdict.warnings, not a failure) if C <= ratio x B + reset_p95_shared_slack_ms; FAIL above that. Reason: on a shared GPU each process settles in a ~1 ms or ~7 ms reset mode independent of the variant (smoke_001: B 1.7 ms vs C 7.1 ms at N=1, reversed at N=2).",
+    "strict_max_ms": 221.62052974413382
+   },
+   "value": {
+    "baseline": [
+     175.69642379530706,
+     175.30158846639097,
+     183.6204019607976
+    ],
+    "baseline_median": 175.69642379530706,
+    "candidate": [
+     179.19740719371475,
+     181.11697882413864,
+     173.76454078475945
+    ],
+    "candidate_median": 179.19740719371475,
+    "regime": "exclusive",
+    "sharing": {
+     "baseline": [
+      "EXCLUSIVE_GPU",
+      "EXCLUSIVE_GPU",
+      "EXCLUSIVE_GPU"
+     ],
+     "candidate": [
+      "EXCLUSIVE_GPU",
+      "EXCLUSIVE_GPU",
+      "EXCLUSIVE_GPU"
+     ]
+    }
+   }
+  },
+  {
+   "detail": null,
+   "id": "G9:n16:work",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": "every run: W+K steps, final labelled counts = the first baseline run's",
+   "value": []
+  },
+  {
+   "detail": "10 episode envs: the G9 window holds the tool-contact phase and the cutting",
+   "id": "G9:window",
+   "layer": "PERFORMANCE",
+   "status": "PASS",
+   "threshold": {
+    "min_new_labels": 30000,
+    "min_tool_contact_steps": 80,
+    "particle_contacts": "reported, not gated",
+    "plans": [
+     "G6_replay",
+     "G7_batched"
+    ],
+    "seeds": [
+     512
+    ],
+    "windows": [
+     [
+      229,
+      400
+     ]
+    ]
+   },
+   "value": [
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 0,
+     "plan_id": "G6_replay",
+     "run": "G6_replay_baseline_r0",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 0,
+     "plan_id": "G6_replay",
+     "run": "G6_replay_candidate_r0",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 0,
+     "plan_id": "G6_replay",
+     "run": "G6_replay_baseline_r1",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 0,
+     "plan_id": "G6_replay",
+     "run": "G6_replay_candidate_r1",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 0,
+     "plan_id": "G6_replay",
+     "run": "G6_replay_baseline_r2",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 0,
+     "plan_id": "G6_replay",
+     "run": "G6_replay_candidate_r2",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 0,
+     "plan_id": "G7_batched",
+     "run": "G7_batched_baseline_r0",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 2,
+     "plan_id": "G7_batched",
+     "run": "G7_batched_baseline_r0",
+     "seed": 512,
+     "side": "baseline",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 0,
+     "plan_id": "G7_batched",
+     "run": "G7_batched_candidate_r0",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "checks": {
+      "window_contact_and_cutting": true
+     },
+     "env": 2,
+     "plan_id": "G7_batched",
+     "run": "G7_batched_candidate_r0",
+     "seed": 512,
+     "side": "candidate",
+     "values": {
+      "windows": [
+       {
+        "label_steps": [
+         220,
+         400
+        ],
+        "new_labels": 37958,
+        "particle_contact_steps_episode_reported": 49,
+        "particle_contact_steps_reported": 49,
+        "tool_contact_steps": 101,
+        "tool_contact_steps_episode": 101,
+        "window": [
+         229,
+         400
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "detail": "results, dumps (sha256), commits, package roots, harness bytes, variants, outer/inner clocks and GPUs consistent",
+   "id": "I-all",
+   "layer": "INTEGRITY",
+   "status": "PASS",
+   "threshold": null,
+   "value": null
+  }
+ ],
+ "performance": {
+  "phases": {
+   "1": {
+    "after_contact": {
+     "baseline_median_step_s": 0.1716267,
+     "candidate_median_step_s": 0.1554453,
+     "runs": {
+      "baseline": [
+       0.1724404,
+       0.1716267,
+       0.1715042
+      ],
+      "candidate": [
+       0.15558635,
+       0.1554453,
+       0.15512585
+      ]
+     },
+     "speed_ratio_c_over_b": 1.1040970682291456,
+     "status": "REPORTED",
+     "steps": [
+      365,
+      400
+     ]
+    },
+    "approach": {
+     "baseline_median_step_s": 0.1719579,
+     "candidate_median_step_s": 0.15313225000000003,
+     "runs": {
+      "baseline": [
+       0.17187985,
+       0.1720458,
+       0.1719579
+      ],
+      "candidate": [
+       0.15331205,
+       0.15313225000000003,
+       0.15302615
+      ]
+     },
+     "speed_ratio_c_over_b": 1.1229371997080952,
+     "status": "REPORTED",
+     "steps": [
+      21,
+      228
+     ]
+    },
+    "cutting_before_particle_contact": {
+     "baseline_median_step_s": 0.18275429999999998,
+     "candidate_median_step_s": 0.15587095,
+     "runs": {
+      "baseline": [
+       0.18242025,
+       0.1828226,
+       0.18275429999999998
+      ],
+      "candidate": [
+       0.15587095,
+       0.15586695,
+       0.15600495
+      ]
+     },
+     "speed_ratio_c_over_b": 1.1724718428931111,
+     "status": "REPORTED",
+     "steps": [
+      251,
+      314
+     ]
+    },
+    "particle_contact": {
+     "baseline_median_step_s": 0.1825475,
+     "candidate_median_step_s": 0.1553914,
+     "runs": {
+      "baseline": [
+       0.18264760000000002,
+       0.18245909999999999,
+       0.1825475
+      ],
+      "candidate": [
+       0.1553914,
+       0.15543145,
+       0.1553007
+      ]
+     },
+     "speed_ratio_c_over_b": 1.1747593496165167,
+     "status": "REPORTED",
+     "steps": [
+      315,
+      364
+     ]
+    },
+    "timed_window": {
+     "baseline_median_step_s": 0.1822493,
+     "candidate_median_step_s": 0.15550355,
+     "runs": {
+      "baseline": [
+       0.18211455,
+       0.1822493,
+       0.18227745
+      ],
+      "candidate": [
+       0.15557189999999999,
+       0.1554118,
+       0.15550355
+      ]
+     },
+     "speed_ratio_c_over_b": 1.1719944657212007,
+     "status": "REPORTED",
+     "steps": [
+      229,
+      400
+     ]
+    },
+    "tool_contact_before_cutting": {
+     "baseline_median_step_s": 0.1787429,
+     "candidate_median_step_s": 0.153807,
+     "runs": {
+      "baseline": [
+       0.17906155,
+       0.1787429,
+       0.17214190000000001
+      ],
+      "candidate": [
+       0.15416485000000002,
+       0.14881475,
+       0.153807
+      ]
+     },
+     "speed_ratio_c_over_b": 1.1621246107134267,
+     "status": "REPORTED",
+     "steps": [
+      229,
+      250
+     ]
+    }
+   },
+   "16": {
+    "after_contact": {
+     "baseline_median_step_s": 2.1285761,
+     "candidate_median_step_s": 1.6638142,
+     "runs": {
+      "baseline": [
+       2.1285761,
+       2.12940745,
+       2.12811605
+      ],
+      "candidate": [
+       1.6638142,
+       1.65952505,
+       1.6735864
+      ]
+     },
+     "speed_ratio_c_over_b": 1.2793352166365692,
+     "status": "REPORTED",
+     "steps": [
+      365,
+      400
+     ]
+    },
+    "approach": {
+     "baseline_median_step_s": 2.1199003000000003,
+     "candidate_median_step_s": 1.65021215,
+     "runs": {
+      "baseline": [
+       2.1205064,
+       2.1199003000000003,
+       2.1183030499999997
+      ],
+      "candidate": [
+       1.65021215,
+       1.6502755,
+       1.6468599
+      ]
+     },
+     "speed_ratio_c_over_b": 1.284622889244877,
+     "status": "REPORTED",
+     "steps": [
+      21,
+      228
+     ]
+    },
+    "cutting_before_particle_contact": {
+     "baseline_median_step_s": 2.12916515,
+     "candidate_median_step_s": 1.6644408,
+     "runs": {
+      "baseline": [
+       2.12916515,
+       2.1301071499999997,
+       2.1277868499999997
+      ],
+      "candidate": [
+       1.6644408,
+       1.66356565,
+       1.6669613499999998
+      ]
+     },
+     "speed_ratio_c_over_b": 1.279207497196656,
+     "status": "REPORTED",
+     "steps": [
+      251,
+      314
+     ]
+    },
+    "particle_contact": {
+     "baseline_median_step_s": 2.1266932499999998,
+     "candidate_median_step_s": 1.6634964,
+     "runs": {
+      "baseline": [
+       2.1266932499999998,
+       2.12933445,
+       2.1228714
+      ],
+      "candidate": [
+       1.66283625,
+       1.6634964,
+       1.9065257500000001
+      ]
+     },
+     "speed_ratio_c_over_b": 1.2784477621953372,
+     "status": "REPORTED",
+     "steps": [
+      315,
+      364
+     ]
+    },
+    "timed_window": {
+     "baseline_median_step_s": 2.127104,
+     "candidate_median_step_s": 1.65963075,
+     "runs": {
+      "baseline": [
+       2.127104,
+       2.12792,
+       2.1247447
+      ],
+      "candidate": [
+       1.65963075,
+       1.6574692,
+       1.8644346500000002
+      ]
+     },
+     "speed_ratio_c_over_b": 1.2816730468509336,
+     "status": "REPORTED",
+     "steps": [
+      229,
+      400
+     ]
+    },
+    "tool_contact_before_cutting": {
+     "baseline_median_step_s": 2.1200617,
+     "candidate_median_step_s": 1.6499948,
+     "runs": {
+      "baseline": [
+       2.1206255,
+       2.1200617,
+       2.11787665
+      ],
+      "candidate": [
+       1.6505298000000002,
+       1.6499948,
+       1.64726175
+      ]
+     },
+     "speed_ratio_c_over_b": 1.2848899281379553,
+     "status": "REPORTED",
+     "steps": [
+      229,
+      250
+     ]
+    }
+   }
+  },
+  "ratios": {
+   "1": {
+    "above_1": 3,
+    "mean": 1.1693564569785528,
+    "median": 1.1681685183983523,
+    "pairs": [
+     1.1648300498889834,
+     1.1750708026483228,
+     1.1681685183983523
+    ]
+   },
+   "16": {
+    "above_1": 3,
+    "mean": 1.233669290636963,
+    "median": 1.279012043912085,
+    "pairs": [
+     1.279012043912085,
+     1.279557557824955,
+     1.1424382701738494
+    ]
+   }
+  }
+ },
+ "rows": [
+  {
+   "aggregate_sim_time_per_wall": 0.10373003998463506,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 98,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 80,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 97.1875
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 5.186501999231753,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 5.186509398091752,
+   "material_dt_s": 0.0001,
+   "num_envs": 1,
+   "order": 0,
+   "pair": 0,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 176.49297558818944,
+   "robot_dof": 0,
+   "run": "perf_n1_00_B",
+   "side": "baseline",
+   "substeps": 200,
+   "vram_peak_mib": 926.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.1208278676502887,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 98,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 69,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 97.3623188405797
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 6.0413933825144355,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 6.04140192124092,
+   "material_dt_s": 0.0001,
+   "num_envs": 1,
+   "order": 1,
+   "pair": 0,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 185.3596103785094,
+   "robot_dof": 0,
+   "run": "perf_n1_01_C",
+   "side": "candidate",
+   "substeps": 200,
+   "vram_peak_mib": 936.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.12126761643090084,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 98,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 69,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 97.3768115942029
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 6.063380821545042,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 6.063391661785518,
+   "material_dt_s": 0.0001,
+   "num_envs": 1,
+   "order": 2,
+   "pair": 1,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 182.2072644776199,
+   "robot_dof": 0,
+   "run": "perf_n1_02_C",
+   "side": "candidate",
+   "substeps": 200,
+   "vram_peak_mib": 936.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.10320026347143785,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 98,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 80,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 97.225
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 5.160013173571892,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 5.1600211950475625,
+   "material_dt_s": 0.0001,
+   "num_envs": 1,
+   "order": 3,
+   "pair": 1,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 177.31654663803056,
+   "robot_dof": 0,
+   "run": "perf_n1_03_B",
+   "side": "baseline",
+   "substeps": 200,
+   "vram_peak_mib": 926.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.10334528339264755,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 98,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 80,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 97.1
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 5.167264169632378,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 5.1672707926368195,
+   "material_dt_s": 0.0001,
+   "num_envs": 1,
+   "order": 4,
+   "pair": 2,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 180.46067450777628,
+   "robot_dof": 0,
+   "run": "perf_n1_04_B",
+   "side": "baseline",
+   "substeps": 200,
+   "vram_peak_mib": 926.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.12072470658424696,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 98,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 70,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 97.27142857142857
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 6.036235329212348,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 6.036245592994956,
+   "material_dt_s": 0.0001,
+   "num_envs": 1,
+   "order": 5,
+   "pair": 2,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 177.86153674242087,
+   "robot_dof": 0,
+   "run": "perf_n1_05_C",
+   "side": "candidate",
+   "substeps": 200,
+   "vram_peak_mib": 936.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.1492298654856746,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 99,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 863,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 98.72769409038239
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 7.46149327428373,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 7.461494171862827,
+   "material_dt_s": 0.0001,
+   "num_envs": 16,
+   "order": 0,
+   "pair": 0,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 175.69642379530706,
+   "robot_dof": 0,
+   "run": "perf_n16_00_B",
+   "side": "baseline",
+   "substeps": 200,
+   "vram_peak_mib": 2202.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.19086679526755815,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 99,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 673,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 98.81426448736998
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 9.543339763377908,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 9.54334118625997,
+   "material_dt_s": 0.0001,
+   "num_envs": 16,
+   "order": 1,
+   "pair": 0,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 179.19740719371475,
+   "robot_dof": 0,
+   "run": "perf_n16_01_C",
+   "side": "candidate",
+   "substeps": 200,
+   "vram_peak_mib": 2276.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.1908956476390189,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 99,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 672,
+    "sharing_reasons": [],
+    "total_util_pct_max": 100.0,
+    "total_util_pct_mean": 98.80357142857143
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 9.544782381950945,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 9.544784117574734,
+   "material_dt_s": 0.0001,
+   "num_envs": 16,
+   "order": 2,
+   "pair": 1,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 181.11697882413864,
+   "robot_dof": 0,
+   "run": "perf_n16_02_C",
+   "side": "candidate",
+   "substeps": 200,
+   "vram_peak_mib": 2276.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.14918879301022708,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 99.0,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 860,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 98.85348837209303
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 7.459439650511355,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 7.459440603483314,
+   "material_dt_s": 0.0001,
+   "num_envs": 16,
+   "order": 3,
+   "pair": 1,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 175.30158846639097,
+   "robot_dof": 0,
+   "run": "perf_n16_03_B",
+   "side": "baseline",
+   "substeps": 200,
+   "vram_peak_mib": 2202.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.15656397794716617,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 99,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 842,
+    "sharing_reasons": [],
+    "total_util_pct_max": 100.0,
+    "total_util_pct_mean": 98.86935866983373
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 7.828198897358308,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 7.828199871946928,
+   "material_dt_s": 0.0001,
+   "num_envs": 16,
+   "order": 4,
+   "pair": 2,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 183.6204019607976,
+   "robot_dof": 0,
+   "run": "perf_n16_04_B",
+   "side": "baseline",
+   "substeps": 200,
+   "vram_peak_mib": 2202.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  },
+  {
+   "aggregate_sim_time_per_wall": 0.1788646801374972,
+   "caller_gpu_label": "SHARED_GPU",
+   "caller_util_p50": 99.0,
+   "cameras": "none",
+   "clock": "outer (caller)",
+   "co_tenant": {
+    "baseline_total_util_pct_max": null,
+    "foreign_compute_pids": [],
+    "foreign_graphics_pids": [],
+    "foreign_memory_mib_max": 0.0,
+    "foreign_memory_mib_mean": 0.0,
+    "foreign_processes_max": 0,
+    "foreign_sm_pct_max": 0.0,
+    "foreign_sm_pct_mean": 0.0,
+    "samples": 691,
+    "sharing_reasons": [],
+    "total_util_pct_max": 99.0,
+    "total_util_pct_mean": 98.57597684515196
+   },
+   "contacts": "handle + two measured finger pads (handle_and_measured_pads_v1)",
+   "control_hz": 50.0,
+   "env_steps_per_s": 8.94323400687486,
+   "gpu": {
+    "cuda_ordinal": 0,
+    "gpu_driver": "570.211.01",
+    "gpu_index": 0,
+    "gpu_name": "NVIDIA GeForce RTX 5090",
+    "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+    "memory_total_mib": 32607.0,
+    "name": "NVIDIA GeForce RTX 5090",
+    "nvidia_smi_index": 0,
+    "total_mib": 32119.5,
+    "uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35"
+   },
+   "gpu_sharing": "EXCLUSIVE_GPU",
+   "in_process_env_steps_per_s": 8.943235357727135,
+   "material_dt_s": 0.0001,
+   "num_envs": 16,
+   "order": 5,
+   "pair": 2,
+   "particles_per_env": 102732,
+   "physics_verdict": "NOT_JUDGED_THROUGHPUT_RUN (work check: final labelled counts)",
+   "recording": "none",
+   "reset_p95_ms": 173.76454078475945,
+   "robot_dof": 0,
+   "run": "perf_n16_05_C",
+   "side": "candidate",
+   "substeps": 200,
+   "vram_peak_mib": 2276.0,
+   "vram_source": "nvidia_smi_process",
+   "warm": "warm"
+  }
+ ],
+ "gpu": {
+  "index": 1,
+  "label": "SHARED_GPU",
+  "foreign_processes_max": 5,
+  "gpu_util_p50": 99
+ },
+ "cpu_tests": {
+  "baseline": {
+   "cpu_tests": {
+    "tests": 2534,
+    "passed": 2472,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 62
+   },
+   "torch_tests": {
+    "tests": 165,
+    "passed": 165,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+   }
+  },
+  "candidate": {
+   "cpu_tests": {
+    "tests": 2545,
+    "passed": 2483,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 62
+   },
+   "torch_tests": {
+    "tests": 165,
+    "passed": 165,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+   }
+  }
+ },
+ "seeds": {
+  "dev": [
+   512
+  ],
+  "heldout": [
+   15
+  ]
+ },
+ "limitations": [
+  "VRAM peak and reset p95 are measured inside the process under test (candidate-reported, not independently verified); env-steps/s comes from the caller's outer clock and is cross-checked against the in-process value",
+  "intermediate Native-sample positions are dumped as int8 micrometre deltas to the Native sample (|error| <= 0.5 um, larger or non-finite deltas exact); final states are exact",
+  "the evaluator reference arrays (mass, reference positions, stencils) are taken from the WP-17 Native recording",
+  "samestate uses the baseline harness helpers (run_p1_3a.load_state / contact_stage) on the solver attributes x, v, code, impulse, stats_sum, stats_max, hash / particle_contact",
+  "workload A is reduced fidelity (ideal edge tracking, no robot dynamics, reaction not fed back)",
+  "G9:window is measured on the episode-mode runs of the window_check plans (same variants, same seeds, replay from reset), not inside the G9 throughput processes; it gates tool-material contact steps (stats slot 1) and new labels, particle-particle contacts (slot 4) are reported only",
+  "performance.phases are in-process step walls (candidate-reported), descriptive only"
+ ],
+ "notes": [],
+ "warnings": []
+}
