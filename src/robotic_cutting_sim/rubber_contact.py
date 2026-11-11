@@ -57,9 +57,12 @@ wp.set_module_options({"enable_backward": False})
 PENALTY_LAW = "grid_node_penalty_coulomb_v1"           # node penalty + Coulomb spring-slider (ADR 0023 §22.1)
 PROJECTION_LAW = "grid_node_coulomb_v1"                 # node velocity-level projection (ADR 0023 §22.1)
 PENALTY_LAW_V2 = "grid_node_penalty_coulomb_v2"        # v1 with the dashpots on the realised node velocity (§22.9)
-CONTACT_LAW = PENALTY_LAW                               # default: v1 (v2 is opt-in)
-CONTACT_LAWS = (PENALTY_LAW, PROJECTION_LAW, PENALTY_LAW_V2)
-PENALTY_LAWS = (PENALTY_LAW, PENALTY_LAW_V2)
+PENALTY_LAW_V3 = "grid_node_penalty_coulomb_v3"        # v2 + patch slip-rate equalisation (§22.11)
+CONTACT_LAW = PENALTY_LAW                               # default: v1 (v2 / v3 are opt-in)
+CONTACT_LAWS = (PENALTY_LAW, PROJECTION_LAW, PENALTY_LAW_V2, PENALTY_LAW_V3)
+PENALTY_LAWS = (PENALTY_LAW, PENALTY_LAW_V2, PENALTY_LAW_V3)
+DEFAULT_SLIP_RATE_DAMPING_RATIO = 1.0    # zeta_d of the v3 patch slip-rate equalisation (2 zeta_d sqrt(kappa_t) = 1)
+PATCH_FACES = 6                          # contact patches per box (one per face); one per plane
 CONTACT_WORK = "kick_average_v1"
 FRAME_FIXTURE, FRAME_PAD = 0, 1
 FRAME_KINDS = {"fixture": FRAME_FIXTURE, "pad": FRAME_PAD}
@@ -106,6 +109,7 @@ class ContactSpec:
     damping_ratio: float = DEFAULT_DAMPING_RATIO                    # penalty law only (tangential, stick branch)
     normal_damping_ratio: float = DEFAULT_NORMAL_DAMPING_RATIO      # penalty law only
     work: str = CONTACT_WORK
+    slip_rate_damping_ratio: float = DEFAULT_SLIP_RATE_DAMPING_RATIO  # v3 only (patch slip-rate equalisation)
 
     def __post_init__(self):
         if self.law not in CONTACT_LAWS:
@@ -125,6 +129,11 @@ class ContactSpec:
             if not (np.isfinite(z) and z >= 0.0 and 2*z*np.sqrt(kappa) <= 1.0):
                 raise ValueError(f"{name} must be >= 0 with 2 zeta sqrt(kappa) <= 1 (at most the node's whole "
                                  "relative velocity removed per substep)")
+        if self.law == PENALTY_LAW_V3:
+            zd = float(self.slip_rate_damping_ratio)
+            if not (np.isfinite(zd) and zd >= 0.0 and 2*zd*np.sqrt(float(self.tangential_stiffness)) <= 1.0+1e-12):
+                raise ValueError("slip_rate_damping_ratio must be >= 0 with 2 zeta_d sqrt(kappa_t) <= 1 (at most the "
+                                 "node's whole slip-rate deviation removed per substep)")
         planes = np.asarray(self.planes, np.float64).reshape(-1, 4) if len(self.planes) else np.zeros((0, 4))
         if not np.isfinite(planes).all() or (len(planes) and np.any(np.abs(np.linalg.norm(planes[:, :3], axis=1)-1)
                                                                     > 1e-9)):
@@ -153,6 +162,11 @@ class ContactSpec:
     def B(self):
         return len(self.frames[0].boxes) if self.frames else 0
 
+    @property
+    def Q(self):
+        """Contact patches per env (law v3): one per plane, one per box face (P + 6 F B)."""
+        return self.P+PATCH_FACES*self.F*self.B
+
     def plane_array(self):
         return np.asarray(self.planes, np.float64).reshape(-1, 4) if self.P else np.zeros((0, 4))
 
@@ -176,6 +190,13 @@ class ContactSpec:
                    "damping_rule": rule,
                    "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)"}
                   if self.law in PENALTY_LAWS else {"penetration_recovery": float(self.penetration_recovery)})
+        if self.law == PENALTY_LAW_V3:
+            params["slip_rate_damping_ratio"] = float(self.slip_rate_damping_ratio)
+            params["slip_rate_rule"] = (
+                "slipping nodes (v2 trial) on a patch with mu > 0 get -dt c_d (v_t - vbar) outside the Coulomb cap and "
+                "the slider, c_d = 2 zeta_d sqrt(k_t m_I), vbar = mass-weighted mean realised tangential velocity of the "
+                "patch's slipping nodes in the same substep (net zero per patch; patch total <= mu sum F_n)")
+            params["patch"] = "per env and obstacle face: each plane, each of the 6 faces of each box (Q = P + 6 F B)"
         return {"law": self.law, "work": self.work, **params,
                 "planes": self.plane_array().tolist(),
                 "frames": [{"name": f.name, "kind": f.kind, "origin": list(map(float, f.origin)),
@@ -802,6 +823,267 @@ def node_displacement(node_u: wp.array(dtype=wp.vec3d), new_v: wp.array(dtype=wp
     node_u[i] = node_u[i]+dt*wp.vec3d(new_v[i])
 
 
+# ----------------------------------------------------------------------------- law v3 (ADR 0023 §22.11)
+
+@wp.func
+def box_face(nl: wp.vec3d):
+    """Face index 2 k + (n_k > 0) of the box face whose outward normal ``nl`` (box frame) is closest to axis k."""
+    ax = wp.abs(nl[0])
+    ay = wp.abs(nl[1])
+    az = wp.abs(nl[2])
+    k = int(0)
+    c = nl[0]
+    if ay > ax and ay >= az:
+        k = 1
+        c = nl[1]
+    elif az > ax and az > ay:
+        k = 2
+        c = nl[2]
+    face = 2*k
+    if c > wp.float64(0.0):
+        face = face+1
+    return face
+
+
+@wp.kernel
+def node_penalty_contact_v3_normal(gm: wp.array(dtype=float), old: wp.array(dtype=wp.vec3),
+                                   node_X: wp.array(dtype=wp.vec3d), node_u: wp.array(dtype=wp.vec3d),
+                                   node_group: wp.array(dtype=int), group_active: wp.array(dtype=int),
+                                   env_of_node: wp.array(dtype=int), fric: wp.array2d(dtype=float), col_table: int,
+                                   col_pad: int, P: int, planes: wp.array(dtype=wp.vec4d), F: int, B: int,
+                                   frame_kind: wp.array(dtype=int), frame_active: wp.array(dtype=int),
+                                   fq0: wp.array(dtype=wp.quatd), fq1: wp.array(dtype=wp.quatd),
+                                   fb0: wp.array(dtype=wp.vec3d), fb1: wp.array(dtype=wp.vec3d),
+                                   forigin: wp.array(dtype=wp.vec3d), box_c: wp.array(dtype=wp.vec3d),
+                                   box_h: wp.array(dtype=wp.vec3d), index: wp.array(dtype=int), substeps: int,
+                                   dt: wp.float64, kn_frac: wp.float64, kt_frac: wp.float64, zeta: wp.float64,
+                                   zeta_n: wp.float64, xi: wp.array(dtype=wp.vec3d), obst: wp.array(dtype=int),
+                                   vobs: wp.array(dtype=wp.vec3d), jn_out: wp.array(dtype=wp.vec3d),
+                                   jt_out: wp.array(dtype=wp.vec3d), plane_reaction: wp.array(dtype=wp.spatial_vectord),
+                                   box_reaction: wp.array(dtype=wp.spatial_vectord),
+                                   work: wp.array2d(dtype=wp.float64), pen_max: wp.array(dtype=wp.float64), Q: int,
+                                   bbest: wp.array(dtype=int), bprow: wp.array(dtype=int), bflag: wp.array(dtype=int),
+                                   bfn: wp.array(dtype=wp.float64), bmu: wp.array(dtype=wp.float64),
+                                   bn: wp.array(dtype=wp.vec3d), blev: wp.array(dtype=wp.vec3d),
+                                   pacc: wp.array2d(dtype=wp.float64)):
+    """``grid_node_penalty_coulomb_v3`` pass 1 (ADR 0023 §22.11): the v2 normal branch (every penetrated obstacle,
+    dashpot on the realised velocity g_n = ``old``), the deepest obstacle, its contact PATCH (env-local row
+    q = k for plane k, P + 6 (f B + b) + face for face ``box_face`` of box b of frame f; global row e Q + q,
+    Q = P + 6 F B) and the v2 Coulomb trial of the node (spring-dashpot-slider on g_n, cap mu F_n). A node whose
+    trial slips on a patch with mu > 0 adds m_I v_t and m_I to its patch row of ``pacc`` (v_t = realised tangential
+    velocity relative to the obstacle point). Writes no velocity and no slider state (pass 2 does)."""
+    i = wp.tid()
+    zero3 = wp.vec3d()
+    jn_out[i] = zero3
+    jt_out[i] = zero3
+    bbest[i] = -1
+    bprow[i] = -1
+    bflag[i] = 0
+    m = gm[i]
+    if m <= 1.0e-15:
+        return
+    grp = node_group[i]
+    if grp >= 0:
+        if group_active[grp] != 0:
+            return
+    e = env_of_node[i]
+    x = node_X[i]+node_u[i]
+    md = wp.float64(m)
+    kn = kn_frac*md/(dt*dt)
+    kt = kt_frac*md/(dt*dt)
+    two = wp.float64(2.0)
+    cn = two*zeta_n*wp.sqrt(kn*md)
+    ct = two*zeta*wp.sqrt(kt*md)
+    vstar = wp.vec3d(old[i])
+    zero = wp.float64(0.0)
+    Jn = wp.vec3d()
+    best = int(-1)
+    q = int(-1)
+    best_pen = zero
+    best_n = wp.vec3d()
+    best_vo = wp.vec3d()
+    best_fn = zero
+    best_mu = zero
+    best_lever = wp.vec3d()
+    mu_table = wp.float64(fric[e, col_table])
+    mu_pad = wp.float64(fric[e, col_pad])
+    for k in range(P):
+        n, gap = plane_hit(planes[e*P+k], x)
+        if gap < zero:
+            wp.atomic_max(pen_max, e, -gap)
+            vn = wp.dot(vstar, n)
+            fn = wp.max(kn*(-gap)-cn*vn, zero)
+            if cn > zero:
+                wp.atomic_add(work, e, 5, dt*wp.min(cn*vn*vn, fn*wp.abs(vn)))
+            jn = (dt*fn)*n
+            Jn += jn
+            tau = wp.cross(x, jn)
+            wp.atomic_add(plane_reaction, e*P+k, wp.spatial_vectord(jn[0], jn[1], jn[2], tau[0], tau[1], tau[2]))
+            if -gap > best_pen:
+                best = k
+                q = k
+                best_pen = -gap
+                best_n = n
+                best_vo = zero3
+                best_fn = fn
+                best_mu = mu_table
+                best_lever = x
+    if F > 0:
+        s0 = wp.float64(index[0])/wp.float64(substeps)
+        s1 = wp.float64(index[0]+1)/wp.float64(substeps)
+        for f in range(F):
+            r = e*F+f
+            if frame_active[r] != 0:
+                R0 = frame_rotation(fq0[r], fq1[r], s0)
+                c0 = fb0[r]+s0*(fb1[r]-fb0[r])
+                R1 = frame_rotation(fq0[r], fq1[r], s1)
+                c1 = fb0[r]+s1*(fb1[r]-fb0[r])
+                Xh = wp.transpose(R0)*(x-c0)
+                v_obs = (R1*Xh+c1-x)/dt
+                o1 = R1*forigin[r]+c1
+                mu = mu_table
+                if frame_kind[r] == FRAME_PAD:
+                    mu = mu_pad
+                for b in range(B):
+                    rb = r*B+b
+                    nl, gap = box_sdf_d(Xh-box_c[rb], box_h[rb])
+                    if gap < zero:
+                        wp.atomic_max(pen_max, e, -gap)
+                        n = R0*nl
+                        vn = wp.dot(vstar-v_obs, n)
+                        fn = wp.max(kn*(-gap)-cn*vn, zero)
+                        if cn > zero:
+                            wp.atomic_add(work, e, 5, dt*wp.min(cn*vn*vn, fn*wp.abs(vn)))
+                        jn = (dt*fn)*n
+                        Jn += jn
+                        tau = wp.cross(x-o1, jn)
+                        wp.atomic_add(box_reaction, rb, wp.spatial_vectord(jn[0], jn[1], jn[2], tau[0], tau[1],
+                                                                           tau[2]))
+                        wp.atomic_add(work, e, 2, wp.dot(jn, v_obs))
+                        if -gap > best_pen:
+                            best = P+rb-e*F*B
+                            q = P+6*(rb-e*F*B)+box_face(nl)
+                            best_pen = -gap
+                            best_n = n
+                            best_vo = v_obs
+                            best_fn = fn
+                            best_mu = mu
+                            best_lever = x-o1
+    jn_out[i] = Jn
+    if best >= 0:
+        xt = wp.vec3d()
+        if obst[i] == best:
+            xt = xi[i]
+        xt = xt-wp.dot(xt, best_n)*best_n
+        vr = vstar-best_vo
+        vt = vr-wp.dot(vr, best_n)*best_n
+        Ft = -kt*xt-ct*vt
+        flag = STATE_STICK
+        if wp.length(Ft) > best_mu*best_fn:
+            flag = STATE_SLIP
+            if best_mu > zero:
+                row = e*Q+q
+                wp.atomic_add(pacc, row, 0, md*vt[0])
+                wp.atomic_add(pacc, row, 1, md*vt[1])
+                wp.atomic_add(pacc, row, 2, md*vt[2])
+                wp.atomic_add(pacc, row, 3, md)
+        bbest[i] = best
+        bprow[i] = q
+        bflag[i] = flag
+        bfn[i] = best_fn
+        bmu[i] = best_mu
+        bn[i] = best_n
+        blev[i] = best_lever
+        vobs[i] = best_vo
+
+
+@wp.kernel
+def node_penalty_contact_v3_tangential(gm: wp.array(dtype=float), new_v: wp.array(dtype=wp.vec3),
+                                       old: wp.array(dtype=wp.vec3), env_of_node: wp.array(dtype=int), P: int,
+                                       F: int, B: int, dt: wp.float64, kt_frac: wp.float64, zeta: wp.float64,
+                                       zeta_d: wp.float64, xi: wp.array(dtype=wp.vec3d), obst: wp.array(dtype=int),
+                                       vobs: wp.array(dtype=wp.vec3d), jn_out: wp.array(dtype=wp.vec3d),
+                                       jt_out: wp.array(dtype=wp.vec3d),
+                                       plane_reaction: wp.array(dtype=wp.spatial_vectord),
+                                       box_reaction: wp.array(dtype=wp.spatial_vectord),
+                                       work: wp.array2d(dtype=wp.float64), counts: wp.array2d(dtype=int), Q: int,
+                                       bbest: wp.array(dtype=int), bprow: wp.array(dtype=int),
+                                       bflag: wp.array(dtype=int), bfn: wp.array(dtype=wp.float64),
+                                       bmu: wp.array(dtype=wp.float64), bn: wp.array(dtype=wp.vec3d),
+                                       blev: wp.array(dtype=wp.vec3d), pacc: wp.array2d(dtype=wp.float64)):
+    """``grid_node_penalty_coulomb_v3`` pass 2 (ADR 0023 §22.11): the v2 spring-dashpot-slider of the node on its
+    deepest obstacle (same trial as pass 1, same cap mu F_n, same anchor rule) plus, for a SLIPPING node on a patch
+    with mu > 0, the patch slip-rate equalisation impulse  -dt c_d (v_t - vbar),  c_d = 2 zeta_d sqrt(k_t m_I),
+    vbar = sum m v_t / sum m over the slipping nodes of the same patch in this substep (``pacc``), applied outside the
+    Coulomb cap and outside the slider (the anchor follows the capped Coulomb force only). The sum of the equalisation
+    impulses over a patch's slipping set is zero (c_d proportional to m_I), so a patch's total tangential force stays
+    <= mu sum F_n; booked as contact damping (work column 5). The impulse enters the kick; kick-paired work as v1 / v2."""
+    i = wp.tid()
+    zero3 = wp.vec3d()
+    best = bbest[i]
+    if best < 0:
+        xi[i] = zero3
+        obst[i] = -1
+        return
+    e = env_of_node[i]
+    md = wp.float64(gm[i])
+    kt = kt_frac*md/(dt*dt)
+    two = wp.float64(2.0)
+    ct = two*zeta*wp.sqrt(kt*md)
+    zero = wp.float64(0.0)
+    best_n = bn[i]
+    best_vo = vobs[i]
+    xt = wp.vec3d()
+    if obst[i] == best:
+        xt = xi[i]
+    xt = xt-wp.dot(xt, best_n)*best_n
+    vr = wp.vec3d(old[i])-best_vo
+    vt = vr-wp.dot(vr, best_n)*best_n
+    Ft = -kt*xt-ct*vt
+    Lf = wp.length(Ft)
+    capf = bmu[i]*bfn[i]
+    state = STATE_STICK
+    if bflag[i] == STATE_SLIP:
+        Ft_new = wp.vec3d()
+        if Lf > zero:
+            Ft_new = Ft*(capf/Lf)
+        xt_new = Ft_new/(-kt)
+        wp.atomic_add(work, e, 4, capf*wp.length(xt-xt_new))
+        xt = xt_new
+        Ft = Ft_new
+        state = STATE_SLIP
+        if bmu[i] > zero and zeta_d > zero:
+            row = e*Q+bprow[i]
+            msum = pacc[row, 3]
+            vbar = wp.vec3d(pacc[row, 0], pacc[row, 1], pacc[row, 2])/msum
+            dvt = vt-vbar
+            cd = two*zeta_d*wp.sqrt(kt*md)
+            Ft = Ft-cd*dvt
+            wp.atomic_add(work, e, 5, dt*cd*wp.dot(dvt, dvt))
+    elif ct > zero:
+        wp.atomic_add(work, e, 5, dt*ct*wp.dot(vt, vt))
+    Jt = dt*Ft
+    xi[i] = xt
+    obst[i] = best
+    tau = wp.cross(blev[i], Jt)
+    sv = wp.spatial_vectord(Jt[0], Jt[1], Jt[2], tau[0], tau[1], tau[2])
+    if best < P:
+        wp.atomic_add(plane_reaction, e*P+best, sv)
+    else:
+        wp.atomic_add(box_reaction, e*F*B+best-P, sv)
+    wp.atomic_add(work, e, 3, wp.dot(Jt, best_vo))
+    wp.atomic_add(counts, e, 0, 1)
+    wp.atomic_add(counts, e, state, 1)
+    Jn = jn_out[i]
+    v = wp.vec3d(new_v[i])+(Jn+Jt)/md
+    new_v[i] = wp.vec3(v)
+    jt_out[i] = Jt
+    o = wp.vec3d(old[i])
+    half = wp.float64(0.5)
+    wp.atomic_add(work, e, 0, half*wp.dot(Jn, o))
+    wp.atomic_add(work, e, 1, half*wp.dot(Jt, o))
+
+
 # ----------------------------------------------------------------------------- host reference (tests)
 
 def host_box_sdf(p, half):
@@ -836,6 +1118,7 @@ def host_coulomb_projection(v, v_obs, n, gap, dt, beta, mu):
 
 
 __all__ = ["ContactSpec", "ContactFrame", "node_contact", "node_penalty_contact", "node_penalty_contact_v2",
+           "node_penalty_contact_v3_normal", "node_penalty_contact_v3_tangential", "PENALTY_LAW_V3", "PATCH_FACES",
            "slider_update", "contact_energy", "contact_work_end", "node_displacement", "box_sdf_d",
            "coulomb_projection", "CONTACT_LAW", "CONTACT_LAWS", "PENALTY_LAW", "PENALTY_LAW_V2", "PENALTY_LAWS",
            "CONTACT_WORK", "WORK_COLUMNS", "COUNT_COLUMNS", "FRAME_KINDS",

@@ -1,6 +1,7 @@
 """Single-env rubber solver with contact ``TLMPMRubberContact`` (laws ``grid_node_penalty_coulomb_v1`` (default),
-``grid_node_penalty_coulomb_v2`` (opt-in, ADR 0023 §22.9) and the rejected projection ``grid_node_coulomb_v1``;
-ADR 0023 §22; P2-4).
+``grid_node_penalty_coulomb_v2`` (opt-in, ADR 0023 §22.9), ``grid_node_penalty_coulomb_v3`` (opt-in, §22.11: two
+passes, ``rubber_contact.node_penalty_contact_v3_normal`` / ``_tangential``, the per-patch sums zeroed before pass 1)
+and the rejected projection ``grid_node_coulomb_v1``; ADR 0023 §22; P2-4).
 
 Status ``EXPERIMENTAL_NOT_ACCEPTED``; material ``SIMULATOR_ONLY_UNCALIBRATED``. Opt-in: ``LiveRubberMaterial`` builds it
 only when a ``rubber_contact.ContactSpec`` is passed; without one the elastic / visco solver classes are built
@@ -50,6 +51,11 @@ CONTACT_RESET_ARRAYS = ("ct_node_u", "ct_jn", "ct_jt", "ct_plane_reaction", "ct_
                         "ct_pen_max", "ct_counts", "ct_fb0", "ct_fb1", "ct_xi", "ct_vobs", "ct_energy")
 CONTACT_CONSTANT_ARRAYS = ("ct_planes", "ct_fkind", "ct_forigin", "ct_box_c", "ct_box_h", "ct_env_of_node",
                            "ct_fric")
+# law v3 (ADR 0023 §22.11): per-substep pass-1 results per node and the per-patch slip-rate sums (allocated for every
+# contact solver so that one batched layout serves all laws; untouched by v1 / v2). Reset values: -1 for the obstacle
+# / patch ids, 0 otherwise.
+CONTACT_V3_ARRAYS = ("ct_bbest", "ct_bprow", "ct_bflag", "ct_bfn", "ct_bmu", "ct_bn", "ct_blev", "ct_pacc")
+CONTACT_V3_MINUS_ONE = ("ct_bbest", "ct_bprow")
 
 
 def source_sha256():
@@ -110,6 +116,17 @@ class TLMPMRubberContact(TLMPMRubberVisco):
             self.ct_vobs = wp.zeros(self.node_count, dtype=wp.vec3d)
             self.ct_energy = wp.zeros((1, 2), dtype=wp.float64)
             self.ct_node_offset = wp.array(np.array([0, self.node_count], np.int32), dtype=int)
+            # law v3 (§22.11): pass-1 node results and per-patch sums (rows: Q = P + 6 F B patches, at least one)
+            self.ct_Q = int(contact.Q)
+            self.ct_zeta_d = float(contact.slip_rate_damping_ratio)
+            self.ct_bbest = wp.full(self.node_count, -1, dtype=int)
+            self.ct_bprow = wp.full(self.node_count, -1, dtype=int)
+            self.ct_bflag = wp.zeros(self.node_count, dtype=int)
+            self.ct_bfn = wp.zeros(self.node_count, dtype=wp.float64)
+            self.ct_bmu = wp.zeros(self.node_count, dtype=wp.float64)
+            self.ct_bn = wp.zeros(self.node_count, dtype=wp.vec3d)
+            self.ct_blev = wp.zeros(self.node_count, dtype=wp.vec3d)
+            self.ct_pacc = wp.zeros((max(self.ct_Q, 1), 4), dtype=wp.float64)
         wp.load_module(module=rct.__name__, device=self.device)
 
     # ------------------------------------------------------------------ inputs
@@ -141,6 +158,29 @@ class TLMPMRubberContact(TLMPMRubberVisco):
     # ------------------------------------------------------------------ substep
 
     def _launch_contact(self):
+        if self.ct_law == rct.PENALTY_LAW_V3:
+            # grid_node_penalty_coulomb_v3 (ADR 0023 §22.11): per-patch sums of this substep, pass 1 (normal, trial,
+            # patch sums), pass 2 (slider + slip-rate equalisation, kick); one source for the single and the batched
+            # solver (the batched solver binds this method; ct_pacc rows e*Q + q are env-owned)
+            self.ct_pacc.zero_()
+            wp.launch(rct.node_penalty_contact_v3_normal, self.node_count,
+                      [self.gm, self.old, self.node_X, self.ct_node_u, self.node_group, self.group_active,
+                       self.ct_env_of_node, self.ct_fric, 0, 1, self.ct_P, self.ct_planes, self.ct_F, self.ct_B,
+                       self.ct_fkind, self.ct_factive, self.ct_fq0, self.ct_fq1, self.ct_fb0, self.ct_fb1,
+                       self.ct_forigin, self.ct_box_c, self.ct_box_h, self.index, self.substeps, wp.float64(self.dt),
+                       wp.float64(self.ct_kn), wp.float64(self.ct_kt), wp.float64(self.ct_zeta),
+                       wp.float64(self.ct_zeta_n), self.ct_xi, self.ct_obst, self.ct_vobs, self.ct_jn, self.ct_jt,
+                       self.ct_plane_reaction, self.ct_box_reaction, self.ct_work, self.ct_pen_max, self.ct_Q,
+                       self.ct_bbest, self.ct_bprow, self.ct_bflag, self.ct_bfn, self.ct_bmu, self.ct_bn,
+                       self.ct_blev, self.ct_pacc], device=self.device)
+            wp.launch(rct.node_penalty_contact_v3_tangential, self.node_count,
+                      [self.gm, self.new_v, self.old, self.ct_env_of_node, self.ct_P, self.ct_F, self.ct_B,
+                       wp.float64(self.dt), wp.float64(self.ct_kt), wp.float64(self.ct_zeta),
+                       wp.float64(self.ct_zeta_d), self.ct_xi, self.ct_obst, self.ct_vobs, self.ct_jn, self.ct_jt,
+                       self.ct_plane_reaction, self.ct_box_reaction, self.ct_work, self.ct_counts, self.ct_Q,
+                       self.ct_bbest, self.ct_bprow, self.ct_bflag, self.ct_bfn, self.ct_bmu, self.ct_bn,
+                       self.ct_blev, self.ct_pacc], device=self.device)
+            return
         if self.ct_penalty:
             # grid_node_penalty_coulomb_v1 (default) or _v2 (ADR 0023 §22.9: same arguments, dashpots on the realised
             # node velocity); one source for the single and the batched solver
@@ -246,6 +286,10 @@ class TLMPMRubberContact(TLMPMRubberVisco):
         for name in CONTACT_RESET_ARRAYS:
             getattr(self, name).zero_()
         self.ct_obst.fill_(-1)
+        for name in CONTACT_V3_ARRAYS:
+            getattr(self, name).zero_()
+        for name in CONTACT_V3_MINUS_ONE:
+            getattr(self, name).fill_(-1)
         F1 = max(self.ct_F, 1)
         ident_q = np.tile(np.array([0, 0, 0, 1], np.float64), (F1, 1))
         self.ct_fq0.assign(ident_q)
@@ -309,4 +353,5 @@ class TLMPMRubberContact(TLMPMRubberVisco):
         return out
 
 
-__all__ = ["TLMPMRubberContact", "CONTACT_RESET_ARRAYS", "CONTACT_CONSTANT_ARRAYS", "DEFAULT_VISCO_ENERGY"]
+__all__ = ["TLMPMRubberContact", "CONTACT_RESET_ARRAYS", "CONTACT_CONSTANT_ARRAYS", "CONTACT_V3_ARRAYS",
+           "CONTACT_V3_MINUS_ONE", "DEFAULT_VISCO_ENERGY"]

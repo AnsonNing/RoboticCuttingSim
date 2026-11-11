@@ -56,7 +56,9 @@ _HERE = Path(__file__).resolve()
 # vars()-complete classification of the batched contact arrays (tests/test_rubber_contact_batched.py)
 CONTACT_SOLVER_RESET_ARRAYS = ("ct_node_u", "ct_jn", "ct_jt", "ct_xi", "ct_obst", "ct_vobs", "ct_work", "ct_pen_max",
                                "ct_counts", "ct_energy", "ct_plane_reaction", "ct_box_reaction", "ct_factive",
-                               "ct_fq0", "ct_fq1", "ct_fb0", "ct_fb1")
+                               "ct_fq0", "ct_fq1", "ct_fb0", "ct_fb1",
+                               # law v3 (ADR 0023 §22.11): pass-1 node results and the per-patch sums (rows e*Q+q)
+                               "ct_bbest", "ct_bprow", "ct_bflag", "ct_bfn", "ct_bmu", "ct_bn", "ct_blev", "ct_pacc")
 CONTACT_SOLVER_CONSTANT_ARRAYS = ("ct_planes", "ct_fkind", "ct_forigin", "ct_box_c", "ct_box_h")
 CONTACT_SOLVER_ALIAS_ARRAYS = ("ct_env_of_node", "ct_node_offset", "ct_fric")   # env_of_node, node_offset, params view
 CONTACT_MATERIAL_RESET_ARRAYS = ("plane_wrench", "box_wrench", "pad_wrench", "pending_wrench")
@@ -125,6 +127,30 @@ def _reset_contact_nodes_r(mask: wp.array(dtype=int), env_of_node: wp.array(dtyp
         xi[i] = wp.vec3d()
         vobs[i] = wp.vec3d()
         obst[i] = -1
+
+
+@wp.kernel
+def _reset_contact_v3_nodes_r(mask: wp.array(dtype=int), env_of_node: wp.array(dtype=int), bbest: wp.array(dtype=int),
+                              bprow: wp.array(dtype=int), bflag: wp.array(dtype=int), bfn: wp.array(dtype=wp.float64),
+                              bmu: wp.array(dtype=wp.float64), bn: wp.array(dtype=wp.vec3d),
+                              blev: wp.array(dtype=wp.vec3d)):
+    i = wp.tid()
+    if mask[env_of_node[i]] != 0:
+        bbest[i] = -1
+        bprow[i] = -1
+        bflag[i] = 0
+        bfn[i] = wp.float64(0.0)
+        bmu[i] = wp.float64(0.0)
+        bn[i] = wp.vec3d()
+        blev[i] = wp.vec3d()
+
+
+@wp.kernel
+def _reset_contact_patch_rows_r(mask: wp.array(dtype=int), per_env: int, rows: wp.array2d(dtype=wp.float64)):
+    r = wp.tid()
+    if mask[r//per_env] != 0:
+        for c in range(rows.shape[1]):
+            rows[r, c] = wp.float64(0.0)
 
 
 @wp.kernel
@@ -278,7 +304,7 @@ class BatchedTLMPMRubberContact(BatchedTLMPMRubber):
         out = super().snapshot(e)
         pk = self.packed
         n0, n1 = int(pk.node_offset[e]), int(pk.node_offset[e+1])
-        rows = {"plane": self.ct_P, "frame": self.ct_F, "box": self.ct_F*self.ct_B}
+        rows = {"plane": self.ct_P, "frame": self.ct_F, "box": self.ct_F*self.ct_B, "patch": self.ct_Q}
         for name, kind in CONTACT_ARRAY_KINDS.items():
             if kind.startswith("alias"):
                 continue
@@ -289,7 +315,10 @@ class BatchedTLMPMRubberContact(BatchedTLMPMRubber):
                 out[name] = a[e:e+1].copy()
             else:
                 k = rows[kind]
-                out[name] = a[e*k:(e+1)*k].copy()
+                if kind == "patch" and k == 0:
+                    out[name] = a[:1].copy()            # dummy row (no obstacle), as the single solver's
+                else:
+                    out[name] = a[e*k:(e+1)*k].copy()
         out["ct_env_of_node"] = self.env_of_node.numpy()[n0:n1]-np.int32(e)
         out["ct_fric"] = self.ct_fric.numpy()[e:e+1].copy()
         return out
@@ -358,6 +387,10 @@ class ContactOutputs:
                       device=s.device)
         if s.ct_P:
             wp.launch(_reset_contact_rows_r, N*s.ct_P, [mask, s.ct_P, s.ct_plane_reaction], device=s.device)
+        wp.launch(_reset_contact_v3_nodes_r, s.total_nodes, [mask, s.env_of_node, s.ct_bbest, s.ct_bprow, s.ct_bflag,
+                                                             s.ct_bfn, s.ct_bmu, s.ct_bn, s.ct_blev], device=s.device)
+        if s.ct_Q:
+            wp.launch(_reset_contact_patch_rows_r, N*s.ct_Q, [mask, s.ct_Q, s.ct_pacc], device=s.device)
         wp.launch(_reset_contact_envs_r, N, [mask, s.ct_work, s.ct_pen_max, s.ct_counts, s.ct_energy,
                                              self.plane_wrench, self.box_wrench, self.pad_wrench,
                                              self.pending_wrench], device=s.device)
@@ -394,12 +427,15 @@ def contact_audit(solver):
     env_n = s.env_of_node.numpy()
     expected = np.repeat(np.arange(N, dtype=np.int32), np.diff(no))
     obst = s.ct_obst.numpy()
+    prow = s.ct_bprow.numpy()
+    Q = P+6*F*B
     out = {"contact_node_env_mismatch": int(np.count_nonzero(env_n != expected)),
-           "contact_obstacle_id_out_of_env": int(np.count_nonzero((obst < -1) | (obst >= P+F*B)))}
+           "contact_obstacle_id_out_of_env": int(np.count_nonzero((obst < -1) | (obst >= P+F*B))),
+           "contact_patch_id_out_of_env": int(np.count_nonzero((prow < -1) | (prow >= Q)))}
     bad_rows = 0
     for name, rows in (("ct_planes", N*P), ("ct_plane_reaction", N*P), ("ct_fq0", N*F), ("ct_fq1", N*F),
                        ("ct_fb0", N*F), ("ct_fb1", N*F), ("ct_factive", N*F), ("ct_fkind", N*F), ("ct_forigin", N*F),
-                       ("ct_box_c", N*F*B), ("ct_box_h", N*F*B), ("ct_box_reaction", N*F*B)):
+                       ("ct_box_c", N*F*B), ("ct_box_h", N*F*B), ("ct_box_reaction", N*F*B), ("ct_pacc", N*Q)):
         bad_rows += int(getattr(s, name).shape[0] != max(rows, 1))
     out["contact_row_table_size_mismatch"] = bad_rows
     out["contact_env_table_size_mismatch"] = int(any(getattr(s, n).shape[0] != N for n in
