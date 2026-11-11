@@ -465,6 +465,7 @@ def main():
     parser.add_argument("--device", default="cuda:0", help="CUDA ordinal inside the process (after masking)")
     parser.add_argument("--gpu-index", type=int, required=True, help="Physical nvidia-smi index for telemetry")
     parser.add_argument("--run-name")
+    parser.add_argument("--out-root", type=Path, help="Run directory root under artifacts/ (default artifacts/rl_ready/p1_0)")
     parser.add_argument("--warm-resets", type=int, default=5)
     parser.add_argument("--max-steps", type=int)
     parser.add_argument("--kernel-steps", type=int, nargs="*")
@@ -474,6 +475,11 @@ def main():
     parser.add_argument("--evaluate", action="store_true",
                         help="Keep the 121 replay states in RAM and apply the frozen seeded_trim goal evaluator")
     args = parser.parse_args()
+    global OUT_ROOT
+    if args.out_root is not None:
+        OUT_ROOT = (ROOT / args.out_root) if not args.out_root.is_absolute() else args.out_root
+        if not str(OUT_ROOT).startswith(str(ROOT / "artifacts")):
+            raise SystemExit("--out-root must be under artifacts/")
     attempt = args.attempt or WP17 / f"seed_{args.seed}" / "box" / "env" / "recording" / "attempt_000"
     run = new_run_dir(args.run_name or f"{args.mode}_s{args.seed}")
     manifest = dict(schema="rcs_rl_p1_0_run_v1", argv=sys.argv, args={k: (str(v) if isinstance(v, Path) else v)

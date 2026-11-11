@@ -7,96 +7,23 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 
 ## 進行中
 
-- P1-1 core DONE; review fixes DONE (204 CPU tests PASS; `isaac_lab_newton` coupling + error codes added).
-- Running agents / state (2026-11-10 ~10:00 KST):
-  1. P1-2 DONE ([report](reports/rl_ready/P1_1_P1_2_MILESTONES.md), evidence `p1_2_milestones_001.json`, f0a544b):
-     `open_vector_env` (workload A, reduced fidelity: replayed edge, no robot). M0 s512/s15, M1 N=4 (staggered
-     partial resets, policy + replay envs), M2 N=8 ×3 episodes (24/24) and N=16 (16/16): final codes = Native,
-     frozen evaluator PASS, L2 every step, no leak. Matched-load throughput (co-tenant ~46 %, SHARED_GPU):
-     N=1 3.354 → N=8 4.849 → N=16 4.752 env-steps/s as first reported (1.45× / 1.42×, but over mismatched step
-     windows; matched windows give **1.40× / 1.37×** per the acceptance review, being corrected in the report;
-     vs the frozen single env ~1.24–1.26×); VRAM 834 / 1378 / 2064 MiB; partial reset
-     4–9 ms. Kernel time ~linear in N (one 103k-particle env already fills most of the GPU). L4 RUN_TO_RUN BLOCKED
-     (frozen `tlmpm_v5._particle_contacts` mixes add/max atomics). HashGrid audit: no P1-2 evidence run held >1
-     device grid; P1-1 `ab_timing_001` is INVALID_MULTI_GRID_PROCESS → its "≈1.9× at N=4" claim is withdrawn.
-     Guard `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` added (a24ac46).
-  - P1-3a merged into this branch (3682786; release() also frees the alias_free_v1 grid, new CPU test). Tests on
-    3682786: full CPU suite 2211 passed / 24 skipped / 6 xfailed; Torch vector-env/RL suite 117 passed / 1 skipped
-    (GPU stream test, NOT_RUN on CPU).
-  - **xhigh acceptance review of P1-1/P1-2/P1-3a at 3682786: PASS_WITH_LIMITATIONS ×3, no BLOCKER**
-    ([review](reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md), 2480dc2). MAJOR: frozen_v1 grid-after-build hazard
-    is only checked at build/full reset; the 4-run L3 position band is not a valid pass/fail test and some statuses were
-    misreported. Fixes: findings 1–4, 6, 8–10 in worktree `/home/ningan/RoboticCuttingSim-rl-fix1` (grid refresh
-    before each launch, pre-declared position band v2 with ≥10 replays/seed, matched-window throughput, stale text);
-    findings 5 (autoreset → evaluate) and 7 (diagnostics opt-out) folded into P1-2b.
-  - **P1-2b DONE and merged (6e1e544)** ([section in milestones report](reports/rl_ready/P1_1_P1_2_MILESTONES.md),
-    evidence `p1_2b_001.json`): `open_vector_env(backend="isaac_lab_newton")` (same contract as workload A via
-    `rl/vector_contract.py`; cameras / same-step autoreset / CPU refused with codes), per-env `tasks=` (512 + 15 in one
-    batch, both backends), `termination_reason` bits (1 rigid, 2 material, 4 grasp lost, 8 IK streak, 16 truncated,
-    32 input guard, 64 infrastructure) + `VectorEnvInfrastructureError` + `classify_process_exit`, opt-in device
-    evaluation stream (121 samples at the Native cadence, ~350 MB/env), input guard (0 trips over 6 recorded legitimate
-    episodes), review F5 (`terminal_capture`, `evaluate(episode="last_completed")`, autoreset envs refused) and F7
-    (diagnostics-only `allow_multiple_device_hashgrids`). Tests: CPU 286 / Torch 123 / Isaac Lab 53 passed. GPU smoke
-    N=2 tasks=[512,15], SHARED_GPU: workload A contract PASS (4.25 env-steps/s), B1 contract PASS (4.89) — API smoke,
-    no cutting in 50 steps. Tests on the merge 6e1e544: full CPU suite 2260 passed / 27 skipped / 6 xfailed; Torch
-    RL/vector/acceptance suite 178 passed / 3 skipped (GPU-only and workload B modules, NOT_RUN in that venv).
-  - **B2 grasp follow-up DONE and merged (52dfcf6)** ([report section](reports/rl_ready/P1_1B_ROBOT_BATCHING.md),
-    evidence `p1_1b_b2_001.json`). Root cause: MuJoCo-Warp 3.12 routes box–box pad/handle pairs to GJK/EPA
-    multicontact, which collapses to 1–2 diagonal contacts at full friction during the HOME→skim rotation (depth
-    0.09 → 2.25 mm, tool kicked to 16.7 rad/s). Fix: opt-in `mjwarp_grip_v1` (MuJoCo `box_box` collider via NATIVECCD
-    off + impratio 10; geometry, friction 0.6, condim 3, solref/solimp, finger drive unchanged; not a weld). Results
-    (SHARED_GPU): robot-only N=2 holding 1196/1200 steps, slip 1.5 mm / 15 mrad (Native ~1 µm / 1e-4 rad — not
-    Native-level, inside the 2 mm / π/60 monitor limits); **S3 TRIM B2 N=2 and N=4, seeds 512/15: frozen evaluator
-    PASS in every env**; settle 3/3; RUN_TO_RUN B2 settle now PASS. Material SIGSEGV after a lost grasp reproduced and
-    fixed with `material_input_domain_v1` (device-side per-env hold + sticky `INPUT_OUT_OF_DOMAIN`, bit 128 on this
-    branch / 64 on the B2 branch; CPU bitwise isolation PASS; guarded N=4 crash configuration completes). Remaining:
-    `grip_contact_profile` passthrough in `open_vector_env`, ADR 0022 §5.1 update, B2 G1/G3 deterministic, G4, G5.
-    Tests on the merge 52dfcf6: full CPU suite 2265 passed / 28 skipped / 6 xfailed; Isaac Lab venv
-    (`test_rl_lab_*` + contract, pytest overlay) 55 passed.
-  - **P1-4 DONE and merged** ([report](reports/rl_ready/P1_4_LONG_ROLLOUT.md), evidence `p1_4_001.json`): supervisor (child process per rollout, fsync'd JSONL ledger, task vs infrastructure classification via the env's own `termination_reason` / `classify_process_exit`, restart policy, CPU fault injection). **LR-A main run PASS**: N=8 workload A (reduced fidelity), 10,650 batch steps in 5.06 h, 8 full 1,200-step episodes per env (64), canaries 16/16 bitwise = Native, recorded-command envs 32/32 TASK_SUCCESS, random envs 16/16 TASK_FAILURE (expected), VRAM peak 1,412 MiB (bound 1,536) with slope 0.000 MiB/1000 steps, Warp/Torch pools flat, RSS slope −0.28 MiB/1000 env-steps, 0 infrastructure failures, 1 graph, 1 device HashGrid (SHARED_GPU, foreign SM mean 35 %). LR-B reset stress N=16: 668 resets bitwise-checked, 0 mismatches, slopes 0 — **FAIL on the pre-declared VRAM budget only** (2,304 vs 2,253 MiB; +228 MiB Torch reserve from the harness's own reset checksum, flat afterwards; kept as FAIL, not re-declared). LR-C 10 open/close cycles PASS (grid count 1→0, pools restored). LR-D GPU fault probes 5/5 classified as declared (NaN env, input-domain guard, SIGSEGV, hang, OOM); eval-on-non-finite bug fixed (968f522). LR-A2 (`alias_free_v1`) NOT_RUN (LR-A valid); T4.6 Lab B1 long run NOT_RUN (optional).
-  - Running now:
-    P1-6 R0 DONE and merged here (87cfa3b; [report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)):
-    `run_perf_acceptance.py` (one material per child process), `judge_perf_acceptance.py`, `acceptance_v1.json`,
-    local runner; GPU smoke default vs `alias_free_v1`: PHYSICS/PERFORMANCE/INTEGRITY PASS, ratios 1.361 (N=1) /
-    1.369 (N=2) SHARED_GPU; external adapter drove the harness cleanly; full CPU suite 2243 passed. Decision: reset-p95
-    gate on a shared GPU → WARN up to 1.25·B + 10 ms (bimodal 1 vs 7 ms reset latency on the shared GPU), strict
-    1.25·B + 2 ms on an exclusive GPU — amended in acceptance_v1 (214ac11) before it enters any baseline; re-judge of
-    smoke_001/003: PASS ×3 (evidence `p1_6_r0_003.json`). acceptance_v1 freezes when it enters the Phase 1 merge on
-    `main`; until then the position-band input may still be pointed at band v2 (descriptive). P1-5 plan DONE (30b8a67) → CUT groundwork (T5.1, T5.3–T5.6,
-    T5.8) in `/home/ningan/RoboticCuttingSim-rl-p15` and P1-4 supervisor/ledger + N=8 long run (T4.1, T4.3, T4.4) in
-    `/home/ningan/RoboticCuttingSim-rl-p14`. Parity matrix today: 4 PASS, 8 PARTIAL, 1 UNSUPPORTED (cameras),
-    2 NOT_RUN (CUT, RL smoke).
-  2. P1-1b S0–S3 DONE ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md), evidence `p1_1b_s2_s3_001.json`, 78a211b):
-     reward/evaluator wiring in the Lab batched env; G3 snapshot restore PASS; G5 L0 bitwise PASS, G5 L3 (frozen single
-     replays reproduce batch final codes, both seeds) PASS; **S3 TRIM B1 (rigid mount, reduced fidelity) N=2/4 both
-     seeds: frozen evaluator PASS**, codes bitwise across N; **B2 physical grasp FAIL** (knife slips 8–13 mm / 0.5 rad
-     in MuJoCo-Warp fingers during HOME→skim reorientation, before material contact → GRASP_LOST; Native PhysX holds);
-     B2 under RUN_TO_RUN BLOCKED; G4 B2 arm offset 3.5e-4 rad FAIL vs pre-set tolerance; material graph SIGSEGV after a
-     lost grasp (edge leaves domain) → must become an invalid flag; CUT on `tlmpm_v7_2` NOT_RUN (CUT scenes use
-     `tlmpm_v5`). HashGrid census: no P1-1b process held >1 device grid.
-  3. P1-3a DONE and merged (3682786; branch `claude/rl-p1-3a`, trial-merged tree: 2204 CPU + 113 Torch tests PASS). Opt-in
-     `particle_contact_mode="alias_free_v1"` (C2 alias-free hash dims + C1 + speed guard with conditional-node
-     fallback); default `frozen_v1` kernel source byte-identical. Contact stage −49…−51 %, full control step
-     1.40–1.45× at N=1/4/8/16 (all SHARED_GPU); same-state contacts/impulses equal; full episodes N=1 (s512, s15) and
-     N=4: final codes = Native, frozen evaluator PASS. Not done: EXCLUSIVE_GPU timing, RUN_TO_RUN, C3.
-     **Warp 1.17 finding:** one static host hash-grid descriptor — a replayed graph uses the *last-built* grid, so any
-     process holding 2+ `wp.HashGrid`s computes contacts on the wrong grid for all but the last-built one (probe
-     `scripts/rl_ready/probe_hashgrid_descriptor.py`: 8,804,086 → 0 candidates). `alias_free_v1` is protected;
-     `frozen_v1` is now guarded at batch build. Multi-variant in-process A/B runs are INVALID
-     (`INVALID_MULTI_GRID_PROCESS`); P1-1b and P1-2 evidence audited clean.
-  4. P1-6: design DONE in the external agentic optimizer repository (design doc + ADR + CPU scaffold, 35 tests);
-     its thin adapter (worktree/proposal/bench/accept/PR/pin/receipt) is implemented there (CPU rehearsal against a
-     fake RCS repo PASS, full CPU suite 781 passed; live GPU rehearsal and first pin NOT_RUN until R0 + Phase 1 merge).
-     R0 is being implemented in worktree `/home/ningan/RoboticCuttingSim-rl-r0` (branch `claude/rl-p1-6-r0` from
-     `claude/rl-p1-3a`).
-     Cycle 1 baseline = the Phase 1 merge on RCS `main`. RCS-side prerequisite R0 (after P1-2 and P1-3a land):
-     `scripts/rl_ready/run_perf_acceptance.py` (variant JSON → `open_vector_env` kwargs, `--out` outside the
-     checkout, stdout timing markers, physics dumps), `scripts/rl_ready/judge_perf_acceptance.py` (runs from the
-     frozen evaluator checkout on dumped outputs), frozen `configs/rl_benchmark/acceptance_v1.json`.
-     P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks, never the other project's `locks/gpu1.lock`.
-- **Phase 2 (rubber) — parallel since 2026-11-10 14:05 (user, D-12):** worktree `/home/ningan/RoboticCuttingSim-rl-rubber`, branch `claude/rl-rubber` (from 18afce3). **P2-0 decision DONE — ADR 0023 accepted** (2f316c1 on `claude/rl-rubber`): opt-in TLMPM rubber solver `tlmpm_rubber_v1` (single-env reference + batched on the Phase 1 layout; Newton VBD rejected: 22–107× too soft and dt/iteration-dependent in the probe); `neo_hookean_jbar_v1` (isochoric Neo-Hookean + J̄ cell-averaged volumetric term, exact PK1, sticky invalid outside J, J̄ ∈ [0.2, 5]); near-incompressibility = J-bar + documented reduced κ = 20 μ (ν_eff 0.4754; real K recorded separately; J−1 = 1.2/2.5/5.4 % at stretch 1.25/1.5/2.0); pure FLIP, dt = 0.5·dx/c (~5 µs, ~3,850 substeps per 20 ms at μ 0.5 MPa, dx 1 mm); ≥3 cells through thickness; Prony-series viscoelasticity (exact exponential update) designed for P2-3. CPU probes: cantilever frequency 11.54 vs 11.57 Hz beam theory, elastica sag within 0.4 %, energy drift < 0.05 %. **P2-0/P2-1 implemented** (6c9477f on `claude/rl-rubber`, [report](https://github.com/AnsonNing/RoboticCuttingSim/blob/claude/rl-rubber/docs/reports/rl_ready/P2_0_P2_1_RUBBER.md)): recipe `rubber_material_v1`, calibration manifest `NO_REAL_DATA`, frozen RUBBER-PHYS protocol v1 (+ v2 changing only the initializer stop rule, declared before the formal run), `tlmpm_rubber_v1` single-env + batched. Formal CPU run (66 configs): **01 patch, 02 small sag (24 configs), 03 L⁴/t⁻² scaling, 04 free vibration (−0.44 % vs Euler–Bernoulli, batched N=4 bitwise), 05 large sag (elastica ≤ 0.26 %), 06 uniaxial load–unload, 08 simple shear, 09 records: PASS; 07 stretch & release: FAIL** (non-finite 3 steps after release at CFL 0.5 — compression stiffening ~5.7× eats the stability margin; at CFL 0.25 the strip folds onto itself, J 0.19, no self-contact); 10 single vs batched: L0/L1 bitwise PASS on CPU, GPU L2/L3 NOT_RUN (no GPU slot); 11 refinement NOT_RUN (P2-2). Next: xhigh analysis of 07 (stress-aware step rule, self-contact or protocol v3), the stop-rule review, a test-order pollution seen only when rubber tests precede `test_fallback_grid_reproduces_warp_grouped_query_sequence`; then P2-2. Status `SIMULATOR_ONLY_UNCALIBRATED`. Phase 1 keeps GPU priority.
-- Both GPUs shared with other projects: rows `SHARED_GPU`; formal rows rerun in an exclusive window.
-- Next: review fixes → merge P1-2b / B2 follow-up → P1-4 long rollout → P1-5 parity + CUT → R0 → Phase 1 review/PR/merge → first pin → P1-6 cycle.
+- **Phase 1: complete pending merge.** xhigh acceptance review at `f03fbff`: **PASS_WITH_LIMITATIONS**, merge to
+  `main` GO with conditions, no BLOCKER ([review](reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md), decision D-13).
+  The documentation fixes the review requires before the PR (findings 2, 6, 7, 8, 9) are on `claude/rl-phase1`;
+  the PR description is [PHASE1_PR_BODY.md](reports/rl_ready/PHASE1_PR_BODY.md).
+- **Next, in order:** PR #12 → merge into `main` (record the merge commit in D-11; `acceptance_v1` freezes there,
+  sha256 `3592d9408f314c3d2825171361b8ec640534c60577bb6216a10c4f2b22897bf4`) → first descriptor pin in the external
+  agentic optimizer repository (status `MERGED_RCS_PENDING_OPTIMIZER_SYNC` until then, SYNCED after) →
+  `acceptance_v2` (G9 window covering contact and cutting, review findings 1 and 2; `acceptance_v1` is not used for
+  any P1-6 acceptance) → first P1-6 optimizer cycle.
+- **Follow-up after the merge (own review):** fixes for review findings 3 (workload B `fidelity()` ignores
+  `material_dt_s`) and 4 (non-strict B2 forgets a failed pregrasp settle), both required before B2 training-mode
+  use; findings 10 (two infrastructure cases classified as task failures) and 12 (oracle-derived rollout fields
+  without a non-deployable label). Findings 5 and 11 (EXCLUSIVE spot check at the merge commit, unmeasured columns)
+  are optional follow-ups.
+- **Phase 2 (rubber, D-12):** P2-0..P2-2 done on `claude/rl-rubber`; xhigh review P2-0 PASS, P2-1 and P2-2
+  PASS_WITH_LIMITATIONS, merge GO for `3a43d1b`, held until the Phase 1 PR branch is cut so no Phase 2 code rides
+  into the Phase 1 PR. Now: batched P2-3 prerequisites. Status `SIMULATOR_ONLY_UNCALIBRATED`. Details below.
 
 ## 待使用者決定
 
@@ -114,6 +41,91 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   (replay of Native Demo 1); the CUT parity row therefore stays PARTIAL;
   U-P15-2 no batched camera/vision profile (cameras stay UNSUPPORTED in the batched path);
   U-P15-3 no per-episode geometry/material randomisation inside a running batch (per-env seeds + rebuild only).
+
+## Phase 1 results (summary)
+
+Parity matrix ([P1_PARITY_MATRIX.md](reports/rl_ready/P1_PARITY_MATRIX.md)): **9 PASS / 6 PARTIAL / 1 UNSUPPORTED**
+(cameras in the batched path). CUT stays PARTIAL, so "whole-RCS RL-ready" is PARTIAL for CUT. Checkbox 7
+(external optimizer sync) is PENDING. Throughput rows: the formal `EXCLUSIVE_GPU` table on GPU1
+([P1_PERFORMANCE_TABLE.md](reports/rl_ready/P1_PERFORMANCE_TABLE.md), 20 of 23 runs exclusive, code `691b571`);
+P1-4 and every partial-reset latency are `SHARED_GPU`.
+
+- **P1-1 core + review fixes** (204 CPU tests at the time; `isaac_lab_newton` coupling + error codes).
+- **P1-2 DONE** ([report](reports/rl_ready/P1_1_P1_2_MILESTONES.md), evidence `p1_2_milestones_001.json`, f0a544b):
+  `open_vector_env` (workload A, reduced fidelity: replayed edge, no robot). M0 s512/s15, M1 N=4 (staggered partial
+  resets, policy + replay envs), M2 N=8 ×3 episodes (24/24) and N=16 (16/16): final codes = Native, frozen evaluator
+  PASS, L2 every step, no leak. SHARED_GPU matched-window throughput N=1 → N=8 / N=16: 1.40× / 1.37× (vs the frozen
+  single env ~1.24–1.26×); VRAM 834 / 1378 / 2064 MiB; partial reset 4–9 ms. L4 RUN_TO_RUN BLOCKED (frozen
+  `tlmpm_v5._particle_contacts` mixes add/max atomics). P1-1 `ab_timing_001` is INVALID_MULTI_GRID_PROCESS (its
+  "≈1.9× at N=4" claim is withdrawn); guard `UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS` (a24ac46).
+- **P1-3a DONE and merged (3682786)**: opt-in `particle_contact_mode="alias_free_v1"` (C2 alias-free hash dims + C1 +
+  speed guard with conditional-node fallback); default `frozen_v1` kernel source byte-identical. Contact stage
+  −49…−51 %; same-state contacts/impulses equal; full episodes N=1 (s512, s15) and N=4: final codes = Native,
+  frozen evaluator PASS. EXCLUSIVE pairs: 1.38–1.47× (pre-contact windows at N ≥ 4). RUN_TO_RUN and C3 not done.
+  **Warp 1.17 finding:** one static host hash-grid descriptor — a replayed graph uses the *last-built* grid, so a
+  process holding 2+ `wp.HashGrid`s computes contacts on the wrong grid (probe
+  `scripts/rl_ready/probe_hashgrid_descriptor.py`: 8,804,086 → 0 candidates). Rule: one device HashGrid per process;
+  multi-variant in-process A/B runs are INVALID (`INVALID_MULTI_GRID_PROCESS`).
+- **xhigh review of P1-1/P1-2/P1-3a at 3682786: PASS_WITH_LIMITATIONS ×3**
+  ([review](reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md)). **Review fixes merged (f5178f5)** (evidence
+  `review_fix1_001.json`): F1 per-launch grid refresh + sticky `FOREIGN_DEVICE_HASHGRID` (bit 256 on the integration
+  branch, 128 on the fix branch; refresh ≤ 0.25 ms GPU per step); F2 pre-declared position band v2 (20 frozen
+  single-env reference runs, one-sided 99 % log-normal bound; still descriptive, read by `acceptance_v1` since
+  ac3f6c6); F3 matched windows 1.40× / 1.37×; F4 ~1.24–1.26× vs the frozen single env (inferred); F5 terminal capture;
+  F6/F8/F9/F10 corrections; FallbackGrid device pin db036a0.
+- **P1-1b S0–S3** ([report](reports/rl_ready/P1_1B_ROBOT_BATCHING.md), evidence `p1_1b_s2_s3_001.json`, 78a211b):
+  G3 snapshot restore PASS; G5 L0 bitwise PASS; G5 L3 (frozen single-material replays reproduce the batch final codes,
+  both seeds) PASS — not a Kit run; **S3 TRIM B1 (rigid mount, reduced fidelity): frozen evaluator PASS**, codes
+  bitwise across N. The first B2 attempt FAILed (knife slip 8–13 mm / 0.5 rad in MuJoCo-Warp fingers), kept.
+- **B2 grasp follow-up merged (52dfcf6)** (evidence `p1_1b_b2_001.json`): root cause MuJoCo-Warp 3.12 GJK/EPA
+  box–box multicontact collapsing to 1–2 contacts; fix opt-in `mjwarp_grip_v1` (`box_box` collider, impratio 10;
+  `physical_calibration` NOT_VALIDATED). Robot-only N=2 holding 1196/1200 steps, slip 1.5 mm / 15 mrad (Native
+  ~1 µm / 1e-4 rad); **S3 TRIM B2 N=2/4: frozen evaluator PASS in every env**. Material SIGSEGV after a lost grasp
+  fixed with `material_input_domain_v1` (sticky `INPUT_OUT_OF_DOMAIN`, bit 128 on the integration branch, 64 on the
+  B2 branch). B2 G1/G3 deterministic, G4, G5 with the profile: NOT_RUN.
+- **P1-2b merged (6e1e544)** (evidence `p1_2b_001.json`): `open_vector_env(backend="isaac_lab_newton")` with the
+  same contract (`rl/vector_contract.py`), per-env `tasks=`, `termination_reason` bits (1 rigid, 2 material, 4 grasp
+  lost, 8 IK streak, 16 truncated, 32 input guard, 64 infrastructure), `classify_process_exit`, opt-in device
+  evaluation stream, input guard (default-on, `input_guard=False` rollback), terminal capture, diagnostics-only
+  `allow_multiple_device_hashgrids`.
+- **P1-4 merged** ([report](reports/rl_ready/P1_4_LONG_ROLLOUT.md), evidence `p1_4_001.json`): supervisor (child
+  process per rollout, fsync'd JSONL ledger, task vs infrastructure classification, restart policy). **LR-A PASS**
+  (N=8 workload A, 5.06 h, 64 full episodes, canaries 16/16 bitwise = Native, VRAM peak 1,412 MiB, foreign SM mean
+  35 %, SHARED_GPU). **LR-B FAIL** on its pre-declared VRAM bound B0 (2,304 vs 2,253 MiB; 668 resets bitwise-checked,
+  0 mismatches; kept as FAIL). LR-C PASS. LR-D 5/5 PASS. LR-A2 and LR-E NOT_RUN.
+- **P1-5 CUT + RL smoke merged (03a2f72)** ([report](reports/rl_ready/P1_5_CUT.md), evidence `p1_5_cut_001.json`):
+  frozen v5 CUT Demo 1 single-env headless replay ×4 PASS; opt-in `bar_flat_board_tlmpm_v7_2_v1`; fresh Native v7_2
+  CUT PASS; **batched CUT N=1/4/8×2/16: 35/35 scripted episodes PASS**. RL pipeline smoke (`rcs_rl_rollout_v1`,
+  no training): S-CUT N=4 and S-TRIM N=8 PASS (first S-TRIM run FAILed on a runner bug, kept; fixed 9a51a86).
+  CUT parity row PARTIAL by design (U-P15-1). Lab CUT (T5.9) and the batched replay of the Native v7_2 recording
+  (T5.8 on GPU) NOT_RUN.
+- **P1-6 R0 merged (87cfa3b)** ([report](reports/rl_ready/P1_6_R0_ACCEPTANCE_HARNESS.md)): harness, judge,
+  `acceptance_v1.json`, local runner; GPU smoke PHYSICS/PERFORMANCE/INTEGRITY PASS (SHARED_GPU). `acceptance_v1` was
+  amended in place four times before any baseline (two loosened a gate after the data had been seen); it freezes at
+  the Phase 1 merge (D-11). Its G9 window is pre-contact at N=8/16, so a P1-6 acceptance needs `acceptance_v2`. The
+  optimizer-side design and adapter live in the external agentic optimizer repository (CPU rehearsal PASS; live GPU
+  rehearsal and first pin NOT_RUN until the merge). P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks.
+- **Consolidation merged (3674780)**: `grip_contact_profile` passthrough (`UNSUPPORTED_GRIP_CONTACT_PROFILE`),
+  `FAIL_INTEGRITY` in `evaluate()`, one `material_termination_bits` mapping, configured-scene `tasks=`, parity
+  matrix, README section. Tests at 53b915e: full CPU 2443 passed / 1 failed / 28 skipped / 6 xfailed; Torch 343 /
+  10 skipped; Isaac Lab 56. The 1 failure (`test_wp12_phase5_native_success.py::test_reproduces_phase2b_records`) is
+  pre-existing and unrelated (test and scripts byte-identical to `origin/main`): `workcell_live_006`'s
+  `analysis_001/analysis.json` says TASK_SUCCESS, matching the committed evidence, but the test's
+  `run_wp12_phase5.native_execution` re-derives CUTTING_FAILURE from `run/` and the assertion at
+  `tests/test_wp12_phase5_native_success.py:201` fails. It fails only when `artifacts/wp12` links the main
+  checkout's artifacts. WP-12 records are out of scope and untouched (open item).
+- **Formal EXCLUSIVE_GPU table merged (8e503e1)**: 20 of 23 runs EXCLUSIVE_GPU (3 SHARED only for a < 2 s, 2–7 MiB
+  foreign graphics context; 2 of them rerun EXCLUSIVE). Env-steps/s: single_env_headless s512/s15 7.57/7.21;
+  workload A `frozen_v1` / `alias_free_v1` N=1 6.75 / 9.74, N=16 9.83 / 13.56 (saturates at N≈4); CUT v7_2
+  N=1/8/16 6.85/10.35/10.22 (33/33 episodes PASS); B1 N=1/4/8 4.96/7.66/8.67 (N=4 exclusive repeat; N=16 8.79 SHARED only); B2
+  `mjwarp_grip_v1` N=4 7.37 (4/4 PASS, grasp held).
+- **Phase 1 xhigh acceptance review at f03fbff: PASS_WITH_LIMITATIONS**, merge GO with conditions
+  ([review](reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md)). Tests in the review: CPU selection 511 passed / 26
+  skipped (CUDA hidden and GPU0 visible); Torch venv 334 passed / 10 skipped; Isaac Lab venv 56 passed.
+
+## Phase 2 (rubber) detail
+
+**Phase 2 (rubber) — parallel since 2026-11-10 14:05 (user, D-12):** worktree `/home/ningan/RoboticCuttingSim-rl-rubber`, branch `claude/rl-rubber` (from 18afce3). **P2-0 decision DONE — ADR 0023 accepted** (2f316c1 on `claude/rl-rubber`): opt-in TLMPM rubber solver `tlmpm_rubber_v1` (single-env reference + batched on the Phase 1 layout; Newton VBD rejected: 22–107× too soft and dt/iteration-dependent in the probe); `neo_hookean_jbar_v1` (isochoric Neo-Hookean + J̄ cell-averaged volumetric term, exact PK1, sticky invalid outside J, J̄ ∈ [0.2, 5]); near-incompressibility = J-bar + documented reduced κ = 20 μ (ν_eff 0.4754; real K recorded separately; J−1 = 1.2/2.5/5.4 % at stretch 1.25/1.5/2.0); pure FLIP, dt = 0.5·dx/c (~5 µs, ~3,850 substeps per 20 ms at μ 0.5 MPa, dx 1 mm); ≥3 cells through thickness; Prony-series viscoelasticity (exact exponential update) designed for P2-3. CPU probes: cantilever frequency 11.54 vs 11.57 Hz beam theory, elastica sag within 0.4 %, energy drift < 0.05 %. **P2-0/P2-1 implemented** (6c9477f on `claude/rl-rubber`, [report](https://github.com/AnsonNing/RoboticCuttingSim/blob/claude/rl-rubber/docs/reports/rl_ready/P2_0_P2_1_RUBBER.md)): recipe `rubber_material_v1`, calibration manifest `NO_REAL_DATA`, frozen RUBBER-PHYS protocol v1 (+ v2 changing only the initializer stop rule, declared before the formal run), `tlmpm_rubber_v1` single-env + batched. Formal CPU run (66 configs): **01 patch, 02 small sag (24 configs), 03 L⁴/t⁻² scaling, 04 free vibration (−0.44 % vs Euler–Bernoulli, batched N=4 bitwise), 05 large sag (elastica ≤ 0.26 %), 06 uniaxial load–unload, 08 simple shear, 09 records: PASS; 07 stretch & release: FAIL** (non-finite 3 steps after release at CFL 0.5 — compression stiffening ~5.7× eats the stability margin; at CFL 0.25 the strip folds onto itself, J 0.19, no self-contact); 10 single vs batched: L0/L1 bitwise PASS on CPU, GPU L2/L3 NOT_RUN (no GPU slot); 11 refinement NOT_RUN (P2-2). **P2-1 follow-up (xhigh, ADR 0023 §18, 5b0a44d):** 07 root cause = the protocol (instant release from λ 1.5 makes the 60×10×4 mm strip buckle and fold at the clamp, ~360× Euler strain; the fold hinge exceeds the stable step) — not J-bar (no negative modes down to stretch 0.3) and not FLIP at speed; opt-in `stable_step_guard_v1` (sticky `RUBBER_CFL_EXCEEDED`, no state change) + `deformation_reserve`; no self-contact in v1 (fold scene moves to P2-4); `static_stop_v3` replaces the unsound v2 stop rule. Formal v3 (declared 849e10b before the run): -03, -05, -12, -07a (λ 1.5 force-ramped release) PASS; **-07b (λ 1.03 instant) FAIL** (energy 1.058 % vs 1 %, clamp dissipation) and **-02 FAIL** (1 of 24 configs 1.0203 vs 1.02, float32 static precision) — both kept. GPU smoke (SHARED_GPU, 97,280 particles/env, dt 3 µs, 6,662 substeps per 20 ms): N=1/4/8 L2 PASS, 0.43/0.62/0.74 env-steps/s, VRAM 744/840/968 MB; L3 band (3 repeats) FAIL → sound rule to be declared. The "pollution" was a Phase 1 device-default bug (FallbackGrid launched on cuda:0 for CPU arrays) — fixed on this branch db036a0. **P2-2 DONE on `claude/rl-rubber` (3a43d1b**, [report](https://github.com/AnsonNing/RoboticCuttingSim/blob/claude/rl-rubber/docs/reports/rl_ready/P2_2_RUBBER_HYPERELASTIC.md)): protocol v4 declared and SHA-pinned (3d12969) before its runs; opt-in energy-consistent clamp (F8: -07b energy 1.058 % → 0.33 %), grid-consistent traction work (F9: -07a 0.96 % → 0.0047 %), float64 static accumulation (F10: float32 drift 0.9–4.2e-3 → ≤ 4.1e-7); v4 formal: -02, -03, -05, -06, -07 PASS; **-08 FAIL** (validity: step 1.30 vs guard 1.0 at γ = 2; stresses exact to 1.6e-6); refinement **-11 FAIL on Q1** (GCI 3.98 % — p_obs 3.26 outside the declared [1, 3] window; Q2 1.28 %, Q3 0.01 %, Q4 0.92 % PASS); F3 L3 v4 rule (20 GPU repeats, prediction bound) PASS; F4 batched L0 bitwise; guard +1.2–1.9 % GPU time. Throughput workload E (41,220 particles/env, dt 4 µs, 4,996 substeps per 20 ms, SHARED_GPU GPU0): N=1/4/8/16 = 0.64 / 1.35 / 1.47 / 1.52 env-steps/s, VRAM 728–952 MB. **xhigh P2-0..P2-2 review (ae6939d on `claude/rl-rubber`): P2-0 PASS, P2-1 PASS_WITH_LIMITATIONS, P2-2 PASS_WITH_LIMITATIONS; merge GO for 3a43d1b** (held until the Phase 1 PR branch is cut, so Phase 2 code does not ride into the Phase 1 PR). Decisions: (a) bending-dominated scenes move to n_t ≥ 4 (`rubber_ref_v1` = full fidelity; workload E n_t 3 becomes an RL profile labelled reduced fidelity with its measured bias; ≈3.1× slower per env-step), declared as `rubber_phys_tests_v5` (grids 3/4/6/8, production GCI from 4/6/8, rule and thresholds byte-identical to v4) before any run; (b) v5 -08 with a declared derivation rule giving r = 1.5. Medium findings: ADR's ≤ 0.5 % bending claim at n_t 3 is wrong; batched path still lacks the energy-consistent clamp / float64 state (being added); "bitwise" L0 is value equality. Now: batched P2-3 prerequisites (energy-consistent clamp, F9/F10, `motion_table_v1` BC launch — to be reviewed). Status `SIMULATOR_ONLY_UNCALIBRATED`. Phase 1 keeps GPU priority.
 
 ## P1-0 baseline — 2026-11-10 — PASS
 

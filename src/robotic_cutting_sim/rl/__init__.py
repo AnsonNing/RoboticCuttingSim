@@ -8,7 +8,7 @@ torch-free modules stay importable in the project ``.venv`` (no Torch).
 """
 
 _LAZY = {"open_vector_env": "vector_env", "TaskFamily": "vector_env", "VectorCuttingEnv": "vector_env",
-         "UnsupportedVectorConfiguration": "vector_env"}
+         "UnsupportedVectorConfiguration": "vector_env", "ConfiguredTaskFamily": "configured_family"}
 
 __all__ = sorted(_LAZY)
 

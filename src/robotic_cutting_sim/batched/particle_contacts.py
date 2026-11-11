@@ -35,7 +35,9 @@ grid descriptor from a function-static host variable at replay time, i.e. the de
 the host in the process, not necessarily its own. ``alias_free_v1`` therefore keeps exactly one device HashGrid per
 material (with C2 the solver's ``hash`` attribute is replaced by the alias-free grid) and the material rebuilds that
 grid on the host right before every graph launch (``restore_descriptor``), so a graph never replays another
-grid's descriptor even when other grids exist in the process. ``frozen_v1`` is unchanged (and keeps the hazard).
+grid's descriptor even when other grids exist in the process. Since review fix F1 (``material_batch.
+DEVICE_HASHGRID_REFRESH``) the material does the same for ``frozen_v1`` (host rebuild of ``solver.hash`` before every
+launch, no kernel or graph change), so neither mode keeps the hazard for its own graph.
 
 Nothing here edits a frozen module; the kernels below are the frozen ``_particle_contacts_b`` body with the
 listed changes only.
@@ -456,7 +458,7 @@ class AliasFreeContacts:
 
     def restore_descriptor(self, s):
         """Host-side rebuild of this material's grid so the static descriptor a captured build replays is ours
-        (called by ``BatchedCuttingMaterial.advance`` right before every graph launch)."""
+        (called by ``BatchedCuttingMaterial.refresh_device_hashgrid`` right before every launch)."""
         with wp.ScopedDevice(s.device):
             self.grid.build(s.x, self.cell_width, groups=s.env_of_particle)
 

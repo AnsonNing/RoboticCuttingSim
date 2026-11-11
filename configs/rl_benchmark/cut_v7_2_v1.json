@@ -1,0 +1,92 @@
+{
+ "schema": "rcs_rl_cut_workload_v1",
+ "id": "cut_v7_2_v1",
+ "status": "PREDECLARED",
+ "declared": "2026-11-10, P1-5 T5.1 (docs/reports/rl_ready/P1_5_PLAN.md section 2.3), committed before any CUT run of this workload. Any change to the scene, goal, planner options, driver, success rule or parity rules is a new versioned file; failed runs are kept and reported.",
+ "plan": "docs/reports/rl_ready/P1_5_PLAN.md section 2 (CUT decision: options (b) + (c)); the CUT feature-parity row stays PARTIAL",
+ "physics_label": "NEW_VERSIONED_OPT_IN_CONFIGURATION: the CUT-01-R bar task of WP-12 Demo 1 on tlmpm_v7_2 instead of tlmpm_v5. Not the Demo 1 physics; materials SIMULATOR_ONLY_UNCALIBRATED; tlmpm_v7_2 EXPERIMENTAL_NOT_ACCEPTED.",
+ "scene": {
+  "path": "configs/rl_benchmark/scenes/bar_flat_board_tlmpm_v7_2_v1.json",
+  "sha256": "e9f8bc0d650847f6602f6b96b8dd86de5dfbb91d4cc5a811c1628d730f697b69",
+  "scene_id": "bar_flat_board",
+  "source_scene": {
+   "path": "configs/wp12/scenes/bar_flat_board.json",
+   "sha256": "462b4e155e6359c5afe47372155b10a5c68952fd5541ab4dbbbb669520a83747",
+   "status": "FROZEN (WP-12 Demo 1 scene, tlmpm_v5 law 8); unchanged"
+  },
+  "differences_from_source": ["solver.module: tlmpm_v5 -> tlmpm_v7_2", "description"],
+  "differs_from_native_cut_reference": "solver tlmpm_v5 -> tlmpm_v7_2"
+ },
+ "goal": {
+  "path": "configs/wp14/goals/standard_cut.json",
+  "sha256": "e3c39a595572e2a7551366c074097f963b6218db4bc91324cac91cd27542b04a",
+  "goal_id": "sever_mid",
+  "note": "The frozen sever_mid goal (configs/wp11/goals/sever_mid.json) with the 14 s live duration of WP-12 Demo 1; byte-identical in content to artifacts/wp12/demos_001/DEMO1_A/inputs/goal.json. Thresholds unchanged: 2 pieces, each >= 0.4, together >= 0.99, frozen 2 mm plane-location bound."
+ },
+ "planner_options": {"max_rotation_deg": 1.0, "max_translation_m": 0.001, "controller_profile": "path_v2"},
+ "planner_options_source": "configs/wp12/workcell_live_v1.json controller.planner_overrides (sha256 4b2016b6f59942800983d8614d3aae9eb3b678d256b2551cd41eccc48adbd472), as WP-12 Demo 1",
+ "compiled": {
+  "task_id": "CFG-bar_flat_board-sever_mid-e5d82380",
+  "config_sha256": "e5d82380bfd0d28581e8b16c9075d50c0d4a61c51f0f697109ab4bde817c0678",
+  "source_task_id_tlmpm_v5": "CFG-bar_flat_board-sever_mid-c32f94a4",
+  "particles": 96000,
+  "mass_kg": 0.144,
+  "note": "Pure CPU compile results pinned at declaration time; tests/test_rl_cut_workload.py asserts them and the equality of particles, masses, lattice, reference stencils and the reference schedule with the frozen tlmpm_v5 compile."
+ },
+ "episode": {"sim_seed": 42, "control_steps": 700, "control_dt_s": 0.02, "duration_s": 14.0},
+ "material": {
+  "solver": "tlmpm_v7_2", "cutting_law": 8, "max_cuts": 4, "slots_per_node": 8, "v7_2_optimizations": true,
+  "particle_spacing_m": 0.001, "grid_dx_m": 0.004, "material_dt_s": 0.0001, "substeps_per_control_step": 200,
+  "particle_contact_mode": "frozen_v1", "code_encoding": "packed2",
+  "obstacles": "handle_only_v1",
+  "obstacles_definition": "LiveCuttingMaterial default for a task: the tool-profile handle box only (1 box), identical to the vector env without pad_boxes_edge (ADR 0021 workload A); no finger pads (fidelity reason no_finger_pad_obstacles)",
+  "initial_edge_pose": "task.reference_edge_pose_world(0) (the planner HOME), reset seed = sim_seed"
+ },
+ "driver": {
+  "id": "reference_command_policy_v1",
+  "module": "robotic_cutting_sim.rl.reference_policy",
+  "definition": "Compiled planner schedule (ConfiguredTaskSpec.reference_edge_pose_world(k*dt), k = 1..700; armed digit of step k = active_cut_index((k-1)*dt)) turned into edge_delta_v1 actions open loop by policies_batched.recorded_command_actions from reference_edge_pose_world(0). Inputs: scene, goal, tool profile and planner options only; no particle, label, component or oracle input.",
+  "ideal_tracking": "the material sees the reconstructed commanded edge poses (no robot, reaction not fed back)",
+  "acceptance": {"reconstruction_max_position_residual_m": 1e-9, "commands": 700, "digit_schedule_equal": true}
+ },
+ "evaluator": {
+  "call": "ConfiguredTaskSpec.evaluate_goal (= goals.evaluate_goal, frozen sever_mid goal), host, outside timing",
+  "recording": "t = 0 reference frame + a host snapshot every 10 control steps through step 700 (71 frames) for single-env rows; batched rows >= 36 frames (P1-2b evaluation stream every 20 steps)",
+  "code_encoding": "packed2",
+  "max_cuts": 4
+ },
+ "success_rule": "goals.evaluate_goal verdict == 'PASS' and nothing else. The shaping reward never decides success.",
+ "reward": {"id": "sever_bond_progress_packed_v1", "module": "robotic_cutting_sim.rl.reward_sever",
+            "status": "PROVISIONAL_SHAPING_NOT_SUCCESS",
+            "definition": "target = reference-lattice 6-neighbour bonds crossing a declared sever plane; off-target = bonds whose midpoint lies farther than the goal's frozen plane_error_bound_m (2 mm) from every plane; severed = tlmpm_v5._conflict_packed; r = w_p * d(severed target / n_target) - w_o * d(severed off-target / n_target) - time_penalty; invalid envs -invalid_penalty"},
+ "single_env_reference": {
+  "rows": "T5.6 (ii): frozen single tlmpm_v7_2 LiveCuttingMaterial (one CUDA graph of 200 substeps), ideal tracking with the reference_command_policy_v1 commands, 3 separate processes (one device HashGrid each), headless, no Kit",
+  "reported": ["evaluator verdict and metrics", "final labelled count per digit", "final code SHA256", "pairwise final code and position differences between the 3 runs", "invariants (finite, det F > 0, no digit rewrites, mass constant)", "benchmark row columns"]
+ },
+ "parity_rules_c2": {
+  "cpu_l0": "batched N=1 and each env of N=3 copies bitwise equal to the frozen single tlmpm_v7_2 on identical commands (T5.2)",
+  "gpu": ["L2 invariants every step", "final verdict equal to the single reference", "labelled count and final code differences reported against the band of >= 3 single runs", "positions reported, not scored (GPU float-atomic band)"]
+ },
+ "parity_rules_c1": "P1-0 rules: replay final codes vs the 75 Native samples, evaluator verdict and metrics vs Native (same evaluator), position-difference band from >= 3 runs (here 4 processes)",
+ "native_reference": {
+  "status": "NOT_RUN until T5.8",
+  "t5_8_command": [".deps/isaacsim-venv/bin/python", "scripts/run_wp10_live.py", "--runtime", "isaac_sim",
+                   "--scene", "configs/rl_benchmark/scenes/bar_flat_board_tlmpm_v7_2_v1.json",
+                   "--goal", "configs/wp14/goals/standard_cut.json",
+                   "--planner-options", "{\"max_rotation_deg\": 1.0, \"max_translation_m\": 0.001, \"controller_profile\": \"path_v2\"}",
+                   "--controller", "scripted", "--edge-feedback", "measured", "--hold-until-time-limit", "--return-home",
+                   "--record-cameras", "--overview-camera", "--record-every", "10", "--oracle-stride", "18",
+                   "--steps", "700", "--gpu", "0", "--seed", "42", "--out", "<new artifacts/rl_ready/p1_5/native_cut_v7_2_NNN/run>",
+                   "--surface-profile", "particle_surface_v1", "--surface-timing-log"],
+  "t5_8_rule": "Demo 1 command with only the scene replaced (workcell_live_v1 flags, cameras on, physical grasp); run only when GPU0 has >= 10 GiB free plus the 4 GiB reserve; otherwise BLOCKED with the nvidia-smi readings"
+ },
+ "escalation_rule": "If the optimized-v7_2 single reference or the batched M0 fails the frozen sever evaluator, that failure is the result and is preserved: no tuning, no threshold change, no new scene variant chosen after seeing outcomes. The CUT row then reads 'batched CUT FAIL on v7_2' and option (a) (batched tlmpm_v5) is the user decision U-P15-1.",
+ "not_claimed": [
+  "v7_2 CUT outcomes equal v5 CUT outcomes",
+  "Native parity of the v7_2 CUT before T5.8",
+  "calibration of any material",
+  "that the CUT-01 v1 precision benchmark (legacy solver, evaluate_oracle) runs batched; it stays single-env",
+  "final-code equivalence of optimized and unoptimized tlmpm_v7_2 (WP-17 seed-512 discrepancy stays open)",
+  "physical cutting from geometric deletion, presegmented geometry or renderer masks (none is used)"
+ ]
+}

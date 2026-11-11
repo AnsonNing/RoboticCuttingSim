@@ -49,7 +49,7 @@
   "rules": "G9 per N: median over the ABBA pairs of candidate/baseline outer-clock env-steps/s; primary N median >= primary_median_min with >= primary_pairs_above_1 pairs > 1.0; every N median >= all_median_min; max VRAM peak C <= vram_ratio_max x max B + vram_slack_mib; median reset p95 per reset_p95_rule; every G9 run |inner/outer - 1| <= clock_tolerance"
  },
  "physics": {
-  "position_band": {"path": "configs/rl_benchmark/position_band_p1_0.json", "mode": "descriptive"},
+  "position_band": {"path": "configs/rl_benchmark/position_band_v2.json", "mode": "descriptive"},
   "position_rule": "full episodes: the final maximum position difference vs Native is compared with the band file's high value per seed (or the reference variant's own value for that seed in the same acceptance, whichever is larger). mode descriptive: a WARN in verdict.warnings and the gate values, never a gate result; mode gate: a PHYSICS check. The P1-0 min-max band is descriptive only; the coordinator points path/mode at band v2 when it lands.",
   "impulse_rel_tol": 1e-05,
   "contact_total_rel_tol": 0.02,

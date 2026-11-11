@@ -9628,5 +9628,93 @@
    "venv": ".deps/isaacsim-venv",
    "warp": "1.17.0"
   }
+ },
+ "corrections_review_fix1": {
+  "date": "2026-11-10",
+  "source": "docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md section 7",
+  "failures": [
+   {
+    "index": 1,
+    "previous": "end-to-end throughput gain not demonstrated on the SHARED GPU (interleaved walls within +-2 %)",
+    "status": "WITHDRAWN",
+    "reason": "derived from same-process multi-variant runs (ab_n*, smoke_ab, pair_n16_reversed) that are INVALID_MULTI_GRID_PROCESS; the valid one-variant-per-process runs (solo_*, hardened_*) measure 1.40-1.45x (report section 3.0 and 3.4)"
+   },
+   {
+    "index": 2,
+    "previous": "s15 L3 position band (P1-0 single-env) exceeded by alias_free_v1 in 2/3 envs and by the frozen_v1 control",
+    "status": "SUPERSEDED",
+    "reason": "the frozen_v1 'control' was the INVALID multi-grid episode_15_001; the s15 envs are 4 (episode_solo_15, episode_512_15_512_15 envs 1 and 3, hardened_episode_15) and all 4 are outside band v1 (3 above, 1 below); band v1 itself is superseded by band v2",
+    "band_v1_strict": {
+     "s512": "3/4 inside",
+     "s15": "0/4 inside"
+    },
+    "band_v2": {
+     "p1_3/episode_solo_512_001#env0": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_3/episode_solo_15_001#env0": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_3/episode_512_15_512_15_001#env0": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_3/episode_512_15_512_15_001#env1": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_3/episode_512_15_512_15_001#env2": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_3/episode_512_15_512_15_001#env3": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_3/hardened_episode_512_001#env0": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_3/hardened_episode_15_001#env0": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     }
+    },
+    "band_v2_aggregate": {
+     "max_position_diff_m_over_time": {
+      "verdict": "MET",
+      "scored": 8,
+      "outside": 0,
+      "critical_count": 1,
+      "not_scored": {}
+     },
+     "final_max_position_diff_m": {
+      "verdict": "MET",
+      "scored": 8,
+      "outside": 0,
+      "critical_count": 1,
+      "not_scored": {}
+     }
+    }
+   }
+  ],
+  "not_run": [
+   {
+    "index": 0,
+    "previous": "EXCLUSIVE_GPU timing (both GPUs shared by 3+ foreign compute processes during every run)",
+    "corrected": "EXCLUSIVE_GPU timing NOT_RUN: every run had >= 1 foreign compute process (most rows record 1; episode_512_15_512_15_001 records 4)"
+   }
+  ],
+  "rows_particles_per_env": {
+   "14": 102732,
+   "15": 103898,
+   "16": 103315,
+   "17": 102732,
+   "18": 103898
+  },
+  "report_contradiction": "P1_3A_ALIAS_FREE_CONTACTS.md section 8 said 'inside the frozen GPU band on GPU' against its own status table; corrected in the report",
+  "default_path_hazard": "frozen_v1 now rebuilds its own grid before every launch (review fix F1)"
  }
 }
