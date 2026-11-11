@@ -17,12 +17,18 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 - **SYNCED (2026-11-11):** the external agentic optimizer repository pinned a NEW versioned descriptor `rcs_rl_vector_v1` at RCS `bfe6d5e` (frozen checkout `/mnt/data/ningan/lab_records/external/rcs_rl_bfe6d5eaee0d`; historical descriptors untouched); smoke PASS (CPU contract; host contract in a verified writable copy: RCS tests 266 passed / 0 failed / 40 skipped; GPU contract N=2 with partial reset PASS on GPU1 under `rcs_rl_runner/gpu1.lock`); its PR merged; sync receipt chain `baseline_pin` MERGED_RCS_PENDING_OPTIMIZER_SYNC → **SYNCED** (receipt verify ok). Adapter: xhigh review PASS_WITH_LIMITATIONS + re-check GO; fixes incl. evidence path sanitising, baseline-side faults BLOCKED not REJECTED, early proposal text checks, protected pytest configs / hook refusal, `--no-renames`, writable verified test copies.
 - **Now:** first P1-6 optimizer cycle `p16c1` (baseline `bfe6d5e`, `acceptance_v2`): prepare → baseline measurement → brief → autonomous research run in the optimizer's sandbox (budget $20 / 6 h, GPU1 only for candidate code) → frozen candidate → independent acceptance → RCS PR (xhigh review) → merge → pin `rcs_rl_vector_v2` → smoke → SYNCED.
 - **Phase 2 (rubber, D-12):** merged here: P2-0..P2-2 (232e65b) and the P2-3 prerequisites + moving-clamp accounting +
-  P2-3 viscoelasticity (86c5681; xhigh review of 3a43d1b..025ecaf: prerequisites PASS_WITH_LIMITATIONS, moving clamp
-  PASS, P2-3 PASS_WITH_LIMITATIONS — visc v2 = post-hoc measurement correction). Running: R1 fix (stale
-  `motion_table_v1` on direct steps) on `claude/rl-rubber-p23`; protocol v5 (last CPU refinement job, ETA ~07:00–08:00
-  KST) on `claude/rl-rubber-v5`; P2-4 contact/friction design + protocol on `claude/rl-rubber-p24`. Then P2-5
-  calibration interface (no real data → numerical validation only), P2-6 RL-ready rubber acceptance, Phase 2 review,
-  its own PR. Status `SIMULATOR_ONLY_UNCALIBRATED`. Details in "Phase 2 (rubber) detail" below.
+  P2-3 viscoelasticity (86c5681; xhigh review PASS / PASS_WITH_LIMITATIONS). On rubber branches, awaiting the next
+  combined xhigh review: R1 fix (`claude/rl-rubber-p23` 92e97aa); protocol v5 (`claude/rl-rubber-v5` d814567: n_t 4
+  production grid, all PASS except **RUBBER-PHYS-11 Q1w GCI 2.16 % vs 2 %** — wide-strip bias +0.62 % at n_t 4, a
+  reviewer decision; -08 PASS with r = 1.5; workload E v2 GPU rows ~1.0 env-steps/s at N = 4–8, 97,280 particles/env,
+  dt 3 µs, 6,662 substeps); P2-4 contact (`claude/rl-rubber-p24`/`-p24b`): single-env law v1 → v2 (dashpots on the
+  realised velocity; CONT-01 stick/onset, -02, -03 PASS; batched CONT-08 PASS; CONT-09 GPU isolation PASS under the
+  v2 statistical rule), friction–normal flutter at high μ NOT fixed (X2 negative result; v2 envelope narrower than
+  first declared at n_t ≥ 4) → X3 (patch slip-rate equalisation as an opt-in v3 law scoped to μ ≤ 0.8, μ ≥ 1.0 a
+  labelled limitation) running; P2-5/P2-6 plan (calibration interface on synthetic data, RL rubber task family,
+  Full Native rubber verification, coupling adapter, self-penetration detector) being written. Status
+  `SIMULATOR_ONLY_UNCALIBRATED`. Details in "Phase 2 (rubber) detail" below.
+- **2026-11-11 usage-limit pause** (weekly API limit, ~06:30–18:00 KST): agents resumed afterwards; no work lost.
 
 ## 待使用者決定
 
