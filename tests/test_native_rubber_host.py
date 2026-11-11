@@ -230,3 +230,18 @@ def test_receipts_of_two_lives_are_identical_except_timing():
     res = C.compare_receipts(ra, rb)
     assert res["identical"], res["differences"][:5]
     assert any(e["path"].endswith("build_wall_s") for e in res["exempt"])
+
+
+def test_bridge_with_the_family_profile_on_the_cpu_parity_slot():
+    """The host drives a ``RubberStripTaskFamily.build_life`` (declared profile, CPU parity test configuration)."""
+    fam_mod = pytest.importorskip("robotic_cutting_sim.rl.rubber_family")
+    fam = fam_mod.RubberStripTaskFamily(["P16_t4"], variant="cpu_parity_v1")
+    live = fam.build_life("P16_t4", device="cpu", record=True)
+    origin = np.asarray(fam.geometry("P16_t4")["origin"], np.float64)
+    ep = dict(EPISODE_SMALL, steps=2, hold_until_step=1, ramp_steps=1, capture_every=1)
+    arrays, rows = H.run_bridge_episode(live, FakePhysx(), FakeSurface(), H.StripPlacement((0.0, -0.1, -0.01)),
+                                        origin, episode=ep)
+    assert arrays.completed == 2 and np.isfinite(arrays.statistics).all() and (arrays.invalid_reason == 0).all()
+    assert max(r["max_abs_error_m"] for r in rows) <= 1e-6
+    r = H.strip_receipt(fam, live, "P16_t4")
+    assert r["material"]["calibration_status"] == "SIMULATOR_ONLY_UNCALIBRATED"
