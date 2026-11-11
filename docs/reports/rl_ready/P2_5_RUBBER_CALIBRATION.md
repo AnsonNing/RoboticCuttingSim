@@ -249,3 +249,78 @@ held-out and sealing. It delivers a declared protocol, pilot tolerances and a fr
 **not** yet deliver the formal fit, the held-out verdict, the recovery or the negative control. Even when completed, a
 same-family synthetic truth says nothing about model-form error against real rubber; the real-data protocol
 `rubber_calib_tests_real_v1` remains declared NOT_RUN. Material status: SIMULATOR_ONLY_UNCALIBRATED.
+
+## 9. v2 method development (orchestrator decision option (b), 2026-11-12; PILOT data only)
+
+`fit_001` is recorded as **"v1 formal fit aborted for compute, no receipt"**; logs and abort records preserved, nothing
+deleted. Per the decision, `rubber_calib_tests_v2` may change only the fit method and add a compute budget, and is
+declared only after the method is validated end-to-end on the pilot. Development ran on GPU0 only under the blocking
+lock (SHARED_GPU), pilot data only; the formal dataset and its sealed truth were not read or used. Development GPU
+time: repeatability 1,527 s + pilot validation 4,369 s + pilot held-out diagnostic ≈ 420 s ≈ **1.75 GPU-h** (cap 2).
+
+**9.1 GPU repeatability** (`v2_repeatability.py`, θ_pilot, pilot measured densities, 3 identical envs × 2 runs per
+fit experiment; `artifacts/rl_ready/p2_5/v2_dev/repeat_default/repeatability.json`).
+- Warp 1.17 `DeterministicMode.RUN_TO_RUN` is **not usable**: global mode refuses to compile the frozen Phase 1 kernel
+  `tlmpm_v5._particle_contacts` (mixed add / max atomics on one array). No cheap deterministic mode exists without
+  touching frozen code.
+- Default mode, rms spread of the weighted residuals across copies (σ units) vs the rms forward-difference signal at
+  h = 1e-3 in u:
+
+| Exp | spread rms | weakest relevant FD signal (param) | strongest |
+|---|---|---|---|
+| T1 | 5.3e-6 | 3.7e-4 (τ1) | 7.4e-2 (μ_eq) |
+| T2 | 2.3e-6 | 2.4e-3 (τ1) | 1.0e-1 (μ_eq) |
+| R1 | 3.1e-6 | 1.2e-3 (τ1) | 1.1e-1 (μ_eq) |
+| C1 | 8.3e-7 | 1.5e-3 (τ2) | 4.9e-2 (μ_eq) |
+| G1 | 1.8e-7 | 1.3e-4 (g1, τ1) | 1.6e-2 (μ_eq) |
+| F1 | **3.9e-4** | **7.4e-4 (τ1), 8.2e-4 (τ2)** | 6.9e-1 (μ_table) |
+
+  Only the contact experiment F1 is noisy (stick/slip of contact nodes under float atomics). At h = 1e-3 its τ columns
+  have a signal-to-noise ratio of about 2. **FD rule chosen: h = 1e-2 in u**, which gives ≥ 19 for F1's τ columns and
+  ≥ 100 everywhere else (the signals scale linearly with h, the noise does not).
+
+**9.2 Why v1 stalled (and why "the pilot converged" is not the comparison).** No pilot *fit* was ever run in v1.
+χ²_pilot = 1.27 is the fit model evaluated *at* the true pilot θ, not a converged fit. The v1 formal TRF stalled for
+two measured reasons:
+- `x_scale = 1` with Jacobian columns spanning about 200× (μ_eq vs τ1): the spherical trust region in u is limited by
+  the stiff μ_eq direction.
+- Starts 20–400× above the floor, with F1's τ columns noise-dominated at h = 1e-3.
+
+GPU noise in T / R / C / G is negligible.
+
+**9.3 Staged-fit validation on the pilot** (`run_fit_v2.py --kind pilot_validation`, commit `7f23ea0`, run
+`artifacts/rl_ready/p2_5/v2_dev/pilot_validation_001/`).
+- Method: S1 μ_eq from T1 → S2 Prony (4) from R1 + T2, 3 lockstep starts → S3 μ_table from F1 → S4 joint polish.
+  TRF with prior-box bounds, `x_scale="jac"`, h 1e-2, start at the prior-box centre, budget 4,800 s.
+- Stage costs:
+
+| Stage | Best cost | Wall |
+|---|---|---|
+| S1 (8 evaluations) | 743.5 | 663 s |
+| S2 (15 rounds; all 3 starts converge to the same basin) | 233.1 | 2,752 s |
+| S3 | 294.8 | 248 s |
+| S4 (budget: 1 evaluation) | 1,388.6 on the whole split | 706 s |
+
+  Total 4,369 s; reduced χ² **1.170**, below χ²_pilot 1.273 at the true θ.
+- **Recovery against θ_pilot (v1 CAL-06 rule): FAIL.**
+  - μ_eq +0.47 % and μ_table +0.27 %: PASS.
+  - g1 −15.4 %, τ1 −10.8 %, g2 +8.4 %, τ2 −14.5 % with σ̂ ≈ 1 %: FAIL.
+  - Because χ²(θ̂) < χ²(θ_pilot), the fit-model (n_t 4) optimum is itself ≈ 10 % away from the n_t 6 truth in the
+    Prony parameters. This is resolution bias absorbed by the viscous parameters (the Q1w condition-4 effect, but in
+    g / τ), not a convergence failure; more polishing lowers χ² further and does not move toward θ_pilot.
+- **Held-out diagnostic on the pilot's own data** (circular: the thresholds come from this pilot), at θ̂:
+  - 27 / 31 PASS.
+  - FAIL: T4 M2 0.104 > 0.076 and T4 M9 0.072 > 0.02 (20 /s rate extrapolation); C2 M9 0.0201 and C3 M9 0.0231 > 0.02
+    (dissipated energy).
+
+**9.4 Status.** The staged optimiser is validated as an optimiser: χ² below the truth's in 73 min. The coordinator's
+validation condition ("recovers pilot θ within the v1 recovery criteria") is **not met**, for a reason no fit method
+can remove under the frozen CAL definitions. `rubber_calib_tests_v2` was therefore **not declared**; a draft is
+kept at `artifacts/rl_ready/p2_5/drafts/rubber_calib_tests_v2.json`. No formal v2 fit ran; the formal one-shot ledger and the seal are intact.
+Decision needed:
+- **(a)** Declare v2 as drafted (h 1e-2, staged, budget 3 h / 1.5 h) and run. Expected: CAL-04 PASS; CAL-06 FAIL on the
+  Prony parameters; CAL-05 likely FAIL on T4 (extrapolation) and M9 (an honest negative result about
+  resolution-specific identifiability).
+- **(b)** A reviewer-level change of the CAL-05 / CAL-06 definitions, outside the scope allowed for v2. For example:
+  recovery against the fit model's own noise-free optimum instead of θ*, or tolerances whose b term uses a pilot *fit*
+  rather than θ_pilot.

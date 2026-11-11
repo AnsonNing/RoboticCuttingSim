@@ -2331,3 +2331,17 @@ promoted. Nothing frozen changed (`rubber_calibration.py` v1 and the `REAL_CALIB
   - Preserved: `artifacts/rl_ready/p2_5/fit_001/*/{log.txt,ABORTED.json}`.
 - **CPU suites** at `40d3c29`: **593 passed** with `CUDA_VISIBLE_DEVICES=''`; the `=0` repetition is NOT_RUN (GPU0
   queue).
+- **v2 method development (2026-11-12, option (b) of the orchestrator; pilot data only, 1.75 GPU0-h).**
+  - `fit_001` is "v1 formal fit aborted for compute, no receipt".
+  - Warp RUN_TO_RUN determinism is refused by a frozen Phase 1 kernel. GPU forward noise is negligible except in F1
+    (contact; τ-column signal-to-noise ≈ 2 at h 1e-3), so v2 uses h = 1e-2.
+  - The v1 stall is explained by `x_scale` 1 with ≈ 200× column scaling, far starts and F1 noise. There was no pilot
+    fit in v1; χ²_pilot is the model at the true θ.
+  - The staged fit (`fit_staged`: S1 μ_eq / S2 Prony / S3 μ_table / S4 polish; prior-box bounds; `x_scale` jac) reaches
+    reduced χ² 1.170 < χ²_pilot 1.273 on the pilot in 73 min.
+  - **Pilot recovery FAILs** for g1 / τ1 / g2 / τ2 (8–15 % vs σ̂ ≈ 1 %): the n_t 4 optimum lies ≈ 10 % from the n_t 6
+    truth in the Prony parameters (resolution bias, not convergence).
+  - Pilot held-out (circular) 27 / 31 PASS, FAIL T4 M2 / M9 and C2 / C3 M9.
+  - `rubber_calib_tests_v2` is therefore not declared (draft kept). Decision pending: declare as drafted and accept the
+    expected CAL-06 (and likely CAL-05) FAIL, or revise the CAL definitions at reviewer level. Report section 9.
+
