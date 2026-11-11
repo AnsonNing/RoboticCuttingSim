@@ -162,3 +162,22 @@ def test_evidence_recomputes_from_artifacts():
     assert res["verdict"] == ev["verdict"]
     assert {k: v["verdict"] for k, v in res["clauses"].items()} == \
         {k: v["verdict"] for k, v in ev["evaluation"]["clauses"].items()}
+
+
+def test_physics_mixed_deterministic_and_stochastic_statistics():
+    """Zero-range statistics take the explicit bitwise branch; the others keep the family Bonferroni count."""
+    rng = np.random.default_rng(3)
+    band, base = _series(rng, 20)
+    for k in band:
+        band[k][:, :3] = base[:, :3]                     # statistics s0..s2 bitwise identical in every repeat
+    native = base+1e-6*rng.normal(size=(K, S))
+    native[:, :3] = base[:, :3]
+    res = C.check_physics(native, band, {}, NAMES)
+    assert res["verdict"] == "PASS" and res["statistics"] == S
+    assert res["alpha_stat"] == pytest.approx(0.05/S)
+    assert {res["bounds"][f"s{j}"]["method"] for j in range(3)} == {"deterministic_reference_bitwise"}
+    assert res["bounds"]["s3"]["method"] != "deterministic_reference_bitwise"
+    bad = native.copy()
+    bad[7, 1] = np.nextafter(bad[7, 1], np.inf)
+    res = C.check_physics(bad, band, {}, NAMES)
+    assert res["verdict"] == "FAIL" and res["native_outside"] == 1 and res["native_worst"][0]["statistic"] == "s1"

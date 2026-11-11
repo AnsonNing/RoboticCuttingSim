@@ -98,15 +98,58 @@ def check_inputs(native, replays, placement_translation):
             "rows": [r for r in rows if not r["all"]][:10], "keys": list(INPUT_KEYS)}
 
 
+def _deterministic_rows(ref, cands, names):
+    """Statistics whose reference repeats are bitwise identical at every step (zero range). Their bound is U = 0
+    (``rubber_l3``'s deterministic_reference) and a candidate must equal the reference bitwise. Handled here
+    explicitly: the LOO statistics of identical repeats are rounding residues (mean of n - 1 equal floats), whose
+    classification would otherwise depend on the scipy version's Shapiro behaviour on zero-range input."""
+    bounds, rows = {}, []
+    for s in names:
+        r = ref[s]
+        bounds[s] = {"upper": 0.0, "method": "deterministic_reference_bitwise", "shapiro_p": None, "n": int(len(r)),
+                     "ref_spread_rel_max": 0.0}
+        for run, series in cands.items():
+            y = np.asarray(series[s], np.float64)
+            same = bitwise_equal(y, r[0])
+            M = float(np.max(np.abs(y-r[0]))) if y.shape == r[0].shape else math.inf
+            rows.append({"run": run, "statistic": s, "M": M if not same else 0.0, "upper": 0.0,
+                         "method": "deterministic_reference_bitwise", "class": "WITHIN" if same else "OUTSIDE",
+                         "M_over_upper": 0.0 if same else math.inf})
+    return bounds, rows
+
+
 def check_physics(native, band, heldout, stat_names, alpha_family=ALPHA_FAMILY):
-    """Clause (c): ``native`` [K, S], ``band`` {name: [K, S]} (20), ``heldout`` {name: [K, S]} (reported)."""
+    """Clause (c): ``native`` [K, S], ``band`` {name: [K, S]} (20), ``heldout`` {name: [K, S]} (reported).
+
+    Statistics with bitwise-identical band repeats take the explicit deterministic branch (``_deterministic_rows``);
+    the others go through ``rubber_l3.evaluate`` with alpha_stat = alpha_family / (all statistics), the Bonferroni
+    count of the whole family (unchanged call when no statistic is deterministic)."""
     names = list(stat_names)
     band_names = list(band)
     ref = {s: np.stack([np.asarray(band[b], np.float64)[:, j] for b in band_names]) for j, s in enumerate(names)}
     cands = {"native": {s: np.asarray(native, np.float64)[:, j] for j, s in enumerate(names)}}
     for h, arr in heldout.items():
         cands[f"heldout:{h}"] = {s: np.asarray(arr, np.float64)[:, j] for j, s in enumerate(names)}
-    ev = rubber_l3.evaluate(ref, cands, alpha_family=alpha_family, names=names)
+    det = [s for s in names if all(bitwise_equal(row, ref[s][0]) for row in ref[s][1:])]
+    stoch = [s for s in names if s not in det]
+    if not det:
+        ev = rubber_l3.evaluate(ref, cands, alpha_family=alpha_family, names=names)
+    else:
+        det_bounds, det_rows = _deterministic_rows(ref, cands, det)
+        if stoch:
+            ev = rubber_l3.evaluate({s: ref[s] for s in stoch}, {r: {s: c[s] for s in stoch} for r, c in cands.items()},
+                                    alpha_family=alpha_family*len(stoch)/len(names), names=stoch)
+        else:
+            ev = {"rule": rubber_l3.RULE_ID, "bounds": {}, "rows": []}
+        ev["bounds"] = {**ev["bounds"], **det_bounds}
+        ev["rows"] = ev["rows"]+det_rows
+        ev["alpha_family"], ev["alpha_stat"] = alpha_family, alpha_family/len(names)
+        ev["runs"] = {}
+        for run in cands:
+            mine = [r for r in ev["rows"] if r["run"] == run]
+            ev["runs"][run] = {"outside": sum(r["class"] == "OUTSIDE" for r in mine), "statistics": len(mine),
+                               "verdict": "PASS" if all(r["class"] == "WITHIN" for r in mine) else "FAIL",
+                               "max_M_over_upper": max(r["M_over_upper"] for r in mine)}
     nat = ev["runs"]["native"]
     native_rows = [r for r in ev["rows"] if r["run"] == "native"]
     held = {k: v for k, v in ev["runs"].items() if k.startswith("heldout:")}
