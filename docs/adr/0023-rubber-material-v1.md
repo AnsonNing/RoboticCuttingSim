@@ -1966,6 +1966,93 @@ declared labels stay. Two qualifications are recorded (DIAGNOSTIC, not re-scorin
 | X5 | Source of the static stick jitter (5–12 µm/s) and of the -01 d books drift; an a-priori drift-rate books criterion | S–M |
 | P2-5 | Calibrated rubber sets must include high-frequency loss (DIAGNOSTIC: one Prony term at τ 100 µs removes most of the μ 0.8 deficit) | – |
 
+### 22.11 Task X3 — law `grid_node_penalty_coulomb_v3` (patch slip-rate equalisation): the μ ≤ 0.8 envelope at the acceptance profile (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: make the declared friction envelope hold at the acceptance profile `rubber_ref_v1` (n_t ≥ 4) by developing the X2
+dev mode 13 into an opt-in law, scoped to μ ≤ 0.8; μ ≥ 1.0 sliding stays a labelled limitation (X4, X5 open). Branch
+`claude/rl-rubber-p24` (B2-v2 merged at `229f070`). Law `b668bdc`; protocol `rubber_contact_tests_v3` declared and
+SHA-pinned alone at `e19f488` (sha256 `36d70beaf63a0ef73195dcc47c62e522596779bb95b423a5544e5f7dc9e6a856`) before any
+formal run; runner `c631cca`; evidence `docs/evidence/rl_ready/p2_4_contact_x3_001.json`. Material status
+`SIMULATOR_ONLY_UNCALIBRATED`. Every earlier result and FAIL (`contact_v1_001`, `contact_v2_001`, `gpu_cont09_001`, the
+X2 negative result) stays.
+
+**Law.** v3 = v2 (normal penalty with the dashpot on the realised velocity, Coulomb spring-dashpot-slider with cap
+μF_n, κ_n = κ_t = 0.25, ζ_n = ζ_t = 0.5) plus the patch slip-rate equalisation, ζ_d = 1:
+
+- *Patch*: per env and obstacle face — each plane, and each of the 6 faces of each box (the face of the box-frame
+  outward SDF normal); env-local row q = k (plane k) or P + 6(fB + b) + face, global row e·Q + q, Q = P + 6FB. The
+  reductions are env-indexed float64 rows (`ct_pacc[N·Q, 4]`, kind `patch` in `rubber_layout.CONTACT_ARRAY_KINDS`), so
+  no env reads or writes another env's patch.
+- *Pass 1* (`node_penalty_contact_v3_normal`): the v2 normal branch, the deepest obstacle and its patch, the v2 trial
+  of the node; a node whose trial slips on a patch with μ > 0 adds m_I v_t and m_I to its patch row.
+- *Pass 2* (`node_penalty_contact_v3_tangential`): the v2 slider; a slipping node on a patch with μ > 0 also gets
+  −dt c_d (v_t − v̄), c_d = 2ζ_d√(k_t m_I), v̄ = Σ m v_t / Σ m over the patch's slipping nodes of the same substep,
+  outside the Coulomb cap and outside the slider (the anchor follows the capped Coulomb force only). c_d ∝ m_I, so the
+  impulses of a patch sum to zero: the patch's total tangential force stays ≤ μΣF_n (a net torque remains). Booked as
+  contact damping; the kick-paired contact work is unchanged. With μ = 0 v3 is v2.
+- v1 and v2 kernels are byte-identical (v1 pins, v2 pin `a186c586994e3cdb`); v1 stays the default. One source for the
+  single and the batched solver (the batched class binds `TLMPMRubberContact._launch_contact`); the new per-node and
+  per-patch arrays exist for every contact solver (unused by v1 / v2), are reset single and masked-batched and audited.
+- *Meaning, declared*: inside a slip zone the slip rate is equalised over the patch at the substep scale; local slip-rate
+  variations inside a slipping patch (stick–slip / detachment waves, Schallamach-type patterns) are suppressed by
+  construction. Static friction, slip onset and partial slip are those of v2 (stick nodes are untouched).
+
+**Results.** Formal CPU run `contact_v3_001` (commit `c631cca`, clean tree, 137 jobs, 133 s, Warp 1.17.0 CPU):
+
+| Test | Verdict | Measured |
+|---|---|---|
+| -01 a stick (INC / INC2 × n_t 3 / 4, μ 0.2–0.8, ratios 0.6 / 0.85 / 0.95, P2 at 0.95 for μ 0.6 / 0.8) | **PASS** | max \|disp\| ≤ 1.3e-4 s (limit 0.01 s) |
+| -01 b slip (μ 0.2–0.8, ratios 1.1–1.3, all four groups) | **PASS** | max \|error\| ≤ 1.8e-7 of g cosθ (limit 1e-2) |
+| -01 c onset (16 groups) | **PASS** | \|μ_eff/μ − 1\| < 1e-6 |
+| -01 d books | **FAIL** (declared expected) | 20 INC stick runs 1.03–2.05 % of S (≤ 5.2e-12 J; the §22.10 static-jitter residual, not redefined); INC2 stick runs ≤ 0.62 %; slip runs ≤ 2.3e-6; order row ratio 0.81 PASS |
+| -01 e validity | PASS | no invalid flag |
+| -01 f load-ramp slip (new) | **PASS** | max \|x(T_ramp) − x(0)\| ≤ 5.9e-4 s (limit 0.01 s) |
+| -02 penetration | PASS | as v2 (μ = 0) |
+| -03 impact | PASS | books 0.36 / 0.21 % n_t 4, 0.71 % n_t 2 (as v2) |
+| -04 dissipation | **PASS** | 0.9999–1.0000 in every group (v2 at μ 0.8: 0.87–0.94) |
+| -05 pinch (n_t 3 and 4) | **PASS** | slip ratio 0.986–1.000 (v2: 0.964 FAIL), cone ≤ 1.000, scaling 1.1 / 1.4 %, window-mean balance ≤ 1.4 %; v1 per-step metric 8.4–13.8 % reported |
+| μ 1.0 rows (reported, labelled, not scored) | — | n_t 3: exact; n_t 4: INC ratio 1.1 +2.4 % (D04 0.947), INC2 ratio 1.1 +0.68 % (D04 0.913); holds at 0.95 μ ≤ 1.4e-8 m |
+
+Batched and GPU:
+
+- RUBBER-CONT-08 (CPU pytest, `tests/test_rubber_contact_v3.py`): **PASS** — L0 byte-wise after every control step for
+  N = 1 and N = 3 heterogeneous batches of the B1 incline, pinch, pinch P2 and impact scenes (every contact array
+  including the patch rows and the per-pad wrenches), the equalisation exercised in the L0 incline run, L1 (pad motion,
+  friction, plane of env 1 perturbed: envs 0 / 2 byte-unchanged), masked reset equal to a fresh env, vars()-complete
+  classification, v2 / v3 mix refused; kernel level: per-patch impulses sum to zero (2e-23 of 1e-7 impulses), the slider
+  ignores the damper, env 1 perturbed changes no byte of env 0; ζ_d = 0 reproduces the v2 state byte-wise.
+- RUBBER-CONT-09 (`gpu_cont09_v3_001`, GPU0 RTX 5090, driver 570.211.01, blocking GPU0 lock, SHARED_GPU: co-tenant PIDs
+  3468960, 642659 present, not touched; commit `405bf54`): **PASS** — a: every contact row of the out-of-reach envs
+  exactly 0.0; b (v2 rule, k = 5 A / 5 B interleaved, λ 4, eps_rel 1e-6): 1,566 scalars, 0 failing, worst d / limit
+  0.35; c: audits 0 (including the new patch-row audit), finite, invalid bits 0.
+- RUBBER-CONT-11 (reported): batched rows (v3 vs the B2-v2 v2 rows, both SHARED_GPU): N 4 -09 configuration 0.579 vs
+  0.562 ms per substep, N 4 all pinched 0.620 vs 0.597, N 1 pinched 0.323 vs 0.309, no contact 0.398 vs 0.397 (v3 adds
+  one launch and a memset per substep, ≈ +3–4 %). Single env workload E (`gpu_contact_cost_x3_v2_001` / `_v3_001`, same
+  session, SHARED_GPU): contact 0.322 → 0.332 ms per substep (+3.1 %), out of reach 0.306 → 0.313, no contact 0.218;
+  VRAM 712 → 718 MB; GPU vs CPU pad wrench 2.6e-7 relative (v2 8.8e-7).
+- CPU suites (rubber + batched + naming, at `eab4ef4`, src unchanged since `b668bdc`): 478 passed with
+  `CUDA_VISIBLE_DEVICES=''` (592 s) and with `=0` under the GPU0 lock (585 s); logs `cpu_tests_x3_001`.
+
+**Decision.** `grid_node_penalty_coulomb_v3` is the contact law for scored rubber contact rows with μ ≤ 0.8 (sliding and
+static) at n_t 3 (`rubber_rl_v1`) and n_t 4 (`rubber_ref_v1`). It passes every criterion of its declared protocol except
+-01 d, the stick-run books residual of §22.10, which was declared expected and is not redefined (it stays FAIL until X5
+identifies its source). v3 stays opt-in (v1 remains the frozen default of `ContactSpec`); P2-6 / RL rubber contact
+scenes should build v3 explicitly. Status `EXPERIMENTAL_NOT_ACCEPTED` until the independent review (R1); material
+`SIMULATOR_ONLY_UNCALIBRATED`.
+
+- Labels: sliding rows with μ > 0.8 carry `contact_friction_flutter`; rows with μ ≥ 1.0 also carry
+  `contact_coulomb_ill_posed` (v3 at μ 1.0: exact at n_t 3, +0.7 … +2.4 % at n_t 4 — reported, not claimed). Rows built
+  with v1 / v2 keep the §22.9 / §22.10 envelope and its resolution qualification. RL friction ranges for v3 rows: clip to
+  μ ≤ 0.8 or label.
+- Declared limitations of v3: (i) within a slipping patch the slip rate is equalised at the substep scale, so
+  slip-rate waves inside a patch (stick–slip, detachment waves) are not represented; (ii) a patch is a whole obstacle
+  face, so two disjoint contact regions on the same face (e.g. a strip touching the table at two places) share one v̄
+  and their slip rates are coupled (net force still zero); (iii) the equalisation produces a net torque on the patch
+  (reported in the pad / plane wrench); (iv) the stored-tangential-energy diagnostic keeps the local cap (unchanged
+  kernel; not in the books); (v) the GPU patch sums are float64 atomics (order-nondeterministic, inside the -09 band).
+- Open: X4 (stability of the continuum with separation), X5 (static jitter and the -01 d residual), B3 (Lab coupling of
+  the rubber wrenches), C1 (feedback coupling), R1 (independent review of §22.9–§22.11).
+
 ## 23. P2-4 completion, P2-5 and P2-6: decisions and plan (amendment, 2026-11-11, rcs-xhigh)
 
 Scope: the remaining P2-4 integration items (B3, S1, P1, the μ envelope), the P2-5 calibration interface and its
@@ -1979,6 +2066,12 @@ moving-grip v1, visc v1–v2, contact v1–v2). Material status: `SIMULATOR_ONLY
 
 Numbering: X3's results belong in §22.11. When `claude/rl-rubber-v5` is consolidated, its §21 (protocol v5) becomes
 **§19A** (task K1), because this lineage's §21 is P2-3.
+
+> **Status update (K1, 2026-11-11).** Done: K1 merged `claude/rl-rubber-p23` (`92e97aa`), `claude/rl-rubber-v5`
+> (`d814567`, its §21 now §19A), `claude/rl-rubber-p24b` (`c234aee`) and `claude/rl-rubber-p24` (`3e590ac`) into
+> `claude/rl-rubber`. **X3 is done** (§22.11): `rubber_contact_tests_v3` **PASS except the declared -01 d FAIL**
+> (μ ≤ 0.8 sliding / static at n_t 3 and 4; v3 `EXPERIMENTAL_NOT_ACCEPTED` until K2). Decision 4's v3 bound 0.8 thus
+> holds at n_t 3 / 4; ENV2 (n_t 5 / 6) is still required. The text below is kept as written.
 
 ### 23.1 Verified facts the decisions rest on
 
@@ -2110,7 +2203,7 @@ Numbering: X3's results belong in §22.11. When `claude/rl-rubber-v5` is consoli
 
 ### 23.4 Tasks
 
-The plan §7 has the full table: X3 (running); K1 consolidation; K2 combined review; S1; ENV1 / ENV2; P5.1–P5.7;
+The plan §7 has the full table: X3 (done, §22.11); K1 consolidation; K2 combined review; S1; ENV1 / ENV2; P5.1–P5.7;
 P6.0–P6.7; Z1–Z3. Deferred: B3, C1, P1, X4, X5, Q1W-A, and the real-data protocol.
 
 Estimate: ≈ 20 nominal agent-days (≈ 9-day critical path), ≈ 3–5 calendar days at the velocity observed in P2-3 /

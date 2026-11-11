@@ -3,7 +3,7 @@
  "id": "p2_4_contact_x2_001",
  "phase": "P2-4 rubber contact, task X2 (defect 2: friction-normal flutter)",
  "adr": "docs/adr/0023-rubber-material-v1.md section 22.10",
- "report": "docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md section 9",
+ "report": "docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md section 10 (numbered 9 at b8b2b5e; renumbered when the B2-v2 section 9 was merged)",
  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
  "label": "DIAGNOSTIC (no formal run: no v3 law adopted, no protocol declared)",
  "decision": "NEGATIVE RESULT for the X2 requirement (robust closure of sliding at mu 0.8 AND 1.0, supported range ~0.6-1.5): no v3 law is adopted, no protocol v3 is declared, no formal run; grid_node_penalty_coulomb_v2 and rubber_contact_tests_v2 stay as declared (v1 / v2 kernels and every frozen file unchanged). The best candidate (patch slip-rate equalisation, smode 13) is refinement-stable to mu 0.8 with v2 hold behaviour but not at mu 1.0; it is the recommended v3 design for task X3. The declared mu envelope stays and is QUALIFIED: it holds at n_t 3 (rubber_rl_v1) on the formal scenes, not at n_t >= 4 (rubber_ref_v1) or on larger blocks at mu 0.8",

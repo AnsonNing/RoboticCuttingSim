@@ -376,7 +376,8 @@ def range_audit(packed, host_arrays):
 # ----------------------------------------------------------------------------- contact (ADR 0023 §22, P2-4 B1)
 
 # Row kind of every device array ``ct_*`` of the single contact solver (``tlmpm_rubber_contact_v1``): "node" [nodes],
-# "env" [1, ...] -> [N, ...], "plane" [P], "frame" [F], "box" [F*B] (env e owns rows e*P+k, e*F+f, (e*F+f)*B+b);
+# "env" [1, ...] -> [N, ...], "plane" [P], "frame" [F], "box" [F*B] (env e owns rows e*P+k, e*F+f, (e*F+f)*B+b),
+# "patch" [Q = P + 6 F B] (law v3 contact patches, env e owns rows e*Q+q; ADR 0023 §22.11);
 # "alias_*": the batched solver uses its own array (env_of_node, node_offset, params columns 3/4 for the frictions).
 # A single-solver contact array missing here is refused (a new law version needs its batched layout declared).
 CONTACT_ARRAY_KINDS = {
@@ -386,6 +387,8 @@ CONTACT_ARRAY_KINDS = {
     "ct_fkind": "frame", "ct_factive": "frame", "ct_fq0": "frame", "ct_fq1": "frame", "ct_fb0": "frame",
     "ct_fb1": "frame", "ct_forigin": "frame",
     "ct_box_c": "box", "ct_box_h": "box", "ct_box_reaction": "box",
+    "ct_bbest": "node", "ct_bprow": "node", "ct_bflag": "node", "ct_bfn": "node", "ct_bmu": "node", "ct_bn": "node",
+    "ct_blev": "node", "ct_pacc": "patch",
     "ct_env_of_node": "alias_env_of_node", "ct_node_offset": "alias_node_offset", "ct_fric": "alias_params_friction"}
 
 
@@ -399,7 +402,7 @@ def _pack_contact(solvers, sig, host):
     at the env's node offset; obstacle ids in ``ct_obst`` stay env-local, as the shared kernels write them). Returns
     {"contact_dtypes": {name: warp dtype}}."""
     P, F, B = sig["P"], sig["F"], sig["B"]
-    rows = {"plane": P, "frame": F, "box": F*B}
+    rows = {"plane": P, "frame": F, "box": F*B, "patch": P+6*F*B}
     names = set(contact_arrays_of(solvers[0]))
     unknown = names-set(CONTACT_ARRAY_KINDS)
     if unknown or set(CONTACT_ARRAY_KINDS)-names:

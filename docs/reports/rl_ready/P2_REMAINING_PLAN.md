@@ -8,6 +8,15 @@ Phase 2 (P2-4…P2-6, "Phase 2 Done"); [RL_READY_PLAN.md](../../RL_READY_PLAN.md
 §18–§22. Status words: PASS / FAIL / BLOCKED / NOT_RUN (+ PASS_WITH_LIMITATIONS for reviews). A skipped test is not a
 pass. Sizes: S ≈ ½ day, M ≈ 1 day, L ≈ 2–3 days nominal (the ADR 0023 §15 scale); §7.3 converts to expected time.
 
+> **Status update (K1 consolidation, 2026-11-11).** **X3 is done** (`claude/rl-rubber-p24` @ `3e590ac`, merged into
+> `claude/rl-rubber` by K1): law `grid_node_penalty_coulomb_v3`, protocol `rubber_contact_tests_v3` (sha256
+> `36d70bea…a856`), formal CPU run `contact_v3_001` **PASS on every criterion except the declared -01 d FAIL** (stick-run
+> books residual of §22.10, kept until X5), μ 0.2–0.8 sliding and static at n_t 3 and 4; CONT-08 (CPU L0 / L1) and
+> CONT-09 (`gpu_cont09_v3_001`, SHARED_GPU) PASS; status `EXPERIMENTAL_NOT_ACCEPTED` until the K2 review. ADR 0023
+> §22.11, report `P2_4_RUBBER_CONTACT.md` section 11, evidence `p2_4_contact_x3_001.json`. ENV2 is still needed for n_t
+> 5 / 6. Report sections: X3's numbering is adopted (9 B2-v2, 10 X2, 11 X3), so "§9A.1" below is section 9.1. ADR v5
+> §21 is §19A. The planning text below is kept as written.
+
 ## 0. Decisions at a glance
 
 1. **B3 (robot-feedback coupling adapter) is not needed for P2-6 and is deferred**, together with C1 (shorter /
@@ -23,7 +32,7 @@ pass. Sizes: S ≈ ½ day, M ≈ 1 day, L ≈ 2–3 days nominal (the ADR 0023 �
    needs relative speeds above ≈ 1.7 m/s. It uses the env-grouped sort-grid pattern of Phase 1 `FallbackGrid`, not a
    `wp.HashGrid`. A hit sets the sticky bit `RUBBER_SELF_CONTACT_UNRESOLVED` (8); training mode terminates the env.
 3. **P1 (contact-kernel cost) is deferred.** The P2-6 scene has a table half-space and no contact frames. With F = 0
-   the kernel skips the per-node frame slerp (`rubber_contact.py:416-470`) that caused the +40–50 % of §22.7 / §9A.1.
+   the kernel skips the per-node frame slerp (`rubber_contact.py:416-470`) that caused the +40–50 % of §22.7 / report §9.1 (9A.1 on p24b).
    Plane-only cost is measured in RL-07. P1 returns only with pad scenes (B3 / C1).
 4. **μ envelope → P2-6 friction range.** P2-6 randomises only `friction_table`. Pads and self-contact are absent; their
    frictions are fixed at the recipe value and declared unused. The range is uniform on **[0.3, μ_slide,max]**, the
@@ -69,7 +78,7 @@ pass. Sizes: S ≈ ½ day, M ≈ 1 day, L ≈ 2–3 days nominal (the ADR 0023 �
    Comparison: physics against 20 headless GPU replays of the recorded poses (rule `rubber_l3_band_v4`). Inputs and
    receipts must be bitwise equal; the rendered surface may differ. `isaac_sim_runner.py` and the frozen
    `live_material.py` stay unchanged.
-9. **Plan size and time.** 23 tasks, plus X3 (running) and the deferred items of §7.1.
+9. **Plan size and time.** 23 tasks, plus X3 (done at `3e590ac`, see the status update) and the deferred items of §7.1.
    - Nominal: ≈ 20 agent-days with a ≈ 9-day critical path.
    - Expected at the velocity seen in P2-3 / P2-4: **≈ 3–5 calendar days**, if X3 and the reviews do not force a
      protocol v2. Budget **+0.5–1 day per v2 cycle**.
@@ -91,7 +100,7 @@ pass. Sizes: S ≈ ½ day, M ≈ 1 day, L ≈ 2–3 days nominal (the ADR 0023 �
 | F10 | Calibration manifest v1 has no data-origin field. The `REAL_CALIBRATED` gate checks only `status == FROZEN_FOR_HELDOUT` and `heldout_verdict == PASS`, so a synthetic dataset written in the v1 schema could pass it | `rubber_calibration.py:17-36`, `rubber_material.py:431-444` |
 | F11 | Only scipy is installed in `.venv` and in `.deps/isaacsim-venv`: no `cma`, BO or `optuna`. No new dependency is needed | `importlib.util.find_spec` check |
 | F12 | `MaterialCoupling` (Lab env) is defined over edge poses and cut digits | `rl/lab_batched_env.py:60-75` |
-| F13 | Throughput references, all SHARED_GPU on GPU0: workload E v2 (n_t 4, 97,280 particles, 6,662 substeps) gives 0.87 / 1.06 / 1.03 env-steps/s at N 1 / 4 / 8. VISC-10 at n_t 4, N 8, 3,446 substeps: elastic 1.515, P2 1.278. Pads cost +40–50 % (§9A.1). Phase 1 workload A at N 8: 4.85 env-steps/s (103k particles, 200 substeps) | P2_2 v5.4, P2_3 §4, P2_4 §9A.1, P1-2 |
+| F13 | Throughput references, all SHARED_GPU on GPU0: workload E v2 (n_t 4, 97,280 particles, 6,662 substeps) gives 0.87 / 1.06 / 1.03 env-steps/s at N 1 / 4 / 8. VISC-10 at n_t 4, N 8, 3,446 substeps: elastic 1.515, P2 1.278. Pads cost +40–50 % (report §9.1, numbered 9A.1 on p24b). Phase 1 workload A at N 8: 4.85 env-steps/s (103k particles, 200 substeps) | P2_2 v5.4, P2_3 §4, P2_4 §9A.1, P1-2 |
 | F14 | The v2 contact envelope was scored at n_t 3 only (INC / INC2). At n_t ≥ 4 it is DIAGNOSTIC-only and narrower: the μ 0.8 hold slides at n_t 4, μ 0.6 sliding is +1.2–1.7 %, and μ 0.4 sliding grows from 0.04 % to 0.18 % at n_t 6 | ADR §22.9, §22.10 |
 
 ## 2. P2-4 completion
@@ -167,7 +176,7 @@ pad scenes.
 | Law | n_t 3 | n_t 4 | n_t 5–6 | Source |
 |---|---|---|---|---|
 | v2 `grid_node_penalty_coulomb_v2` | sliding 0.6, static 0.8 (formal) | not established (DIAGNOSTIC: sliding ≤ 0.4, static ≤ 0.6) | not established (DIAGNOSTIC: μ 0.4 sliding 0.18 % at n_t 6) | `contact_v2_001`; §22.10 |
-| v3 (X3, running) | from `rubber_contact_tests_v3` (target sliding 0.8) | from v3 (target 0.8) | **ENV2** | X3, ENV2 |
+| v3 (X3, done: `contact_v3_001` PASS except -01 d) | from `rubber_contact_tests_v3` (target sliding 0.8) | from v3 (target 0.8) | **ENV2** | X3, ENV2 |
 
 - **P2-6 range.** `friction_table ~ U[0.3, min_slots μ_slide,max(law, n_t)]`. The lower bound 0.3 is the recipe's.
   The P2-6 slot set has n_t 4–6 (F1), so the n_t 5–6 rows are needed.
@@ -188,7 +197,7 @@ pad scenes.
 
 | Item | Disposition |
 |---|---|
-| X3 (v3 law + `rubber_contact_tests_v3`, running on `claude/rl-rubber-p24`) | Dependency of ENV1 / ENV2 / P6.0. Its ADR text should be §22.11 so that this §23 keeps its number |
+| X3 (v3 law + `rubber_contact_tests_v3` on `claude/rl-rubber-p24`; **done** at `3e590ac`: v3 PASS except the declared -01 d FAIL) | Dependency of ENV1 / ENV2 / P6.0. Its ADR text should be §22.11 so that this §23 keeps its number |
 | -01 d stick-run books FAIL (v2) | Kept. X5 (jitter source + an a-priori drift-rate criterion) is optional. Without it, Phase 2 Done box 2 lists `contact_v2_001` -01 d as a limitation |
 | -05 pinch slip ratio FAIL (v2, μ_pad 0.5) | Scored again by X3's v3 protocol. P2-6 has no pads |
 | X4 (continuum stability of unilateral Coulomb sliding) | Optional analysis; not on the critical path |
@@ -543,7 +552,7 @@ Rules for every task:
 
 | Id | Task | Depends on | GPU | Size |
 |---|---|---|---|---|
-| X3 | (running, other agent) v3 law + `rubber_contact_tests_v3` formal run; ADR §22.11 | – | small | (L) |
+| X3 | (**done** at `3e590ac`: v3 PASS except the declared -01 d FAIL) v3 law + `rubber_contact_tests_v3` formal run; ADR §22.11 | – | small | (L) |
 | K1 | Consolidation: merge `claude/rl-rubber-p23` (R1 fix `92e97aa`), `claude/rl-rubber-v5` (`d814567`; ADR v5 §21 renumbered **§19A** with internal references and the v5 report / evidence pointers noted), `claude/rl-rubber-p24` (X1 / X2, later X3), this branch, then `claude/rl-ready-rubber-physics` (`main` with P1-5 `vector_env`) → `claude/rl-rubber-p2c`; full CPU + Torch suites; frozen pins | – (X3 merged when ready) | – | M |
 | K2 | rcs-review (xhigh): combined review of P2-3 v2, v5 (incl. the Q1w decision of §5), P2-4 v1 / v2 / B1 / B2 / B2-v2 / X1 / X2 / X3 and this plan; then merge into integration | K1, X3 | – | (M) |
 | S1 | Self-penetration detector (§2.2), single + batched, tests (a)–(f) | K1 | smoke 0.1 h | M |

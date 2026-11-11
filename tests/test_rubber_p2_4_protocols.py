@@ -1,5 +1,5 @@
-"""P2-4 protocols ``rubber_contact_tests_v1`` (ADR 0023 §22.6) and ``rubber_contact_tests_v2`` (§22.9, task X1) are
-frozen at commit: each declared before any formal run of it.
+"""P2-4 protocols ``rubber_contact_tests_v1`` (ADR 0023 §22.6) and ``rubber_contact_tests_v2`` (§22.9, task X1) and
+``rubber_contact_tests_v3`` (§22.11, task X3) are frozen at commit: each declared before any formal run of it.
 
 A failure of a pin means the frozen file was edited. Never update a pin: declare the next version instead.
 """
@@ -11,6 +11,7 @@ from robotic_cutting_sim.rubber_material import ROOT
 PINS = {
     "configs/rubber/rubber_contact_tests_v1.json": "4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c",
     "configs/rubber/rubber_contact_tests_v2.json": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+    "configs/rubber/rubber_contact_tests_v3.json": "36d70beaf63a0ef73195dcc47c62e522596779bb95b423a5544e5f7dc9e6a856",
 }
 
 

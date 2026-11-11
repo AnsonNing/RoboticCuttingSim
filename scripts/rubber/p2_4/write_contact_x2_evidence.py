@@ -323,7 +323,7 @@ def main():
         "schema": "rcs_rl_ready_evidence_v1", "id": "p2_4_contact_x2_001",
         "phase": "P2-4 rubber contact, task X2 (defect 2: friction-normal flutter)",
         "adr": "docs/adr/0023-rubber-material-v1.md section 22.10",
-        "report": "docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md section 9",
+        "report": "docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md section 10",
         "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
         "label": "DIAGNOSTIC (no formal run: no v3 law adopted, no protocol declared)",
         "decision": ("NEGATIVE RESULT for the X2 requirement (robust closure of sliding at mu 0.8 AND 1.0, supported "
