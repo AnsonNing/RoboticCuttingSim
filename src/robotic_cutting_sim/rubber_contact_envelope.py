@@ -54,26 +54,32 @@ class ContactEnvelope:
                 return r
         raise FrictionOutOfEnvelope(f"no envelope row for law {law!r} at n_t {n_t} ({self.id})")
 
-    def established(self, law, n_t):
+    def established(self, law, n_t, *, general_slip=False):
+        """The ESTABLISHED row (raises otherwise). ``general_slip=True`` (scenes with rotation or in-plane bending in
+        slip, e.g. P2-6) also refuses rows whose ``scope`` is ``translational_sliding_only`` (K2-1)."""
         r = self.row(law, n_t)
         if r["status"] != "ESTABLISHED":
             raise FrictionOutOfEnvelope(f"law {law!r} at n_t {n_t}: {r['status']} ({r.get('reason', '')}) "
                                         f"in {self.id}")
+        if general_slip and r.get("scope", "general") != "general":
+            raise FrictionOutOfEnvelope(f"law {law!r} at n_t {n_t}: scope {r['scope']} in {self.id} does not cover "
+                                        "rotation / in-plane bending in slip (K2-1)")
         return r
 
-    def sliding_mu_max(self, law, n_ts):
+    def sliding_mu_max(self, law, n_ts, *, general_slip=False):
         """min over the n_t set of the ESTABLISHED sliding limit (raises if any row is missing / not established)."""
-        return min(float(self.established(law, n)["sliding_mu_max"]) for n in sorted(set(int(v) for v in n_ts)))
+        return min(float(self.established(law, n, general_slip=general_slip)["sliding_mu_max"])
+                   for n in sorted(set(int(v) for v in n_ts)))
 
-    def friction_range(self, law, n_ts, *, lower=0.3):
+    def friction_range(self, law, n_ts, *, lower=0.3, general_slip=False):
         """[lower, min_n_t sliding_mu_max] (P2-6 rule, plan §2.4); raises if empty or a row is not established."""
-        hi = self.sliding_mu_max(law, n_ts)
+        hi = self.sliding_mu_max(law, n_ts, general_slip=general_slip)
         lo = float(lower)
         if not (math.isfinite(lo) and 0.0 < lo <= hi < ABSOLUTE_MU_LIMIT):
             raise FrictionOutOfEnvelope(f"empty friction range [{lo}, {hi}] for law {law!r} at n_t {sorted(n_ts)}")
         return lo, hi
 
-    def check_friction(self, law, n_t, mu, *, kind="sliding"):
+    def check_friction(self, law, n_t, mu, *, kind="sliding", general_slip=False):
         """Raise unless 0 <= mu <= the row's ``sliding`` (default) or ``static`` limit and mu < 1.0."""
         mu = float(mu)
         if not math.isfinite(mu) or mu < 0.0:
@@ -81,7 +87,7 @@ class ContactEnvelope:
         if mu >= ABSOLUTE_MU_LIMIT:
             raise FrictionOutOfEnvelope(f"friction {mu} >= {ABSOLUTE_MU_LIMIT} (contact_coulomb_ill_posed)")
         key = {"sliding": "sliding_mu_max", "static": "static_mu_max"}[kind]
-        limit = float(self.established(law, n_t)[key])
+        limit = float(self.established(law, n_t, general_slip=general_slip)[key])
         if mu > limit:
             raise FrictionOutOfEnvelope(f"friction {mu} > {key} {limit} of law {law!r} at n_t {n_t} ({self.id})")
         return limit
@@ -90,7 +96,7 @@ class ContactEnvelope:
         r = self.row(law, n_t)
         return {"envelope": self.id, "envelope_sha256": self.sha256, "law": law, "n_t": int(n_t),
                 "status": r["status"], "sliding_mu_max": r.get("sliding_mu_max"),
-                "static_mu_max": r.get("static_mu_max"), "run_id": r.get("run_id"),
+                "static_mu_max": r.get("static_mu_max"), "run_id": r.get("run_id"), "scope": r.get("scope", "general"),
                 "protocol_sha256": r.get("protocol_sha256")}
 
 

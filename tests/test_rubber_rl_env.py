@@ -54,7 +54,7 @@ def _env_state(env, e):
                  "step_count", "seed", "episode", "termination_reason", "within_streak", "tip_distance"):
         out[f"env.{name}"] = getattr(env, name)[e].numpy()
     out["traction_w"] = env.traction_t[e].numpy()
-    return out
+    return {k: np.array(v, copy=True) for k, v in out.items()}   # CPU .numpy() are views of live arrays: copy
 
 
 def _compare_single(env, e, live):
@@ -157,7 +157,8 @@ def test_rl03_ranges_step_rule_and_envelope():
         assert sum(g for g, _ in m.prony) < 1 and m.kappa == 20*m.mu0
         assert np.linalg.norm(smp["goal_m"][:2]-np.array([fam.slot_set[slot]["length_m"], fam.width/2])) >= 0.03-1e-12
     lo, hi = fam.ranges["friction_table"]
-    assert (lo, hi) == fam.envelope.friction_range(fam.law, fam.n_ts)
+    assert (lo, hi) == fam.envelope.friction_range(fam.law, fam.n_ts, general_slip=True)
+    assert fam.law == "grid_node_penalty_coulomb_v2"                  # K2-1: v3 is not the P2-6 law
 
 
 def test_rl03_partial_resample_changes_only_that_env():

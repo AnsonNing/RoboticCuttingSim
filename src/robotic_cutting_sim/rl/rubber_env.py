@@ -660,7 +660,7 @@ class RubberVectorEnv:
                 "calibration": "SIMULATOR_ONLY_UNCALIBRATED", "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
                 "profile": fam.profile, "contact_law": fam.law,
                 "envelope": {str(n): fam.envelope.receipt_row(fam.law, n) for n in fam.n_ts},
-                "labels": dict(fam.config["labels"]),
+                "labels": dict(fam.config["labels"]), "resolution": fam.resolution_label(),
                 "material": {k: v for k, v in self.material.receipt().items() if k != "envs"},
                 "step_staging": "device (advance_device); resets host-staged",
                 "stream_policy": "Warp launches on torch.cuda.current_stream via wp.stream_from_torch + "

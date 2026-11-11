@@ -22,10 +22,13 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
-TASK_CONFIG = ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v1.json"
-TASK_CONFIG_SHA256 = "fba43424372e17fe926fad697ff8336ea7c5ed0c2d8ecdbdefb9978a994f4397"   # P6.0 pin
+TASK_CONFIG = ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v2.json"
+TASK_CONFIG_SHA256 = None             # pinned by the P6.0 v2 declaration
+# superseded, never run formally (K2-1: the v3 contact law is wrong for spin / sideways drag); kept loadable by path
+TASK_CONFIG_V1_SHA256 = "fba43424372e17fe926fad697ff8336ea7c5ed0c2d8ecdbdefb9978a994f4397"
 FAMILY_VERSION = "rubber_strip_task_family_v1"
-TASK_IDS = {"rubber_strip_drag_v1": TASK_CONFIG}
+TASK_IDS = {"rubber_strip_drag_v2": TASK_CONFIG,
+            "rubber_strip_drag_v1": ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v1.json"}
 VARIANTS = ("cpu_parity_v1",)
 RUBBER_CODES = ("UNSUPPORTED_BACKEND", "UNSUPPORTED_TASK", "UNSUPPORTED_OPTION", "UNSUPPORTED_SENSOR",
                 "UNSUPPORTED_RECORDER", "UNSUPPORTED_RUNTIME", "UNSUPPORTED_DEVICE",
@@ -72,7 +75,7 @@ class RubberStripTaskFamily:
     every receipt). ``max_episode_steps`` overrides the horizon (recorded in the receipt)."""
     is_rubber_task_family = True        # duck-typed marker read by the open_vector_env dispatch (no import there)
 
-    def __init__(self, slots=None, *, num_envs=None, slot_seed=0, config="rubber_strip_drag_v1", variant=None,
+    def __init__(self, slots=None, *, num_envs=None, slot_seed=0, config="rubber_strip_drag_v2", variant=None,
                  max_episode_steps=None, resolution=None, expected_sha256=TASK_CONFIG_SHA256):
         cfg, path, sha = load_task_config(config, expected_sha256)
         if cfg.get("schema") != "rcs_rubber_rl_task_v1":
@@ -142,12 +145,13 @@ class RubberStripTaskFamily:
         self.ranges = {k: (float(lo), float(hi)) for k, (lo, hi) in rnd["ranges"].items()}
         self.ranges.update({k: (float(lo), float(hi)) for k, (lo, hi) in v.get("randomisation_overrides",
                                                                                {}).items()})
-        lo, hi = self.envelope.friction_range(self.law, self.n_ts, lower=self.ranges["friction_table"][0])
+        lo, hi = self.envelope.friction_range(self.law, self.n_ts, lower=self.ranges["friction_table"][0],
+                                              general_slip=True)
         if self.ranges["friction_table"][1] > hi or self.ranges["friction_table"][0] < lo:
             raise UnsupportedRubberConfiguration("UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE",
                                                  f"declared {self.ranges['friction_table']} vs envelope [{lo}, {hi}]")
         for n_t in self.n_ts:
-            self.envelope.check_friction(self.law, n_t, self.ranges["friction_table"][1])
+            self.envelope.check_friction(self.law, n_t, self.ranges["friction_table"][1], general_slip=True)
         sm = cfg["step_material"]
         self.step_material = rm.MaterialValues(mu0=float(sm["mu0_pa"]), kappa=float(sm["bulk_ratio_beta"])*float(
             sm["mu0_pa"]), density=float(sm["density_kg_m3"]))
@@ -203,13 +207,14 @@ class RubberStripTaskFamily:
         from ..rubber_contact import ContactSpec
         lp = self.contact_cfg["law_parameters"]
         if self.contact_cfg.get("frames"):
-            raise UnsupportedRubberConfiguration("UNSUPPORTED_TASK", "rubber_strip_drag_v1 has no contact frames")
+            raise UnsupportedRubberConfiguration("UNSUPPORTED_TASK", "rubber_strip_drag has no contact frames")
+        extra = ({"slip_rate_damping_ratio": lp["slip_rate_damping_ratio_zeta_d"]}
+                 if "slip_rate_damping_ratio_zeta_d" in lp else {})
         return ContactSpec(planes=tuple(tuple(map(float, p)) for p in self.contact_cfg["planes"]), law=self.law,
                            normal_stiffness=lp["normal_stiffness_kappa_n"],
                            tangential_stiffness=lp["tangential_stiffness_kappa_t"],
                            normal_damping_ratio=lp["normal_damping_ratio_zeta_n"],
-                           damping_ratio=lp["tangential_damping_ratio_zeta_t"],
-                           slip_rate_damping_ratio=lp["slip_rate_damping_ratio_zeta_d"])
+                           damping_ratio=lp["tangential_damping_ratio_zeta_t"], **extra)
 
     def build_material(self):
         """The build-time material: recipe nominal with friction_table = the midpoint of the declared range."""
@@ -283,13 +288,24 @@ class RubberStripTaskFamily:
 
     def check_material(self, m, n_t):
         """Every value inside the declared range and the envelope (raises)."""
-        self.envelope.check_friction(self.law, n_t, m.friction_table)
+        self.envelope.check_friction(self.law, n_t, m.friction_table, general_slip=True)
         for key, value in (("mu0_pa", m.mu0), ("density_kg_m3", m.density), ("friction_table", m.friction_table)):
             lo, hi = self.ranges[key]
             if not lo <= value <= hi:
                 raise ValueError(f"{key} = {value} outside [{lo}, {hi}]")
 
     # ------------------------------------------------------------------ receipts
+
+    def resolution_label(self):
+        """The resolution profile label of the slots (K2 Q1w conditions 1 / 2): read defensively from
+        ``rubber_material.RESOLUTION_PROFILES`` (``measured_bias`` / ``known_limitation`` land with K2-2)."""
+        from ..rubber_material import RESOLUTION_PROFILES
+        name = "rubber_rl_v1" if self.resolution == "rubber_rl_v1" else "rubber_ref_v1"
+        prof = RESOLUTION_PROFILES.get(name, {})
+        return {"resolution_profile": name, "label": prof.get("label"),
+                "measured_bias": prof.get("measured_bias", "PENDING_K2-2 (label not yet in RESOLUTION_PROFILES)"),
+                "known_limitation": prof.get("known_limitation", "PENDING_K2-2"),
+                "task_config_label": self.config["labels"].get("resolution_measured_bias")}
 
     def to_dict(self):
         return {"id": self.id, "version": FAMILY_VERSION, "config": None if self.config_path is None
@@ -303,6 +319,7 @@ class RubberStripTaskFamily:
         out = self.to_dict()
         out.update(
             calibration_status="SIMULATOR_ONLY_UNCALIBRATED", labels=dict(self.config["labels"]),
+            resolution=self.resolution_label(),
             recipe={"id": self.recipe.id, "sha256": self.recipe.source_sha256}, profile=self.profile,
             contact_law=self.law, envelope_rows={str(n): self.envelope.receipt_row(self.law, n) for n in self.n_ts},
             ranges={k: list(v) for k, v in self.ranges.items()}, control_dt_s=self.control_dt,
