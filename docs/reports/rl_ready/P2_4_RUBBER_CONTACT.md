@@ -274,6 +274,12 @@ contact rows are exactly zero, and the CPU L1 tests show byte isolation. No coup
 criterion is not met; a v2 criterion (e.g. a multi-repeat envelope) would have to be declared (rcs-xhigh) before a new
 run. The v1 FAIL stays.
 
+K2 notes (additive; `docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md`): (K2-3) "energies (summary) … pass everywhere"
+in the table above overstates it — the 1e-6·max|A| floor of the 18-column summary is set by the integer columns
+`particles` (41,220) / `cells` (5,175), ≈ 0.04 in mixed units, so the summary rows could not fail and carried no
+information (section 9 note). (K2-7 d) The co-tenant statement of §7.3 / §7.4 has an erratum in section 9: PID 3093155
+was this run's own process; SHARED_GPU stands because of PID 642659.
+
 ### 7.4 RUBBER-CONT-11 batched cost rows (reported, not scored)
 
 Same run, rows sequential (not interleaved), GPU0 RTX 5090, driver 570.211.01, **SHARED_GPU** (co-tenant utilisation
@@ -335,7 +341,9 @@ raw outputs `artifacts/rl_ready/p2_4/x1_diag_001` (README with the code state of
 - **Defect 2 (formulation):** friction–normal mode-coupling flutter of the grid-scale penalty interface (the cap follows
   the per-node penalty force instantaneously); grows with μ; not removed by cfl 0.25 / 0.125, n_t 4 / 6, κ 0.0005–1 or
   ζ to the limit; continuum rigid-flat Coulomb sliding is stable for μ < 1.000 (ill-posed above), so below μ = 1 it is a
-  discretisation defect.
+  discretisation defect. *K2-6 erratum:* the conclusion "below μ = 1 it is a discretisation defect" (not continuum
+  physics) was withdrawn as unproven by X2 (section 10, ADR 0023 §22.10): the half-space analysis keeps the contact and
+  does not cover the separating solutions the model produces.
 - Ruled out: dashpot energy missing from μN·slip (wrong sign), stick–slip hysteresis (0.2 % of μN), slip direction
   (≤ 0.4 %), cone force timing / content (flutter persists; spring-only cone worse).
 - A normal-force memory of the cap (lag n_τ dt) removes defect 2 in steady sliding (to μ 1.0 / 1.2 / 1.5 at n_τ 100 /
@@ -438,6 +446,21 @@ Finding (calibration text, not the rule): the protocol's calibration statement a
 observables have 1,566 (846 with s > 0), so its family-wise H0 bound is 0.86 % over all scalars (0.47 % over those with
 s > 0) by the union bound at 5.5e-6 per scalar, not 0.4 %. The rule and its thresholds are unchanged by this; noted for
 the R1 review.
+
+K2 notes (additive; review findings K2-3, K2-7; evidence `k2_review_notes` in `p2_4_contact_batched_002.json` and
+`p2_4_contact_x3_001.json`):
+- **K2-3, the energies summary carried no information.** The floor eps_rel·max_{i,c}|A_i[c]| is taken over the whole
+  18-column summary vector, whose maximum is the integer column `particles` (41,220; `cells` 5,175): ≈ 0.04 in mixed
+  units, 10²–10³ × the elastic and kinetic energies of the out-of-reach envs. **324 of the 1,566 scalars** (18 columns ×
+  6 steps × 3 envs) could not fail, here and in `gpu_cont09_v3_001`. The PASS rests on the markers (floor ≈ 1.4e-7 m),
+  the clamp and contact wrenches, criterion a (exact-zero rows), criterion c (audits) and the CPU L1 byte tests. A
+  versioned rule v3 with a per-quantity floor and the count / flag columns compared exactly is
+  `scripts/rubber/p2_4b/gpu_contact_batched_check_rule_v3.py` (CPU tests `tests/test_rubber_cont09_rule_v3.py`); it was
+  not run on a GPU, and the raw per-episode observables of this run were not saved, so it cannot be re-scored.
+- **K2-7 b.** The ≤ 5.5e-6 per-scalar false-reject rate holds for the four continuous noise families simulated;
+  two-point (atomic-order) noise gives ≈ 1.9e-3 per scalar (K2 sub-review Monte Carlo), for which the union bound is
+  uninformative. "A shift > 5 s is always rejected" holds with the floor term: a shift > 5 s + floor.
+- The frozen v3 protocol copies the stale "≤ 648 scalars, ≤ 0.4 %" text; it is not edited (ADR 0023 §22.9 erratum).
 
 Erratum §7.3 / §7.4: the "second co-tenant PID 3093155, 712 MB, at the end" of `gpu_cont09_001` was that run's own
 process (its `meta.pid`); the SHARED_GPU label stands because of PID 642659. The utilisation samples in §7.4 and below
@@ -561,7 +584,7 @@ artifacts/rl_ready/p2_4/contact_v3_001 --jobs 48` — commit `c631cca`, clean tr
 | -01 f load-ramp slip | – | **PASS** (≤ 5.9e-4 s) |
 | -02 / -03 | PASS | **PASS** (frictionless: v3 = v2) |
 | -04 | FAIL (μ 0.8: 0.87–0.94) | **PASS** (≥ 0.9999) |
-| -05 (n_t 3 / n_t 4) | FAIL a (0.964) | **PASS**: ratios 1.000 / 0.999 / 0.989 and 1.000 / 0.988 / 0.986; cone ≤ 1.000; window balance ≤ 1.4 % |
+| -05 (n_t 3 / n_t 4) | FAIL a (0.964) | **PASS**: ratios 1.000 / 0.999 / 0.989 and 1.000 / 0.988 / 0.986; cone ≤ 1.000; window balance ≤ 1.4 %. *K2-5:* -05 d is **v1 FAIL, v3 PASS (post-hoc metric correction)** — the window-mean balance replaced the v1 per-step balance after the v1 FAIL; the v1 per-step metric (8.4–13.8 %) is reported |
 | μ 1.0 (reported) | – | n_t 3 exact; n_t 4 INC r1.1 +2.4 %, INC2 r1.1 +0.68 % (D04 0.91–0.95): `contact_coulomb_ill_posed` |
 
 ### 11.3 Batched path and GPU
@@ -571,7 +594,9 @@ artifacts/rl_ready/p2_4/contact_v3_001 --jobs 48` — commit `c631cca`, clean tr
   L1 isolation (pad motion / friction / plane), masked reset = fresh env, vars()-complete, v2 / v3 mix refused; kernel
   level net-zero (residual 2e-23 against 1e-7 impulses) and env-indexed patch sums; ζ_d = 0 reproduces v2 byte-wise.
 - RUBBER-CONT-09 (`gpu_cont09_v3_001`, `scripts/rubber/p2_4/gpu_contact_batched_check_v3.py` = the B2-v2 script with the
-  v3 protocol and law; GPU0 lock, SHARED_GPU, co-tenants 3468960 / 642659 untouched): **PASS** — a exact zeros; b 1,566
+  v3 protocol and law; GPU0 lock, SHARED_GPU, co-tenants 3468960 / 642659 untouched; *K2-7 c erratum:* PID 3468960 was
+  on GPU1 (the script's `gpu_label` counts apps on every GPU), so the GPU0 co-tenant is 642659 only and SHARED_GPU
+  stands; *K2-3:* the 324 energies-summary scalars carried no information, section 9 note): **PASS** — a exact zeros; b 1,566
   scalars, 0 failing, worst d / limit 0.35; c audits 0 incl. the patch-row audit. Smoke `gpu_cont09_v3_smoke_001`
   preserved (SMOKE).
 - RUBBER-CONT-11 (reported): batched v3 vs v2 (B2-v2 rows) 0.579 vs 0.562 ms per substep (N 4, -09 configuration),
@@ -587,6 +612,16 @@ criterion of `rubber_contact_tests_v3` passes except -01 d (stick-run books, dec
 slip-rate waves inside a slipping patch are suppressed; disjoint contact regions on one obstacle face share one patch; a
 net patch torque remains. All earlier FAILs (`contact_v1_001`, `contact_v2_001`, `gpu_cont09_001`) and the X2 negative
 result stay.
+
+**K2 amendment (K2-1, K2-4, K2-8; binding).** The envelope above holds for **translational (straight-line) sliding and
+static holds only** — the INC, INC2 and PINCH scenes the protocol scores. The equalisation is a full per-substep
+projection onto the patch-mean slip velocity (c_d·dt/m_I = 1): its torque about the normal is not bounded by Coulomb,
+does not scale with μ and can reverse a spin (K2 spin probe: 9× / 15× / 150× the Coulomb torque at μ 0.8 / 0.5 /
+0.05), and it suppresses rotation and in-plane bending in slip. **v3 is not the P2-6 law**; P2-6 uses v2 with μ ≤ 0.4
+until a declared protocol scores spin-down, lateral drag and two-region slip (ADR 0023 §22.11 K2 amendment). No unseen
+geometry was scored (INC and INC2 were both used in the X2 development; ENV2 adds one). Under v3 the per-node contact
+state depends on float64 atomic patch sums (order-nondeterministic on a GPU), and the -09 scene never scores an env with
+patch sums.
 
 ### 11.5 CPU suites
 
@@ -604,10 +639,10 @@ Evidence `docs/evidence/rl_ready/p2_s1_selfpen_001.json`; raw `artifacts/rl_read
 | Item | Status | Key numbers |
 |---|---|---|
 | Detector, single env + batched, one kernel source (`a1bdeac`) | **DONE** | surface pairs with \|x_p − x_q\| < s and \|X_p − X_q\| > 3 dx; env-grouped sort grid, no `wp.HashGrid`; checks every 256 substeps + end of step, inside the CUDA graph; default `off_v1` = no array, no launch |
-| CPU tests (a)–(f) + no-false-trip, `tests/test_rubber_self_penetration.py` (14) | **PASS** | (a) brute-force overlap at step 137 / substep 42, flag at substep 48 (interval 8), no other bit; λ 1.5 release scene trips (CPU); (b) U-bend 3t / 5t no flag, closed U flags; (c) L0 byte-wise N 1 (x64) / N 3; (d) env 1 only; (e) off; (f) reset clears |
+| CPU tests (a)–(f) + no-false-trip, `tests/test_rubber_self_penetration.py` (14; 16 after K2) | **PASS** | (a) brute-force overlap at step 137 / substep 70, flag at substep 72 (interval 8), no other bit (*K2-12 erratum:* first quoted as substeps 42 / 48); λ 1.5 release scene sets the bit on the CPU while J_DOMAIN / CFL are set — a trip in an invalid state, not fold-detection evidence (K2-15); (b) U-bend 3t / 5t no flag, closed U flags; near-boundary n_t 4 cases R = t / 0.6t no flag, 0.45t flags (added in K2, K2-15); (c) L0 byte-wise N 1 (x64) / N 3; (d) env 1 only; (e) off; (f) reset clears |
 | Declaration `rubber_selfpen_check_v1` (`5effd81`, sha256 `cc5cf333…8b8bc0`) | **DECLARED** before the run | COST reported; L2, TRIP, NO_FALSE_TRIP scored |
-| GPU check `gpu_selfpen_001` (`bca572d`, clean, GPU0, SHARED_GPU: PID 642659) | **PASS** | L2 PASS; TRIP PASS (GPU step 139 vs CPU 137; batched N 3: env 1 only); NO_FALSE_TRIP PASS (12 -09 runs + 3 full visco jobs) |
-| Cost (P2-6 profile scene, 65,024 particles / 19,664 surface per env, 5,226 substeps) | reported | N 1: 0.32084 vs 0.32100 ms/substep (−0.05 %, noise); N 8: 1.44038 vs 1.43354 (+0.48 %) |
+| GPU check `gpu_selfpen_001` (`bca572d`, clean, GPU0, SHARED_GPU: PID 642659) | **PASS** | L2 PASS; TRIP PASS (GPU step 139 vs CPU 137; batched N 3: env 1 only; *K2-13:* step 139 of 140 leaves almost no margin — trajectory sensitivity, not the detector, decides it); NO_FALSE_TRIP PASS (12 -09 runs + 3 full visco jobs) |
+| Cost (P2-6 profile scene, 65,024 particles / 19,664 surface per env, 5,226 substeps) | reported | N 1: 0.32084 vs 0.32100 ms/substep (−0.05 %, noise); N 8: 1.44038 vs 1.43354 (+0.48 %); *K2-14:* flat strip only — lifted / folded strips and N 16 are measured in RL-07 |
 
 Command (GPU):
 

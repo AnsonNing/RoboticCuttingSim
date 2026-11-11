@@ -4,9 +4,11 @@
 - (a) a case-C strip whose far grip is lifted, carried back over the strip and driven down through its own lower leg
   flags ``RUBBER_SELF_CONTACT_UNRESOLVED`` (8) before any other invalid bit, at the first check at or after the
   geometric overlap (an independent brute-force cKDTree search every substep), i.e. within one check interval; the
-  RUBBER-PHYS-09 lambda 1.5 instantaneous-release fold scene trips the bit as well;
-- (b) a prescribed legal U-bend of radius 3t never flags (float32 x and the float64 shadow); a closed U (inner gap
-  below s) does;
+  RUBBER-PHYS-09 lambda 1.5 instantaneous-release scene also sets the bit on the CPU, but in the same control step as
+  J_DOMAIN and CFL_EXCEEDED (release speeds 25-33 m/s): a trip in an invalid state, not fold-detection evidence (K2
+  review K2-15);
+- (b) a prescribed legal U-bend of radius 3t / 5t never flags (float32 x and the float64 shadow); a closed U (inner gap
+  below s) does; near the decision boundary at n_t 4, R = t and 0.6t never flag and R = 0.45t flags (K2-15);
 - (c) L0: single env vs batched N = 1 (P2-6 option set, x64 positions) and N = 3 heterogeneous, byte-wise after every
   control step (solver state, detector state, invalid bits);
 - (d) isolation: the crossing in env 1 changes no byte of envs 0 / 2 and sets bit 8 only for env 1;
@@ -198,7 +200,11 @@ def test_a_fold_through_own_body_flags_within_one_check_interval():
 
 def test_a_lambda_1p5_release_fold_scene_trips(monkeypatch):
     """RUBBER-PHYS-09 v5 stretch_release (lambda 1.5 over 2 control steps, release after step 3; t 3 mm, W/t 1, n_t 3,
-    guard 1.0), the fold scene of ADR 0023 §18.3, built by ``rubber_phys.case_records`` with the detector on."""
+    guard 1.0), the fold scene of ADR 0023 §18.3, built by ``rubber_phys.case_records`` with the detector on.
+
+    K2 review K2-15: when bit 8 is set the (sticky) J_DOMAIN / CFL_EXCEEDED bits are set too (an invalid state at
+    release speeds; the review saw all three in control step 4), so this is a trip in an invalid state, not evidence
+    that a physical fold is detected; test (a) is the detection evidence."""
     built = _force_detector(monkeypatch, cs=256)
     cfg = rp.load_config(rp.CONFIG.parent/"rubber_phys_tests_v5.json")
     r = rp.case_records("stretch_release", 0.003, 1, cfg, stable_step_guard=1.0)
@@ -206,6 +212,9 @@ def test_a_lambda_1p5_release_fold_scene_trips(monkeypatch):
     assert "RUBBER_SELF_CONTACT_UNRESOLVED" in r["invalid_flags"], r["step_flags"]
     assert live.last_self_penetration["hits"] > 0
     assert live.last_self_penetration["first_hit_control_step"] > 3            # after the release
+    hit = live.last_self_penetration["first_hit_control_step"]
+    same_step = next(f["flags"] for f in r["step_flags"] if f["step"] == hit)
+    assert {"RUBBER_J_DOMAIN", "RUBBER_CFL_EXCEEDED"} & set(same_step), same_step    # invalid state, not a fold proof
 
 
 # ----------------------------------------------------------------------------- (b) legal bends
@@ -250,6 +259,26 @@ def test_b_prescribed_u_bend_radius_3t_never_flags(options):
             assert hits > 0, R               # closed U: inner centre gap s/2 < s
         else:
             assert hits == 0, R
+
+
+@pytest.mark.parametrize("options", [{}, {"state_precision": "f64_shadow_v1"}], ids=["x", "x64"])
+def test_b_near_boundary_u_bend_n_t4(options):
+    """K2 review K2-15: legal bends close to the decision boundary at n_t 4 (s = t / 8, exclusion 3 dx = 0.75 t).
+    R = t and R = 0.6t (inner centre gap 2R - t + s = t + s and 0.2t + s, both > s; the inner fibre is compressed to
+    radius R - t/2 + s/2) never flag; R = 0.45t (gap s - 0.1t < s: the legs interpenetrate) flags."""
+    t = 0.004
+    spec = rs.RubberStripSpec(length=0.04, width=0.004, thickness=t, n_t=4, case="A")
+    live = LiveRubberMaterial(spec, material=MaterialValues(mu0=2e5, kappa=4e6, density=1150.0), control_dt=CDT,
+                              self_penetration_check=ON, self_penetration_check_substeps=CS, **options)
+    sp, s = live.self_penetration, live.solver
+    target = s.x64 if options else s.x
+    for R, flag in ((t, False), (0.6*t, False), (0.45*t, True)):
+        sp.reset_all()
+        pos = _u_bend(live.scene, R, 0.008)
+        target.assign(pos if options else pos.astype(np.float32))
+        sp.check()
+        hits = sp.read()[0]["hits"]
+        assert (hits > 0) == flag, (R/t, hits)
 
 
 # ----------------------------------------------------------------------------- (c) L0, (d) isolation, (f) reset

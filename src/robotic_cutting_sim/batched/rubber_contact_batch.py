@@ -22,7 +22,9 @@ refused, so a new law version must declare its layout): node rows at the env's n
 attributes are copied from the single reference (uniform signature). Every write of the contact kernels goes to the
 node's own row or to rows of its env (``env_of_node``), so on the Warp CPU device each env's contact state, reactions,
 work and counts are byte-identical to its single reference (RUBBER-CONT-08); on a GPU the reaction / work atomics are
-order-nondeterministic, the per-node state is not (RUBBER-CONT-09).
+order-nondeterministic. The per-node contact state is deterministic for laws v1 / v2 only: under v3 the node velocities
+depend on the float64 atomic patch sums ``ct_pacc`` (order-nondeterministic on a GPU; K2 review K2-8). The GPU check
+RUBBER-CONT-09 scores out-of-reach envs only, so it does not measure that nondeterminism.
 
 Material outputs (``BatchedRubberMaterial`` with contact, after each control step; float64): ``plane_wrench[N, P, 6]``
 (torque about the world origin), ``box_wrench[N, F, B, 6]`` (torque about the frame's current origin) - both

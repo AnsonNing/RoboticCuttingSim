@@ -434,5 +434,10 @@
   "P1 contact kernel cost (frame table, bounding-volume reject)",
   "S1 self-penetration detector",
   "independent review (R1)"
- ]
+ ],
+ "k2_review_notes": {
+  "header": "Additive notes of the K2 combined review fixes (2026-11-11; findings in docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md). No recorded value, verdict or command of this file is changed; no GPU job was re-run for these notes.",
+  "K2-3": "The v1 band (max|A - B| <= max|A - A'| + 1e-6 max|A|) has the same floor construction: the 18 summary rows of the 108 (324 scalars) carried no information. The v1 FAIL (clamp wrench) is unaffected and stays preserved.",
+  "K2-7_d": "Co-tenant erratum: the 'second co-tenant PID 3093155' of this run was the run's own process; SHARED_GPU stands because of PID 642659 (report P2_4_RUBBER_CONTACT.md section 9 erratum, p2_4_contact_batched_002.json erratum_p2_4_contact_batched_001)."
+ }
 }
