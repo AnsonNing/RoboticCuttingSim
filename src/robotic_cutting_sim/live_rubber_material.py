@@ -23,15 +23,19 @@ import warp as wp
 
 from . import rubber_material as rm
 from . import rubber_scene as rs
+from . import rubber_self_penetration as rsp
 from .tlmpm_rubber_v1 import DIAG_COLUMNS, SOLVER_NAME, STATUS, TLMPMRubber
 
 RECORD_SCHEMA = "rcs_rubber_record_v1"
 INVALID_NONFINITE_STATE = 1
 INVALID_RUBBER_J_DOMAIN = 2
 INVALID_RUBBER_CFL_EXCEEDED = 4
+INVALID_RUBBER_SELF_CONTACT_UNRESOLVED = rsp.INVALID_RUBBER_SELF_CONTACT_UNRESOLVED   # 8, S1 detector (ADR 0023 §23)
 INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_RUBBER_J_DOMAIN: "RUBBER_J_DOMAIN",
-                   INVALID_RUBBER_CFL_EXCEEDED: "RUBBER_CFL_EXCEEDED"}
+                   INVALID_RUBBER_CFL_EXCEEDED: "RUBBER_CFL_EXCEEDED",
+                   INVALID_RUBBER_SELF_CONTACT_UNRESOLVED: rsp.REASON_NAME}
 DEFAULT_GRAPH_CHUNK = 500
+SPEED_COLUMN = DIAG_COLUMNS.index("max_speed_m_s")
 
 
 class RubberInvalidState(FloatingPointError):
@@ -55,15 +59,24 @@ class LiveRubberMaterial:
     §21.1 (``rubber_constraint_work``; the default builds the unchanged ``TLMPMRubber``). A material with Prony terms
     (``MaterialValues.prony``, model ``neo_hookean_jbar_prony_v1``) or ``visco_energy="branch_work_v1"`` builds the
     viscoelastic ``tlmpm_rubber_visco_v1.TLMPMRubberVisco`` (ADR 0023 §21.2); its visco diagnostics are read after every
-    control step (``last_visco``). The step rule uses mu0 (the instantaneous modulus) of ``step_material``."""
+    control step (``last_visco``). The step rule uses mu0 (the instantaneous modulus) of ``step_material``.
+    ``self_penetration_check`` ("off_v1" default: no detector, no array, no launch; "surface_grid_v1") is the S1
+    detector of ADR 0023 §23 (``rubber_self_penetration``): a check every ``self_penetration_check_substeps``
+    substeps and after the last substep of the control step, inside the CUDA graph chunks (aligned to a multiple of
+    the check interval); hits set the sticky bit ``RUBBER_SELF_CONTACT_UNRESOLVED`` (8); ``last_self_penetration``
+    holds the per-step summary. It reads positions only, so the solver state is the same with it on or off."""
 
     def __init__(self, spec, *, recipe=None, material=None, control_dt=0.02, cfl=None, substeps=None,
                  step_material=None, gravity=(0.0, 0.0, -9.81), device="cpu", graph_chunk=DEFAULT_GRAPH_CHUNK,
                  capture_graph=None, record=False, strict=True, table_plane=None, fixture_boxes=None,
                  stable_step_guard=None, deformation_reserve=1.0, dirichlet="lumped_v1",
                  traction_work="particle_velocity_v1", state_precision="float32_v1",
-                 constraint_work="end_velocity_v1", visco_energy="off_v1", contact=None):
+                 constraint_work="end_velocity_v1", visco_energy="off_v1", contact=None,
+                 self_penetration_check=rsp.DEFAULT_SELF_PENETRATION_CHECK,
+                 self_penetration_check_substeps=rsp.DEFAULT_CHECK_SUBSTEPS):
         start = time.perf_counter()
+        self.self_penetration_check, self.self_penetration_check_substeps = rsp.check_option(
+            self_penetration_check, self_penetration_check_substeps)
         self.recipe = rm.load_recipe() if recipe is None else recipe
         self.material = self.recipe.nominal() if material is None else material
         self.spec = spec
@@ -114,6 +127,17 @@ class LiveRubberMaterial:
         self.strict, self.record = bool(strict), bool(record)
         self.capture_graph = wp.get_device(self.device).is_cuda if capture_graph is None else bool(capture_graph)
         self.graph_chunk = max(1, min(int(graph_chunk), self.substeps))
+        self.self_penetration = None
+        self.last_self_penetration = None
+        if self.self_penetration_check != rsp.CHECK_OFF:
+            s = self.solver
+            positions = s.x64 if s.state_precision == "f64_shadow_v1" else s.x
+            self.self_penetration = rsp.SelfPenetrationDetector(
+                [self.scene], positions, s.reference, [0], device=self.device, dt=self.dt, substeps=self.substeps,
+                check_substeps=self.self_penetration_check_substeps)
+            with wp.ScopedDevice(self.device):
+                self._self_penetration_invalid = wp.zeros(1, dtype=int)
+            self.graph_chunk = rsp.aligned_chunk(self.graph_chunk, self.substeps, self.self_penetration_check_substeps)
         self.graphs = None
         self.capture_receipt = None
         self.step_count = 0
@@ -135,14 +159,20 @@ class LiveRubberMaterial:
         start = time.perf_counter()
         chunk = self.graph_chunk
         repeats, rest = divmod(self.substeps, chunk)
+        sp = self.self_penetration
+        if sp is not None:
+            sp.check()          # warm-up outside the capture (radix-sort scratch); reset() follows the capture
         graphs = []
-        for size in (chunk, rest):
+        for size, first in ((chunk, 0), (rest, repeats*chunk)):
             if size == 0:
                 graphs.append(None)
                 continue
             with wp.ScopedCapture(device=self.device) as capture:
-                for _ in range(size):
-                    self.solver.step()
+                if sp is None:
+                    for _ in range(size):
+                        self.solver.step()
+                else:
+                    sp.run_substeps(self.solver.step, size, first)
             graphs.append(capture.graph)
         self.graphs = (graphs[0], repeats, graphs[1])
         self.capture_receipt = {"graph_chunk_substeps": chunk, "chunk_replays": repeats, "remainder_substeps": rest,
@@ -155,6 +185,8 @@ class LiveRubberMaterial:
                 wp.capture_launch(main)
             if rest is not None:
                 wp.capture_launch(rest)
+        elif self.self_penetration is not None:
+            self.self_penetration.run_substeps(self.solver.step, self.substeps)
         else:
             for _ in range(self.substeps):
                 self.solver.step()
@@ -169,6 +201,10 @@ class LiveRubberMaterial:
         self._last_cfl_violations = 0
         self.last_visco = None
         self.last_contact = None
+        if self.self_penetration is not None:
+            self.self_penetration.reset_all()
+            self._self_penetration_invalid.zero_()
+            self.last_self_penetration = None
         self.records = [self.header()] if self.record else []
         return self.receipt_short()
 
@@ -213,6 +249,11 @@ class LiveRubberMaterial:
         self._last_cfl_violations = cfl_violations
         if cfl_violations > 0:
             self.invalid_reason |= INVALID_RUBBER_CFL_EXCEEDED
+        sp = self.self_penetration
+        if sp is not None:
+            sp.post(s.diagnostics.summary, self._self_penetration_invalid, SPEED_COLUMN)
+            self.invalid_reason |= int(self._self_penetration_invalid.numpy()[0])
+            self.last_self_penetration = sp.read()[0]
         self.last_diagnostics = diag
         if self.record:
             self.records.append(self.step_record(diag, wrench, step_violations, step_cfl_violations))
@@ -255,7 +296,9 @@ class LiveRubberMaterial:
                 **({"visco": dict(self.last_visco)} if getattr(self, "last_visco", None) else {}),
                 **({"contact": {k: (np.asarray(v).tolist() if isinstance(v, np.ndarray) else v)
                                 for k, v in self.last_contact.items()}}
-                   if getattr(self, "last_contact", None) else {})}
+                   if getattr(self, "last_contact", None) else {}),
+                **({"self_penetration": dict(self.last_self_penetration)}
+                   if getattr(self, "last_self_penetration", None) else {})}
 
     # ------------------------------------------------------------------ queries
 
@@ -271,7 +314,9 @@ class LiveRubberMaterial:
                 "control_dt_s": self.control_dt, "graph": self.capture_receipt, "strict": self.strict,
                 "calibration_status": self.recipe.calibration_status, "memory_bytes": self.solver.memory_bytes(),
                 "build_wall_s": self.build_wall_s, "invalid_reason": decode_reason(self.invalid_reason),
-                "stable_step_guard": self.solver.solver_receipt()["stable_step_guard"]}
+                "stable_step_guard": self.solver.solver_receipt()["stable_step_guard"],
+                **({"self_penetration": self.self_penetration.receipt()} if self.self_penetration is not None
+                   else {})}
 
 
 # ----------------------------------------------------------------------------- record validation (RUBBER-PHYS-09)

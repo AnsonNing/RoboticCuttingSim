@@ -34,6 +34,13 @@ material memory (RUBBER-VISC-06). Per-reset randomisation of the Prony terms: de
 (multiplies every g_i; sum g < 1 enforced) and ``prony_tau_scale`` (multiplies every tau_i), relative to the env's
 packed terms. After the frozen diagnostics the visco diagnostics (``visco_summary[N, 8]``: Psi_eq, Psi_v, W_b, D, ...)
 are launched (fixed order; the single solver's kernels).
+
+S1 self-penetration detector (ADR 0023 §23.2 decision 2; ``rubber_self_penetration``): lives built with
+``self_penetration_check="surface_grid_v1"`` (uniform over the batch, with the same check interval) give the batch a
+``self_penetration`` detector over every env's surface particles. Its checks run inside the graph chunks (the chunk is
+aligned to a multiple of the check interval) at the single-env positions; after the diagnostics it sets the sticky bit
+``RUBBER_SELF_CONTACT_UNRESOLVED`` (8) of every env with hits, before the validity kernel; the masked reset clears the
+detector state of the reset envs. ``off_v1`` (default): no detector, no array, no launch.
 """
 import hashlib
 import time
@@ -43,6 +50,7 @@ import numpy as np
 import warp as wp
 
 from .. import tlmpm_rubber_v1 as T
+from .. import rubber_self_penetration as rsp
 from .. import rubber_visco_constitutive as rvc
 from . import constitutive_rubber as cr
 from . import rubber_layout
@@ -56,8 +64,11 @@ VERSION = "batched_rubber_material_v1"
 INVALID_NONFINITE_STATE = 1
 INVALID_RUBBER_J_DOMAIN = 2
 INVALID_RUBBER_CFL_EXCEEDED = 4
+INVALID_RUBBER_SELF_CONTACT_UNRESOLVED = rsp.INVALID_RUBBER_SELF_CONTACT_UNRESOLVED   # 8, S1 detector (ADR 0023 §23)
 INVALID_REASONS = {INVALID_NONFINITE_STATE: "NONFINITE_STATE", INVALID_RUBBER_J_DOMAIN: "RUBBER_J_DOMAIN",
-                   INVALID_RUBBER_CFL_EXCEEDED: "RUBBER_CFL_EXCEEDED"}
+                   INVALID_RUBBER_CFL_EXCEEDED: "RUBBER_CFL_EXCEEDED",
+                   INVALID_RUBBER_SELF_CONTACT_UNRESOLVED: rsp.REASON_NAME}
+SPEED_COLUMN = T.DIAG_COLUMNS.index("max_speed_m_s")
 DIAG_GROUPS = T.DIAG_GROUPS   # fixed reduction width shared with the single reference: same summation order
 DEFAULT_GRAPH_CHUNK = 500
 
@@ -364,6 +375,7 @@ class BatchedRubberMaterial:
         self._initial_prony = [tuple(live.material.prony) for live in lives] if s.M else None
         self.G, self.Gt, self.K = s.G, s.Gt, pk.uniform["markers"]
         self.ranges = self._check_ranges(ranges, lives)
+        self.self_penetration = self._init_self_penetration(lives)
         G1, Gt1 = max(self.G, 1), max(self.Gt, 1)
         seeds = np.arange(N, dtype=np.int64) if seeds is None else np.asarray(seeds, np.int64).reshape(N)
         trac_counts = (pk.env["traction_particle_counts"].astype(np.float32).reshape(-1) if self.Gt
@@ -402,11 +414,30 @@ class BatchedRubberMaterial:
             wp.load_module(module=module, device=device)
         s.prepare_motion_table()
         self.graph_chunk = max(1, min(int(graph_chunk), s.substeps))
+        if self.self_penetration is not None:
+            self.graph_chunk = rsp.aligned_chunk(self.graph_chunk, s.substeps,
+                                                 self.self_penetration.check_substeps)
         self.graphs = None
         self.capture_receipt = None
         if self.capture_graph:
             self._capture()
         self.build_wall_s = time.perf_counter()-start
+
+    def _init_self_penetration(self, lives):
+        """S1: the lives' option (uniform) -> one detector over the batch (None for off_v1)."""
+        opts = {(getattr(live, "self_penetration_check", rsp.CHECK_OFF),
+                 getattr(live, "self_penetration_check_substeps", rsp.DEFAULT_CHECK_SUBSTEPS)) for live in lives}
+        if len(opts) != 1:
+            raise UnsupportedBatchConfiguration("UNSUPPORTED_NONUNIFORM_BATCH",
+                                                f"self_penetration_check differs between the lives: {sorted(opts)}")
+        check, check_substeps = opts.pop()
+        if check == rsp.CHECK_OFF:
+            return None
+        s = self.solver
+        positions = s.x64 if s.state_precision == "f64_shadow_v1" else s.x
+        return rsp.SelfPenetrationDetector([live.scene for live in lives], positions, s.reference,
+                                           self.packed.particle_offset[:-1], device=self.device, dt=s.dt,
+                                           substeps=s.substeps, check_substeps=check_substeps)
 
     def _init_projection_host(self, lives):
         """F8: host copies of the initial per-env block inverses (exact single-solver bits) and the scenes, to rebuild
@@ -453,14 +484,20 @@ class BatchedRubberMaterial:
         start = time.perf_counter()
         chunk = self.graph_chunk
         repeats, rest = divmod(self.solver.substeps, chunk)
+        sp = self.self_penetration
+        if sp is not None:
+            sp.check()          # warm-up outside the capture (radix-sort scratch); the reset below clears it
         graphs = []
-        for size in (chunk, rest):
+        for size, first in ((chunk, 0), (rest, repeats*chunk)):
             if size == 0:
                 graphs.append(None)
                 continue
             with wp.ScopedCapture(device=self.device) as capture:
-                for _ in range(size):
-                    self.solver.step()
+                if sp is None:
+                    for _ in range(size):
+                        self.solver.step()
+                else:
+                    sp.run_substeps(self.solver.step, size, first)
             graphs.append(capture.graph)
         self.graphs = (graphs[0], repeats, graphs[1])
         self.capture_receipt = {"graph_chunk_substeps": chunk, "chunk_replays": repeats, "remainder_substeps": rest,
@@ -533,6 +570,8 @@ class BatchedRubberMaterial:
                     wp.capture_launch(main)
                 if rest is not None:
                     wp.capture_launch(rest)
+            elif self.self_penetration is not None:
+                self.self_penetration.run_substeps(s.step, s.substeps)
             else:
                 for _ in range(s.substeps):
                     s.step()
@@ -542,6 +581,8 @@ class BatchedRubberMaterial:
             if self.contact is not None:
                 self.contact.launch_wrench(s, self.control_dt, self.invalid_reason)
             self.launch_diagnostics()
+            if self.self_penetration is not None:
+                self.self_penetration.post(self.summary, self.invalid_reason, SPEED_COLUMN)
             self.invalid_count.zero_()
             wp.launch(_validity_b, self.num_envs, [self.summary, s.violations, s.cfl_violations, self.wrench,
                                                    self.G, self.invalid_reason, self.invalid_count, self.step_count])
@@ -718,6 +759,8 @@ class BatchedRubberMaterial:
                     wp.launch(_reset_visco_env_v2_r, N, [self.reset_mask, s.visco_branch_work_left])
             if self.contact is not None:
                 self.contact.launch_reset(s, self.reset_mask)
+            if self.self_penetration is not None:
+                self.self_penetration.reset_masked(self.reset_mask)
             if full:
                 s.index.zero_()
         # motion_table_v1: the table follows the reset group motions (review R1; every env recomputed from its
@@ -737,6 +780,10 @@ class BatchedRubberMaterial:
 
     def markers(self):
         return self.marker_x.numpy().reshape(self.num_envs, self.K, 3)
+
+    def self_penetration_read(self):
+        """S1: host per-env detector summary (hits, first hit, checks, blind steps); None without the detector."""
+        return None if self.self_penetration is None else self.self_penetration.read()
 
     # ------------------------------------------------------------------ contact (ADR 0023 §22; contact batches only)
 
@@ -783,6 +830,8 @@ class BatchedRubberMaterial:
         out.update({k: v for k, v in vars(self).items() if isinstance(v, wp.array)})
         if self.contact is not None:
             out.update({f"contact.{k}": v for k, v in self.contact.arrays().items()})
+        if self.self_penetration is not None:
+            out.update({f"self_penetration.{k}": v for k, v in self.self_penetration.arrays().items()})
         return out
 
     def memory_bytes(self):
@@ -807,6 +856,8 @@ class BatchedRubberMaterial:
                                            "(strip-local), pending_wrench [N,6] = 0",
                                 "world_transform_and_recipients": "not implemented (task B3)"}}
                    if self.contact is not None else {}),
+                **({"self_penetration": self.self_penetration.receipt()} if self.self_penetration is not None
+                   else {}),
                 "open_vector_env": "deferred to P2-6 (P1-5 owns the configured-scene dispatch)",
                 "diagnostics_groups": DIAG_GROUPS}
 
