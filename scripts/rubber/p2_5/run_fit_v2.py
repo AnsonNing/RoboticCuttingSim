@@ -25,7 +25,7 @@ import _common as C  # noqa: E402
 
 PROTOCOL_V2 = C.ROOT/"configs"/"rubber"/"rubber_calib_tests_v2.json"
 PROTOCOL_V2_SHA = None      # set by the commit that pins rubber_calib_tests_v2
-DEV_SETTINGS = {"deterministic": "run_to_run", "fd_step_u": 1e-3, "budget_s": {"pilot_validation": 5400}}
+DEV_SETTINGS = {"deterministic": "default", "fd_step_u": 1e-2, "budget_s": {"pilot_validation": 4800}}
 
 
 def prior_box_u(prior, space):
