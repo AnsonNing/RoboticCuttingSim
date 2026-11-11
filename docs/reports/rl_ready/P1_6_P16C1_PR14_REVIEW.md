@@ -30,7 +30,7 @@ The authorship trailer of the two optimizer commits is known and accepted, so it
 
 ## 1. Verdict
 
-**PASS_WITH_LIMITATIONS. Merge GO once GitHub CI on `8d6a2b3b` completes green (§7, §8).**
+**PASS_WITH_LIMITATIONS. Merge GO: GitHub CI on `8d6a2b3b` is green (§7); conditions in §8.**
 
 - **No BLOCKER and no MAJOR finding.**
 - **Default and v1 unchanged:**
@@ -71,7 +71,7 @@ The authorship trailer of the two optimizer commits is known and accepted, so it
 | PR body against evidence | **PASS_WITH_LIMITATIONS** | §4. The gate table, ratios, rows and SHARED_GPU label are correct. Limitations specific to the PR are missing: findings 1 and 2, plus that the speed-up depends on slow particles. The wording "samestate reruns bitwise" holds for dev only (finding 5). |
 | PR checklist (hooks, tests, pytest config, opt-in, no harness or record reads, parity and rollback) | **PASS** | §4.1 |
 | Tests run here (CPU) | **PASS** | §6: 26 + 119 + 130 + 179 / 91 passed. The 3 initial torch failures were missing `artifacts/` links in my worktree; all 91 pass on rerun with the links. |
-| GitHub CI | **PENDING** (not a pass) | §7 |
+| GitHub CI | **PASS** | §7. Both runs succeeded with 0 failed: push run 43102214049 (2481 passed, 58 skipped, 6 xfailed) and pull_request run 43102223144 (2451 passed, 88 skipped, 6 xfailed). |
 
 ## 3. Correctness of the diff
 
@@ -411,12 +411,13 @@ Still NOT_RUN: `test_vector_env_gpu_stream.py` (CUDA hidden).
 
 ## 7. GitHub CI and GPU material probe
 
-**CI.** Workflow "CPU tests" on `8d6a2b3b` is **in progress** (not a pass) as of 2026-11-11 21:40 UTC:
-- push run 43102214049;
-- pull_request run 43102223144;
-- both jobs are in step 8, `python -m pytest -q -rsx`. Every install step, including "Install media test tools",
-  completed successfully.
-- The last `main` run (`bfe6d5e`) took 108 min and succeeded.
+**CI: PASS.** Workflow "CPU tests" on `8d6a2b3b` succeeded in both runs (checked 2026-11-11 23:10 UTC):
+- push run 43102214049, job 130796285432: 2481 passed, 58 skipped, 6 xfailed, 0 failed, 6447.85 s.
+- pull_request run 43102223144, job 130796318987: 2451 passed, 88 skipped, 6 xfailed, 0 failed, 6471.09 s.
+- Every step succeeded, including "Install media test tools".
+- The pull_request run skips 30 more tests than the push run, but neither run has a failure.
+
+The summary lines come from `gh api repos/AnsonNing/RoboticCuttingSim/actions/jobs/<id>/logs`.
 
 **GPU material probe: PASS** (optional; `probes/gpu_material_002*`, GPU0 under `gpu0.lock`, 21:54 UTC, 10 s).
 
@@ -445,9 +446,8 @@ The first attempt (`gpu_material.py`) waited 9.7 min for the lock, held by the P
 
 ## 8. Conditions and recommendations
 
-1. **Merge condition:** GitHub CI on `8d6a2b3b` completes with success. If it fails, read the failing step from
-   `gh api repos/AnsonNing/RoboticCuttingSim/actions/runs/<id>/jobs`. An apt-mirror failure in "Install media test
-   tools" is not a code failure; rerun.
+1. **Merge condition (met):** GitHub CI on `8d6a2b3b` succeeded in both runs (§7). If the head changes, the review and
+   CI apply only to `8d6a2b3b`.
 2. **Add to the PR body or merge note:**
    - findings 1 and 2;
    - that the speed-up depends on per-env particle speeds below V;
