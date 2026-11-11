@@ -388,3 +388,57 @@ tests/test_repo_naming.py` at `ffb099f` (src and tests unchanged since; B1 merge
 with `CUDA_VISIBLE_DEVICES=''` (579 s) and **455 passed** with `=0` under the GPU0 lock (578 s); 2 pre-existing scipy
 warnings; logs `artifacts/rl_ready/p2_4/cpu_tests_x1_001/`. New: `tests/test_rubber_contact_v2.py` (8), the v2 protocol pin.
 None of the tests needs local artifacts, torch or CUDA.
+
+## 9. Task X2 — defect 2 (friction–normal flutter): negative result (ADR 0023 §22.10)
+
+Branch `claude/rl-rubber-p24` from `2b2221b`. Material status **SIMULATOR_ONLY_UNCALIBRATED**. Label **DIAGNOSTIC**: no
+law adopted, no protocol declared, no formal run. Evidence `docs/evidence/rl_ready/p2_4_contact_x2_001.json`; raw
+`artifacts/rl_ready/p2_4/x2_diag_001` (README); scripts `x2_dev_laws.py`, `diag_contact_x2.py`, `diag_x2_pattern.py`
+(`b019684`, `331550c`); identity reruns at both commits identical in every field except wall time. Nothing in `src`,
+`tests` or `configs` changed. Command per row: `CUDA_VISIBLE_DEVICES='' .venv/bin/python
+scripts/rubber/p2_4/diag_contact_x2.py <args>` (Warp 1.17.0 CPU, Python 3.12.12).
+
+### 9.1 Character of the flutter (v2, INC)
+
+| Observation | Value |
+|---|---|
+| bottom nodes in contact per substep, μ 0 / 0.2 / 0.8 | 100 % / 60 % / 4.4 % |
+| v_z rms at μ 0.8 (sliding speed 0.12 m/s) | 16 mm/s; dominant 1.5–3 kHz; peak 1–3 waves over the face |
+| μ 0.8 slip error, cfl 0.5 / 0.25 / 0.125 | +1.26 / +1.12 / +1.15 % (dt-converged) |
+| μ 0.8 slip error, n_t 3 / 4 / 5 / 6 / 8 | +1.26 / +2.0 / +1.7 / +2.8 / +4.6 % (grows) |
+| μ 1.0 slip error, n_t 3 / 4 / 6 | +3.8 / +6.2 / +9.9 % |
+| HF loss probe (Prony g 0.15, τ 100 µs), μ 0.8 n_t 3 / 4 | ≤ 0.18 / ≤ 0.28 %; μ 1.0: +4.5 % |
+
+Because the deficit is converged in dt, time-integration changes of the contact (implicit / return-mapped tangential
+update, Moreau projection, augmented-Lagrangian or decoupled normal stiffness) cannot remove it; κ 1 and ζ 1 do not
+either. It grows under dx refinement at every μ tested, which the half-space analysis of §22.9 (contact kept) does not
+explain; that statement is withdrawn as unproven (task X4).
+
+### 9.2 Candidates
+
+| Candidate | μ 0.8 sliding | μ 1.0 sliding | Hold 0.95 μ | Robustness | Verdict |
+|---|---|---|---|---|---|
+| nonlocal cap, radius 2–3 nodes | 0.6–0.7 % | 2.6–8 % | – | radius shrinks with dx | rejected |
+| patch-level cap | 0.12–0.91 % (n_t 3) | 2.5 % | to μ 1.0 | cfl 0.25: 1.16 %; INC2 D04 0.947; μ 0.9 2.4 % | rejected |
+| patch cap + lagged total τ 0.25 ms | exact (n_t 3) | 4–8 % | to μ 1.0 | n_t 4: +1.7 % (μ 0.8); no recovery | rejected |
+| per-node lag τ 0.5 / 1 / 3 ms | exact | −1.9 % / exact / exact | ramp-phase slip 10.5 / 52 µm / 0.2–0.5 mm (v2 0.19 µm) | no recovery (−12 %); τ 0.25 ms −7 … −20 % | rejected |
+| memory across bounces (± gate) | exact from rest | exact from rest | lost at τ ≥ 1 ms | friction collapse after bouncing (+75 %, +99 %) | rejected |
+| max / slip-distance / patch-slip-gated memories | −1.4 … −15 % | −14 … +0.4 % | – | flutter not suppressed | rejected |
+| **patch slip-rate equalisation (mode 13, ζ_d 1)** | **exact at n_t 3 / 4 / 6, cfl 0.25, INC2; recovers** | exact at n_t 3 / cfl 0.25 / INC2; **n_t 4 +2.4 %, n_t 6 +4.2 %** | to μ 1.5; ramp-phase 0.16 µm; μ 0.8 at n_t 4 holds | μ ≥ 1.2 fails | promising, not adopted |
+
+### 9.3 Decision
+
+Negative result for the X2 requirement: no v3, no protocol v3, no formal run. v2, `rubber_contact_tests_v2` and the
+labels stay. The mode-13 design is the recommended v3 (task X3: src + batched + pads, then a declared protocol scoring
+μ ≤ 0.8 at n_t 3 and 4). Qualifications (ADR §22.10): the v2 envelope holds at n_t 3 on INC / INC2 but not at
+`rubber_ref_v1` (μ 0.8 hold slides 3.9 mm at n_t 4; μ 0.6 sliding +1.2 / +1.7 % on INC2 at n_t 4, +1.06 % on INC at
+n_t 6; INC2 at μ 0.8: +2.5 … +8.3 %). -01 d: the stick-run books residual (2.3–4.3e-12 J) is a real, slowly accumulating
+drift (static jitter 5–12 µm/s dissipated by the dashpots), far above float64 resolution; no rule change, the v2 FAIL
+stands (task X5).
+
+### 9.4 CPU suites
+
+`tests/test_rubber_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_batched_*.py
+tests/test_repo_naming.py` at `b019684` (src and tests unchanged since `2b2221b`): **455 passed** with
+`CUDA_VISIBLE_DEVICES=''` (608 s) and **455 passed** with `=0` under the GPU0 lock (606 s); logs
+`artifacts/rl_ready/p2_4/cpu_tests_x2_001/`.
