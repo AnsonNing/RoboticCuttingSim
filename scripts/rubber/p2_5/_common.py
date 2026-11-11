@@ -127,3 +127,63 @@ class Log:
         print(line, flush=True)
         with open(self.path, "a") as fh:
             fh.write(line+"\n")
+
+
+class GPULockPerEvaluation:
+    """Blocking flock on rcs_rl_runner/gpu<N>.lock held only around each forward evaluation (v2 rule: queued jobs
+    interleave between evaluations). ``clock()`` returns the cumulative hold time in seconds (the v2 budget clock).
+    After every acquisition the free memory must be >= ``min_free_mib`` (else BLOCKED)."""
+
+    def __init__(self, index, min_free_mib=4096):
+        import fcntl
+        self.fcntl, self.index, self.min_free = fcntl, int(index), min_free_mib
+        self.path = f"/mnt/data/ningan/lab_records/rcs_rl_runner/gpu{self.index}.lock"
+        self.held_s, self.acquisitions, self.wait_s, self._t = 0.0, 0, 0.0, None
+        self.samples = []
+
+    def __enter__(self):
+        import time
+        self.fh = open(self.path, "a")
+        w0 = time.monotonic()
+        self.fcntl.flock(self.fh, self.fcntl.LOCK_EX)
+        self.wait_s += time.monotonic()-w0
+        self.acquisitions += 1
+        self._t = time.monotonic()
+        if self.acquisitions <= 3 or self.acquisitions % 10 == 0:
+            self.samples.append(gpu_sample())
+        free = gpu_free_mib(self.index)
+        if free is None or free < self.min_free:
+            self.__exit__(None, None, None)
+            raise SystemExit(f"BLOCKED: GPU{self.index} free {free} MiB < {self.min_free} MiB after acquiring the lock")
+        return self
+
+    def __exit__(self, *exc):
+        import time
+        if self._t is not None:
+            self.held_s += time.monotonic()-self._t
+            self._t = None
+        self.fcntl.flock(self.fh, self.fcntl.LOCK_UN)
+        self.fh.close()
+        return False
+
+    def clock(self):
+        import time
+        return self.held_s+((time.monotonic()-self._t) if self._t is not None else 0.0)
+
+    def receipt(self):
+        return {"lock": self.path, "mode": "blocking flock per forward evaluation", "held_s": self.held_s,
+                "acquisitions": self.acquisitions, "wait_s": self.wait_s, "samples": self.samples}
+
+
+class LockedObjective:
+    """Objective proxy: every forward population runs under the per-evaluation GPU lock."""
+
+    def __init__(self, objective, lock):
+        self.objective, self.lock = objective, lock
+
+    def __getattr__(self, name):
+        return getattr(self.objective, name)
+
+    def residuals_population(self, thetas):
+        with self.lock:
+            return self.objective.residuals_population(thetas)

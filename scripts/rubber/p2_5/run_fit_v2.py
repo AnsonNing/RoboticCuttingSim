@@ -1,8 +1,12 @@
 """P2-5 v2 staged fit (protocol rubber_calib_tests_v2 'fit'; supersedes the v1 fit procedure only).
 
-    flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 \
-        TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src .venv/bin/python scripts/rubber/p2_5/run_fit_v2.py \
-        --kind formal|negative_control|pilot_validation --out artifacts/rl_ready/p2_5/<run>/<kind> --gpu-index 0
+    env CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src .venv/bin/python \
+        scripts/rubber/p2_5/run_fit_v2.py --kind formal|negative_control --out artifacts/rl_ready/p2_5/<run>/<kind> \
+        --gpu-index 0
+
+The script takes the blocking GPU lock itself, per forward evaluation (protocol v2: queued jobs interleave), and the
+budget counts only its own lock-hold time. (``pilot_validation``, the development run of 2026-11-12, ran under one
+external flock for the whole run.)
 
 Stages (``rubber_calibration_fit.fit_staged``): S1 elastic (mu_eq) from T1, S2 visco (g1, tau1, g2, tau2) from R1 + T2
 (3 Latin-hypercube starts over the prior box, lockstep), S3 friction (mu_table) from F1, S4 joint polish of all six on
@@ -48,6 +52,14 @@ def centre(prior):
             "mu_table": a("mu_table")}
 
 
+class _nullcontext:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--kind", choices=("formal", "negative_control", "pilot_validation"), required=True)
@@ -70,7 +82,9 @@ def main():
         if v2sha != PROTOCOL_V2_SHA:
             raise SystemExit(f"v2 protocol sha {v2sha} != pinned {PROTOCOL_V2_SHA}")
         settings = json.loads(raw)["fit"]
-    free = C.require_gpu(args.gpu_index)
+    lock = C.GPULockPerEvaluation(args.gpu_index) if args.kind != "pilot_validation" else None
+    with (lock if lock is not None else _nullcontext()):
+        free = C.require_gpu(args.gpu_index)
     out.mkdir(parents=True)
     log = C.Log(out/"log.txt")
     import warp as wp
@@ -114,7 +128,7 @@ def main():
         o = rcf.Objective(mpath, cfg=cfg, population=pop, device="cuda:0",
                           experiments=exps if exps is not None else None)
         objectives.append(o)
-        return o
+        return C.LockedObjective(o, lock) if lock is not None else o
     meta = {"kind": args.kind, "utc_start": C.utc(), "tree": tree, "protocol_v1_sha256": psha,
             "protocol_v2_sha256": v2sha, "settings": settings, "manifest": str(mpath),
             "manifest_freeze_sha256": manifest["splits"]["sha256"], "env": C.environment(),
@@ -123,8 +137,12 @@ def main():
             "warp_deterministic": str(wp.config.deterministic), **C.LABELS}
     t0 = time.perf_counter()
     res = rcf.fit_staged(make, space, box, stages=stages, start_theta=centre(protocol["prior_box"]),
-                         budget_s=budget, fd_step=settings["fd_step_u"], log=log)
+                         budget_s=budget, fd_step=settings["fd_step_u"], log=log,
+                         clock=lock.clock if lock is not None else time.monotonic)
     meta.update({"wall_s": time.perf_counter()-t0, "utc_end": C.utc(), "budget_hit": res["budget_hit"],
+                 "budget_clock": "GPU-lock hold time" if lock is not None else "wall-clock",
+                 "budget_clock_used_s": res["budget_clock_used_s"], "budget_s": budget,
+                 "gpu_lock": lock.receipt() if lock is not None else "external flock for the whole run",
                  "objective_evaluations": sum(o.evaluations for o in objectives),
                  "candidates_evaluated": sum(o.candidates_evaluated for o in objectives),
                  "forward_receipts": [o.forward.receipts() for o in objectives]})

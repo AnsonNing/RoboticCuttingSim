@@ -418,3 +418,25 @@ def test_budget_rule_keeps_best_iterate_and_one_final_evaluation(tmp_path):
     assert fwd.calls == [sp.p+1]                        # exactly one population of the final stage
     assert all(math.isclose(res["theta"][k], _centre()[k], rel_tol=1e-9) for k in rcf.PARAMS)
     assert res["jac"].shape == (res["n_residuals"], sp.p)
+
+
+def test_budget_counts_only_the_supplied_clock(tmp_path):
+    """v2: the budget clock may be the GPU-lock hold time; time outside the clock is not counted."""
+    path = make_dataset(tmp_path)
+    sp = space()
+    held = {"t": 0.0}
+
+    class Clocked:
+        def __init__(self, obj):
+            self.obj = obj
+
+        def __getattr__(self, n):
+            return getattr(self.obj, n)
+
+        def residuals_population(self, thetas):
+            held["t"] += 10.0                          # every evaluation "holds the GPU" for 10 s
+            return self.obj.residuals_population(thetas)
+    res = rcf.fit_staged(lambda e: Clocked(rcf.Objective(path, forward=ToyForward(), experiments=e)), sp, _box(sp),
+                         stages=TOY_STAGES, start_theta=_centre(), budget_s=55.0, clock=lambda: held["t"])
+    # exceeded by at most the guaranteed final-stage population; time outside the clock is not counted
+    assert res["budget_hit"] and held["t"] <= 55.0+10.0 and res["budget_clock_used_s"] == held["t"]

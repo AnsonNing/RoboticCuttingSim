@@ -766,28 +766,31 @@ class BudgetExhausted(RuntimeError):
 
 
 class BudgetedObjective:
-    """Wraps an objective: a new forward population is refused (``BudgetExhausted``) when the elapsed wall-clock time
-    plus the duration of the previous evaluation would exceed ``deadline`` (time.monotonic seconds)."""
+    """Wraps an objective: a new forward population is refused (``BudgetExhausted``) when the budget clock plus the
+    duration (on that clock) of the previous evaluation would exceed ``deadline``; the first ``min_evals`` evaluations
+    are always allowed. ``clock`` defaults to time.monotonic; v2 runs pass the cumulative GPU-lock hold time."""
 
-    def __init__(self, objective, deadline, min_evals=0):
-        self.objective, self.deadline, self.last = objective, float(deadline), 0.0
+    def __init__(self, objective, deadline, min_evals=0, clock=time.monotonic, last=0.0):
+        self.objective, self.deadline, self.last, self.clock = objective, float(deadline), float(last), clock
         self.count, self.min_evals = 0, int(min_evals)
 
     def residuals_population(self, thetas):
-        now = time.monotonic()
+        now = self.clock()
         if self.count >= self.min_evals and now+self.last > self.deadline:
-            raise BudgetExhausted(f"wall-clock budget: {now:.0f} + {self.last:.0f} s > deadline {self.deadline:.0f}")
+            raise BudgetExhausted(f"budget: {now:.0f} + {self.last:.0f} s > deadline {self.deadline:.0f}")
         out = self.objective.residuals_population(thetas)
-        self.last = time.monotonic()-now
+        self.last = self.clock()-now
         self.count += 1
         return out
 
 
-def _run_stage(objective, sub, starts, *, max_nfev, fd_step, xtol, ftol, gtol, x_scale, log, deadline, min_evals=0):
+def _run_stage(objective, sub, starts, *, max_nfev, fd_step, xtol, ftol, gtol, x_scale, log, deadline, min_evals=0,
+               clock=time.monotonic, carry=None):
     """TRF over a SubSpace from one or more starts (lockstep); every evaluation is kept, the budget may end the stage
     early (best iterate kept). Returns (best (u_sub, r, J, cost, start), per-start records, budget_hit)."""
     import threading
-    bobj = BudgetedObjective(objective, deadline, min_evals)
+    carry = {"last": 0.0} if carry is None else carry
+    bobj = BudgetedObjective(objective, deadline, min_evals, clock=clock, last=carry["last"])
     pool = LockstepPool(bobj, len(starts))
     sjs = [SpeculativeJacobian(_WorkerObjective(pool, i), sub, fd_step,
                                log=(lambda m, i=i: log(f"[start {i}] {m}")) if log else None)
@@ -826,6 +829,7 @@ def _run_stage(objective, sub, starts, *, max_nfev, fd_step, xtol, ftol, gtol, x
         budget["hit"] = True
     for th in threads:
         th.join()
+    carry["last"] = bobj.last
     hard = {k: v for k, v in pool.errors.items() if "BudgetExhausted" not in str(v) and k != "coordinator"}
     if hard:
         raise RuntimeError(f"stage failed: {hard}")
@@ -850,22 +854,25 @@ V2_STAGES = (
 
 
 def fit_staged(make_objective, space, box, *, stages=V2_STAGES, start_theta, budget_s, seed=2513, fd_step=1e-3,
-               xtol=1e-4, ftol=1e-8, gtol=1e-8, x_scale="jac", log=None):
+               xtol=1e-4, ftol=1e-8, gtol=1e-8, x_scale="jac", log=None, clock=time.monotonic):
     """v2 staged fit (protocol rubber_calib_tests_v2): the stages run in order, each a bounded TRF (``x_scale``,
     bounds = ``box`` in u, i.e. the prior box) over its parameters with the others fixed at the current estimate, on its
     experiments (``make_objective(experiment_ids or None)`` -> Objective; None = the whole fit split). Multi-start
     stages use a seeded Latin hypercube over their box (lockstep). The wall-clock budget ``budget_s`` covers every
     stage; when it is exhausted the best iterate so far of the current stage is kept and the remaining stages are
     skipped, except that the final stage always gets at least one evaluation (its first population gives the full
-    residual and Jacobian at the current estimate). The result is the best evaluated point of the final stage."""
+    residual and Jacobian at the current estimate), so the budget can be exceeded by at most that one population. The
+    previous population's duration is carried across stages. The result is the best evaluated point of the final
+    stage. ``clock``: the budget clock (default wall-clock; v2 runs pass the cumulative GPU-lock hold time)."""
     t0 = time.monotonic()
-    deadline = t0+float(budget_s)
+    deadline = clock()+float(budget_s)
     theta = dict(start_theta)
+    carry = {"last": 0.0}          # duration of the previous population, carried across stages
     out = {"stages": [], "budget_s": float(budget_s), "budget_hit": False}
     final = None
     for k, st in enumerate(stages):
         last = k == len(stages)-1
-        if time.monotonic() > deadline and not last:
+        if clock()+carry["last"] > deadline and not last:
             out["stages"].append({"name": st["name"], "skipped": "BUDGET_EXHAUSTED"})
             out["budget_hit"] = True
             continue
@@ -878,12 +885,13 @@ def fit_staged(make_objective, space, box, *, stages=V2_STAGES, start_theta, bud
         best, recs, hit = _run_stage(obj, sub, starts, max_nfev=st["max_nfev"], fd_step=fd_step, xtol=xtol,
                                      ftol=ftol, gtol=gtol, x_scale=x_scale,
                                      log=(lambda m, n=st["name"]: log(f"{n} {m}")) if log else None,
-                                     deadline=stage_deadline, min_evals=1 if last else 0)
+                                     deadline=stage_deadline, min_evals=1 if last else 0, clock=clock,
+                                     carry=carry)
         out["budget_hit"] |= hit
         theta = sub.from_u(best[0])
         out["stages"].append({"name": st["name"], "params": st["params"], "experiments": obj.exp_ids,
                               "starts": recs, "best_start": best[4], "best_cost": best[3], "theta": dict(theta),
-                              "budget_hit": hit, "wall_s": time.monotonic()-ts,
+                              "budget_hit": hit, "wall_s": time.monotonic()-ts, "budget_clock_end_s": clock(),
                               "n_residuals": int(best[1].size)})
         if last:
             final = (sub, best, obj)
@@ -893,7 +901,7 @@ def fit_staged(make_objective, space, box, *, stages=V2_STAGES, start_theta, bud
     n, p = r.size, space.p
     out.update(theta=space.from_u(u_full), u=u_full.tolist(), residuals=r, jac=J, cost=0.5*float(r @ r),
                chi2=float(r @ r), chi2_reduced=float(r @ r)/(n-p), n_residuals=n, objective=obj,
-               wall_s=time.monotonic()-t0)
+               wall_s=time.monotonic()-t0, budget_clock_used_s=clock()-(deadline-float(budget_s)))
     return out
 
 
