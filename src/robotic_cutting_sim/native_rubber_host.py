@@ -367,10 +367,15 @@ class KitRubberScene:
     without collider, the strip surface mesh (``DynamicSurfaceBridge`` at ``/World/RubberStrip``) and the
     presentation overview / close-up cameras with RGB + ``distance_to_image_plane``."""
     CLAMP_PATH = "/World/RubberClamp"
+    VISUAL_PATH = "/World/RubberClampVisual"
+    CLAMP_VISUALS = ("measured_pose_v1", "rigid_child_v0")
     STRIP_PATH = "/World/RubberStrip"
 
     def __init__(self, app, output, *, seed=42, control_dt=0.02, robot_substeps=10, strip_xy=(-0.0615, -0.13),
-                 render_warmup=5):
+                 render_warmup=5, clamp_visual="measured_pose_v1"):
+        if clamp_visual not in self.CLAMP_VISUALS:
+            raise ValueError(f"clamp_visual {clamp_visual!r} not in {self.CLAMP_VISUALS}")
+        self.clamp_visual = clamp_visual
         self.app, self.output = app, Path(output)
         self.seed, self.control_dt, self.robot_substeps = int(seed), float(control_dt), int(robot_substeps)
         self.strip_xy = tuple(float(v) for v in strip_xy)
@@ -440,14 +445,25 @@ class KitRubberScene:
         mass = UsdPhysics.MassAPI.Apply(clamp.GetPrim())
         mass.CreateMassAttr(0.2)
         mass.CreateDiagonalInertiaAttr(Gf.Vec3f(1e-4, 1e-4, 1e-4))
-        jaw = UsdGeom.Cube.Define(stage, self.CLAMP_PATH+"/Jaw")
+        # The rendered jaw is a separate non-physics prim posed from the MEASURED clamp pose after every PhysX step
+        # (clamp_visual "measured_pose_v1"). PhysX does not write kinematic-body poses back to USD, so a jaw authored
+        # as a child of the kinematic body ("rigid_child_v0", used by native_rubber_001) renders at its reset pose.
+        visual_root = self.CLAMP_PATH if self.clamp_visual == "rigid_child_v0" else self.VISUAL_PATH
+        if self.clamp_visual != "rigid_child_v0":
+            vis = UsdGeom.Xform.Define(stage, self.VISUAL_PATH)
+            vxf = UsdGeom.Xformable(vis)
+            vxf.ClearXformOpOrder()
+            self._visual_ops = (vxf.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble),
+                                vxf.AddOrientOp(UsdGeom.XformOp.PrecisionDouble))
+            self._set_visual(p0)
+        jaw = UsdGeom.Cube.Define(stage, visual_root+"/Jaw")
         jaw.CreateSizeAttr(1.0)
         centre = 0.5*(lo+hi)-np.asarray(origin, np.float64)
         jxf = UsdGeom.Xformable(jaw)
         jxf.AddTranslateOp().Set(Gf.Vec3d(*map(float, centre)))
         jxf.AddScaleOp().Set(Gf.Vec3f(*map(float, (hi-lo)+np.array([0.004, 0.006, 0.004]))))
         jaw.CreateDisplayColorAttr([Gf.Vec3f(.55, .58, .62)])
-        for path, color in ((self.CLAMP_PATH+"/Jaw", (.55, .58, .62)), ("/World/Franka_0", (.8, .82, .85)),
+        for path, color in ((visual_root+"/Jaw", (.55, .58, .62)), ("/World/Franka_0", (.8, .82, .85)),
                             ("/World/Franka_1", (.8, .82, .85)), ("/World/D455_0", (.2, .25, .3)),
                             ("/World/D455_1", (.2, .25, .3))):
             prim = stage.GetPrimAtPath(path)
@@ -493,6 +509,8 @@ class KitRubberScene:
         self.receipt.update(
             source_scene=str(source), deactivated_prims=deactivated, stationary_camera_kinematic_rigid_prims=camera_rigid,
             table_top_z_m=top, placement=self.placement.receipt(), clamp_prim=self.CLAMP_PATH,
+            clamp_visual={"mode": self.clamp_visual, "prim": visual_root+"/Jaw",
+                          "scope": "rendering only; the material input is the PhysX tensor pose"},
             clamp="kinematic rigid body, no collider, mass 0.2 kg (unused); targets via the PhysX tensor "
                   "RigidBodyView.set_kinematic_targets; measured pose via RigidPrim.get_world_poses (tensor)",
             physics={"engine": "PhysX (Isaac Sim 6.2, CPU)", "dt_s": self.control_dt/self.robot_substeps,
@@ -520,6 +538,14 @@ class KitRubberScene:
         if abs(rel-self.steps_done*self.control_dt) > 1e-6:
             raise RuntimeError(f"Native physics clock drift: {rel} vs {self.steps_done*self.control_dt}")
         self.physx.update_transformations(False, True, True)
+        if self.clamp_visual != "rigid_child_v0":
+            self._set_visual(self.measured_clamp_pose())
+
+    def _set_visual(self, pose7):
+        from pxr import Gf
+        pose7 = np.asarray(pose7, np.float64)
+        self._visual_ops[0].Set(Gf.Vec3d(*map(float, pose7[:3])))
+        self._visual_ops[1].Set(Gf.Quatd(float(pose7[6]), Gf.Vec3d(*map(float, pose7[3:6]))))
 
     def measured_clamp_pose(self):
         from .isaac_sim_runner import numpy_data, pose_from_wxyz
