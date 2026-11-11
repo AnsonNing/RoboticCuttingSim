@@ -34,6 +34,7 @@ def main():
     ap.add_argument("--run-dir", required=True)
     ap.add_argument("--gpu-index", type=int, required=True, help="physical GPU index (for the free-memory check)")
     ap.add_argument("--smoke", action="store_true", help="2 control steps per experiment, scratch outputs only")
+    ap.add_argument("--device", default="cuda:0", help="cpu only with --smoke (pipeline check)")
     args = ap.parse_args()
     protocol, psha = C.load_protocol(None if args.smoke else PROTOCOL_SHA)
     run = Path(args.run_dir)
@@ -46,7 +47,9 @@ def main():
     ds_dir = (run/"smoke_dataset") if args.smoke else (C.SYNTHETIC_DIR/dataset_id)
     if ds_dir.exists():
         raise SystemExit(f"{ds_dir} exists (no overwrite)")
-    free = C.require_gpu(args.gpu_index)
+    if args.device == "cpu" and not args.smoke:
+        raise SystemExit("cpu only for --smoke")
+    free = C.require_gpu(args.gpu_index) if args.device != "cpu" else None
     run.mkdir(parents=True)
     log = C.Log(run/"log.txt")
     wp = C.setup_warp()
@@ -66,7 +69,7 @@ def main():
         if args.smoke:
             e = dict(e, loading=dict(e["loading"]))
         t0 = time.perf_counter()
-        b = rce.ExperimentBatch(e, rho, cfg, 1, device="cuda:0")
+        b = rce.ExperimentBatch(e, rho, cfg, 1, device=args.device, parity_mode=args.device == "cpu")
         if args.smoke:
             b.schedule.K = 2
         rec = rce.finalize_record(b.run([rce.material_from_theta(theta, rho, cfg.beta)])[0])
@@ -127,7 +130,7 @@ def main():
                  "sealed_truth_sha256": sealed_sha, "noise_seed_sha256": rcs.seed_sha256(noise_seed),
                  "secret_seeds": "written only to the sealed file", "truth_receipts": receipts,
                  "truth_invalid": invalid, "verdict_truth_valid": "PASS" if not invalid else "FAIL",
-                 "warp_device": str(wp.get_device("cuda:0"))})
+                 "warp_device": str(wp.get_device(args.device))})
     meta["gpu_samples"].append(C.gpu_sample())
     C.write_new(run/"gen_receipt.json", meta)
     log(f"done: dataset {ds_dir} status {manifest['status']} sealed sha {sealed_sha[:12]}… invalid {invalid}")
