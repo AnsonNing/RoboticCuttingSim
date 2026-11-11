@@ -55,6 +55,7 @@ def main():
              ("thresholds_commit", *commit_time("configs/rubber/rubber_calib_thresholds_v1.json")),
              ("formal_dataset_generated", None, fg["utc_end"]),
              ("formal_manifest_commit", *commit_time(rel(mpath))),
+             ("protocol_v2_commit", *commit_time("configs/rubber/rubber_calib_tests_v2.json")),
              ("fit_receipts_commit", *commit_time(f"{ev_dir}/fit_receipt_formal.json")),
              ("negative_control_receipt_commit", *commit_time(f"{ev_dir}/fit_receipt_negative_control.json")),
              ("one_shot_heldout", None, ledger["provenance"]["utc"]),
@@ -63,8 +64,9 @@ def main():
     ok = all(t is not None for t in times) and all(times[i] <= times[i+1] for i in range(len(times)-1))
     # the pilot-run time also has to follow the protocol commit and precede the thresholds commit (checked above)
     best = ff["starts"][ff["best_start"]]
-    cal04 = ff["chi2_reduced"] <= thr["cal04_limit_chi2_reduced"] and (best["converged_xtol"] or best["status"] > 0
-                                                                       or best["budget_exhausted"])
+    st = best["status"]
+    terminated = best["budget_exhausted"] or st == "BUDGET_EXHAUSTED" or (isinstance(st, int) and st >= 0)
+    cal04 = ff["chi2_reduced"] <= thr["cal04_limit_chi2_reduced"] and terminated     # v2 CAL-04
     formal_rows = ledger["fits"][0]["rows"]
     neg_rows = ledger["fits"][1]["rows"] if len(ledger["fits"]) > 1 else []
     rec = {f["kind"]: f for f in rv["fits"]}
@@ -72,6 +74,19 @@ def main():
           "statement": protocol["labels"]["statement"], "resolution_specific": protocol["labels"]["resolution_specific"],
           "contact_scope": protocol["common"]["contact_scope_K2_1"], "sealing": protocol["labels"]["sealing"],
           "protocol": {"file": "configs/rubber/rubber_calib_tests_v1.json", "sha256": psha},
+          "protocol_v2": {"file": "configs/rubber/rubber_calib_tests_v2.json", "sha256": __import__("hashlib").sha256(
+              (C.ROOT/"configs"/"rubber"/"rubber_calib_tests_v2.json").read_bytes()).hexdigest(),
+                          "scope": "supersedes v1 for the fit procedure only, adds the compute budget"},
+          "v1_fit_aborted": {"label": "v1 formal fit aborted for compute, no receipt",
+                             "records": ["artifacts/rl_ready/p2_5/fit_001/formal/ABORTED.json",
+                                         "artifacts/rl_ready/p2_5/fit_001/negative_control/ABORTED.json"],
+                             "formal": {k: v for k, v in load(C.ROOT/"artifacts/rl_ready/p2_5/fit_001/formal/ABORTED.json")
+                                        .items() if k in ("status", "reason")},
+                             "negative_control": {k: v for k, v in load(
+                                 C.ROOT/"artifacts/rl_ready/p2_5/fit_001/negative_control/ABORTED.json").items()
+                                 if k in ("status", "reason")}},
+          "v2_method_development": {"repeatability": load(C.ROOT/"artifacts/rl_ready/p2_5/v2_dev/repeat_default/repeatability.json")["rows"],
+                                    "pilot_validation": load(C.ROOT/"artifacts/rl_ready/p2_5/v2_dev/pilot_validation_001/fit_run_receipt.json").get("pilot_recovery")},
           "thresholds": {"file": "configs/rubber/rubber_calib_thresholds_v1.json",
                          "sha256": __import__("hashlib").sha256(C.THRESHOLDS.read_bytes()).hexdigest(),
                          "chi2_pilot_reduced": thr["chi2_pilot_reduced"], "tolerances": thr["tolerances"]},
@@ -82,13 +97,17 @@ def main():
                               "sigma_hat": ff["sigma_hat"], "chi2_reduced": ff["chi2_reduced"],
                               "starts": [{k: s[k] for k in ("start", "theta0", "theta", "cost", "chi2_reduced", "nfev",
                                                             "status", "message", "wall_s")} for s in ff["starts"]],
-                              "run": {k: fr[k] for k in ("wall_s", "objective_evaluations", "candidates_evaluated",
-                                                         "population_sizes", "env_evaluations", "tree")}},
+                              "stages": [{k: v for k, v in x.items() if k in ("name", "params", "experiments", "best_cost",
+                                                                              "theta", "budget_hit", "wall_s", "skipped")}
+                                         for x in ff.get("stages", [])], "budget_hit": ff.get("budget_hit"),
+                              "run": {k: fr.get(k) for k in ("wall_s", "objective_evaluations", "candidates_evaluated",
+                                                             "budget_hit", "tree")}},
                    "negative_control": {"receipt": f"{ev_dir}/fit_receipt_negative_control.json",
                                         "experiments": fn["objective"]["fit_experiments"],
                                         "theta_hat": fn["theta_hat"], "sigma_hat": fn["sigma_hat"],
                                         "chi2_reduced": fn["chi2_reduced"],
-                                        "run": {k: nr[k] for k in ("wall_s", "objective_evaluations", "tree")}},
+                                        "budget_hit": fn.get("budget_hit"),
+                                        "run": {k: nr.get(k) for k in ("wall_s", "objective_evaluations", "tree")}},
                    "cmaes": None if cm is None else {k: cm[k] for k in ("status", "result", "wall_s",
                                                                        "candidates_evaluated", "chi2_reduced_best")}},
           "heldout": {"ledger": ledger, "summary": hsum},
