@@ -85,7 +85,8 @@ class ScriptedTowV1:
         """Stateless (kept for the controller interface)."""
 
     def params(self):
-        return {"id": "rubber_scripted_tow_v1", "mode": self.mode, "k_tow": self.k_tow, "k_side": self.k_side,
+        return {"id": "rubber_scripted_pivot_v1" if self.mode == "pivot_grip" else f"scripted_dev_{self.mode}",
+                "mode": self.mode, "k_tow": self.k_tow, "k_side": self.k_side,
                 "k_push": self.k_push, "k_yaw": self.k_yaw, "c_pull": self.c_pull, "c_push": self.c_push,
                 "eps_m": self.eps, "workspace_xy": self.workspace_xy, "margin_m": self.margin,
                 "k_radial": self.k_radial, "k_fine": self.k_fine, "r_fine_m": self.r_fine}
