@@ -57,6 +57,10 @@ rollback) keeps C1 + C2 + the fallback guard and changes only how the alias-free
   smaller box, whose cells are a sub-box of the frozen box (floor is monotone), so the candidate sequence is an
   order-preserving subsequence of the frozen one and every dropped candidate contributes exactly zero (skipped by
   C1 anyway). Flagged envs use ``2.4 r``. The flag is cleared at the end of the stage (zero between substeps).
+  ``shrink_engaged[e]`` counts the substeps env e was queried with the shrunken reach (receipt
+  ``shrink_engaged_substeps``; cumulative since construction, a diagnostic that partial reset does not clear).
+  The shrunken reach is derived from the construction ``radius`` and ``dt``; a launch with other values is
+  refused (P1-6 p16c1 follow-ups, review finding 4).
 
 Both are Level A given the certificates (bitwise on CPU against the frozen single,
 ``tests/test_batched_particle_contacts_v2.py``). The new arrays live on the contact object, not on the solver.
@@ -513,11 +517,14 @@ def _particle_contacts_env_major_b(x: wp.array(dtype=wp.vec3), reference: wp.arr
                                    guard_flag: wp.array(dtype=int), inv: float, dims: wp.vec3i, cells: int, n: int,
                                    keys: wp.array(dtype=int), starts: wp.array(dtype=int),
                                    ends: wp.array(dtype=int), ids: wp.array(dtype=int), shrink: int,
-                                   fast_flag: wp.array(dtype=int), reach_slow: float):
+                                   fast_flag: wp.array(dtype=int), reach_slow: float,
+                                   shrink_engaged: wp.array(dtype=int)):
     """``_particle_contacts_skip_zero_b`` (C1, guard-flagged envs skipped) walking env-major buckets of the
     alias-free dims exactly as ``hash_grid_query(grid, x[p], 2.4*radius, e)`` walks the grouped grid (cells x
     fastest, then y, then z; ascending ids per bucket), without the per-cell group binary searches. With
-    ``shrink`` an env whose ``fast_flag`` is 0 uses ``reach_slow`` (<= 2.4 r): a sub-box of the same cells."""
+    ``shrink`` an env whose ``fast_flag`` is 0 uses ``reach_slow`` (<= 2.4 r): a sub-box of the same cells.
+    The thread of the env's first particle then counts the substep in ``shrink_engaged[e]`` (one writer per
+    env, no atomics; a diagnostic only, nothing reads it inside the solver)."""
     p = wp.tid()
     e = env_of_particle[p]
     if guard_flag[e] != 0:
@@ -529,6 +536,12 @@ def _particle_contacts_env_major_b(x: wp.array(dtype=wp.vec3), reference: wp.arr
     if shrink != 0:
         if fast_flag[e] == 0:
             reach = reach_slow
+            first = int(1)
+            if p > 0:
+                if env_of_particle[p-1] == e:
+                    first = 0
+            if first != 0:
+                shrink_engaged[e] = shrink_engaged[e]+1
     x0 = int(wp.floor((xp[0]-reach)*inv))
     y0 = int(wp.floor((xp[1]-reach)*inv))
     z0 = int(wp.floor((xp[2]-reach)*inv))
@@ -596,11 +609,11 @@ class EnvMajorGrid:
             wp.utils.radix_sort_pairs(self.keys, self.ids, n, 0, self.end_bit)
             wp.launch(_env_major_ranges_b, n, [self.keys, n, self.starts, self.ends], device=self.device)
 
-    def launch_contacts(self, s, r, dt, shrink, fast_flag, reach_slow):
+    def launch_contacts(self, s, r, dt, shrink, fast_flag, reach_slow, shrink_engaged):
         wp.launch(_particle_contacts_env_major_b, s.total_particles, [s.x, s.reference, s.v, s.mass, s.code,
             s.impulse, s.stats_sum, s.stats_max, r, 3*s.dx, dt, s.params, s.env_of_particle, s.contact_guard_flag,
             self.inv, self.dims, self.cells, self.n, self.keys, self.starts, self.ends, self.ids, int(shrink),
-            fast_flag, reach_slow], device=self.device)
+            fast_flag, reach_slow, shrink_engaged], device=self.device)
 
 
 @wp.kernel
@@ -667,11 +680,16 @@ class AliasFreeContacts:
             self.fallback_grid = FallbackGrid(s, config.reference_hash_dims, self.cell_width)
         # alias_free_v2: env-major buckets on the alias-free dims and the per-env query shrink (own arrays, not
         # solver attributes: the shrink flag is zero between substeps, the buckets are rebuilt every substep).
-        self.env_grid, self.fast_flag, self.reach_slow = None, None, None
+        # ``reach_slow`` and the certified bound are functions of the construction radius and dt: ``_launch_v2``
+        # refuses a launch with any other (r, dt) instead of using a reach derived for different values.
+        self.construction_radius, self.construction_dt = s.radius, s.dt
+        self.env_grid, self.fast_flag, self.reach_slow, self.shrink_engaged = None, None, None, None
         if config.env_major_grid:
             self.env_grid = EnvMajorGrid(s, self.dims, self.cell_width)
             with wp.ScopedDevice(s.device):
                 self.fast_flag = wp.zeros(N, dtype=int)
+                # Per env: substeps queried with the shrunken reach since construction (diagnostic, not reset).
+                self.shrink_engaged = wp.zeros(N, dtype=int)
             if config.shrink_speed_m_s is not None:
                 self.reach_slow = shrunken_reach(s.radius, s.dt, config.shrink_speed_m_s)
         wp.load_module(module=__name__, device=s.device)
@@ -717,7 +735,18 @@ class AliasFreeContacts:
                                                      s.contact_guard_violations])
 
     def _launch_v2(self, s, r, dt):
-        """alias_free_v2: guard (+ shrink flags), env-major build, contacts, frozen fallback, flag clear."""
+        """alias_free_v2: guard (+ shrink flags), env-major build, contacts, frozen fallback, flag clear.
+
+        ``r`` and ``dt`` must equal the construction ``solver.radius`` / ``solver.dt`` (every current caller passes
+        exactly those): ``reach_slow`` = ``shrunken_reach(radius, dt, V)`` and the guard's certified bound were
+        derived from them, and a larger ``dt`` or ``r`` would make the shrunken reach unsafe. Anything else is
+        refused (``UNSUPPORTED_PARTICLE_CONTACT_MODE``) before any launch."""
+        if r != self.construction_radius or dt != self.construction_dt:
+            raise UnsupportedBatchConfiguration(
+                "UNSUPPORTED_PARTICLE_CONTACT_MODE",
+                f"{ALIAS_FREE_V2_MODE} launch with r={r!r}, dt={dt!r} differs from the construction "
+                f"radius={self.construction_radius!r}, dt={self.construction_dt!r} that fix the shrunken query "
+                "reach and the certified speed bound; construct a new solver for other values")
         c = self.config
         n = s.total_particles
         shrink = self.reach_slow is not None
@@ -726,7 +755,7 @@ class AliasFreeContacts:
                                          s.contact_guard_flag, s.contact_guard_any, shrink_sq, self.fast_flag])
         self.env_grid.build(s)
         self.env_grid.launch_contacts(s, r, dt, shrink, self.fast_flag,
-                                      self.reach_slow if shrink else 0.0)
+                                      self.reach_slow if shrink else 0.0, self.shrink_engaged)
         wp.capture_if(s.contact_guard_any, on_true=self._fallback, s=s, r=r, dt=dt)
         wp.launch(_clear_flags_b, s.num_envs, [self.fast_flag])
 
@@ -775,6 +804,8 @@ class AliasFreeContacts:
                        shrink_certificate=("per-env per-substep |v| <= shrink_speed_m_s (else the frozen reach); "
                                            "non-zero pair impulse needs d < 2r + 2 dt V"
                                            if self.reach_slow is not None else None))
+            if solver is not None and self.shrink_engaged is not None:
+                out["shrink_engaged_substeps"] = self.shrink_engaged.numpy().tolist()
         if solver is not None and c.speed_guard != "off":
             out["guard_violation_substeps"] = solver.contact_guard_violations.numpy().tolist()
         return out
