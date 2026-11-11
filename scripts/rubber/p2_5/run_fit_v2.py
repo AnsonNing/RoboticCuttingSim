@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _common as C  # noqa: E402
 
 PROTOCOL_V2 = C.ROOT/"configs"/"rubber"/"rubber_calib_tests_v2.json"
-PROTOCOL_V2_SHA = None      # set by the commit that pins rubber_calib_tests_v2
+PROTOCOL_V2_SHA = "1606457fbe3e569f495d33abc38221d51493cb09612e1981aa63edc9708c01ff"   # rubber_calib_tests_v2 (4218dd6)
 DEV_SETTINGS = {"deterministic": "default", "fd_step_u": 1e-2, "budget_s": {"pilot_validation": 4800}}
 
 

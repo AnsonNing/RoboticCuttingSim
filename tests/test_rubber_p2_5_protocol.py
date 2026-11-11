@@ -72,3 +72,23 @@ def test_thresholds_are_pinned_and_complete():
         assert set(rows) == set(p["metrics"]["per_type"][e["type"]])
         for m, r in rows.items():
             assert r["tol"] == max(2*(r["a_noise_floor"]+r["b_discretisation_floor"]), p["metrics"][m]["floor"])
+
+
+PROTOCOL_V2 = ROOT/"configs"/"rubber"/"rubber_calib_tests_v2.json"
+PROTOCOL_V2_SHA = "1606457fbe3e569f495d33abc38221d51493cb09612e1981aa63edc9708c01ff"
+
+
+def test_protocol_v2_is_pinned_and_consistent():
+    """rubber_calib_tests_v2 (declared alone in 4218dd6): fit procedure and budget only; v1 stays pinned; the declared
+    stages equal the code's; thresholds and the formal freeze are referenced unchanged."""
+    assert hashlib.sha256(PROTOCOL_V2.read_bytes()).hexdigest() == PROTOCOL_V2_SHA
+    assert re.search(r'^PROTOCOL_V2_SHA = "%s"' % PROTOCOL_V2_SHA, (SCRIPTS/"run_fit_v2.py").read_text(), re.M)
+    v2 = json.loads(PROTOCOL_V2.read_text())
+    assert PROTOCOL_SHA in v2["supersedes"] and THRESHOLDS_SHA in v2["supersedes"]
+    assert "3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9" in v2["supersedes"]
+    assert set(v2["cal_changes"]["unchanged"]) == {"CAL-01", "CAL-02", "CAL-03", "CAL-05", "CAL-06", "CAL-09"}
+    assert "NOT CRITERIA" in v2["predictions"]["status"]
+    from robotic_cutting_sim import rubber_calibration_fit as rcf
+    for a, b in zip(v2["fit"]["stages_formal"], rcf.V2_STAGES):
+        assert (a["params"], a["starts"], a["max_nfev"]) == (b["params"], b["starts"], b["max_nfev"])
+    assert v2["fit"]["budget_s"] == {"formal": 10800, "negative_control": 5400} and v2["fit"]["fd_step_u"] == 0.01
