@@ -1023,6 +1023,19 @@ def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, obs
     ``backend="isaac_lab_newton"`` (workload B, robot-batched, ADR 0022): ``rl.lab_vector_env.LabVectorCuttingEnv``
     (Isaac Lab venv; it keeps ``launch_simulation`` open for its lifetime). Both have the same public contract
     (``rl.vector_contract``). ``tasks``: per-env task selection (``resolve_tasks``), e.g. ``tasks=[512, 15]``."""
+    if backend == "kinematic_grip_batched" or getattr(task, "is_rubber_task_family", False):
+        # P2-6 rubber (ADR 0023 §23.2 decision 7): RubberStripTaskFamily on backend "kinematic_grip_batched" ->
+        # rl.rubber_env.RubberVectorEnv (lazy import; refusals and the cutting-default mapping live there)
+        from .rubber_env import open_rubber_vector_env
+        env = open_rubber_vector_env(num_envs, task=task, tasks=tasks, runtime=runtime, material=material,
+                                     observation_profile=observation_profile, device=device, backend=backend,
+                                     action_spec=action_spec, reward=reward, autoreset=autoreset, strict=strict,
+                                     output_dir=output_dir, **options)
+        try:
+            yield env
+        finally:
+            env.close()
+        return
     task = resolve_tasks(num_envs, task, tasks)
     if backend == LAB_BACKEND:
         from .lab_vector_env import LabVectorCuttingEnv

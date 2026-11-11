@@ -331,6 +331,23 @@ def _reset_visco_env_r(mask: wp.array(dtype=int), branch: wp.array(dtype=wp.floa
         d_negative[e] = 0
 
 
+@wp.kernel
+def _stage_group_motion_b(q_in: wp.array(dtype=wp.quatd), b_in: wp.array(dtype=wp.vec3d),
+                          group_q1: wp.array(dtype=wp.quatd), group_b1: wp.array(dtype=wp.vec3d)):
+    """P2-6 device staging (``set_group_motions_device``): the END quaternion of row r, hemisphere-aligned with the
+    current end (the host path's ``q[dot(prev, q) < 0] *= -1``; a product by -1 flips the sign of zeros as NumPy's
+    in-place multiply does), and the END translation."""
+    r = wp.tid()
+    q = q_in[r]
+    prev = group_q1[r]
+    d = prev[0]*q[0]+prev[1]*q[1]+prev[2]*q[2]+prev[3]*q[3]
+    if d < wp.float64(0.0):
+        m = wp.float64(-1.0)
+        q = wp.quatd(q[0]*m, q[1]*m, q[2]*m, q[3]*m)
+    group_q1[r] = q
+    group_b1[r] = b_in[r]
+
+
 # ----------------------------------------------------------------------------- material
 
 class BatchedRubberMaterial:
@@ -556,13 +573,52 @@ class BatchedRubberMaterial:
         """One control step of every env; returns nothing (read ``wrench``, ``invalid_reason`` on the device; with
         contact also ``plane_wrench``, ``box_wrench``, ``pad_wrench``, ``pending_wrench``). ``frame_*``: contact
         frame END poses [N, F, ...] (contact batches only)."""
-        s = self.solver
         self._begin_control_step()          # set_group_motions refreshes the motion table (same launches as before R1)
         self.set_group_motions(rotation=rotation, translation=translation, affine=affine, active=active)
         if frame_rotation is not None or frame_translation is not None or frame_active is not None:
             self.set_frame_motions(rotation=frame_rotation, translation=frame_translation, active=frame_active)
         if traction is not None:
             self.set_traction(traction)
+        self._run_control_step()
+
+    def set_group_motions_device(self, q1, b1):
+        """P2-6 opt-in device staging (ADR 0023 §23.2 decision 7, plan §4.2): END quaternions ``q1`` (wp.quatd
+        [N*G], XYZW) and translations ``b1`` (wp.vec3d [N*G]) already on the device, written by a kernel with the host
+        path's hemisphere alignment, then the motion table. Byte-identical to ``set_group_motions(rotation=R,
+        translation=b)`` when ``q1`` holds the quaternions the host path computes from R (tested); no host read."""
+        s, n = self.solver, self.num_envs*self.G
+        if self.G == 0:
+            raise ValueError("no groups")
+        if q1.shape != (n,) or b1.shape != (n,) or q1.dtype != wp.quatd or b1.dtype != wp.vec3d:
+            raise ValueError(f"q1 / b1 must be wp.quatd / wp.vec3d arrays of length N*G = {n}")
+        wp.launch(_stage_group_motion_b, n, [q1, b1, s.group_q1, s.group_b1], device=self.device)
+        s.prepare_motion_table()
+
+    def set_traction_device(self, forces):
+        """P2-6 opt-in device staging: traction forces (wp.vec3 float32 [N*Gt]) copied on the device (the host path
+        ``set_traction`` assigns the same float32 values)."""
+        s = self.solver
+        if forces.shape != s.traction_force.shape or forces.dtype != wp.vec3:
+            raise ValueError(f"forces must be a wp.vec3 array of shape {s.traction_force.shape}")
+        wp.copy(s.traction_force, forces)
+
+    def advance_device(self, q1=None, b1=None, traction=None):
+        """One control step with device-staged inputs (P2-6; no host staging, no host read except strict mode's
+        validity count): every group holds, then ``q1`` / ``b1`` (``set_group_motions_device``) and ``traction``
+        (``set_traction_device``) are written, then the control step runs exactly as ``advance``."""
+        self._begin_control_step()
+        if (q1 is None) != (b1 is None):
+            raise ValueError("q1 and b1 are staged together")
+        if q1 is not None:
+            self.set_group_motions_device(q1, b1)
+        else:
+            self.solver.prepare_motion_table()
+        if traction is not None:
+            self.set_traction_device(traction)
+        self._run_control_step()
+
+    def _run_control_step(self):
+        s = self.solver
         with wp.ScopedDevice(self.device):
             if self.graphs is not None:
                 main, repeats, rest = self.graphs
