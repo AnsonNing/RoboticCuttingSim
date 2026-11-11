@@ -13,7 +13,8 @@ from robotic_cutting_sim.rubber_contact_envelope import (FrictionOutOfEnvelope, 
                                                          parse_envelope)
 from robotic_cutting_sim.rubber_material import ROOT
 
-PINS = {"configs/rubber/contact_envelope_v1.json": "08f68f704a8052213be4448f964f1b0fc31da867470d7cc0274f93c71ba1a77a"}
+PINS = {"configs/rubber/contact_envelope_v1.json": "08f68f704a8052213be4448f964f1b0fc31da867470d7cc0274f93c71ba1a77a",
+        "configs/rubber/contact_envelope_v2.json": "46f74efa880cf7121e50070a0cf5fb2358e87d7e390f67cd7b608802f9f03b78"}
 V2, V3 = "grid_node_penalty_coulomb_v2", "grid_node_penalty_coulomb_v3"
 EVID = ROOT/"docs"/"evidence"/"rl_ready"
 
@@ -96,3 +97,28 @@ def test_parser_rejects_malformed():
         mutate(d)
         with pytest.raises(ValueError):
             parse_envelope(d)
+
+
+def test_v2_adds_only_the_env2_rows():
+    """contact_envelope_v2 (ENV2, run contact_envelope_v1_001): v3 at n_t 5 / 6 established at 0.8 / 0.8 from the
+    formal check; the n_t 4 row keeps 0.8 (the STRIP rows did not narrow it); every other row unchanged."""
+    v1 = load_envelope()
+    v2 = load_envelope(ROOT/"configs"/"rubber"/"contact_envelope_v2.json",
+                       expected_sha256=PINS["configs/rubber/contact_envelope_v2.json"])
+    ev = json.loads((EVID/"p2_6_contact_envelope_001.json").read_text())
+    assert ev["verdict"] == "PASS" and ev["run"]["meta"]["dirty"] is False and not ev["run"]["errors"]
+    assert ev["protocol"]["sha256"] == "d7ecbd3164409cce12d229504864297677baf3307f9763bb7797329506ffe92c"
+    assert ev["output"]["sha256"] == PINS["configs/rubber/contact_envelope_v2.json"]
+    assert ev["run"]["jobs"] == 85 and all(v["sliding_pass"] and v["static_pass"] for v in ev["levels"].values())
+    for n_t in (5, 6):
+        r = v2.established(V3, n_t)
+        assert (r["sliding_mu_max"], r["static_mu_max"]) == (0.8, 0.8) and r["run_id"] == "contact_envelope_v1_001"
+        assert ev["envelope"][str(n_t)]["sliding_mu_max"] == 0.8
+    assert v2.established(V3, 4)["env2_check"]["sliding_mu_max"] == 0.8
+    for r in v1.rows:
+        if not (r["law"] == V3 and r["n_t"] in (4, 5, 6)):
+            assert v2.row(r["law"], r["n_t"]) == r
+    assert v2.friction_range(V3, [4, 5, 6]) == (0.3, 0.8)
+    for mu in (0.81, 1.0):
+        with pytest.raises(FrictionOutOfEnvelope):
+            v2.check_friction(V3, 6, mu)
