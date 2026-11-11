@@ -299,14 +299,12 @@ class RubberStripTaskFamily:
     # ------------------------------------------------------------------ receipts
 
     def resolution_label(self):
-        """The resolution profile label of the slots (K2 Q1w conditions 1 / 2): read defensively from
-        ``rubber_material.RESOLUTION_PROFILES`` (``measured_bias`` / ``known_limitation`` land with K2-2)."""
-        from ..rubber_material import RESOLUTION_PROFILES
+        """The resolution label of every slot n_t (K2 Q1w conditions 1 / 2; K2-2 ``rubber_material.resolution_label``:
+        profile, label, measured_bias, known_limitation; the scene compiler validates the profile against n_t)."""
+        from ..rubber_material import resolution_label
         name = "rubber_rl_v1" if self.resolution == "rubber_rl_v1" else "rubber_ref_v1"
-        prof = RESOLUTION_PROFILES.get(name, {})
-        return {"resolution_profile": name, "label": prof.get("label"),
-                "measured_bias": prof.get("measured_bias", "PENDING_K2-2 (label not yet in RESOLUTION_PROFILES)"),
-                "known_limitation": prof.get("known_limitation", "PENDING_K2-2"),
+        return {"resolution_profile": name,
+                "per_n_t": {str(n): resolution_label(name, n) for n in self.n_ts},
                 "task_config_label": self.config["labels"].get("resolution_measured_bias")}
 
     def to_dict(self):
