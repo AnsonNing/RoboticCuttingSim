@@ -384,6 +384,7 @@ class BatchedTLMPMRubber:
                                         self.weights, self.gradients, self.gm, self.gp, self.gj, 1, self.volume, dt,
                                         self.gravity])
             wp.launch(v5._grid_update, (1, nn), [self.gm, self.gp, self.gj, self.old, self.new_v, self.slot_code, 1])
+            self._after_p2g_grid_update()
             if not projection:
                 self._launch_bc(1)
             wp.launch(v5._g2p, n, [self.x, self.v, self.slot, self.nodes, self.weights, self.old, self.new_v, 1, dt,
@@ -395,6 +396,7 @@ class BatchedTLMPMRubber:
                 self.gp.zero_()
                 wp.launch(v5._musl, (n, 8), [self.v, self.mass, self.slot, self.nodes, self.weights, self.gp, 1])
             wp.launch(v5._grid_update, (1, nn), [self.gm, self.gp, self.gj, self.old, self.new_v, self.slot_code, 1])
+            self._after_final_grid_update()
             self._launch_bc(0)
             if self.state_precision == "f64_shadow_v1":
                 wp.launch(_deformation_f64, n, [self.F, self.F64, self.nodes, self.gradients, self.new_v,
@@ -404,6 +406,7 @@ class BatchedTLMPMRubber:
                 wp.launch(v5._deformation, n, [self.F, self.slot, self.nodes, self.gradients, self.new_v, 1, dt])
                 wp.launch(_grid_positions, n, [self.x, self.x_start, self.slot, self.nodes, self.weights, self.new_v, 1,
                                                dt])
+            self._after_position_update()
             if self.traction_work == "grid_displacement_v1" and self.Gt:
                 wp.launch(_traction_work_grid_b, n, [self.x, self.x_start, self.mass, self.particle_traction,
                                                      self.traction_force, self.traction_mass, self.env_of_particle,
@@ -422,6 +425,17 @@ class BatchedTLMPMRubber:
                                                      self.env_of_particle, wp.float64(self.volume), wp.float64(dt),
                                                      self.visco_branch_work])
             wp.launch(v5._advance, 1, [self.index])
+
+    # Hooks of the contact execution (``rubber_contact_batch.BatchedTLMPMRubberContact``, ADR 0023 §22): the single
+    # contact solver's three extra launch points. No launch here, so a batch without contact is unchanged.
+    def _after_p2g_grid_update(self):
+        pass
+
+    def _after_final_grid_update(self):
+        pass
+
+    def _after_position_update(self):
+        pass
 
     def _launch_projection(self):
         """F8 over all envs' rows (``tlmpm_rubber_v1.TLMPMRubber._launch_projection`` order)."""

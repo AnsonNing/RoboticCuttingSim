@@ -1599,3 +1599,519 @@ PASS_WITH_LIMITATIONS; merge GO). No protocol, threshold, record or frozen file 
   in `22982df` (§20.2); `advance()` unchanged (same launches; every device array identical before / after the fix).
 - **R4** (VISC-09 covered only the full option set): `tests/test_rubber_visco09_default_options.py` adds the default
   options (case A, C, block; M = 0 and M = 2 with every g = 0), byte-identical to the frozen `TLMPMRubber`.
+
+## 22. P2-4: contact, friction and dynamic coupling (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: the five P2-4 decisions (rubber–table / fixture contact, gripper pads, self-contact, the 20 ms delayed handoff,
+GPU per-env isolation), the protocol `rubber_contact_tests_v1` (declared and SHA-pinned before any formal run) and the
+implementation of the single-env contact law. Branch `claude/rl-rubber-p24` from `025ecaf`. Nothing frozen changed:
+v1–v7_2, law 8, evaluators, every Phase 1 module (`batched/constitutive.py`, `batched/errors.py`,
+`batched/particle_contacts.py`, `batched/material_batch.py`, …), `configs/rl_benchmark/*`, `scripts/rl_ready/*`, the
+rubber protocols v1–v4 / moving-grip v1 / visc v1–v2, `tlmpm_rubber_v1.py`, `rubber_constitutive.py`,
+`tlmpm_rubber_visco_v1.py`, `rubber_visco_constitutive.py`, `rubber_constraint_work.py` (byte-identical). Changed
+Phase 2 file: `live_rubber_material.py` (opt-in `contact=` dispatch, `advance(frames=…)`, `last_contact`; without a
+ContactSpec it builds exactly the previous classes). New: `rubber_contact.py`, `tlmpm_rubber_contact_v1.py`. Raw outputs
+`artifacts/rl_ready/p2_4/`; report `docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md`; evidence
+`docs/evidence/rl_ready/p2_4_contact_001.json`. Material status: `SIMULATOR_ONLY_UNCALIBRATED`.
+
+### 22.1 Decision 1 — rubber–table / fixture contact: grid-node penalty with a Coulomb spring–dashpot–slider (`grid_node_penalty_coulomb_v1`), work booked kick-paired
+
+**Verified facts.** (1) The frozen helper (`tlmpm_v5.py:155-165`, used by `tlmpm_rubber_v1._loads` and the Phase 1
+pads) is a predictive penalty with an approach-only damper — normal impulse `s m/dt · max(−gap − dt·min(v_n,0), 0)`, i.e.
+spring `s m/dt²` plus damper `s m/dt` while approaching — and a friction impulse capped at `m|v_t|` of the particle
+velocity at the START of the substep, applied before P2G; its impulses are in no work term. At rest it applies no
+friction, so a body at rest on a slope is never a fixed point. (2) Pure FLIP + MUSL with fixed weights is symplectic
+Euler in (π, u) with KE = ½πᵀBπ, B = M_l⁻¹M_cM_l⁻¹ (§18.1 F1, §21.1): the drift velocity is Bπ, not the lumped P2G
+velocity M_l⁻¹π. A lumped node projection therefore under-corrects the drift (a flat face keeps the B-row fraction it
+does not see: the face rows of B sum to 0.625 of the lumped inverse mass at 2 particles per cell), and an overwrite
+after the MUSL pass is not symplectic (§18.1 F6, §21.1). (3) Any impulse J that enters the kick (added to the P2G grid
+momentum, never overwritten after MUSL) satisfies KE_{n+1} − KE_n = (dt f + J)·(g_n + g_{n+1})/2 exactly.
+
+**Probe evidence** (DIAGNOSTIC; `scripts/rubber/p2_4/probe_contact_laws.py`, run `probe_contact_laws_004` at the clean
+commit `259f2b6`; runs `_001`–`_003` and the development sweeps `contact_sweeps_dev_001`
+(`diag_contact_sweep.py`) preserved). Block 12 × 6 × 3 mm, n_t 3, μ_table 0.5, gravity ramped per substep over 20 ms,
+displacement of the centroid along the slope over the 100 ms hold; slip error = (a_fit − g(sinθ − μcosθ))/(g cosθ);
+frictionless rod 30 × 4 × 4 mm, n_t 4, 0.2 m/s end impact:
+
+| Law | stick 0.8 μ / 0.9 μ / 0.95 μ | slip error 1.05 / 1.15 / 1.25 | impact E_end/E0 (CFL 0.5 / 0.25) | verdict |
+|---|---|---|---|---|
+| frozen per-particle helper (D8 design) | 0.50 / 1.24 / 1.59 mm | +2.0 / +0.8 / +0.4 % | 0.966 / 0.950 (loss grows as dt shrinks) | rejected |
+| node velocity projection `grid_node_coulomb_v1` | 0.34 / 0.75 / 1.15 mm | +1.2 / +0.3 / +0.1 % | 0.993 / 0.972 (dt-dependent) | rejected |
+| node penalty, no dashpots (sweeps, `_003`) | creeps at 0.8 μ in most settings (4e-5 … 7e-4 m; one κ 0.05 setting held) | +1.4 … +3.3 % | 1.0015 / 1.0008 (conservative) | rejected |
+| node penalty, normal dashpot only (`_004` "undamped") | 2.7e-9 / 7.3e-9 m / 1.3 mm | +4.2 / +4.3 / +4.3 % | — | rejected |
+| node penalty, tangential dashpot only (sweep) | 1.3e-4 m at 0.8 μ | +1.3 … +9 % | — | rejected |
+| **node penalty + both dashpots ζ 0.5 (adopted)** | **1.0e-6 / 8.3e-7 m** / 0.71 mm | **+0.53 / +0.15 / +0.10 %** | **0.962 / 0.960 (dt-independent, booked)** | **adopted** |
+
+Reading. Every explicit Coulomb law tried shows a friction-induced flutter of the elastic block: the contact layer
+rattles (only 8–20 % of the bottom nodes in contact per substep), stick creeps and slip loses friction. It is not
+removed by refinement (n_t 4 creeps more than n_t 3; CFL 0.25 still creeps) and appears for all three formulations, so
+it is a property of explicit Coulomb friction on an elastic model with almost no high-frequency damping (the coupling
+∂F_t/∂u_n = μ k_n makes the contact stiffness non-symmetric), not of one implementation. The declared contact dashpots,
+acting on the node's predicted (post-force) relative velocity, suppress it; both are needed. Real rubber has strong
+high-frequency loss, which the illustrative Prony sets lack (the P2 block holds at 0.95 μ, the elastic block does not).
+
+**Law.** Per reference-grid node with mass (TLMPM nodes are the Q1 material points; on the particle lattice the outer
+nodes lie on the faces), x_I = X_I + u_I (float64, advanced with the drift velocity): every obstacle the node penetrates
+(gap < 0 at the start of the substep) gives F_n = max(k_n(−gap) − c_n v_n, 0) n, k_n = κ_n m_I/dt², c_n = 2ζ_n√(k_n m_I);
+one Coulomb spring–dashpot–slider on the deepest obstacle, F_t = −k_t ξ_t − c_t v_t capped at μF_n (slip: the anchor
+slides, ξ_t = −F_t/k_t; the Coulomb dissipation μF_n|Δanchor| is booked), k_t = κ_t m_I/dt², c_t = 2ζ_t√(k_t m_I);
+ξ_t += dt(v_I − v_obs) after the drift; a node leaving contact or switching obstacle releases its anchor; nodes of an
+active Dirichlet group are skipped. Declared numerical parameters κ_n = κ_t = 0.25, ζ_n = ζ_t = 0.5
+(2ζ√κ = 0.5 ≤ 1). Obstacles: P static half-spaces (friction_table) and F rigid kinematic frames with B oriented boxes
+each (kind fixture → friction_table, pad → friction_pad), moving x = R(s)X + b(s) with the BC-group interpolation;
+the obstacle velocity at the node is position-exact. Applied in the kick after the P2G grid update.
+
+**Work (`kick_average_v1`).** W_n, W_t = Σ J·(g_n + g_{n+1})/2 with g_n = `old` after the P2G grid update and
+g_{n+1} = `old` after the final MUSL grid update (two half launches, no per-particle state); obstacle power
+P = Σ J·v_obs; contact dissipation D = (P_n − W_n) + (P_t − W_t). Books (layer N):
+B = E_kin + Ψ_eq + E_grav + W_b − W_ext − (W_n + W_t). Contact numerics or dashpots are never booked as material
+damping.
+
+**Consequences, declared.** (a) Impacts lose energy to the contact dashpots (3.8–4.0 % of E0 for the 30 mm rod at n_t 4),
+booked as contact dissipation and dt-independent; the conservative (undamped) normal law returns it but flutters in
+friction. (b) At a static fixed point the dashpot sees v* = −dt F_I/m_I and carries the share 2ζ_n√κ_n = 0.5 of the
+load without dissipating: penetration δ_I = (1 − 2ζ_n√κ_n) F_I/k_n ∝ dt²/dx (→ 0 under refinement at fixed CFL).
+(c) Near-threshold stick (0.95 μ) of the purely elastic model still creeps (domain limit, reported; the P2 material
+holds). (d) GPU cost +40–46 % per substep on the workload E single env (§22.7). (e) Coulomb friction is velocity- and
+pressure-independent here; real rubber friction is not (calibration is P2-5).
+
+### 22.2 Decision 2 — gripper pads / robot fingers: moving kinematic box frames, per-pad wrench [N, G, B, 6]
+
+- B oriented boxes per kinematic contact frame of kind `pad` (friction_pad), rigid motion interpolated per substep
+  exactly like the BC groups (slerp + linear); each box's reaction (impulse on the material and its torque about the
+  frame's current origin) is accumulated per control step; the wrench the material exerts on box b of frame f is
+  `−reaction/control_dt`: single env [F, B, 6] (`TLMPMRubberContact.contact_wrenches`, `LiveRubberMaterial.last_contact`),
+  batched [N, G, B, 6] with G = pad frames per env (uniform), B boxes per frame (uniform).
+- Coupling without changing Phase 1 files: the rubber batched material will expose the `MaterialCoupling` surface of
+  `rl/lab_batched_env.py` (`pending_wrench [N,6]`, `pad_wrench [N,B',6]` world wrenches, B' = G·B rows, recipients
+  mapped to the finger bodies as in `configure_pad_obstacles`), written by a NEW rubber wrench kernel at the end of
+  `advance` (strip-local → world with a per-env strip pose, float64, as `_wrench_b`), and the Lab env applies them in
+  every substep of the next interval exactly as for the cutting material (`lab_batched_env.py:15, 65-67`). Nothing in
+  `material_batch.py` or `lab_batched_env.py` changes.
+- `kinematic_clamp_v1` (Dirichlet group, F8 + kick-average work) stays for clamped grips; `friction_pads_v1` = pads only.
+  Robot links other than the pads do not touch the strip in v1 (declared, as D8).
+
+### 22.3 Decision 3 — self-contact: not part of the P2-4 acceptance; `NOT_IMPLEMENTED_V1` (declared limitation)
+
+- The P2-4 scenes (table, fixtures, pads, pinch, coupling) do not fold. The only fold scene so far, the λ 1.5
+  instantaneous release, reached hinge stretches of 0.05 and a guard bound of 13 at CFL 0.5 before any self-contact
+  (§18.1 F4): a fold needs r ≥ 2 … 13, self-contact and probably HF damping — a research item, not a P2-4 gate.
+  RUBBER-PHYS-12 already flags compressive folds (guard / J domain).
+- Gap that remains: two distant parts of a strip can pass through each other without compression (no flag). Before P2-6
+  a per-control-step self-penetration detector is required (flag `RUBBER_SELF_CONTACT_UNRESOLVED`, terminate in
+  training; task S1 below).
+- Options and cost when self-contact is needed: (a) **particle-pair contact in a new rubber module reusing the grouped
+  HashGrid approach** (Phase 1 `particle_contacts.FallbackGrid` pattern, graph-safe, one device HashGrid per process;
+  pairs with reference distance > 3 dx, no cut codes; a dashpot-capped pair law since a per-pair slider history is not
+  feasible): Phase 1 measured ≈ 73 µs hash build + ≈ 110 µs alias-free contact kernel per substep at 103k particles
+  (N = 1, P1-3a) → ≈ +0.18 ms on a 0.22–0.32 ms rubber substep (+55–80 %), ≈ +25–40 % with surface particles only
+  (≈ 30 % at workload E); (b) **grid multi-velocity field**: impossible on the TLMPM reference grid (contacting regions
+  are far apart in the reference configuration); it needs a second current-configuration sparse grid, region labels
+  and an extra P2G/G2P per substep (≈ +80–120 %) — rejected; (c) **detector only, once per control step**: one hash
+  build + query per 2,600 substeps (negligible) — recommended now.
+
+### 22.4 Decision 4 — the 20 ms delayed force handoff
+
+- Semantics (`lab_batched_env.py:15`): material step k follows the pose measured at the end of rigid interval k
+  (linear within it); its interval-averaged wrench is applied in every substep of interval k + 1 — an effective delay
+  of 1–1.5 intervals on a zero-order hold.
+- Ideal-tracking / kinematic grips (every P2-1 … P2-4 test, every calibration experiment, the P2-6
+  `kinematic_grip_batched` backend) have no wrench feedback, hence no coupling error by construction.
+- With feedback the delay is assessed by RUBBER-CONT-07 (1-DOF hand surrogate m_h z'' = k_h(z_c − z) + c_h(ż_c − ż) +
+  F_strip(delayed); 20 ms vs 1 ms intervals at the same material dt; envelope strip length 30 / 60 mm, stiff
+  1 kg / 10 kN/m and light compliant 0.05 kg / 100 N/m hands, 40 / 200 ms moves). Rows outside the acceptable envelope
+  carry `coupling_delay_significant`. The delay energy error E_delay = Σ_k (F_applied,k − F_material,k)·Δz_k is computed
+  on the hand side; the material books close independently of it; no material parameter is ever fitted to it.
+
+### 22.5 Decision 5 — GPU per-env wrench and state isolation
+
+- Kernel design: one thread per node, env e = `env_of_node[i]`; all writes to the node's own velocity, impulses and
+  slider state; atomics only into rows owned by env e (`e·P + k`, `(e·F + f)·B + b`, `work[e, ·]`, `pen_max[e]`,
+  `counts[e, ·]`); obstacle data read from env e's rows only. The contact kernel itself is deterministic (no atomics on
+  velocities); its reaction / work atomics and the frozen P2G/MUSL atomics are order-nondeterministic on a GPU.
+- Tests: RUBBER-CONT-08 (CPU L0 byte-wise, L1 perturbation and masked reset with the contact arrays) and -09 (GPU:
+  exact-zero rows for envs out of reach, perturbation band vs repeat band, audits). Single-env GPU evidence now:
+  out-of-reach rows exactly 0.0 (§22.7). The batched contact path is task B1 below.
+
+### 22.6 Protocol `rubber_contact_tests_v1`
+
+`configs/rubber/rubber_contact_tests_v1.json`, sha256 `4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c`,
+pinned in `tests/test_rubber_p2_4_protocols.py`, committed at `51023d6` before any formal run (the law at `259f2b6`).
+RUBBER-CONT-01 incline stick / slip / onset (rigid Coulomb), -02 penetration vs dt / dx (the law's fixed-point value),
+-03 frictionless rod impact (2L/c0, e = 1 elastic; books with contact work, elastic energy and Prony branch work
+separated; dissipation attribution and convergence), -04 interface dissipation = μN·slip, -05 pinch-and-pull (per-pad
+wrenches, slip ratio vs grip force), -06 self-contact NOT_IMPLEMENTED_V1, -07 coupling-delay assessment, -08 batched
+L0/L1, -09 GPU isolation, -10 contact-off identity and law checks (unit tests), -11 cost (reported). The scenes seen in
+the probes are listed in its provenance; every formal scene is different (geometry, μ, speed, rod length).
+
+### 22.7 Results (formal CPU run `contact_v1_001`, GPU check `gpu_contact_002`; details: `docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md`)
+
+Formal run: commit `436f91c` (clean tree), protocol sha256 `4d3dc68f…6e4c`, Warp 1.17.0 CPU, 32 workers on the shared
+Threadripper, 41 jobs. Every FAIL below is the v1 result and stays preserved; no threshold moves.
+
+| Test | Verdict | Measured |
+|---|---|---|
+| -01 incline | **FAIL** | elastic stick rows PASS at μ 0.4 / 0.8 and ratios 0.6 / 0.85 (hold displacement ≤ 0.0044 s, a ≈ 0); μ 0.4 slip PASS (+0.20 / +0.06 / +0.03 % of g cosθ), μ_eff(0.4) −0.67 % PASS; **μ 0.8 slip +1.65 / +1.88 / +1.06 % > 1 %, μ_eff(0.8) −2.75 % > 2 %, the P2 stick row at 0.95 μ, μ 0.8 slides (4.8 s, +1.8 % g cosθ), books of the μ 0.4 / 0.6 stick run 1.03 % > 1 %** |
+| -02 penetration | **PASS** | max penetration ≤ 0.049 s; dt ratio 0.256 (law 0.25); dx ratio 0.490 (law 0.5); undamped spring sum / reaction 1.000002, interior node ratio 1.050; balance ≤ 4e-5 |
+| -03 impact | **FAIL** (books, one run) | n_t 4 books 0.59 / 0.25 % (CFL 0.5 / 0.25, ratio 0.42), P2 0.54 / 0.20 %; **elastic n_t 2 1.024 % > 1 %**; contact time 2.58 ms vs 2L/c0 2.50 ms (+3.3 %); contact dissipation 2.86 % (n_t 4) / 4.71 % (n_t 2) of E0, ratio 0.61; P2 branch dissipation 10.2 % of E0; rebound v/V 0.94 (elastic), 0.90 (P2) |
+| -04 dissipation | **FAIL** | μ 0.4: 0.988 / 0.993 / 0.995 of μ∫N dx (PASS); **μ 0.8: 0.932 / 0.930 / 0.943 < 0.95** |
+| -05 pinch-and-pull | **FAIL** | N = 0.67 / 1.40 / 2.15 N; **slip ratio 0.972 / 0.964 / 0.956 (band 0.97–1.02)**; cone ≤ 0.9995 PASS; grip scaling spread 1.6 % PASS; **clamp balance 9.8 / 6.0 / 6.3 % > 5 %**; penetration PASS |
+| -06 self-contact | NOT_RUN | NOT_IMPLEMENTED_V1 (declared) |
+| -07 coupling delay | **PASS** (assessment complete) | all 8 envelope points **coupling_delay_significant**: tip error 0.3–13 %, hand-side delay energy 4–93 % of the strip's mechanical energy; log-decrement tip damping with the 20 ms handoff negative at 6 of 8 points (−0.0006 … −0.030), the 1 ms arm resolved at 4 points (+0.0003, +0.0003, +0.0017, −0.030; the elastic strip has no damping, so ~1e-3 is the estimator's noise level); material books ≤ 0.10 % in every arm |
+| -08 / -09 batched, GPU isolation | NOT_RUN | batched contact path not implemented (task B1) |
+| -10 unit tests | PASS | `tests/test_rubber_contact.py` 12 / 12; CPU suites (rubber + batched + naming, `045ce6c`): 421 passed with `CUDA_VISIBLE_DEVICES=''` and with `=0` |
+| -11 cost (GPU0, SHARED_GPU, driver 570.211.01) | reported | workload E single env (41,220 particles, n_t 3, 2,585 substeps): 0.218 → 0.320 ms per substep with a table and two pads (+46 %; +40 % out of reach); VRAM 686 → 744 MB; contact kernel 0.076 ms (22 % of kernel time: per-node float64 slerp / quat-to-matrix of the frames); out-of-reach contact rows exactly 0.0; GPU vs CPU pad wrench 3.3e-6 relative |
+
+Reading (diagnostic, after the run). The μ 0.8 failures share one cause with the decision probe's near-threshold
+creep: the friction-induced flutter grows with μ (its coupling is μ k_n) and the declared ζ = 0.5 suppresses it at
+μ ≤ 0.5 but not fully at 0.8 (friction ≈ 2 % low, the extra energy goes into contact vibration). The pinch ratio
+(0.96–0.97) and the 6–10 % clamp imbalance come from the same contact vibration under the pads plus lateral slip
+components on the bulging strip; the books FAILs are 1.02–1.03 % on the two runs with the coarsest dt / smallest energy
+scale. -07 is the decisive coupling finding: with wrench feedback the 20 ms handoff's energy error is comparable to the
+strip's mechanical energy across the whole declared envelope (and fast moves have 3–13 % tip errors), so
+feedback-coupled rubber rows must carry `coupling_delay_significant` (or run a shorter handoff), while ideal-tracking
+grips remain exact.
+
+### 22.8 Remaining tasks (rcs-impl unless stated)
+
+| Task | Content | Size |
+|---|---|---|
+| X1 (rcs-xhigh) | Decision on the -01 / -04 / -05 FAILs at μ 0.8 / pinch: a v2 law (e.g. dashpot ratio scaled with μ, a frame-table contact kernel, or HF damping in the material set) or a declared μ envelope; any v2 is declared before its run; the v1 FAILs stay | S |
+| B1 | Batched contact: `BatchedTLMPMRubberContact` (contact arrays packed from the single references, global node / obstacle rows, the same kernels), `BatchedRubberMaterial` contact subclass (frame motions per env, per-env frictions from `params` columns 3/4, masked reset of `ct_node_u / ct_xi / ct_obst / ct_vobs / ct_work / reactions`, vars()-complete tables, wrench kernel → [N, G, B, 6]), `rubber_layout._validate` accepting `TLMPMRubberContact` with the contact spec in the uniform signature; tests RUBBER-CONT-08 (L0 byte-wise N 1 / N 3 heterogeneous, L1, refusals) | L |
+| B2 | RUBBER-CONT-09 on GPU0 (exact-zero rows, perturbation band, audits) after B1 | S |
+| B3 | MaterialCoupling adapter for the Lab env: rubber wrench kernel → `pending_wrench [N,6]`, `pad_wrench [N,G·B,6]` world wrenches with recipients (no Phase 1 file changed) | M |
+| P1 | Contact cost: per-substep frame table (as `motion_table_v1`) and a bounding-volume reject in `node_penalty_contact` (bytes unchanged on CPU, tested) | M |
+| S1 | Self-penetration detector once per control step (HashGrid / FallbackGrid over surface particles, reference distance > 3 dx), sticky flag `RUBBER_SELF_CONTACT_UNRESOLVED`, P2-6 terminates | M |
+| C1 | Feedback coupling: a shorter handoff (≤ 1–2 ms) or an iterated / implicit material–robot exchange for Lab-coupled rubber; re-run RUBBER-CONT-07 envelope under a new declared protocol | M–L |
+| R1 | Independent rcs-review (xhigh) of §22 and `contact_v1_001` | – |
+
+### 22.9 Task X1 — decision on the v1 contact FAILs: law `grid_node_penalty_coulomb_v2` + declared μ envelope (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: root cause of the μ-dependent FAILs of `contact_v1_001` (-01 slip / onset / P2 stick / books, -03 n_t 2 books,
+-04 dissipation, -05 slip ratio / clamp balance) and of the -09 b FAIL of `gpu_cont09_001` (B1), the decision, the
+protocol `rubber_contact_tests_v2` (sha256 `89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0`, declared
+alone at `8842573` before any run of it), and its formal CPU run `contact_v2_001`. Every v1 result and FAIL stays.
+Nothing frozen changed: the v1 kernels are byte-identical (source hashes pinned in `tests/test_rubber_contact_v2.py`;
+four `contact_v1_001` jobs rerun after the change are byte-identical, `x1_v1_identity_002`), v1 stays the default law,
+`rubber_contact_tests_v1` and every frozen module / protocol / Phase 1 file are untouched. Material status:
+`SIMULATOR_ONLY_UNCALIBRATED`.
+
+**Root cause (DIAGNOSTIC: `scripts/rubber/p2_4/diag_contact_x1.py`, `x1_dev_laws.py`, `diag_x1_scenes.py`; raw
+`artifacts/rl_ready/p2_4/x1_diag_001`).** The per-substep instrumentation of the INC block (per-node impulses) shows that
+the friction actually applied is 97.9 % of μ ΣJ_n at μ 0.8 (stick nodes cost 0.2 % of μΣJ_n, slip misalignment
+1.9 %: lateral / axial friction 0.15) and that only 3 % of the bottom nodes are in contact per substep (normal
+impulse std/mean 5.8): the face rattles. Two defects:
+
+1. *The v1 dashpots act on the wrong velocity.* They use the predicted lumped velocity `new_v` = M_l⁻¹π_n + dt f/m_I,
+   while the node moves with the drift velocity Bπ (§18.1 F1, §21.1). For the face's grid-scale modes this dashpot is not
+   dissipative: a **frictionless** elastic block **at rest** keeps a self-excited rattle (27 % of the bottom nodes in
+   contact, vibration energy ≈ 100× the static elastic energy, sustained for 0.3 s) with **positive** kick-paired normal
+   contact work (+1.1e-8 J) while the nominal dashpot dissipation sums to 3.0e-6 J. This is a modelling defect.
+2. *Friction–normal mode-coupling flutter of the grid-scale penalty interface.* The cap μF_n follows the per-node penalty
+   force instantaneously (∂F_t/∂u_n = μk_n, k_n = κm_I/dt² tied to the grid). The flutter grows with μ (bottom contact
+   fraction 0.28 / 0.19 / 0.08 / 0.03 / 0.02 at μ 0.2 / 0.4 / 0.6 / 0.8 / 1.0), makes friction bursty and misaligned
+   and its work correlated with braked node velocities: friction deficit and vibration energy growth (4 % of μN·slip over
+   the -04 window at μ 0.8). Not removed by cfl 0.25 / 0.125, n_t 4 / 6 (worse), any κ ∈ [0.0005, 1] or ζ up to the
+   2ζ√κ ≤ 1 limit; stiffer material reduces it (rigid limit). It is not continuum physics below μ = 1: rigid-flat
+   Coulomb sliding of an elastic half-space is linearly stable for μ < 1.000 and ill-posed above (surface-wave growth
+   ∝ |k|; `halfspace_sliding_stability.py`, ν 0.3–0.49, the Renardy / Martins class of results).
+
+Ruled out as causes (the four candidates of the task): the dashpot energy missing from μN·slip (D_contact contains every
+dashpot; the deficit has the opposite sign); stick–slip hysteresis (stick share < 0.2 % of the load in sliding); the slip
+direction (−v_t instead of the trial direction: ≤ 0.4 % of g cosθ); the timing / velocity of the normal force in the
+cone (dashpot on the predicted v*, the realised g_n or their mean: the flutter persists in all; the spring part only:
+worse, 8–12 % of g cosθ at μ 0.8).
+
+**Decision: route (a) + (b).**
+
+- (a) `grid_node_penalty_coulomb_v2` (opt-in; `ContactSpec(law="grid_node_penalty_coulomb_v2")`; kernel
+  `rubber_contact.node_penalty_contact_v2`, same arguments as v1, selected by the scalar `ct_law`, no new state — the B1
+  batched path runs it unchanged and is L0 byte-identical, `test_v2_batched_l0_heterogeneous`): both dashpots and the
+  tangential trial act on the node's realised velocity g_n = `old` after the P2G grid update minus the obstacle velocity.
+  Corrects defect 1: the frictionless block at rest settles (all bottom nodes in contact, W_n < 0), the elastic block
+  holds at 0.95 μ (v1: crept), the static law becomes δ_I = F_I/k_n (springs carry the whole reaction, -02 f), the impact
+  books improve (n_t 2: 1.024 → 0.71 %). Parameters unchanged (κ 0.25, ζ 0.5; not re-tuned).
+- (b) Defect 2 is **not** corrected; v2 declares a μ envelope with a measured error model (INC, DIAGNOSTIC,
+  `sweepK_v2_errormodel.jsonl`): sliding friction accurate to the protocol limits for **μ ≤ 0.6** (slip error ≤ 0.7 %
+  of g cosθ, dissipation ≥ 0.96), static friction (hold at 0.95 μ, elastic and P2) for **μ ≤ 0.8**. Outside: μ 0.8 slip
+  +1.3 … +2.5 %, dissipation 0.87–0.94; μ 1.0 +2.7 … +5.8 %, 0.85–0.88, the hold at 0.95 μ is lost (slides 7 mm); μ 1.2 /
+  1.5 up to +15 % / +43 %. Labels: `contact_sliding_friction_deficit_v2` (μ > 0.6 with sliding),
+  `contact_friction_flutter` (μ > 0.8), `contact_coulomb_ill_posed` (μ ≥ 1.0). **This is a real limitation**: rubber–steel
+  / rubber–table friction is often 0.6–1.0+, and the generic rubber recipes randomise friction over [0.3, 1.5]
+  (nominal 0.8 / 1.0): scored rubber contact rows must stay inside the envelope or carry the labels (task X2).
+- Not adopted: a normal-force memory of the cap (Prakash–Clifton type, first-order lag of n_τ substeps, consistent as
+  dt → 0). With the v2 dashpots it removes defect 2 in steady sliding (exact to 0.1 % of g cosθ up to μ 1.0 / 1.2 / 1.5 at
+  n_τ 100 / 200 / 400), but near threshold under rising load it lets edge micro-slip cascade (0.04–0.5 mm at 0.95 μ for
+  every μ, also when the lag acts in slip only) and it collapses (friction 35–75 % of μN) where it does not stabilise.
+  It would trade the regime v2 gets right (grasp-and-hold) for sliding accuracy (task X2).
+
+**n_t 2 impact books.** n_t 2 is the declared `rubber_coarse_v1` profile (`reduced_fidelity: coarse_thickness_resolution`),
+not a production grid; the v1 1.024 % was the first-order symplectic books error of the coarsest dt (n_t 4: 0.59 / 0.25 %,
+ratio 0.42). The 1 % limit is kept for every run; v2 gives 0.71 % (n_t 4: 0.36 / 0.21 %).
+
+**Pinch clamp balance.** Not a moving-clamp / contact work coupling: the window-mean imbalance |⟨F_x(clamp) + T⟩| is
+0.002–0.65 % (v1) and 0.45–1.35 % (v2); the v1 per-step metric ⟨|F_x + T|⟩ is the strip's axial vibration (dominant
+229–286 Hz = the clamped / sliding-end quarter-wave mode c/4L = 267 Hz of the 30 mm strip). With sustained unidirectional
+rate-independent Coulomb slip the sliding end carries a constant force, so the undamped strip keeps the slip-onset
+vibration (estimate k_ax v_pull/ω ≈ 0.047 N vs 5 % of T = 0.017 N at 20 µm): the per-step 5 % is unattainable for the
+exact solution of the declared model. v2 scores the window-mean (momentum) balance at the same 5 % and reports the
+per-step value.
+
+**RUBBER-CONT-09 b (B1, `gpu_cont09_001`).** The v1 band max|A − B| ≤ max|A − A′| + 1e-6 max|A| was statistically unsound:
+with one repeat, P(|A − B| > |A − A′|) = 1/2 under H0 by exchangeability (simulated 0.500), so any scalar whose GPU
+run-to-run noise exceeds the 1e-6 floor is a coin flip; ~10² scalars reject almost surely. The 1-of-108 FAIL (a clamp
+wrench, 1.23e-7 N vs 9.2e-8 N) stays preserved and is not evidence of coupling (criteria a and c PASS). v2 rule: k = 5 A
+and 5 B episodes interleaved in one batch, per scalar d = max|A_i − B_j| ≤ 4 s + 1e-6 max|A_i| with s the larger within-side
+range; per-scalar false reject ≤ 5.5e-6 under Gaussian / Laplace / t₃ / uniform noise (`cont09_band_calibration.py`,
+2e6 samples), family-wise ≤ 0.4 % for ≤ 648 scalars (union bound); a shift > 5 s is always rejected. (a) and (c) stay
+strict. The GPU rerun under v2 is task B2-v2.
+
+**Results (formal CPU run `contact_v2_001`, commit `ffb099f`, clean tree, Warp 1.17.0 CPU, 32 workers, 34 jobs, 35 s).**
+
+| Test | v1 (`contact_v1_001`) | v2 (`contact_v2_001`) |
+|---|---|---|
+| -01 a stick | FAIL (P2 0.95 slides 4.8 s) | **PASS** (10 rows incl. elastic + P2 at 0.95, μ 0.6 / 0.8; ≤ 7e-5 s) |
+| -01 b slip | FAIL (μ 0.8 +1.65 / +1.88 / +1.06 %) | **FAIL** (μ 0.8 +1.83 / +1.26 / +2.46 %, outside the envelope, declared expected); μ 0.4 ≤ 0.09 %, μ 0.6 (unseen INC2) +0.78 / +0.42 / +0.38 % PASS |
+| -01 c onset | FAIL (μ 0.8 −2.75 %) | **PASS** (−0.31 / −1.61 / −1.47 % at μ 0.4 / 0.6 / 0.8) |
+| -01 d books | FAIL (1.03 %, one stick run) | **FAIL** (stick runs 1.67 / 1.28 / 1.19 % of S ≈ 2.5e-10 J; absolute ≤ 4e-12 J; slip runs ≤ 0.09 %) |
+| -02 | PASS | **PASS** (+ f: Σk_nδ / reaction 1.000 for every damped run) |
+| -03 | FAIL (n_t 2 books 1.024 %) | **PASS** (0.71 % n_t 2; 0.36 / 0.21 % n_t 4, order 0.59; t_c +3.3 %) |
+| -04 | FAIL (μ 0.8 0.93–0.94) | **FAIL** (μ 0.8 0.87–0.94, declared expected); μ 0.4 0.986–0.997, μ 0.6 (INC2) 0.954–0.972 PASS |
+| -05 | FAIL (ratio 0.972 / 0.964 / 0.956; per-step balance 6–10 %) | **FAIL** (ratio 0.978 / 0.982 / **0.964**); cone, scaling, penetration PASS; window-mean balance 0.78 / 1.35 / 0.45 % PASS (per-step 9.8 / 7.0 / 6.9 % reported) |
+| -06 | NOT_RUN | NOT_RUN (NOT_IMPLEMENTED_V1) |
+| -07 | PASS | CARRIED_OVER (contact-free) |
+| -08 | (B1) PASS | v2 L0 N = 3 incline / pinch / pinch P2 PASS (pytest); mixed v1 / v2 refused |
+| -09 | (B1) FAIL b, a / c PASS | NOT_RUN (task B2-v2, rule declared) |
+
+Reading. The law defect (1) is fixed and the static / impact / penetration behaviour is now correct (-01 a, c, -02, -03
+pass); the sliding friction above μ 0.6 and the two-sided pinch at μ_pad 0.5 still carry the friction–normal flutter of
+defect (2), as declared; the stick-run books are a float-noise-level energy (≤ 4e-12 J) measured against a static
+block's energy scale. Status stays EXPERIMENTAL_NOT_ACCEPTED.
+
+**Tasks (rcs-impl unless stated).**
+
+| Task | Content | Size |
+|---|---|---|
+| X2 (rcs-xhigh) | Defect 2: a contact formulation without the grid-scale friction–normal flutter (e.g. a B-consistent iterated normal constraint on the face, or a loading-safe normal-force memory — lag only in sustained macro-slip with a stick-preserving rule), under a new declared protocol; until then the μ envelope and labels apply and RL friction ranges are clipped or labelled | M–L |
+| B2-v2 | RUBBER-CONT-09 on GPU0 under the v2 rule (k 5 per side, interleaved), v2 law | S |
+| R1 | Independent rcs-review (xhigh) of §22, §22.9, `contact_v1_001`, `contact_v2_001` | – |
+
+### 22.10 Task X2 — defect 2 (friction–normal flutter): negative result, no v3; the μ envelope is resolution-qualified (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: remove defect 2 of §22.9 so that sliding at μ 0.8 and 1.0 closes within the v2 thresholds, robustly (dt / dx
+refinement, other geometry, batched), without regressing hold, onset, impact, penetration or pinch. Branch
+`claude/rl-rubber-p24` from `2b2221b`; DIAGNOSTIC scripts `scripts/rubber/p2_4/x2_dev_laws.py`, `diag_contact_x2.py`,
+`diag_x2_pattern.py` (`b019684`, modes 11–13 `331550c`); raw `artifacts/rl_ready/p2_4/x2_diag_001` (README; 14 + 8 rows
+rerun at the commits identical in every field except wall time); evidence `docs/evidence/rl_ready/p2_4_contact_x2_001.json`
+(writer `write_contact_x2_evidence.py`). Nothing in `src`, `tests` or `configs` changed: v1 / v2 kernels byte-identical,
+v2 stays the opt-in law, `rubber_contact_tests_v1` / `_v2` unchanged, no protocol v3, no formal run. CPU suites (rubber +
+batched + naming) 455 passed with `CUDA_VISIBLE_DEVICES=''` and with `=0` (GPU0 lock), logs `cpu_tests_x2_001`. Material
+status `SIMULATOR_ONLY_UNCALIBRATED`.
+
+**What the flutter is (refines §22.9 defect 2; v2 law, INC block, DIAGNOSTIC).**
+
+- Body-scale, not grid-scale: at μ 0.8 about 2 of the 91 bottom nodes are in contact at any substep (4.4 %), v_z rms
+  16 mm/s (13 % of the sliding speed), dominant 1.5–3 kHz, wavenumber spectrum broad with its peak at 1–3 waves over the
+  16 mm face. Frictionless sliding settles (100 % contact, v_z 2 µm/s); μ 0.2: 60 %, 0.7 mm/s.
+- Converged in dt, not in dx. μ 0.8, ratio 1.2: slip error 1.26 / 1.12 / 1.15 % of g cosθ at cfl 0.5 / 0.25 / 0.125, but
+  1.26 / 2.0 / 1.7 / 2.8 / 4.6 % at n_t 3 / 4 / 5 / 6 / 8; μ 1.0: 3.8 / 6.2 / 9.9 % at n_t 3 / 4 / 6; even μ 0.4 grows
+  (0.04 → 0.18 % at n_t 6). Consequence: a change of the contact's time integration alone (implicit or return-mapped
+  tangential update, per-node local solve, Moreau projection, augmented-Lagrangian or stiffer / decoupled normal) cannot
+  remove it — the deficit is a property of the semi-discrete model (κ_n 0.0005–1 in X1; κ 1 and ζ 1 here do not remove
+  it). The growth under dx refinement at every μ is the signature of short-wavelength growth; the §22.9 half-space
+  analysis (bilateral contact kept, stable below μ 1.000) does not cover the separating solutions the model produces, so
+  the §22.9 statement that defect 2 "is not continuum physics below μ = 1" is not supported and is withdrawn as unproven.
+- A realistic high-frequency loss in the material (one Prony term g 0.15, τ 100 µs on the elastic μ0) removes most of the
+  μ 0.8 deficit (≤ 0.28 % at n_t 3 / 4; INC2 ratio 1.1: 1.24 %) and restores the μ 0.8 hold at n_t 4; it does not fix
+  μ ≥ 1.0 (1.6–4.5 %, hold at μ 1.0 lost). Real rubber has such loss; the illustrative Prony sets do not.
+
+**Candidates (DIAGNOSTIC; every row in the evidence).**
+
+| Class (dev mode) | Best result | Failure | Verdict |
+|---|---|---|---|
+| Nonlocal cap, lattice radius 1–3 (Oden–Pires type, conservative) (1) | μ 0.8: 0.6–0.7 % | μ ≥ 1.0: 2.6–8 %; radius in nodes vanishes under refinement | rejected |
+| Patch-level cap μ ΣF_n · m_i/Σm (6) | μ 0.8 at n_t 3: 0.12–0.91 % | cfl 0.25: 1.16 %; INC2 D04 0.947; μ 0.9: 2.4 %; μ 1.0: 2.5 %; hold μ 1.2 lost | rejected |
+| Patch cap on a lagged patch total, τ 0.1–1 ms (10) | exact to μ 0.95 at n_t 3 and on INC2 | n_t 4: μ 0.8 +1.7 %, μ 0.9 +5.2 %; no recovery from a developed flutter; μ ≥ 1.0 4–44 % | rejected |
+| Per-node normal-force lag (Prakash–Clifton type), τ 0.25–3 ms (4) | τ 0.5 ms: μ 0.8 exact incl. n_t 4 / INC2; τ 3 ms exact to μ 1.5 | slips under proportional loading: hold ramp-phase displacement 10.5 µm (τ 0.5 ms) vs 0.19 µm (v2), 52 µm (1 ms), 0.2–0.5 mm after the ramp (3 ms); no recovery after a developed flutter (−12 %); τ 0.25 ms −7 … −20 % (sharp threshold) | rejected (X1 finding quantified) |
+| Memory kept across bounces, gated variant (8, 9) | from rest exact to μ 1.5 (τ 3 ms) | friction collapse once nodes bounce (+75 %), gated μ 1.5 +99 %, holds lost | rejected |
+| Loading-safe memories: max(F_n, F_lag), slip-distance gate, patch-slip gate (2, 3, 5, 7) | — | flutter not suppressed or −15 … +8 % | rejected |
+| **Patch slip-rate equalisation** (13, ζ_d 1): in slip only, outside the cap, a dashpot −2ζ_d√(k_t m_i)(v_t,i − v̄) on the deviation of the realised tangential velocity from the same-substep mean over the patch's slipping nodes (zero net force over the slipping set, patch total ≤ μΣF_n) | **μ 0.6 / 0.8 exact (≤ 0.01 %, D04 ≥ 0.993) at n_t 3 / 4 / 6, cfl 0.25, INC2; recovers from a developed flutter; hold ramp-phase 0.16 µm (v2 0.19); holds to μ 1.5 incl. μ 0.8 at n_t 4 (v2 slides 3.9 mm)** | μ 1.0 exact at n_t 3 / cfl 0.25 / INC2 but n_t 4: +2.4 %, n_t 6: +4.2 % (ratio 1.1); μ ≥ 1.2 sliding fails | promising, **not adopted** (requirement at μ 1.0 not met; src / batched / pad-box implementation and a declared protocol needed) |
+
+**Decision.** Negative result for the X2 requirement (sliding closed at μ 0.8 and 1.0, robust under refinement, supported
+range about 0.6–1.5): no `grid_node_penalty_coulomb_v3`, no `rubber_contact_tests_v3`, no formal run. v2 and the
+declared labels stay. Two qualifications are recorded (DIAGNOSTIC, not re-scoring any formal row):
+
+1. The v2 envelope (sliding μ ≤ 0.6, static μ ≤ 0.8; §22.9) was measured at n_t 3 (`rubber_rl_v1`) on INC / INC2 and holds
+   there. It does not hold at the acceptance profile `rubber_ref_v1` (n_t ≥ 4): the μ 0.8 hold at 0.95 slides 3.9 mm at
+   n_t 4; μ 0.6 sliding is +1.19 / +1.72 % on INC2 at n_t 4 and +1.06 % (D04 0.946) on INC at n_t 6 (ratio 1.1). On the
+   larger INC2 block at n_t 3, μ 0.8 slides with +2.5 / +5.7 / +8.3 % (the §22.9 error model, +1.3 … +2.5 %, was INC only).
+   Rows outside n_t 3 with sliding μ > 0.4 or static μ > 0.6 are therefore outside the established envelope and carry
+   `contact_friction_flutter`; RL friction ranges stay clipped or labelled as in §22.9.
+2. RUBBER-CONT-01 d (books of the stick runs). Max |B| is the end value, 2.3–4.3e-12 J against S 2.2–4.5e-10 J; B rises
+   steadily through the static hold (1.7–3.0e-11 W) and falls only ~40 % from cfl 0.5 to 0.125. The static block keeps a
+   sustained jitter (v_rms 5–12 µm/s, growing as dt shrinks) that the contact dashpots dissipate; the drift is the part of
+   that dissipation not matched by a booked energy change. This is a genuine residual of the discrete dynamics, more than
+   10 orders of magnitude above the float64 resolution of the books sums; an absolute floor tied to float64 resolution
+   would not change any verdict, and the relative criterion is not measuring float64 noise. Its weakness for static rows
+   is structural (the residual accumulates with the hold duration at fixed S). No rule is declared here (no v3 run); the
+   `contact_v2_001` FAIL stands; a future protocol may add an a-priori drift-rate criterion after the jitter source is
+   identified (task X5), never a floor fitted to seen data.
+
+**Tasks (rcs-impl unless stated).**
+
+| Task | Content | Size |
+|---|---|---|
+| X3 | `grid_node_penalty_coulomb_v3` = v2 + patch slip-rate equalisation (dev mode 13, ζ_d 1): normal pass (best obstacle, F_n, trial state, per-patch sums of m v_t over the slipping set, rows e·(P + F·B) + q), tangential pass; new node / patch arrays declared in `rubber_layout.CONTACT_ARRAY_KINDS`, masked reset, batched L0 N = 3; pads and moving boxes (pinch -05), then `rubber_contact_tests_v3` declared and SHA-pinned before its run with scored sliding μ ≤ 0.8 at n_t 3 **and** n_t 4 plus an unseen geometry; μ ≥ 1.0 stays labelled | L |
+| X4 (rcs-xhigh) | Stability of steady Coulomb sliding of the declared continuum with unilateral contact (separation allowed) for μ < 1, to decide whether the dx-growing deficit is a discretisation artefact or continuum physics | M |
+| X5 | Source of the static stick jitter (5–12 µm/s) and of the -01 d books drift; an a-priori drift-rate books criterion | S–M |
+| P2-5 | Calibrated rubber sets must include high-frequency loss (DIAGNOSTIC: one Prony term at τ 100 µs removes most of the μ 0.8 deficit) | – |
+
+## 23. P2-4 completion, P2-5 and P2-6: decisions and plan (amendment, 2026-11-11, rcs-xhigh)
+
+Scope: the remaining P2-4 integration items (B3, S1, P1, the μ envelope), the P2-5 calibration interface and its
+synthetic numerical validation, the P2-6 RL-ready rubber environment and its Full Native verification, the Q1w
+decision of protocol v5, the Phase 2 Done mapping and the task list. Planning only: no `src/`, `tests/` or `configs/`
+change, no GPU job; two CPU probes. Branch `claude/rl-rubber-p24b` at `6b36b65` (B2-v2 + X1 / X2). The full plan,
+including the protocol tables, the probe records and the sized task list, is
+`docs/reports/rl_ready/P2_REMAINING_PLAN.md`; this section holds the binding decisions. Nothing frozen changes (§22
+list; Phase 1 `frozen_paths` / `evaluator_files` of `acceptance_v1` / `acceptance_v2`; rubber protocols v1–v5,
+moving-grip v1, visc v1–v2, contact v1–v2). Material status: `SIMULATOR_ONLY_UNCALIBRATED`.
+
+Numbering: X3's results belong in §22.11. When `claude/rl-rubber-v5` is consolidated, its §21 (protocol v5) becomes
+**§19A** (task K1), because this lineage's §21 is P2-3.
+
+### 23.1 Verified facts the decisions rest on
+
+- **Batch packing.** A rubber batch packs heterogeneous slots when dx and dt are uniform: t 4 / 5 / 6 mm at dx 1 mm,
+  i.e. n_t 4 / 5 / 6, with M = 2 Prony, a table plane, a tip traction region and the protocol options (probe 2;
+  `batched/rubber_layout.py:12-14`).
+- **Step rule.** μ0 ≤ 0.8 MPa and ρ ≥ 1000 kg/m³ give dt 3.827 µs, i.e. 5,226 substeps per 20 ms (probe 1).
+- **Resampled reset.** Host-staged. A density change rebuilds the F8 inverses on the host: 0.27 s per env at
+  65k particles (`rubber_material_batch.py:420-426, 580-627`).
+- **Grip motion.** Host-staged (`:489-505`).
+- **Contact cost.** With no frames the contact kernel skips the per-node slerp that dominated the pad-scene cost
+  (`rubber_contact.py:416-470`).
+- **Dispatch.** `open_vector_env` on `main` dispatches on `backend` only. Its file is outside `frozen_paths` and
+  `evaluator_files`; `tests/test_perf_acceptance.py:152` asserts it stays changeable.
+- **Native.** Native constructs the frozen `LiveCuttingMaterial` with cutting task, tool and pads
+  (`isaac_sim_runner.py:690-712`), and advances it with the measured pose after PhysX (`:1568`).
+- **REAL gate.** The calibration manifest v1 has no data origin, and the `REAL_CALIBRATED` gate checks only status and
+  verdict (`rubber_material.py:431-444`).
+- **Optimisers.** scipy only; no CMA-ES or BO package.
+
+### 23.2 Decisions
+
+1. **B3 deferred, not required for P2-6.** P2-6 uses kinematic grips (ideal tracking; no wrench feedback, hence no
+   coupling error, §22.4).
+   - RUBBER-CONT-07 found the 20 ms handoff significant at every envelope point, so B3 without C1 could only produce
+     labelled rows.
+   - The Lab `MaterialCoupling` surface is defined over an edge pose and a cut digit, so a rubber Lab task would be
+     needed as well.
+   - B3 + C1 + P1 form a post-Phase-2 robot-coupled rubber package, subject to a user decision. Receipt label:
+     `robot_feedback_coupling: NOT_IMPLEMENTED_PHASE2`.
+2. **S1 required before P2-6.** Option `self_penetration_check = surface_grid_v1` (default `off_v1`: no array, no
+   launch).
+   - Test: surface pairs of one env with |x_p − x_q| < s and |X_p − X_q| > 3·dx.
+   - Grid: an env-grouped sort grid on the Phase 1 `FallbackGrid` pattern, re-implemented in a Phase 2 module; no
+     `wp.HashGrid`.
+   - Cadence: inside the graph every `check_substeps` (declared 256, ≈ 1 ms), plus a reported blind-interval counter.
+   - Output: sticky bit `RUBBER_SELF_CONTACT_UNRESOLVED = 8`, which terminates the env in training.
+   - It is a detector: self-contact physics stays `NOT_IMPLEMENTED_V1`.
+3. **P1 deferred.** The P2-6 scene has no contact frames; the plane-only contact cost is measured in RL-07. A
+   bounding-volume early-out, byte-identical on CPU, is allowed before the P2-6 GPU runs if the plane-only cost exceeds
+   +25 %.
+4. **μ envelope.** `configs/rubber/contact_envelope_v1.json` (task ENV1) maps each (law, n_t) to the formally scored
+   sliding and static limits; DIAGNOSTIC rows may only narrow them.
+   - **P2-6 range.** P2-6 randomises `friction_table ~ U[0.3, min over its slots' n_t of μ_slide,max]`. Pad and self
+     frictions are fixed and declared unused.
+   - **ENV2.** P2-6 slots have n_t 4–6, so ENV2 declares and runs a formal envelope check at n_t 5 / 6 (and n_t 4 if v2
+     is the law) before P2-6 is declared.
+   - **Expected bounds.** 0.8 with law v3 if `rubber_contact_tests_v3` passes; 0.4 with v2. If nothing is scored, the
+     friction axis is BLOCKED.
+   - **Refusal.** Values ≥ 1.0 or above the bound raise `UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE`; μ ≥ 1.0 remains the
+     labelled limitation `contact_coulomb_ill_posed`.
+5. **Q1w (RUBBER-PHYS-11 v5 FAIL): recommendation to the reviewer (task K2) is (c),** accept n_t 4 with its measured
+   bias as a labelled limitation.
+   - The v5 FAIL (2.16 % under the unchanged rule; p_obs 3.12 ⇒ Fs 3) stays recorded.
+   - `rubber_ref_v1` gains a `measured_bias` block (Q1 +0.39 %, Q1w +0.62 %, Q2 −0.39 %, Q4 −0.05 %) and
+     `known_limitation: rubber_phys_11_v5_q1w_gci_2.16pct` in every receipt. Phase 2 Done box 2 is then
+     PASS_WITH_LIMITATIONS for this item.
+   - (b), a v6 rule that passes the existing data, is rejected as evaluator loosening.
+   - (a), n_t 6 for wide strips, costs ≈ 5× per env-step on every wide-strip scene and needs an n_t 12 verification
+     run, to remove a bias ≈ 4× below the declared β = 20 model-form error. It is the fallback if (c) is rejected,
+     declared as v6 (6 / 8 / 12) before any run.
+6. **P2-5: calibration interface + synthetic numerical validation `rubber_calib_tests_v1`.**
+   - **Manifest.** `rcs_rubber_calibration_dataset_v2` adds `data_origin`, per-experiment sensor models and a sealed
+     truth SHA. Synthetic manifests use `SYNTHETIC_*` statuses and live outside `configs/rubber/calibration/`. A test
+     asserts that no synthetic manifest can satisfy `REAL_CALIBRATED`. The v1 module and the gate code stay unchanged.
+   - **Forward models.** Population-batched (candidate × experiment → env).
+   - **Fit API.** Formal method scipy `least_squares` TRF with a batched FD Jacobian and 3 starts; an in-repo CMA-ES
+     (reported); an ask/tell hook for the external agentic optimizer or BO. The objective uses fit-split data only and
+     no RL term. The held-out evaluation is one-shot, and sealed paths are refused.
+   - **Synthetic truth.** Same model family at n_t 6 / CFL 0.25, sensor sampling and noise, and hidden parameters drawn
+     with a secret seed whose SHA alone enters the manifest.
+   - **Splits.** Fit: tensile at 2 rates, relaxation, cantilever rebound, gravity sag, friction sliding. Held out:
+     other rates (incl. extrapolation), length, thickness, initial deformation and normal load.
+   - **Metrics.** Force–displacement nRMSE, hysteresis energy, relaxation, tip trajectory, rebound time, decay, slip
+     distance, volume, energy.
+   - **Tolerances.** tol = max(2·(noise floor + discretisation floor), declared floor), evaluated on a separate pilot
+     dataset and committed before the formal dataset exists.
+   - **Power and order.** A negative control (single-rate, single-geometry fit) must fail the held-out split. An order
+     audit runs: protocol < pilot < thresholds < dataset freeze < fit receipt < held-out < reveal.
+   - **Labels.** `NUMERICAL_VALIDATION_SYNTHETIC`; never a calibration. The real-data protocol is declared but
+     NOT_RUN; it requires a high-frequency Prony term (§22.10).
+7. **P2-6: `RubberStripTaskFamily` behind `open_vector_env(backend="kinematic_grip_batched")`** (`rl/rubber_family.py`,
+   `rl/rubber_env.py`, `rl/rubber_contract.py`).
+   - **Dispatch.** The only Phase 1 file touched is a lazy-import branch at the top of `open_vector_env` in the
+     non-frozen `rl/vector_env.py`, made last on the consolidated tree.
+   - **Task `rubber_strip_drag_v1`.**
+     - Scene: a case-A strip on a table, a tip traction and no frames.
+     - Slots: L 100 / 125 / 150 mm × W 16 mm × t 4 / 5 / 6 mm at dx 1 mm, `rubber_ref_v1`.
+     - Per reset: μ0 [0.3, 0.8] MPa, ρ [1000, 1300], Prony g-scale [0.5, 1.5] and τ-scale [0.5, 2], friction per
+       decision 4, and a tip traction.
+     - Initial deformation: a 10-step seeded simulated preload with actions ignored.
+     - Goal: a tip goal at ≥ 30 mm initial distance.
+   - **Actions.** `grip_delta_v1` (6: ≤ 5 mm, ≤ 0.05 rad per step, workspace clamp keeping the jaw above the table).
+   - **Observations.** A 78-dim deployable `policy` (grip pose, twist, time, previous action, ideal-tracked markers and
+     velocities, goal, preload flag; no force or material state) and an opt-in privileged `critic`.
+   - **Reward and success.** `rubber_tip_tracking_v1` (provisional shaping); success only from `rubber_tracking_eval_v1`.
+   - **Termination.** Through `rl.termination` (rubber bits → `TERM_MATERIAL_INVALID`).
+   - **Not in v1.** `autoreset="same_step"`, cameras.
+   - **Profile `rubber_rl_env_v1`.** F8 + kick-average + F9 + F10 + guard 1.0 + S1 + the ENV1 law. Step staging is
+     device-side (new opt-in methods, byte-identical to the host path); resets stay host-staged with reported p95.
+   - **Acceptance protocol.** `rubber_rl_tests_v1`, RL-01…RL-11 (plan §4.8):
+     - contract, parity (L0 / L2 / L3) and randomisation;
+     - isolation (L1 + the -09 v2 rule) and episode semantics incl. S1;
+     - long rollout, throughput / VRAM vs Phase 1 (scored: N 8 gain over N 1, VRAM ≤ 4 GB) and dt / spacing
+       (dt scored, spacing reported with the -11 rule);
+     - Native, provenance and Phase 1 non-regression.
+8. **Full Native verification.** A new `native_rubber_host.py` hosts `LiveRubberMaterial` (the same recipe, slot,
+   profile and law) in the Kit process. It reuses `launch_app`, the static workcell (Frankas at the safe park, camera
+   rig v5), `DynamicSurfaceBridge` and the overview RGB-D. `isaac_sim_runner.py` and `live_material.py` stay unchanged.
+   - **Loop** (the TLMPM bridge's shape): kinematic clamp target, PhysX step, measured clamp pose,
+     `advance(motions)`, surface update, record. No feedback.
+   - **Run.** One 100-step episode: settle, lift + yaw, hold with tip contact.
+   - **Comparison** with 20 headless GPU replays of the recorded poses (+ 10 held-out):
+     - receipts and inputs bitwise equal;
+     - every physics statistic inside `rubber_l3_band_v4`;
+     - bridge integrity scored;
+     - render and camera consistency reported, not scored.
+
+### 23.3 Phase 2 Done (summary; mapping in the plan §6)
+
+| Box | Expected at close |
+|---|---|
+| 1. models with reproducible evidence | PASS after X3, K1, K2 |
+| 2. physics and numerics tests pass | PASS_WITH_LIMITATIONS: Q1w bias; μ ≥ 1.0; -01 d unless X5; self-contact not implemented, detected |
+| 3. RL headless (≥ 8 envs) and Full Native | PASS if `rubber_rl_tests_v1` passes |
+| 4. REAL_CALIBRATED only after a real held-out pass | PASS: status stays SIMULATOR_ONLY_UNCALIBRATED; P2-5 is synthetic numerical validation only |
+| 5. old baselines unbroken | PASS via RL-11 |
+| 6. merged, external pin updated | PASS after Z2 (PR to `main`) and Z3 (new versioned descriptor, SYNCED) |
+
+### 23.4 Tasks
+
+The plan §7 has the full table: X3 (running); K1 consolidation; K2 combined review; S1; ENV1 / ENV2; P5.1–P5.7;
+P6.0–P6.7; Z1–Z3. Deferred: B3, C1, P1, X4, X5, Q1W-A, and the real-data protocol.
+
+Estimate: ≈ 20 nominal agent-days (≈ 9-day critical path), ≈ 3–5 calendar days at the velocity observed in P2-3 /
+P2-4, ≈ 11 GPU-hours (mostly GPU0; the Native run needs ≥ 14 GiB free). Add 0.5–1 day per protocol v2 cycle.

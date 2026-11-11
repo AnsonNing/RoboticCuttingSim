@@ -349,7 +349,17 @@ class BatchedRubberMaterial:
         pk = self.packed
         self.num_envs = N = pk.num_envs
         self.control_dt = float(pk.uniform["control_dt"])
-        self.solver = s = BatchedTLMPMRubber(pk, device, **({} if bc_launch is None else {"bc_launch": bc_launch}))
+        solver_cls = BatchedTLMPMRubber
+        if pk.uniform.get("contact") is not None:
+            # ADR 0023 §22 (P2-4 B1): lives built with a ContactSpec run the batched contact path
+            from .rubber_contact_batch import BatchedTLMPMRubberContact
+            solver_cls = BatchedTLMPMRubberContact
+        self.solver = s = solver_cls(pk, device, **({} if bc_launch is None else {"bc_launch": bc_launch}))
+        self.contact = None
+        if pk.uniform.get("contact") is not None:
+            from .rubber_contact_batch import ContactOutputs
+            self.contact = ContactOutputs(s, device)
+            self.contact_specs = [live.solver.contact for live in lives]
         self._init_projection_host(lives)
         self._initial_prony = [tuple(live.material.prony) for live in lives] if s.M else None
         self.G, self.Gt, self.K = s.G, s.Gt, pk.uniform["markers"]
@@ -473,6 +483,15 @@ class BatchedRubberMaterial:
         s.reaction.zero_()
         for a0, a1 in ((s.group_q0, s.group_q1), (s.group_b0, s.group_b1), (s.group_A0, s.group_A1)):
             wp.copy(a0, a1)
+        if self.contact is not None:
+            s.begin_contact_step()
+
+    def set_frame_motions(self, *, rotation=None, translation=None, active=None):
+        """Contact batches (ADR 0023 §22): host [N, F, ...] END poses of the contact frames (pads, fixtures) of this
+        control step; frames not given hold."""
+        if self.contact is None:
+            raise ValueError("frame motions need lives built with a ContactSpec")
+        self.solver.set_frame_motions(rotation=rotation, translation=translation, active=active)
 
     def set_group_motions(self, *, rotation=None, translation=None, affine=None, active=None):
         """Host [N, G, ...] END values of this control step (call between begin and run, or pass to advance)."""
@@ -495,11 +514,16 @@ class BatchedRubberMaterial:
     def set_traction(self, forces):
         self.solver.traction_force.assign(np.asarray(forces, np.float32).reshape(-1, 3))
 
-    def advance(self, *, rotation=None, translation=None, affine=None, active=None, traction=None):
-        """One control step of every env; returns nothing (read ``wrench``, ``invalid_reason`` on the device)."""
+    def advance(self, *, rotation=None, translation=None, affine=None, active=None, traction=None,
+                frame_rotation=None, frame_translation=None, frame_active=None):
+        """One control step of every env; returns nothing (read ``wrench``, ``invalid_reason`` on the device; with
+        contact also ``plane_wrench``, ``box_wrench``, ``pad_wrench``, ``pending_wrench``). ``frame_*``: contact
+        frame END poses [N, F, ...] (contact batches only)."""
         s = self.solver
         self._begin_control_step()          # set_group_motions refreshes the motion table (same launches as before R1)
         self.set_group_motions(rotation=rotation, translation=translation, affine=affine, active=active)
+        if frame_rotation is not None or frame_translation is not None or frame_active is not None:
+            self.set_frame_motions(rotation=frame_rotation, translation=frame_translation, active=frame_active)
         if traction is not None:
             self.set_traction(traction)
         with wp.ScopedDevice(self.device):
@@ -515,6 +539,8 @@ class BatchedRubberMaterial:
             if self.G:
                 wp.launch(_wrench_b, (self.num_envs, self.G), [s.reaction, wp.float64(self.control_dt), self.G,
                                                                self.wrench])
+            if self.contact is not None:
+                self.contact.launch_wrench(s, self.control_dt, self.invalid_reason)
             self.launch_diagnostics()
             self.invalid_count.zero_()
             wp.launch(_validity_b, self.num_envs, [self.summary, s.violations, s.cfl_violations, self.wrench,
@@ -690,6 +716,8 @@ class BatchedRubberMaterial:
                     wp.launch(_reset_visco_energy_v2_r, s.total_particles, [self.reset_mask, s.env_of_particle,
                                                                             s.visco_df_prev])
                     wp.launch(_reset_visco_env_v2_r, N, [self.reset_mask, s.visco_branch_work_left])
+            if self.contact is not None:
+                self.contact.launch_reset(s, self.reset_mask)
             if full:
                 s.index.zero_()
         # motion_table_v1: the table follows the reset group motions (review R1; every env recomputed from its
@@ -710,9 +738,51 @@ class BatchedRubberMaterial:
     def markers(self):
         return self.marker_x.numpy().reshape(self.num_envs, self.K, 3)
 
+    # ------------------------------------------------------------------ contact (ADR 0023 §22; contact batches only)
+
+    def _contact_outputs(self):
+        if self.contact is None:
+            raise ValueError("no contact: the lives were built without a ContactSpec")
+        return self.contact
+
+    @property
+    def plane_wrench(self):
+        return self._contact_outputs().plane_wrench
+
+    @property
+    def box_wrench(self):
+        return self._contact_outputs().box_wrench
+
+    @property
+    def pad_wrench(self):
+        """``MaterialCoupling`` surface: [N, G*B, 6] float64 per-pad-box wrenches (strip-local; B3 maps to world)."""
+        return self._contact_outputs().pad_wrench
+
+    @property
+    def pending_wrench(self):
+        """``MaterialCoupling`` surface: [N, 6] float64, zero (no edge / tool contact in rubber v1)."""
+        return self._contact_outputs().pending_wrench
+
+    def pad_wrenches(self):
+        """Host [N, G, B, 6] per-pad wrenches of the last control step."""
+        c = self._contact_outputs()
+        return c.pad_wrench.numpy()[:, :c.G*c.B].reshape(self.num_envs, c.G, c.B, 6)
+
+    def contact_read(self, env=None):
+        """Host contact blocks (``LiveRubberMaterial.last_contact`` keys) of every env, or of ``env``."""
+        out = self._contact_outputs().read(self.solver, env)
+        return out if env is None else out[0]
+
+    def set_initial_velocity(self, env_ids, velocities):
+        """Uniform rigid initial velocity per listed env (tests: drop / impact); call right after a reset."""
+        self._contact_outputs()
+        self.solver.set_initial_velocity(env_ids, velocities)
+
     def device_arrays(self):
         out = {f"solver.{k}": v for k, v in self.solver.device_arrays().items()}
         out.update({k: v for k, v in vars(self).items() if isinstance(v, wp.array)})
+        if self.contact is not None:
+            out.update({f"contact.{k}": v for k, v in self.contact.arrays().items()})
         return out
 
     def memory_bytes(self):
@@ -732,6 +802,11 @@ class BatchedRubberMaterial:
                 "build_wall_s": self.build_wall_s, "calibration": "SIMULATOR_ONLY_UNCALIBRATED",
                 "device_hashgrid_guard": "not_applicable_no_hashgrid (rubber v1 has no self-contact)",
                 "coupling": "kinematic Dirichlet groups (no robot feedback in P2-1)",
+                **({"contact": {"specs": [c.receipt() for c in self.contact_specs], "pad_frames": self.contact.G,
+                                "outputs": "plane_wrench [N,P,6], box_wrench [N,F,B,6], pad_wrench [N,G*B,6] "
+                                           "(strip-local), pending_wrench [N,6] = 0",
+                                "world_transform_and_recipients": "not implemented (task B3)"}}
+                   if self.contact is not None else {}),
                 "open_vector_env": "deferred to P2-6 (P1-5 owns the configured-scene dispatch)",
                 "diagnostics_groups": DIAG_GROUPS}
 
