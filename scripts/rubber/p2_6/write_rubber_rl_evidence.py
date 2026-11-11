@@ -32,6 +32,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--gpu-run", action="append", default=[])
     ap.add_argument("--cpu-tests", action="append", default=[])
+    ap.add_argument("--notes-json", default=None, help="JSON file of reviewer-facing notes / errata (copied verbatim)")
     a = ap.parse_args()
     if OUT.exists():
         raise SystemExit(f"refusing to overwrite {OUT}")
@@ -71,6 +72,7 @@ def main():
           "protocol": {"path": "configs/rubber/rubber_rl_tests_v2.json", "sha256": PROTOCOL_SHA},
           "task_config": {"path": "configs/rubber/rl/rubber_strip_drag_v2.json", "sha256": TASK_SHA},
           "gpu_runs": runs, "gpu_rows": rows, "cpu_tests": cpu,
+          "notes": (json.loads(Path(a.notes_json).read_text()) if a.notes_json else None),
           "not_in_this_evidence": {"RL-09": "Native (P6.4 / P6.5, separate task)", "RL-10 / RL-11": "P6.6"}}
     OUT.write_text(json.dumps(ev, indent=1, default=float)+"\n")
     print(json.dumps({k: v.get("verdict") for k, v in rows.items()}),

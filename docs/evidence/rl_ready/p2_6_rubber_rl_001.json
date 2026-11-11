@@ -1,0 +1,5191 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_6_rubber_rl_001",
+ "phase": "P2-6 RL-ready rubber: P6.1 / P6.2 CPU tests and P6.3 GPU rows of rubber_rl_tests_v1",
+ "adr": "docs/adr/0023-rubber-material-v1.md \u00a723.2 decision 7",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "labels": {
+  "coupling": "kinematic_grip_ideal_tracking",
+  "perception": "ideal_marker_tracking",
+  "self_contact": "NOT_IMPLEMENTED_V1 (detector surface_grid_v1)",
+  "robot_feedback_coupling": "NOT_IMPLEMENTED_PHASE2"
+ },
+ "protocol": {
+  "path": "configs/rubber/rubber_rl_tests_v2.json",
+  "sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548"
+ },
+ "task_config": {
+  "path": "configs/rubber/rl/rubber_strip_drag_v2.json",
+  "sha256": "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb"
+ },
+ "gpu_runs": [
+  {
+   "dir": "artifacts/rl_ready/p2_6/gpu_rl_a_001",
+   "meta": {
+    "commit": "a95da8904c8642bf753d0ad658538fe281926952",
+    "dirty_tree": false,
+    "dirty_paths": [],
+    "command": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/.deps/isaacsim-venv/bin/python scripts/rubber/p2_6/run_rubber_rl_gpu.py --rows RL03,RL01,RL02b,RL04b,RL05 --out artifacts/rl_ready/p2_6/gpu_rl_a_001 --device cuda:0 --gpu-index 1",
+    "device": "cuda:0",
+    "physical_gpu": 1,
+    "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+    "warp": "1.17.0",
+    "torch": "2.11.0+cu128",
+    "python": "3.12.12",
+    "free_mb_at_start": 32049.0,
+    "started": "2026-11-11T20:24:01+0900",
+    "ended": "2026-11-11T21:09:43+0900",
+    "rows": [
+     "RL03",
+     "RL01",
+     "RL02b",
+     "RL04b",
+     "RL05"
+    ]
+   }
+  },
+  {
+   "dir": "artifacts/rl_ready/p2_6/gpu_rl_b_001",
+   "meta": {
+    "commit": "3807912b8fbe7439139aacb1a39a346be0ecb570",
+    "dirty_tree": false,
+    "dirty_paths": [],
+    "command": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/.deps/isaacsim-venv/bin/python scripts/rubber/p2_6/run_rubber_rl_gpu.py --rows RL07,RL08,RL08b --out artifacts/rl_ready/p2_6/gpu_rl_b_001 --device cuda:0 --gpu-index 0",
+    "device": "cuda:0",
+    "physical_gpu": 0,
+    "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+    "warp": "1.17.0",
+    "torch": "2.11.0+cu128",
+    "python": "3.12.12",
+    "free_mb_at_start": 30940.0,
+    "started": "2026-11-11T21:11:20+0900",
+    "ended": "2026-11-11T22:30:36+0900",
+    "rows": [
+     "RL07",
+     "RL08",
+     "RL08b"
+    ]
+   }
+  },
+  {
+   "dir": "artifacts/rl_ready/p2_6/gpu_rl_c_001",
+   "meta": {
+    "commit": "3807912b8fbe7439139aacb1a39a346be0ecb570",
+    "dirty_tree": false,
+    "dirty_paths": [],
+    "command": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/.deps/isaacsim-venv/bin/python scripts/rubber/p2_6/run_rubber_rl_gpu.py --rows RL06 --out artifacts/rl_ready/p2_6/gpu_rl_c_001 --device cuda:0 --gpu-index 1",
+    "device": "cuda:0",
+    "physical_gpu": 1,
+    "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+    "warp": "1.17.0",
+    "torch": "2.11.0+cu128",
+    "python": "3.12.12",
+    "free_mb_at_start": 31518.0,
+    "started": "2026-11-11T21:09:45+0900",
+    "ended": "2026-11-11T22:04:20+0900",
+    "rows": [
+     "RL06"
+    ]
+   }
+  },
+  {
+   "dir": "artifacts/rl_ready/p2_6/gpu_rl_d_001",
+   "meta": {
+    "commit": "3807912b8fbe7439139aacb1a39a346be0ecb570",
+    "dirty_tree": false,
+    "dirty_paths": [],
+    "command": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/.deps/isaacsim-venv/bin/python scripts/rubber/p2_6/run_rubber_rl_gpu.py --rows RL02c --out artifacts/rl_ready/p2_6/gpu_rl_d_001 --device cuda:0 --gpu-index 1",
+    "device": "cuda:0",
+    "physical_gpu": 1,
+    "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+    "warp": "1.17.0",
+    "torch": "2.11.0+cu128",
+    "python": "3.12.12",
+    "free_mb_at_start": 32049.0,
+    "started": "2026-11-11T22:06:42+0900",
+    "ended": "2026-11-11T23:41:39+0900",
+    "rows": [
+     "RL02c"
+    ]
+   }
+  }
+ ],
+ "gpu_rows": {
+  "RL01": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_a_001",
+   "verdict": "PASS",
+   "reports": [
+    {
+     "contract": "rubber_vector_contract_v1",
+     "num_envs": 1,
+     "steps": 12,
+     "clauses": [
+      "receipt/spaces/metadata",
+      "full reset",
+      "steps",
+      "evaluate"
+     ],
+     "backend": "kinematic_grip_batched",
+     "runtime": "rl_gpu_headless",
+     "api_revision": "p2_6",
+     "observation_profile": "state",
+     "test_configuration": null,
+     "envelope": {
+      "4": 0.3,
+      "5": 0.4,
+      "6": 0.3
+     },
+     "action_status": [
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       0
+      ],
+      [
+       0
+      ]
+     ],
+     "final_step_count": [
+      12
+     ],
+     "termination_reason": [
+      []
+     ],
+     "terminated_events": 0,
+     "evaluation": [
+      {
+       "env": 0,
+       "slot": "L125_t4",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.08408795896123558
+      }
+     ],
+     "status": "PASS",
+     "N": 1,
+     "profile": "state",
+     "slots": [
+      "L125_t4"
+     ],
+     "build_s": 8.300816125003621,
+     "wall_s": 28.595519901020452
+    },
+    {
+     "contract": "rubber_vector_contract_v1",
+     "num_envs": 1,
+     "steps": 12,
+     "clauses": [
+      "receipt/spaces/metadata",
+      "full reset",
+      "steps",
+      "evaluate"
+     ],
+     "backend": "kinematic_grip_batched",
+     "runtime": "rl_gpu_headless",
+     "api_revision": "p2_6",
+     "observation_profile": "privileged_state",
+     "test_configuration": null,
+     "envelope": {
+      "4": 0.3,
+      "5": 0.4,
+      "6": 0.3
+     },
+     "action_status": [
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       3
+      ],
+      [
+       0
+      ],
+      [
+       0
+      ]
+     ],
+     "final_step_count": [
+      12
+     ],
+     "termination_reason": [
+      []
+     ],
+     "terminated_events": 0,
+     "evaluation": [
+      {
+       "env": 0,
+       "slot": "L125_t4",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.08408802646975277
+      }
+     ],
+     "status": "PASS",
+     "N": 1,
+     "profile": "privileged_state",
+     "slots": [
+      "L125_t4"
+     ],
+     "build_s": 1.5819569550221786,
+     "wall_s": 21.94554667000193
+    },
+    {
+     "contract": "rubber_vector_contract_v1",
+     "num_envs": 8,
+     "steps": 12,
+     "clauses": [
+      "receipt/spaces/metadata",
+      "full reset",
+      "partial reset",
+      "steps",
+      "evaluate"
+     ],
+     "backend": "kinematic_grip_batched",
+     "runtime": "rl_gpu_headless",
+     "api_revision": "p2_6",
+     "observation_profile": "state",
+     "test_configuration": null,
+     "envelope": {
+      "4": 0.3,
+      "5": 0.4,
+      "6": 0.3
+     },
+     "action_status": [
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       0,
+       3,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       3,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "final_step_count": [
+      12,
+      2,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12
+     ],
+     "termination_reason": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+     ],
+     "terminated_events": 0,
+     "evaluation": [
+      {
+       "env": 0,
+       "slot": "L150_t5",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.09753025248350954
+      },
+      {
+       "env": 1,
+       "slot": "L125_t6",
+       "step_count": 2,
+       "success": false,
+       "tip_distance_m": 0.0362473720270062
+      },
+      {
+       "env": 2,
+       "slot": "L125_t5",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.033766853241449714
+      },
+      {
+       "env": 3,
+       "slot": "L100_t6",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.0556239206291086
+      },
+      {
+       "env": 4,
+       "slot": "L100_t6",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.052579866987380944
+      },
+      {
+       "env": 5,
+       "slot": "L100_t4",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.03845125407619679
+      },
+      {
+       "env": 6,
+       "slot": "L100_t4",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.07659116981959185
+      },
+      {
+       "env": 7,
+       "slot": "L100_t4",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.028059101458673123
+      }
+     ],
+     "status": "PASS",
+     "N": 8,
+     "profile": "state",
+     "slots": [
+      "L150_t5",
+      "L125_t6",
+      "L125_t5",
+      "L100_t6",
+      "L100_t6",
+      "L100_t4",
+      "L100_t4",
+      "L100_t4"
+     ],
+     "build_s": 17.269629484042525,
+     "wall_s": 131.4804206250701
+    },
+    {
+     "contract": "rubber_vector_contract_v1",
+     "num_envs": 8,
+     "steps": 12,
+     "clauses": [
+      "receipt/spaces/metadata",
+      "full reset",
+      "partial reset",
+      "steps",
+      "evaluate"
+     ],
+     "backend": "kinematic_grip_batched",
+     "runtime": "rl_gpu_headless",
+     "api_revision": "p2_6",
+     "observation_profile": "privileged_state",
+     "test_configuration": null,
+     "envelope": {
+      "4": 0.3,
+      "5": 0.4,
+      "6": 0.3
+     },
+     "action_status": [
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3,
+       3
+      ],
+      [
+       0,
+       3,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ],
+      [
+       0,
+       3,
+       0,
+       0,
+       0,
+       0,
+       0,
+       0
+      ]
+     ],
+     "final_step_count": [
+      12,
+      2,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12
+     ],
+     "termination_reason": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+     ],
+     "terminated_events": 0,
+     "evaluation": [
+      {
+       "env": 0,
+       "slot": "L150_t5",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.09752960834471809
+      },
+      {
+       "env": 1,
+       "slot": "L125_t6",
+       "step_count": 2,
+       "success": false,
+       "tip_distance_m": 0.03624727328541748
+      },
+      {
+       "env": 2,
+       "slot": "L125_t5",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.033774304807916794
+      },
+      {
+       "env": 3,
+       "slot": "L100_t6",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.05562505306368928
+      },
+      {
+       "env": 4,
+       "slot": "L100_t6",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.052592899793774905
+      },
+      {
+       "env": 5,
+       "slot": "L100_t4",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.03845222271256538
+      },
+      {
+       "env": 6,
+       "slot": "L100_t4",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.07659112795694585
+      },
+      {
+       "env": 7,
+       "slot": "L100_t4",
+       "step_count": 12,
+       "success": false,
+       "tip_distance_m": 0.028059135667493913
+      }
+     ],
+     "status": "PASS",
+     "N": 8,
+     "profile": "privileged_state",
+     "slots": [
+      "L150_t5",
+      "L125_t6",
+      "L125_t5",
+      "L100_t6",
+      "L100_t6",
+      "L100_t4",
+      "L100_t4",
+      "L100_t4"
+     ],
+     "build_s": 16.02339927398134,
+     "wall_s": 129.48513679997995
+    }
+   ],
+   "wall_s_row": 311.9984098810237,
+   "gpu_sharing": {
+    "label": "EXCLUSIVE_AT_SAMPLES",
+    "co_tenant_pids": []
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "a95da8904c8642bf753d0ad658538fe281926952",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL02b": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_a_001",
+   "verdict": "PASS",
+   "steps": 60,
+   "slots": [
+    "L150_t5",
+    "L125_t6",
+    "L125_t5",
+    "L100_t6",
+    "L100_t6",
+    "L100_t4",
+    "L100_t4",
+    "L100_t4"
+   ],
+   "failing_steps": [],
+   "rows": [
+    {
+     "step": 1,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 2,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 3,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 4,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 5,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 6,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 7,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 8,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 9,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 10,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 11,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 12,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 13,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 14,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 15,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 16,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 17,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 18,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 19,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 20,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 21,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 22,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 23,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 24,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 25,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 26,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 27,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 28,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 29,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 30,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 31,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 32,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 33,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 34,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 35,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 36,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 37,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 38,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 39,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 40,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 41,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 42,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 43,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 44,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 45,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 46,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 47,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 48,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 49,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 50,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 51,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 52,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 53,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 54,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 55,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 56,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 57,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 58,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 59,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    },
+    {
+     "step": 60,
+     "obs_finite": true,
+     "reward_finite": true,
+     "state_finite": true,
+     "mass_constant": true,
+     "audits_zero": true,
+     "contact_audit_zero": true,
+     "invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "pass": true
+    }
+   ],
+   "final_tip_distance_m": [
+    0.09239682351031872,
+    0.035958197463997595,
+    0.029930178755260824,
+    0.07994627455711169,
+    0.07964164921717394,
+    0.051430696151348626,
+    0.10425842420951476,
+    0.018924575057497704
+   ],
+   "receipt": {
+    "version": "rl_rubber_vector_env_v1",
+    "api_revision": "p2_6",
+    "runtime": "rl_gpu_headless",
+    "backend": "kinematic_grip_batched",
+    "num_envs": 8,
+    "device": "cuda:0",
+    "parity_mode": false,
+    "strict": false,
+    "termination": {
+     "version": "termination_reason_v1",
+     "bits": {
+      "1": "RIGID_INVALID",
+      "2": "MATERIAL_INVALID",
+      "4": "GRASP_LOST",
+      "8": "IK_FAILURE_STREAK",
+      "16": "TRUNCATED_HORIZON",
+      "32": "MATERIAL_INPUT_DOMAIN_GUARD",
+      "64": "INFRASTRUCTURE_ERROR"
+     },
+     "terminal_mask": 111,
+     "invalid_state_mask": 99,
+     "task_failure_mask": 47,
+     "infrastructure_bit": 64,
+     "sticky": "until the env is reset (TRUNCATED_HORIZON follows step_count)"
+    },
+    "termination_mapping": "rubber invalid bits 1 NONFINITE / 2 J_DOMAIN / 4 CFL / 8 SELF_CONTACT_UNRESOLVED -> TERM_MATERIAL_INVALID (detail: info['invalid_reason'], privileged)",
+    "evaluation_mode": "rubber_tracking_eval_v1",
+    "evaluator": {
+     "id": "rubber_tracking_eval_v1",
+     "window_steps": 25,
+     "tolerance_m": 0.01
+    },
+    "success_source": "evaluate() (rubber_tracking_eval_v1); never the reward",
+    "fidelity": {
+     "reduced_fidelity": false,
+     "test_configuration": null,
+     "resolution_variant": null,
+     "reduced_fidelity_label": null,
+     "coupling": "kinematic_grip_ideal_tracking (no wrench feedback)",
+     "robot_feedback_coupling": "NOT_IMPLEMENTED_PHASE2",
+     "perception": "ideal_marker_tracking",
+     "self_contact": "NOT_IMPLEMENTED_V1 (detector surface_grid_v1)",
+     "resolution": "rubber_ref_v1 (n_t 4-6 at dx 1 mm)"
+    },
+    "observation": {
+     "policy": {
+      "dim": 78,
+      "dtype": "float32",
+      "deployable": true,
+      "terms": [
+       {
+        "name": "grip_position_m",
+        "dim": 3
+       },
+       {
+        "name": "grip_quaternion_xyzw",
+        "dim": 4
+       },
+       {
+        "name": "grip_twist_commanded",
+        "dim": 6
+       },
+       {
+        "name": "time_remaining_fraction",
+        "dim": 1
+       },
+       {
+        "name": "previous_action",
+        "dim": 6
+       },
+       {
+        "name": "marker_positions_m",
+        "dim": 27
+       },
+       {
+        "name": "marker_velocities_m_s",
+        "dim": 27
+       },
+       {
+        "name": "goal_m",
+        "dim": 3
+       },
+       {
+        "name": "preload_flag",
+        "dim": 1
+       }
+      ],
+      "perception": "ideal_marker_tracking"
+     },
+     "info_privileged": [
+      "invalid_reason"
+     ]
+    },
+    "observation_profile": "state",
+    "action_spec": {
+     "id": "grip_delta_v1",
+     "dim": 6,
+     "max_translation_m": 0.005,
+     "max_rotation_rad": 0.05,
+     "workspace_box_m": [
+      [
+       -0.15,
+       -0.15,
+       -0.002
+      ],
+      [
+       0.15,
+       0.15,
+       0.08
+      ]
+     ],
+     "jaw_min_clearance_m": 0.001,
+     "tilt_max_rad": 0.8
+    },
+    "reward": {
+     "id": "rubber_tip_tracking_v1",
+     "status": "PROVISIONAL_SHAPING_NOT_SUCCESS"
+    },
+    "tasks": {
+     "id": "rubber_strip_drag_v2",
+     "version": "rubber_strip_task_family_v1",
+     "config": "configs/rubber/rl/rubber_strip_drag_v2.json",
+     "config_sha256": "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb",
+     "variant": null,
+     "test_configuration": null,
+     "num_envs": 8,
+     "resolution_variant": null,
+     "reduced_fidelity": null,
+     "slots": [
+      "L150_t5",
+      "L125_t6",
+      "L125_t5",
+      "L100_t6",
+      "L100_t6",
+      "L100_t4",
+      "L100_t4",
+      "L100_t4"
+     ],
+     "slot_selection": {
+      "rule": "seeded",
+      "slot_seed": 0
+     },
+     "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+     "labels": {
+      "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+      "coupling": "kinematic_grip_ideal_tracking (no wrench feedback)",
+      "robot_feedback_coupling": "NOT_IMPLEMENTED_PHASE2",
+      "perception": "ideal_marker_tracking",
+      "self_contact": "NOT_IMPLEMENTED_V1 (detector surface_grid_v1)",
+      "resolution_measured_bias": "rubber_ref_v1 (n_t 4) Q1w +0.62 % (+0.50 ... +0.78 %), GCI 2.16 % (Fs 3, p_obs 3.12), known_limitation rubber_phys_11_v5_q1w_gci_2.16pct (K2 Q1w decision (c)); the env receipt reads the label from rubber_material.RESOLUTION_PROFILES when it lands (K2-2) and records PENDING otherwise; the P2-6 geometry (L/t up to 37.5) is measured by RL-08 b",
+      "reward": "PROVISIONAL_SHAPING_NOT_SUCCESS",
+      "contact_law": "grid_node_penalty_coulomb_v2 (v3 superseded for P2-6 by K2-1)",
+      "friction_range_limitation": "table friction FIXED at 0.3 (degenerate range [0.3, 0.3], not randomised): the formally scored law-v2 envelope at n_t 4-6 (contact_envelope_v3: sliding 0.3 / 0.4 / 0.3 at n_t 4 / 5 / 6, ENV2 run contact_envelope_v2_001 FAIL at the 0.4 target); real rubber-table friction (often 0.6-1.0+) is outside it; label contact_friction_envelope_v2_fixed_0.3. The friction draw is still consumed (the draw order is unchanged)"
+     },
+     "resolution": {
+      "resolution_profile": "rubber_ref_v1",
+      "label": "full",
+      "measured_bias": "PENDING_K2-2 (label not yet in RESOLUTION_PROFILES)",
+      "known_limitation": "PENDING_K2-2",
+      "task_config_label": "rubber_ref_v1 (n_t 4) Q1w +0.62 % (+0.50 ... +0.78 %), GCI 2.16 % (Fs 3, p_obs 3.12), known_limitation rubber_phys_11_v5_q1w_gci_2.16pct (K2 Q1w decision (c)); the env receipt reads the label from rubber_material.RESOLUTION_PROFILES when it lands (K2-2) and records PENDING otherwise; the P2-6 geometry (L/t up to 37.5) is measured by RL-08 b"
+     },
+     "recipe": {
+      "id": "rubber_generic_visco_v1",
+      "sha256": "c9ea0c21417d60c52765f3ecc2fce46536e4bcef44344d21c32910e8eebd744b"
+     },
+     "profile": {
+      "id": "rubber_rl_env_v2",
+      "dirichlet": "consistent_mass_projection_v1",
+      "constraint_work": "kick_average_v1",
+      "traction_work": "grid_displacement_v1",
+      "state_precision": "f64_shadow_v1",
+      "stable_step_guard": 1.0,
+      "deformation_reserve": 1.0,
+      "visco_energy": "off_v1",
+      "cfl": 0.5,
+      "self_penetration_check": "surface_grid_v1",
+      "self_penetration_check_substeps": 256,
+      "graph_chunk": 500,
+      "bc_launch": "motion_table_v1 (batch default)",
+      "step_staging": "device (BatchedRubberMaterial.advance_device: set_group_motions_device + set_traction_device); resets host-staged",
+      "difference_to_v1": "contact law grid_node_penalty_coulomb_v2 (v1: v3) and table friction U[0.3, 0.3] (v1: [0.3, 0.8]); every other option identical"
+     },
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "envelope_rows": {
+      "4": {
+       "envelope": "contact_envelope_v3",
+       "envelope_sha256": "036008efd2a0c39526c54ec5a8f992da71b2df8f874b7ceaeaf9aa7631643763",
+       "law": "grid_node_penalty_coulomb_v2",
+       "n_t": 4,
+       "status": "ESTABLISHED",
+       "sliding_mu_max": 0.3,
+       "static_mu_max": 0.4,
+       "run_id": "contact_envelope_v2_001",
+       "scope": "general",
+       "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18"
+      },
+      "5": {
+       "envelope": "contact_envelope_v3",
+       "envelope_sha256": "036008efd2a0c39526c54ec5a8f992da71b2df8f874b7ceaeaf9aa7631643763",
+       "law": "grid_node_penalty_coulomb_v2",
+       "n_t": 5,
+       "status": "ESTABLISHED",
+       "sliding_mu_max": 0.4,
+       "static_mu_max": 0.4,
+       "run_id": "contact_envelope_v2_001",
+       "scope": "general",
+       "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18"
+      },
+      "6": {
+       "envelope": "contact_envelope_v3",
+       "envelope_sha256": "036008efd2a0c39526c54ec5a8f992da71b2df8f874b7ceaeaf9aa7631643763",
+       "law": "grid_node_penalty_coulomb_v2",
+       "n_t": 6,
+       "status": "ESTABLISHED",
+       "sliding_mu_max": 0.3,
+       "static_mu_max": 0.4,
+       "run_id": "contact_envelope_v2_001",
+       "scope": "general",
+       "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18"
+      }
+     },
+     "ranges": {
+      "mu0_pa": [
+       300000.0,
+       800000.0
+      ],
+      "density_kg_m3": [
+       1000.0,
+       1300.0
+      ],
+      "prony_g_scale": [
+       0.5,
+       1.5
+      ],
+      "prony_tau_scale": [
+       0.5,
+       2.0
+      ],
+      "friction_table": [
+       0.3,
+       0.3
+      ],
+      "traction_horizontal_fraction": [
+       0.0,
+       0.5
+      ],
+      "traction_direction_rad": [
+       0.0,
+       6.283185307179586
+      ],
+      "traction_vertical_fraction": [
+       -0.25,
+       0.25
+      ],
+      "preload_sweep_y_m": [
+       -0.03,
+       0.03
+      ],
+      "preload_yaw_rad": [
+       -0.4,
+       0.4
+      ],
+      "goal_radius_m": [
+       0.03,
+       0.06
+      ],
+      "goal_angle_rad": [
+       0.0,
+       6.283185307179586
+      ]
+     },
+     "control_dt_s": 0.02,
+     "preload": {
+      "steps": 10,
+      "lift_m": 0.003
+     },
+     "max_episode_steps": 250,
+     "step_material": {
+      "mu0_pa": 800000.0,
+      "kappa_pa": 16000000.0,
+      "density_kg_m3": 1000.0,
+      "beta": 20.0,
+      "friction_table": 0.8,
+      "friction_pad": 1.0,
+      "friction_self": 0.9,
+      "nu_effective": 0.47540983606557374,
+      "young_effective_pa": 2360655.7377049183,
+      "c_p_m_s": 130.63945294843617
+     },
+     "slot_geometry": {
+      "L100_t4": {
+       "origin": [
+        0.0,
+        0.008,
+        0.002
+       ],
+       "jaw_corners": [
+        [
+         -0.002,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         -0.002,
+         0.016,
+         0.0
+        ],
+        [
+         0.0,
+         0.016,
+         0.0
+        ],
+        [
+         -0.002,
+         0.0,
+         0.004
+        ],
+        [
+         0.0,
+         0.0,
+         0.004
+        ],
+        [
+         -0.002,
+         0.016,
+         0.004
+        ],
+        [
+         0.0,
+         0.016,
+         0.004
+        ]
+       ],
+       "tip_reference": [
+        0.0997500000000002,
+        0.008000000000000004,
+        0.0019999999999999883
+       ],
+       "particles": 52224,
+       "spacing": 0.0005,
+       "length": 0.1,
+       "thickness": 0.004,
+       "n_t": 4,
+       "traction_particles": 1024,
+       "surface_particles": 15864
+      },
+      "L100_t6": {
+       "origin": [
+        0.0,
+        0.008,
+        0.003
+       ],
+       "jaw_corners": [
+        [
+         -0.002,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         -0.002,
+         0.016,
+         0.0
+        ],
+        [
+         0.0,
+         0.016,
+         0.0
+        ],
+        [
+         -0.002,
+         0.0,
+         0.006
+        ],
+        [
+         0.0,
+         0.0,
+         0.006
+        ],
+        [
+         -0.002,
+         0.016,
+         0.006
+        ],
+        [
+         0.0,
+         0.016,
+         0.006
+        ]
+       ],
+       "tip_reference": [
+        0.09975000000000021,
+        0.008000000000000009,
+        0.002999999999999996
+       ],
+       "particles": 78336,
+       "spacing": 0.0005,
+       "length": 0.1,
+       "thickness": 0.006,
+       "n_t": 6,
+       "traction_particles": 1536,
+       "surface_particles": 17736
+      },
+      "L125_t5": {
+       "origin": [
+        0.0,
+        0.008,
+        0.0025
+       ],
+       "jaw_corners": [
+        [
+         -0.002,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         -0.002,
+         0.016,
+         0.0
+        ],
+        [
+         0.0,
+         0.016,
+         0.0
+        ],
+        [
+         -0.002,
+         0.0,
+         0.005
+        ],
+        [
+         0.0,
+         0.0,
+         0.005
+        ],
+        [
+         -0.002,
+         0.016,
+         0.005
+        ],
+        [
+         0.0,
+         0.016,
+         0.005
+        ]
+       ],
+       "tip_reference": [
+        0.12474999999999939,
+        0.008000000000000004,
+        0.0024999999999999935
+       ],
+       "particles": 81280,
+       "spacing": 0.0005,
+       "length": 0.125,
+       "thickness": 0.005,
+       "n_t": 5,
+       "traction_particles": 1280,
+       "surface_particles": 20800
+      },
+      "L125_t6": {
+       "origin": [
+        0.0,
+        0.008,
+        0.003
+       ],
+       "jaw_corners": [
+        [
+         -0.002,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         -0.002,
+         0.016,
+         0.0
+        ],
+        [
+         0.0,
+         0.016,
+         0.0
+        ],
+        [
+         -0.002,
+         0.0,
+         0.006
+        ],
+        [
+         0.0,
+         0.0,
+         0.006
+        ],
+        [
+         -0.002,
+         0.016,
+         0.006
+        ],
+        [
+         0.0,
+         0.016,
+         0.006
+        ]
+       ],
+       "tip_reference": [
+        0.12474999999999929,
+        0.008000000000000009,
+        0.002999999999999996
+       ],
+       "particles": 97536,
+       "spacing": 0.0005,
+       "length": 0.125,
+       "thickness": 0.006,
+       "n_t": 6,
+       "traction_particles": 1536,
+       "surface_particles": 21936
+      },
+      "L150_t5": {
+       "origin": [
+        0.0,
+        0.008,
+        0.0025
+       ],
+       "jaw_corners": [
+        [
+         -0.002,
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0,
+         0.0
+        ],
+        [
+         -0.002,
+         0.016,
+         0.0
+        ],
+        [
+         0.0,
+         0.016,
+         0.0
+        ],
+        [
+         -0.002,
+         0.0,
+         0.005
+        ],
+        [
+         0.0,
+         0.0,
+         0.005
+        ],
+        [
+         -0.002,
+         0.016,
+         0.005
+        ],
+        [
+         0.0,
+         0.016,
+         0.005
+        ]
+       ],
+       "tip_reference": [
+        0.14974999999999933,
+        0.008000000000000004,
+        0.0024999999999999935
+       ],
+       "particles": 97280,
+       "spacing": 0.0005,
+       "length": 0.15,
+       "thickness": 0.005,
+       "n_t": 5,
+       "traction_particles": 1280,
+       "surface_particles": 24800
+      }
+     }
+    },
+    "episode": {
+     "max_episode_steps": 250,
+     "preload_steps": 10,
+     "autoreset": false
+    },
+    "calibration": "SIMULATOR_ONLY_UNCALIBRATED",
+    "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+    "profile": {
+     "id": "rubber_rl_env_v2",
+     "dirichlet": "consistent_mass_projection_v1",
+     "constraint_work": "kick_average_v1",
+     "traction_work": "grid_displacement_v1",
+     "state_precision": "f64_shadow_v1",
+     "stable_step_guard": 1.0,
+     "deformation_reserve": 1.0,
+     "visco_energy": "off_v1",
+     "cfl": 0.5,
+     "self_penetration_check": "surface_grid_v1",
+     "self_penetration_check_substeps": 256,
+     "graph_chunk": 500,
+     "bc_launch": "motion_table_v1 (batch default)",
+     "step_staging": "device (BatchedRubberMaterial.advance_device: set_group_motions_device + set_traction_device); resets host-staged",
+     "difference_to_v1": "contact law grid_node_penalty_coulomb_v2 (v1: v3) and table friction U[0.3, 0.3] (v1: [0.3, 0.8]); every other option identical"
+    },
+    "contact_law": "grid_node_penalty_coulomb_v2",
+    "envelope": {
+     "4": {
+      "envelope": "contact_envelope_v3",
+      "envelope_sha256": "036008efd2a0c39526c54ec5a8f992da71b2df8f874b7ceaeaf9aa7631643763",
+      "law": "grid_node_penalty_coulomb_v2",
+      "n_t": 4,
+      "status": "ESTABLISHED",
+      "sliding_mu_max": 0.3,
+      "static_mu_max": 0.4,
+      "run_id": "contact_envelope_v2_001",
+      "scope": "general",
+      "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18"
+     },
+     "5": {
+      "envelope": "contact_envelope_v3",
+      "envelope_sha256": "036008efd2a0c39526c54ec5a8f992da71b2df8f874b7ceaeaf9aa7631643763",
+      "law": "grid_node_penalty_coulomb_v2",
+      "n_t": 5,
+      "status": "ESTABLISHED",
+      "sliding_mu_max": 0.4,
+      "static_mu_max": 0.4,
+      "run_id": "contact_envelope_v2_001",
+      "scope": "general",
+      "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18"
+     },
+     "6": {
+      "envelope": "contact_envelope_v3",
+      "envelope_sha256": "036008efd2a0c39526c54ec5a8f992da71b2df8f874b7ceaeaf9aa7631643763",
+      "law": "grid_node_penalty_coulomb_v2",
+      "n_t": 6,
+      "status": "ESTABLISHED",
+      "sliding_mu_max": 0.3,
+      "static_mu_max": 0.4,
+      "run_id": "contact_envelope_v2_001",
+      "scope": "general",
+      "protocol_sha256": "1f6163997bdd072e961b2724de951d81f2db29f889d286ce1d1e3c4ba63f1e18"
+     }
+    },
+    "labels": {
+     "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+     "coupling": "kinematic_grip_ideal_tracking (no wrench feedback)",
+     "robot_feedback_coupling": "NOT_IMPLEMENTED_PHASE2",
+     "perception": "ideal_marker_tracking",
+     "self_contact": "NOT_IMPLEMENTED_V1 (detector surface_grid_v1)",
+     "resolution_measured_bias": "rubber_ref_v1 (n_t 4) Q1w +0.62 % (+0.50 ... +0.78 %), GCI 2.16 % (Fs 3, p_obs 3.12), known_limitation rubber_phys_11_v5_q1w_gci_2.16pct (K2 Q1w decision (c)); the env receipt reads the label from rubber_material.RESOLUTION_PROFILES when it lands (K2-2) and records PENDING otherwise; the P2-6 geometry (L/t up to 37.5) is measured by RL-08 b",
+     "reward": "PROVISIONAL_SHAPING_NOT_SUCCESS",
+     "contact_law": "grid_node_penalty_coulomb_v2 (v3 superseded for P2-6 by K2-1)",
+     "friction_range_limitation": "table friction FIXED at 0.3 (degenerate range [0.3, 0.3], not randomised): the formally scored law-v2 envelope at n_t 4-6 (contact_envelope_v3: sliding 0.3 / 0.4 / 0.3 at n_t 4 / 5 / 6, ENV2 run contact_envelope_v2_001 FAIL at the 0.4 target); real rubber-table friction (often 0.6-1.0+) is outside it; label contact_friction_envelope_v2_fixed_0.3. The friction draw is still consumed (the draw order is unchanged)"
+    },
+    "resolution": {
+     "resolution_profile": "rubber_ref_v1",
+     "label": "full",
+     "measured_bias": "PENDING_K2-2 (label not yet in RESOLUTION_PROFILES)",
+     "known_limitation": "PENDING_K2-2",
+     "task_config_label": "rubber_ref_v1 (n_t 4) Q1w +0.62 % (+0.50 ... +0.78 %), GCI 2.16 % (Fs 3, p_obs 3.12), known_limitation rubber_phys_11_v5_q1w_gci_2.16pct (K2 Q1w decision (c)); the env receipt reads the label from rubber_material.RESOLUTION_PROFILES when it lands (K2-2) and records PENDING otherwise; the P2-6 geometry (L/t up to 37.5) is measured by RL-08 b"
+    },
+    "material": {
+     "runtime": "rl_gpu_headless",
+     "version": "batched_rubber_material_v1",
+     "device": "cuda:0",
+     "parity_mode": false,
+     "strict": false,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.11712184501811862
+     },
+     "control_dt_s": 0.02,
+     "layout": {
+      "layout_version": "rubber_batch_layout_v1",
+      "num_envs": 8,
+      "particle_counts": [
+       97280,
+       97536,
+       81280,
+       78336,
+       78336,
+       52224,
+       52224,
+       52224
+      ],
+      "node_counts": [
+       32970,
+       30492,
+       27720,
+       24717,
+       24717,
+       20223,
+       20223,
+       20223
+      ],
+      "cell_counts": [
+       12160,
+       12192,
+       10160,
+       9792,
+       9792,
+       6528,
+       6528,
+       6528
+      ],
+      "total_particles": 589440,
+      "total_nodes": 201285,
+      "total_cells": 73680,
+      "groups_per_env": 1,
+      "traction_groups_per_env": 1,
+      "int32_guards": {
+       "particles_x8": 4715520,
+       "nodes": 201285,
+       "limit": 2147483648
+      },
+      "constitutive_model": "neo_hookean_jbar_prony_v1"
+     },
+     "solver": {
+      "solver": "tlmpm_rubber_contact_v1_batch",
+      "base_solver": "tlmpm_rubber_v1",
+      "status": "EXPERIMENTAL_NOT_ACCEPTED",
+      "execution": "batched_flat_soa_env_kernels_v1",
+      "constitutive_model": {
+       "model_id": "neo_hookean_jbar_prony_v1",
+       "version": 1,
+       "param_names": [
+        "mu0",
+        "kappa"
+       ],
+       "per_particle_state": {
+        "visco_q": {
+         "dtype": "vec_t",
+         "initial": "zero",
+         "multiplicity": 2
+        },
+        "visco_s_prev": {
+         "dtype": "vec_t",
+         "initial": "zero",
+         "multiplicity": 1
+        }
+       },
+       "energy": "Psi_eq = sum_p V g_inf mu0/2 (J^-2/3 I1 - 3) + sum_c V_c U(Jbar); Psi_v = sum_p V sum_i |Q_i|^2 / (4 g_i mu0); option visco_energy branch_work_v1: W_b, explicit dissipation D (ADR 0023 \u00a721.2.7)",
+       "source": "rubber_visco_constitutive.prony_stress_particle (+ frozen nh_jbar_pk1; shared with TLMPMRubberVisco)",
+       "registry": "rubber (batched/constitutive_rubber.py)",
+       "terms": 2,
+       "param64_names": [
+        "g_inf",
+        "g1",
+        "tau1_s",
+        "a1",
+        "b1",
+        "g2",
+        "tau2_s",
+        "a2",
+        "b2"
+       ],
+       "guard": "stable_step_guard_visco_v1",
+       "state_bytes_per_particle": 144,
+       "adr": "ADR 0023 \u00a721.2"
+      },
+      "dt_s": 3.827018752391887e-06,
+      "dx_m": 0.001,
+      "substeps_per_control_step": 5226,
+      "pic": 0.0,
+      "stable_step_guard": {
+       "id": "stable_step_guard_v1",
+       "limit": 1.0
+      },
+      "options": {
+       "dirichlet": "consistent_mass_projection_v1",
+       "traction_work": "grid_displacement_v1",
+       "state_precision": "f64_shadow_v1",
+       "constraint_work": "kick_average_v1",
+       "projection_rows": 7344,
+       "visco_terms": 2,
+       "visco_energy": "off_v1",
+       "bc_launch": "motion_table_v1",
+       "bc_nodes": 2448,
+       "adr": "ADR 0023 \u00a720",
+       "contact_law": "grid_node_penalty_coulomb_v2",
+       "contact_work": "kick_average_v1"
+      },
+      "source_sha256": {
+       "rubber_batch.py": "0b5fae8cd1269341f0be2d658cd41c69186f9b222c7a0dfc9174d4c037e86bf5",
+       "rubber_layout.py": "dbaf762d144398e69bc3924e7537cbc18cf6b62748386e9286bbace707b15502",
+       "constitutive_rubber.py": "dccb6ac8912f9d108e7c972291c824661dd7c4f75f800a1a03f26c0252892de7",
+       "rubber_material_batch.py": "9b0841e5302702f22d8e974382f3f10d424d47d14205a5ac28453f2b4bd200e7",
+       "tlmpm_rubber_v1.py": "28fc5189e26170db9bb80aa2895143835ec55a0d9db66c77dfba5222defbc8d5",
+       "rubber_constitutive.py": "c12cc77e36dd076be725fca1aa8ab5a6e94c7d8e3f412ee487b1067aece4b869",
+       "tlmpm_v5.py": "a7a05b2fe709fbff2e915c0df0855079d5bccbd8e766c787d2f628e7cc3bf34b",
+       "tlmpm_v6.py": "13a3adff0fa6b8a5d57fd894fcb6df17ca19fd78578b7c51d4541d583cb7ce44",
+       "rubber_constraint_work.py": "bda2edf7af8e52dc117b7d10a11d0a7143e3a1c583e553c6af432a97ab28c155",
+       "tlmpm_rubber_visco_v1.py": "bec7e8a1081cba54d801fcd4b13cd835900dcef6665bec152dd66fb529337438",
+       "rubber_visco_constitutive.py": "b932b5e8d99dfadc33576ad4c0a634782b095c9a1147c1c22fcad82c777d6893",
+       "rubber_contact_batch.py": "a65ca1549b398d3ed8556ca745479db161576fca207df23cf0deb473d942518f",
+       "rubber_contact.py": "0a5d4a59f1ca624dc1d151d4a5d683575d2a5e9c56063417cca0fcb58540245d"
+      },
+      "device": "cuda:0",
+      "warp_version": "1.17.0",
+      "contact_solver": "tlmpm_rubber_contact_v1",
+      "contact": {
+       "status": "EXPERIMENTAL_NOT_ACCEPTED",
+       "P": 1,
+       "F": 0,
+       "B": 0,
+       "frame_kinds": [],
+       "parameters": {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       },
+       "kick_launch": "TLMPMRubberContact._launch_contact (single solver, unchanged)",
+       "frictions": "params columns friction_table / friction_pad (per env)",
+       "self_contact": "NOT_IMPLEMENTED_V1 (ADR 0023 \u00a722.3)",
+       "adr": "ADR 0023 \u00a722.2, \u00a722.5"
+      }
+     },
+     "ranges": {
+      "mu0": [
+       300000.0,
+       800000.0
+      ],
+      "density": [
+       1000.0,
+       1300.0
+      ],
+      "friction_table": [
+       0.3,
+       0.3
+      ],
+      "prony_g_scale": [
+       0.5,
+       1.5
+      ],
+      "prony_tau_scale": [
+       0.5,
+       2.0
+      ]
+     },
+     "memory_bytes": 458741636,
+     "build_wall_s": 0.44428435200825334,
+     "calibration": "SIMULATOR_ONLY_UNCALIBRATED",
+     "device_hashgrid_guard": "not_applicable_no_hashgrid (rubber v1 has no self-contact)",
+     "coupling": "kinematic Dirichlet groups (no robot feedback in P2-1)",
+     "contact": {
+      "specs": [
+       {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "planes": [
+         [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+         ]
+        ],
+        "frames": [],
+        "P": 1,
+        "F": 0,
+        "B": 0,
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       },
+       {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "planes": [
+         [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+         ]
+        ],
+        "frames": [],
+        "P": 1,
+        "F": 0,
+        "B": 0,
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       },
+       {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "planes": [
+         [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+         ]
+        ],
+        "frames": [],
+        "P": 1,
+        "F": 0,
+        "B": 0,
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       },
+       {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "planes": [
+         [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+         ]
+        ],
+        "frames": [],
+        "P": 1,
+        "F": 0,
+        "B": 0,
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       },
+       {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "planes": [
+         [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+         ]
+        ],
+        "frames": [],
+        "P": 1,
+        "F": 0,
+        "B": 0,
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       },
+       {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "planes": [
+         [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+         ]
+        ],
+        "frames": [],
+        "P": 1,
+        "F": 0,
+        "B": 0,
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       },
+       {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "planes": [
+         [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+         ]
+        ],
+        "frames": [],
+        "P": 1,
+        "F": 0,
+        "B": 0,
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       },
+       {
+        "law": "grid_node_penalty_coulomb_v2",
+        "work": "kick_average_v1",
+        "normal_stiffness": 0.25,
+        "tangential_stiffness": 0.25,
+        "damping_ratio": 0.5,
+        "normal_damping_ratio": 0.5,
+        "damping_rule": "c = 2 zeta sqrt(k m_I) on the node's realised relative velocity (the drift velocity B pi_n = old after the P2G grid update, minus the obstacle velocity; ADR 0023 \u00a722.9); tangential inside the Coulomb cap, normal with F_n >= 0",
+        "stiffness_rule": "k = kappa m_I / dt^2 per node (uniform stiffness per area on the faces)",
+        "planes": [
+         [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+         ]
+        ],
+        "frames": [],
+        "P": 1,
+        "F": 0,
+        "B": 0,
+        "adr": "docs/adr/0023-rubber-material-v1.md section 22"
+       }
+      ],
+      "pad_frames": 0,
+      "outputs": "plane_wrench [N,P,6], box_wrench [N,F,B,6], pad_wrench [N,G*B,6] (strip-local), pending_wrench [N,6] = 0",
+      "world_transform_and_recipients": "not implemented (task B3)"
+     },
+     "self_penetration": {
+      "self_penetration_check": "surface_grid_v1",
+      "version": "rubber_self_penetration_v1",
+      "check_substeps": 256,
+      "checks_per_control_step": 21,
+      "check_interval_s": 0.000979716800612323,
+      "distance_threshold_m": 0.0005,
+      "reference_exclusion_m": 0.003,
+      "cell_width_m": 0.0005,
+      "grid_dims": [
+       306,
+       35,
+       14
+      ],
+      "surface_particles": [
+       24800,
+       21936,
+       20800,
+       17736,
+       17736,
+       15864,
+       15864,
+       15864
+      ],
+      "grid": "env-grouped sort grid (keys env*C + hash(cell), stable radix sort, ranges, 27-cell query); no wp.HashGrid",
+      "positions": "x64 (f64 shadow)",
+      "invalid_bit": {
+       "8": "RUBBER_SELF_CONTACT_UNRESOLVED"
+      },
+      "physics": "detector only (no force); self-contact NOT_IMPLEMENTED_V1",
+      "memory_bytes": 13210752
+     },
+     "open_vector_env": "deferred to P2-6 (P1-5 owns the configured-scene dispatch)",
+     "diagnostics_groups": 64
+    },
+    "step_staging": "device (advance_device); resets host-staged",
+    "stream_policy": "Warp launches on torch.cuda.current_stream via wp.stream_from_torch + wp.ScopedStream",
+    "versions": {
+     "env": "rl_rubber_vector_env_v1",
+     "python": "3.12.12",
+     "warp": "1.17.0",
+     "torch": "2.11.0+cu128",
+     "sources_sha256": {
+      "rl/rubber_env.py": "7f70e81758612de19520f768d85138a6bed4b6e1006c4fe51b4c104dda022d48",
+      "rl/rubber_family.py": "cb729c3ce4f87e0e9406453f026d94ddfea7d2ac47c29953cffe879e757b35e6",
+      "rl/rubber_contract.py": "32857340274bf59931c5ab71da7eb68ce1647c94d7966787588f66c890a76f6d",
+      "rubber_contact_envelope.py": "b696dfc006e3e70b4dfe2dbd66ead49cf13c29687702aa98059ed02e83a3df9f",
+      "batched/rubber_material_batch.py": "9b0841e5302702f22d8e974382f3f10d424d47d14205a5ac28453f2b4bd200e7",
+      "batched/rubber_batch.py": "0b5fae8cd1269341f0be2d658cd41c69186f9b222c7a0dfc9174d4c037e86bf5",
+      "batched/rubber_contact_batch.py": "a65ca1549b398d3ed8556ca745479db161576fca207df23cf0deb473d942518f",
+      "batched/rubber_layout.py": "dbaf762d144398e69bc3924e7537cbc18cf6b62748386e9286bbace707b15502",
+      "live_rubber_material.py": "3cfb91e6b3c4b06691b0f133a4dd399a11d28ad5b0d308bf21e8a08808898b43",
+      "rubber_contact.py": "0a5d4a59f1ca624dc1d151d4a5d683575d2a5e9c56063417cca0fcb58540245d",
+      "tlmpm_rubber_contact_v1.py": "f92a825ba075d33e231103b33918c1575b06d5d899d084a660f6f0b97909a07a",
+      "tlmpm_rubber_v1.py": "28fc5189e26170db9bb80aa2895143835ec55a0d9db66c77dfba5222defbc8d5",
+      "tlmpm_rubber_visco_v1.py": "bec7e8a1081cba54d801fcd4b13cd835900dcef6665bec152dd66fb529337438",
+      "rubber_self_penetration.py": "e48fb5201ca7561e5b74adbb44f370b3e6481d94f1ae4d9887371f4684c223ab",
+      "rubber_material.py": "a2cccca577f7bd0ef2795b17627f2fa85a756acffdbd3f35039604d7201a7a8b",
+      "rubber_scene.py": "924e20763cbcbd29d96df8db76391343a1125c3d8c004a2801a3b2b602e65a58",
+      "rl/termination.py": "5a106f828d2df020b34935e449f785a60d6da70e3bbb145ef80485e84224d273"
+     }
+    },
+    "build_wall_s": 12.039948862977326,
+    "lives_build_wall_s": 11.432503286981955,
+    "reset_walls_s": [
+     {
+      "envs": 8,
+      "wall_s": 12.049149031983688
+     }
+    ]
+   },
+   "wall_s_row": 502.6232781090075,
+   "gpu_sharing": {
+    "label": "EXCLUSIVE_AT_SAMPLES",
+    "co_tenant_pids": []
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "a95da8904c8642bf753d0ad658538fe281926952",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL03": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_a_001",
+   "verdict": "PASS",
+   "identical": {
+    "params": true,
+    "mass": true,
+    "params64": true,
+    "traction": true,
+    "goal": true,
+    "preload": true
+   },
+   "in_range": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+   ],
+   "slots": [
+    "L150_t5",
+    "L125_t6",
+    "L125_t5",
+    "L100_t6",
+    "L100_t6",
+    "L100_t4",
+    "L100_t4",
+    "L100_t4"
+   ],
+   "wall_s_row": 42.84534007299226,
+   "gpu_sharing": {
+    "label": "EXCLUSIVE_AT_SAMPLES",
+    "co_tenant_pids": []
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "a95da8904c8642bf753d0ad658538fe281926952",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL04b": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_a_001",
+   "verdict": "PASS",
+   "summary": {
+    "scalars": 3780,
+    "scalars_failing": 0,
+    "scalars_with_s_zero": 180,
+    "rows": 225,
+    "rows_failing": 0,
+    "max_d_over_limit": 0.4688200862543423
+   },
+   "worst_rows": [
+    {
+     "step": 3,
+     "env": 3,
+     "observable": "marker_v",
+     "components": 27,
+     "failing_components": 0,
+     "worst_component": 22,
+     "d": 0.0014816749996195422,
+     "s": 0.0007900348088393794,
+     "floor": 2.948907855122039e-07,
+     "limit": 0.0031604341261430298,
+     "d_over_limit": 0.4688200862543423,
+     "max_d": 0.002737143853058427,
+     "max_s": 0.003103016865855087,
+     "pass": true
+    },
+    {
+     "step": 10,
+     "env": 2,
+     "observable": "grip_wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 5,
+     "d": 9.008087553498759e-07,
+     "s": 4.6479698610074616e-07,
+     "floor": 7.227552364029868e-08,
+     "limit": 1.9314634680432835e-06,
+     "d_over_limit": 0.4663866390713889,
+     "max_d": 0.00011199991202158477,
+     "max_s": 0.00010384945061919781,
+     "pass": true
+    },
+    {
+     "step": 10,
+     "env": 3,
+     "observable": "marker_v",
+     "components": 27,
+     "failing_components": 0,
+     "worst_component": 14,
+     "d": 0.0033138626076455084,
+     "s": 0.0018095488536573612,
+     "floor": 2.521592384437099e-07,
+     "limit": 0.007238447573867888,
+     "d_over_limit": 0.45781399586413457,
+     "max_d": 0.01831066314207419,
+     "max_s": 0.015652346734668754,
+     "pass": true
+    },
+    {
+     "step": 8,
+     "env": 2,
+     "observable": "marker_v",
+     "components": 27,
+     "failing_components": 0,
+     "worst_component": 23,
+     "d": 0.0024225262797870073,
+     "s": 0.001336662535223354,
+     "floor": 6.752588106319308e-07,
+     "limit": 0.0053473253997040485,
+     "d_over_limit": 0.4530351341478272,
+     "max_d": 0.0037622994277626276,
+     "max_s": 0.004302049055695534,
+     "pass": true
+    },
+    {
+     "step": 4,
+     "env": 2,
+     "observable": "grip_wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 2,
+     "d": 1.6068881870182072e-05,
+     "s": 9.039500062351519e-06,
+     "floor": 6.652844236124626e-08,
+     "limit": 3.6224528691767324e-05,
+     "d_over_limit": 0.44359119222533916,
+     "max_d": 9.322467436053208e-05,
+     "max_s": 8.56914279935752e-05,
+     "pass": true
+    },
+    {
+     "step": 8,
+     "env": 0,
+     "observable": "plane_wrench",
+     "components": 6,
+     "failing_components": 0,
+     "worst_component": 4,
+     "d": 2.4247056045817103e-06,
+     "s": 1.370338744895519e-06,
+     "floor": 2.5628270285469174e-08,
+     "limit": 5.506983249867545e-06,
+     "d_over_limit": 0.44029652798381574,
+     "max_d": 2.8797623506254116e-05,
+     "max_s": 2.588958685232365e-05,
+     "pass": true
+    },
+    {
+     "step": 1,
+     "env": 3,
+     "observable": "marker_v",
+     "components": 27,
+     "failing_components": 0,
+     "worst_component": 17,
+     "d": 0.00028458217522597806,
+     "s": 0.00016214778058080493,
+     "floor": 5.1535801040396714e-08,
+     "limit": 0.0006486426581242601,
+     "d_over_limit": 0.4387349053621151,
+     "max_d": 0.0005948260214883776,
+     "max_s": 0.0005545013792792966,
+     "pass": true
+    },
+    {
+     "step": 0,
+     "env": 2,
+     "observable": "marker_v",
+     "components": 27,
+     "failing_components": 0,
+     "worst_component": 9,
+     "d": 0.00012259505741241128,
+     "s": 7.024127069144015e-05,
+     "floor": 1.087886522509507e-08,
+     "limit": 0.0002809759616309857,
+     "d_over_limit": 0.43631866833298394,
+     "max_d": 0.00015092368172986426,
+     "max_s": 0.00016484773765057525,
+     "pass": true
+    },
+    {
+     "step": 7,
+     "env": 0,
+     "observable": "marker_v",
+     "components": 27,
+     "failing_components": 0,
+     "worst_component": 20,
+     "d": 0.0015319567704636938,
+     "s": 0.0008807801426229389,
+     "floor": 1.5774555597454308e-07,
+     "limit": 0.00352327831604773,
+     "d_over_limit": 0.434810035723258,
+     "max_d": 0.0034847801761657138,
+     "max_s": 0.0034714347063413697,
+     "pass": true
+    },
+    {
+     "step": 5,
+     "env": 0,
+     "observable": "marker_v",
+     "components": 27,
+     "failing_components": 0,
+     "worst_component": 3,
+     "d": 0.0013713059825519736,
+     "s": 0.0007929982597261187,
+     "floor": 5.503603247925639e-07,
+     "limit": 0.0031725433992292676,
+     "d_over_limit": 0.4322418356467925,
+     "max_d": 0.0035357564920559525,
+     "max_s": 0.0032959504751488566,
+     "pass": true
+    }
+   ],
+   "invalid": [
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "wall_s": 597.2628500749124,
+   "slots": [
+    "L100_t4",
+    "L100_t5",
+    "L125_t4",
+    "L100_t6"
+   ],
+   "thresholds": {
+    "k_per_side": 5,
+    "lam": 4.0,
+    "eps_rel": 1e-06
+   },
+   "wall_s_row": 603.2660623929696,
+   "gpu_sharing": {
+    "label": "EXCLUSIVE_AT_SAMPLES",
+    "co_tenant_pids": []
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "a95da8904c8642bf753d0ad658538fe281926952",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL05": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_a_001",
+   "verdict": "FAIL",
+   "scripted_better": [
+    false,
+    false,
+    true,
+    false,
+    true,
+    true,
+    true,
+    true
+   ],
+   "scripted_successes": 0,
+   "episodes": {
+    "scripted": {
+     "returns": [
+      -31.212461855262518,
+      -37.78216648288071,
+      -28.5119974501431,
+      -26.58378072269261,
+      -18.237560716457665,
+      -35.89610896166414,
+      -34.38287187553942,
+      -31.12456975877285
+     ],
+     "success": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+     ],
+     "tip_distance_m": [
+      0.09913681060766509,
+      0.08474582531932331,
+      0.055157506448173355,
+      0.061422181968330186,
+      0.04304343849146768,
+      0.07643086365796893,
+      0.08865972448942377,
+      0.0685783357935311
+     ],
+     "termination": [
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ]
+     ],
+     "wall_s": 629.4635894380044
+    },
+    "zero": {
+     "returns": [
+      -20.161275446414948,
+      -34.73253732919693,
+      -32.19580435752869,
+      -20.776075839996338,
+      -19.25194478034973,
+      -50.64861702919006,
+      -43.75892794132233,
+      -44.69658190011978
+     ],
+     "success": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+     ],
+     "tip_distance_m": [
+      0.042405971559232834,
+      0.06200933882552346,
+      0.057492507740350626,
+      0.029680120691625272,
+      0.027502930912671725,
+      0.07234869418051097,
+      0.06250860220732021,
+      0.06385274081206295
+     ],
+     "termination": [
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ],
+      [
+       "TRUNCATED_HORIZON"
+      ]
+     ],
+     "wall_s": 637.3735837170389
+    }
+   },
+   "slots": [
+    "L150_t5",
+    "L125_t6",
+    "L125_t5",
+    "L100_t6",
+    "L100_t6",
+    "L100_t4",
+    "L100_t4",
+    "L100_t4"
+   ],
+   "steps": 80,
+   "wall_s_row": 1280.5279153960291,
+   "gpu_sharing": {
+    "label": "SHARED_GPU",
+    "co_tenant_pids": [
+     3871658
+    ]
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "a95da8904c8642bf753d0ad658538fe281926952",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL07": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_b_001",
+   "verdict": "PASS",
+   "scored": {
+    "n8_over_n1_env_steps_gain": 1.4588426939740646,
+    "vram_peak_n8_mib": 1228.0,
+    "vram_limit_mib": 4096
+   },
+   "rows": [
+    {
+     "label": "full_slot_set",
+     "N": 1,
+     "slots": [
+      "L100_t4"
+     ],
+     "particles_per_env_mean": 52224.0,
+     "particles_total": 52224,
+     "control_hz": 50.0,
+     "material_dt_s": 3.827018752391887e-06,
+     "substeps": 5226,
+     "n_t": [
+      4
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 1.661250083008781,
+     "warm_walls_s": [
+      1.5351580949500203,
+      1.5273232309846207,
+      1.5198207780485973,
+      1.5149338280316442,
+      1.5146092349896207
+     ],
+     "env_steps_per_s": 0.6579723178176107,
+     "aggregate_sim_time_per_wall": 0.013159446356352213,
+     "ms_per_substep": 0.29081913089334044,
+     "vram_peak_process_mib": 812.0,
+     "warp_mempool_high_mib": 39.32171154022217,
+     "material_memory_bytes": 41305428,
+     "reset_s": 1.193626650958322,
+     "build_s": 1.4360732429195195,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": null,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.11994845303706825
+     }
+    },
+    {
+     "label": "full_slot_set",
+     "N": 4,
+     "slots": [
+      "L100_t4",
+      "L100_t5",
+      "L100_t6",
+      "L125_t4"
+     ],
+     "particles_per_env_mean": 65216.0,
+     "particles_total": 260864,
+     "control_hz": 50.0,
+     "material_dt_s": 3.827018752391887e-06,
+     "substeps": 5226,
+     "n_t": [
+      4,
+      5,
+      6
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 4.089033031021245,
+     "warm_walls_s": [
+      3.9639759950805455,
+      3.94061910698656,
+      3.926270490977913,
+      3.918994487961754,
+      3.9185148619581014
+     ],
+     "env_steps_per_s": 1.0187785098330613,
+     "aggregate_sim_time_per_wall": 0.020375570196661225,
+     "ms_per_substep": 0.7512955397967687,
+     "vram_peak_process_mib": 972.0,
+     "warp_mempool_high_mib": 194.7085828781128,
+     "material_memory_bytes": 204517848,
+     "reset_s": 4.068141759024002,
+     "build_s": 5.983825855073519,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": null,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.1151810740120709
+     }
+    },
+    {
+     "label": "full_slot_set",
+     "N": 8,
+     "slots": [
+      "L100_t4",
+      "L100_t5",
+      "L100_t6",
+      "L125_t4",
+      "L125_t5",
+      "L125_t6",
+      "L150_t4",
+      "L150_t5"
+     ],
+     "particles_per_env_mean": 76848.0,
+     "particles_total": 614784,
+     "control_hz": 50.0,
+     "material_dt_s": 3.827018752391887e-06,
+     "substeps": 5226,
+     "n_t": [
+      4,
+      5,
+      6
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 8.670902465004474,
+     "warm_walls_s": [
+      8.461553239962086,
+      8.385991287068464,
+      8.33439155202359,
+      8.305934839998372,
+      8.295538965961896
+     ],
+     "env_steps_per_s": 0.9598781086854026,
+     "aggregate_sim_time_per_wall": 0.019197562173708053,
+     "ms_per_substep": 1.59479363796854,
+     "vram_peak_process_mib": 1228.0,
+     "warp_mempool_high_mib": 454.5213842391968,
+     "material_memory_bytes": 477416912,
+     "reset_s": 12.392052270006388,
+     "build_s": 15.720180038944818,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": null,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.11601201200392097
+     }
+    },
+    {
+     "label": "full_slot_set",
+     "N": 16,
+     "slots": [
+      "L100_t4",
+      "L100_t5",
+      "L100_t6",
+      "L125_t4",
+      "L125_t5",
+      "L125_t6",
+      "L150_t4",
+      "L150_t5",
+      "L150_t6",
+      "L100_t4",
+      "L100_t5",
+      "L100_t6",
+      "L125_t4",
+      "L125_t5",
+      "L125_t6",
+      "L150_t4"
+     ],
+     "particles_per_env_mean": 78064.0,
+     "particles_total": 1249024,
+     "control_hz": 50.0,
+     "material_dt_s": 3.827018752391887e-06,
+     "substeps": 5226,
+     "n_t": [
+      4,
+      5,
+      6
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 16.46277373598423,
+     "warm_walls_s": [
+      16.048522459925152,
+      15.90517856797669,
+      15.86447554291226,
+      15.84634892095346,
+      15.830135877011344
+     ],
+     "env_steps_per_s": 1.0085426370837887,
+     "aggregate_sim_time_per_wall": 0.020170852741675772,
+     "ms_per_substep": 3.0356822699793837,
+     "vram_peak_process_mib": 1676.0,
+     "warp_mempool_high_mib": 922.0963125228882,
+     "material_memory_bytes": 968539248,
+     "reset_s": 22.120223596924916,
+     "build_s": 25.50890227709897,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": null,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.11763019405771047
+     }
+    },
+    {
+     "label": "uniform_n_t4_L125_t4",
+     "N": 1,
+     "slots": [
+      "L125_t4"
+     ],
+     "particles_per_env_mean": 65024.0,
+     "particles_total": 65024,
+     "control_hz": 50.0,
+     "material_dt_s": 3.827018752391887e-06,
+     "substeps": 5226,
+     "n_t": [
+      4
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 1.704440722009167,
+     "warm_walls_s": [
+      1.636494532926008,
+      1.6172652740497142,
+      1.6035678040934727,
+      1.5911735189147294,
+      1.5890929900342599
+     ],
+     "env_steps_per_s": 0.6236094273327712,
+     "aggregate_sim_time_per_wall": 0.012472188546655424,
+     "ms_per_substep": 0.30684420284987995,
+     "vram_peak_process_mib": 876.0,
+     "warp_mempool_high_mib": 922.0963125228882,
+     "material_memory_bytes": 50833228,
+     "reset_s": 1.2778200299944729,
+     "build_s": 0.8247892759973183,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": null,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.1201730789616704
+     }
+    },
+    {
+     "label": "uniform_n_t4_L125_t4",
+     "N": 4,
+     "slots": [
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4"
+     ],
+     "particles_per_env_mean": 65024.0,
+     "particles_total": 260096,
+     "control_hz": 50.0,
+     "material_dt_s": 3.827018752391887e-06,
+     "substeps": 5226,
+     "n_t": [
+      4
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 4.034740582108498,
+     "warm_walls_s": [
+      3.8800511340377852,
+      3.84411897091195,
+      3.8301272010430694,
+      3.825388320023194,
+      3.8193115319591016
+     ],
+     "env_steps_per_s": 1.0443517382165972,
+     "aggregate_sim_time_per_wall": 0.020887034764331947,
+     "ms_per_substep": 0.7328984311219038,
+     "vram_peak_process_mib": 1004.0,
+     "warp_mempool_high_mib": 922.0963125228882,
+     "material_memory_bytes": 203332012,
+     "reset_s": 8.425495974021032,
+     "build_s": 4.920070781954564,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": null,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.1175375150050968
+     }
+    },
+    {
+     "label": "uniform_n_t4_L125_t4",
+     "N": 8,
+     "slots": [
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4"
+     ],
+     "particles_per_env_mean": 65024.0,
+     "particles_total": 520192,
+     "control_hz": 50.0,
+     "material_dt_s": 3.827018752391887e-06,
+     "substeps": 5226,
+     "n_t": [
+      4
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 7.250282354070805,
+     "warm_walls_s": [
+      7.014947465038858,
+      6.931177112972364,
+      6.897203517961316,
+      6.883623184054159,
+      6.871829685987905
+     ],
+     "env_steps_per_s": 1.159890378639233,
+     "aggregate_sim_time_per_wall": 0.023197807572784657,
+     "ms_per_substep": 1.3197863601150623,
+     "vram_peak_process_mib": 1196.0,
+     "warp_mempool_high_mib": 922.0963125228882,
+     "material_memory_bytes": 406663724,
+     "reset_s": 8.20452973106876,
+     "build_s": 9.550223539932631,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": null,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.11669483210425824
+     }
+    },
+    {
+     "label": "uniform_n_t4_L125_t4",
+     "N": 16,
+     "slots": [
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4",
+      "L125_t4"
+     ],
+     "particles_per_env_mean": 65024.0,
+     "particles_total": 1040384,
+     "control_hz": 50.0,
+     "material_dt_s": 3.827018752391887e-06,
+     "substeps": 5226,
+     "n_t": [
+      4
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 13.54938913602382,
+     "warm_walls_s": [
+      13.107037800946273,
+      12.981954122078605,
+      12.95812224294059,
+      12.93286739999894,
+      12.91772197803948
+     ],
+     "env_steps_per_s": 1.2347468020466148,
+     "aggregate_sim_time_per_wall": 0.024694936040932296,
+     "ms_per_substep": 2.4795488409760025,
+     "vram_peak_process_mib": 1548.0,
+     "warp_mempool_high_mib": 922.0963125228882,
+     "material_memory_bytes": 813327148,
+     "reset_s": 17.87389697902836,
+     "build_s": 15.597699900041334,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": null,
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.11883757798932493
+     }
+    },
+    {
+     "label": "rubber_rl_v1_reduced_fidelity",
+     "N": 1,
+     "slots": [
+      "L100_t4"
+     ],
+     "particles_per_env_mean": 22176.0,
+     "particles_total": 22176,
+     "control_hz": 50.0,
+     "material_dt_s": 5.102040816326531e-06,
+     "substeps": 3920,
+     "n_t": [
+      3
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 0.880852633039467,
+     "warm_walls_s": [
+      0.8419716639909893,
+      0.8223966569639742,
+      0.8189494099933654,
+      0.8167249760590494,
+      0.8160644109593704
+     ],
+     "env_steps_per_s": 1.2210766474672732,
+     "aggregate_sim_time_per_wall": 0.024421532949345463,
+     "ms_per_substep": 0.20891566581463403,
+     "vram_peak_process_mib": 908.0,
+     "warp_mempool_high_mib": 922.0963125228882,
+     "material_memory_bytes": 18555464,
+     "reset_s": 0.3244755190098658,
+     "build_s": 0.5182451149448752,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": "rubber_rl_v1",
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 15,
+      "remainder_substeps": 80,
+      "capture_wall_s": 0.11861357698217034
+     }
+    },
+    {
+     "label": "rubber_rl_v1_reduced_fidelity",
+     "N": 8,
+     "slots": [
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4"
+     ],
+     "particles_per_env_mean": 27576.0,
+     "particles_total": 220608,
+     "control_hz": 50.0,
+     "material_dt_s": 5.102040816326531e-06,
+     "substeps": 3920,
+     "n_t": [
+      3
+     ],
+     "beta": 20.0,
+     "M": 2,
+     "contact_law": "grid_node_penalty_coulomb_v2",
+     "cameras": 0,
+     "recording": false,
+     "cold_s": 2.5888003290165216,
+     "warm_walls_s": [
+      2.496274665929377,
+      2.458417408983223,
+      2.44097871996928,
+      2.4303968569729477,
+      2.4281978509388864
+     ],
+     "env_steps_per_s": 3.277373921596777,
+     "aggregate_sim_time_per_wall": 0.06554747843193554,
+     "ms_per_substep": 0.6226986530533878,
+     "vram_peak_process_mib": 1004.0,
+     "warp_mempool_high_mib": 922.0963125228882,
+     "material_memory_bytes": 182798604,
+     "reset_s": 3.3362556910142303,
+     "build_s": 7.7550051340367645,
+     "physics_verdict": "finite, invalid 0",
+     "reduced_fidelity": "rubber_rl_v1",
+     "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 15,
+      "remainder_substeps": 80,
+      "capture_wall_s": 0.10913690098095685
+     }
+    }
+   ],
+   "cost_arms": {
+    "profile": {
+     "ms_per_substep": 1.444584433212299,
+     "warm_walls_s": [
+      7.549398247967474,
+      7.544257832923904,
+      7.546244502067566,
+      7.550153019023128,
+      7.557228063931689
+     ],
+     "cold_s": 7.558953562984243
+    },
+    "s1_off": {
+     "ms_per_substep": 1.4457863670117281,
+     "warm_walls_s": [
+      7.554648649995215,
+      7.55751312605571,
+      7.5546539130155,
+      7.555679554003291,
+      7.565354185993783
+     ],
+     "cold_s": 7.60978364397306
+    },
+    "contact_off": {
+     "ms_per_substep": 1.2344501896243125,
+     "warm_walls_s": [
+      6.44789127795957,
+      6.451236690976657,
+      6.44909990800079,
+      6.460430633975193,
+      6.45985699899029
+     ],
+     "cold_s": 6.473291006986983
+    },
+    "s1_cost_rel": -0.0008313356847550191,
+    "plane_contact_cost_rel": 0.17022496764485728,
+    "arms": "profile: contact v3 table plane + S1; s1_off: contact, no detector; contact_off: S1, no ContactSpec (the strip falls through the table: cost only, never physics)"
+   },
+   "phase1_workload_a": {
+    "1": {
+     "cmd": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/.deps/isaacsim-venv/bin/python /home/ningan/RoboticCuttingSim-rl-rubber-p26/scripts/rl_ready/run_perf_acceptance.py --variant-json artifacts/rl_ready/p2_6/gpu_rl_b_001/variant_default.json --mode throughput --num-envs 1 --seeds 512 --warmup-steps 5 --steps 20 --device cuda:0 --gpu-index 0 --out artifacts/rl_ready/p2_6/gpu_rl_b_001/workload_a_n1",
+     "rc": 0,
+     "wall_s": 11.41395706392359,
+     "stderr_tail": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/src/robotic_cutting_sim/batched/material_batch.py:493: FutureWarning: `torch.distributed.reduce_op` is deprecated, please use `torch.distributed.ReduceOp` instead\n  return [o for o in gc.get_objects() if isinstance(o, wp.HashGrid) and getattr(o, \"id\", None)\n/home/ningan/RoboticCuttingSim-rl-rubber-p26/src/robotic_cutting_sim/batched/material_batch.py:493: FutureWarning: `torch.distributed.reduce_op` is deprecated, please use `torch.distributed.ReduceOp` instead\n  return [o for o in gc.get_objects() if isinstance(o, wp.HashGrid) and getattr(o, \"id\", None)\n",
+     "result_status": "COMPLETE",
+     "throughput": {
+      "steps": 20,
+      "warmup_steps": 5
+     }
+    },
+    "8": {
+     "cmd": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/.deps/isaacsim-venv/bin/python /home/ningan/RoboticCuttingSim-rl-rubber-p26/scripts/rl_ready/run_perf_acceptance.py --variant-json artifacts/rl_ready/p2_6/gpu_rl_b_001/variant_default.json --mode throughput --num-envs 8 --seeds 512 --warmup-steps 5 --steps 20 --device cuda:0 --gpu-index 0 --out artifacts/rl_ready/p2_6/gpu_rl_b_001/workload_a_n8",
+     "rc": 0,
+     "wall_s": 29.84560523694381,
+     "stderr_tail": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/src/robotic_cutting_sim/batched/material_batch.py:493: FutureWarning: `torch.distributed.reduce_op` is deprecated, please use `torch.distributed.ReduceOp` instead\n  return [o for o in gc.get_objects() if isinstance(o, wp.HashGrid) and getattr(o, \"id\", None)\n/home/ningan/RoboticCuttingSim-rl-rubber-p26/src/robotic_cutting_sim/batched/material_batch.py:493: FutureWarning: `torch.distributed.reduce_op` is deprecated, please use `torch.distributed.ReduceOp` instead\n  return [o for o in gc.get_objects() if isinstance(o, wp.HashGrid) and getattr(o, \"id\", None)\n",
+     "result_status": "COMPLETE",
+     "throughput": {
+      "steps": 20,
+      "warmup_steps": 5
+     }
+    }
+   },
+   "wall_s_row": 719.9859991179546,
+   "gpu_sharing": {
+    "label": "SHARED_GPU",
+    "co_tenant_pids": [
+     642659
+    ]
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "3807912b8fbe7439139aacb1a39a346be0ecb570",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL08": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_b_001",
+   "verdict": "PASS",
+   "dt": {
+    "dO1_over_L": 8.825403358654346e-06,
+    "dO3_rel": 3.2383454412604345e-05,
+    "limits": {
+     "dO1_over_L": 0.001,
+     "dO3_rel": 0.01
+    }
+   },
+   "spacing_reported": {
+    "O1_tip_z": {
+     "id": "gci_celik2008_roache_v1",
+     "h": [
+      0.125,
+      0.16666666666666666,
+      0.25
+     ],
+     "phi": [
+      0.0019999644636214953,
+      0.00199996210648755,
+      0.0019999596897832816
+     ],
+     "r21": 1.3333333333333333,
+     "r32": 1.5,
+     "e21": -2.357133945061346e-09,
+     "e32": -2.416704268561748e-09,
+     "p": 1.420770421199653,
+     "s": 1,
+     "converged": true,
+     "oscillatory": false,
+     "status": "MONOTONE",
+     "p_obs": 1.420770421199653,
+     "p_eff": 1.420770421199653,
+     "fs": 1.25,
+     "order_verified": true,
+     "phi_ext": 0.0019999691320860434,
+     "phi_ext_p_obs": 0.0019999691320860434,
+     "gci_fine": 2.9178421876608687e-06,
+     "gci_coarse": 3.449362413964698e-06,
+     "gci_fine_p_obs": 2.9178421876608687e-06,
+     "gci_coarse_p_obs": 3.449362413964698e-06,
+     "range_rel": 2.386961518795551e-06
+    },
+    "O1_tip_x": {
+     "id": "gci_celik2008_roache_v1",
+     "h": [
+      0.125,
+      0.16666666666666666,
+      0.25
+     ],
+     "phi": [
+      0.12416757269966183,
+      0.12412517061198336,
+      0.12404148525092751
+     ],
+     "r21": 1.3333333333333333,
+     "r32": 1.5,
+     "e21": -4.240208767847253e-05,
+     "e32": -8.368536105585189e-05,
+     "p": 0.96240130243947,
+     "s": 1,
+     "converged": true,
+     "oscillatory": false,
+     "status": "MONOTONE",
+     "p_obs": 0.96240130243947,
+     "p_eff": 1.0,
+     "fs": 3.0,
+     "order_verified": false,
+     "phi_ext": 0.12429477896269725,
+     "phi_ext_p_obs": 0.12430049915136451,
+     "gci_fine": 0.003073417485814251,
+     "gci_coarse": 0.006071906088346642,
+     "gci_fine_p_obs": 0.0013381759908465303,
+     "gci_coarse_p_obs": 0.002610153973014175,
+     "range_rel": 0.0010154619760451178
+    },
+    "O2": {
+     "id": "gci_celik2008_roache_v1",
+     "h": [
+      0.125,
+      0.16666666666666666,
+      0.25
+     ],
+     "phi": [
+      0.048706792616029004,
+      0.048879704234093366,
+      0.049459287165930885
+     ],
+     "r21": 1.3333333333333333,
+     "r32": 1.5,
+     "e21": 0.0001729116180643614,
+     "e32": 0.000579582931837519,
+     "p": 2.4419330173406446,
+     "s": 1,
+     "converged": true,
+     "oscillatory": false,
+     "status": "MONOTONE",
+     "p_obs": 2.4419330173406446,
+     "p_eff": 2.0,
+     "fs": 1.25,
+     "order_verified": true,
+     "phi_ext": 0.048484477678517685,
+     "phi_ext_p_obs": 0.04853707076677738,
+     "gci_fine": 0.005705439774691708,
+     "gci_coarse": 0.02636636456686938,
+     "gci_fine_p_obs": 0.00435570277100779,
+     "gci_coarse_p_obs": 0.023307462864850293,
+     "range_rel": 0.015449478593961874
+    },
+    "O3": {
+     "id": "gci_celik2008_roache_v1",
+     "h": [
+      0.125,
+      0.16666666666666666,
+      0.25
+     ],
+     "phi": [
+      0.029966023088491056,
+      0.029968523898989796,
+      0.029964329267386347
+     ],
+     "r21": 1.3333333333333333,
+     "r32": 1.5,
+     "e21": 2.5008104987400692e-06,
+     "e32": -4.194631603449128e-06,
+     "p": 1.4330704918195476,
+     "s": -1,
+     "converged": true,
+     "oscillatory": true,
+     "status": "OSCILLATORY",
+     "p_obs": 1.4330704918195476,
+     "p_eff": 1.4330704918195476,
+     "fs": 3.0,
+     "order_verified": false,
+     "phi_ext": 0.02996112184656353,
+     "phi_ext_p_obs": 0.02996112184656353,
+     "gci_fine": 0.0004906799190248202,
+     "gci_coarse": 0.0009529553142873208,
+     "gci_fine_p_obs": 0.00020444996626034173,
+     "gci_coarse_p_obs": 0.00039706471428638376,
+     "range_rel": 0.00013997958925220696
+    }
+   },
+   "spacing_rule": "rubber_gci.study (RUBBER-PHYS-11 rule block; reported only)",
+   "cases": {
+    "nt4_cfl0.5": {
+     "O1_tip_m": [
+      0.12404148525092751,
+      0.007999173608709498,
+      0.0019999596897832816
+     ],
+     "O2_peak_grip_force_n": 0.049459287165930885,
+     "O3_tip_slip_m": 0.029964329267386347,
+     "invalid": 0,
+     "particles": 65024,
+     "substeps": 5226,
+     "dx_m": 0.001,
+     "wall_s": 99.8742684739409,
+     "origin": [
+      0.0,
+      0.008,
+      0.002
+     ]
+    },
+    "nt4_cfl0.25": {
+     "O1_tip_m": [
+      0.12404121045256034,
+      0.008000242008051828,
+      0.001999961859951327
+     ],
+     "O2_peak_grip_force_n": 0.04943081333371425,
+     "O3_tip_slip_m": 0.029965299647301435,
+     "invalid": 0,
+     "particles": 65024,
+     "substeps": 10452,
+     "dx_m": 0.001,
+     "wall_s": 196.37833912903443,
+     "origin": [
+      0.0,
+      0.008,
+      0.002
+     ]
+    },
+    "nt6_cfl0.5": {
+     "O1_tip_m": [
+      0.12412517061198336,
+      0.007999266255941013,
+      0.00199996210648755
+     ],
+     "O2_peak_grip_force_n": 0.048879704234093366,
+     "O3_tip_slip_m": 0.029968523898989796,
+     "invalid": 0,
+     "particles": 218304,
+     "substeps": 7839,
+     "dx_m": 0.0006666666666666666,
+     "wall_s": 339.5504611809738,
+     "origin": [
+      0.0,
+      0.008,
+      0.002
+     ]
+    },
+    "nt8_cfl0.5": {
+     "O1_tip_m": [
+      0.12416757269966183,
+      0.007999456429558904,
+      0.0019999644636214953
+     ],
+     "O2_peak_grip_force_n": 0.048706792616029004,
+     "O3_tip_slip_m": 0.029966023088491056,
+     "invalid": 0,
+     "particles": 516096,
+     "substeps": 10452,
+     "dx_m": 0.0005,
+     "wall_s": 915.4816698719515,
+     "origin": [
+      0.0,
+      0.008,
+      0.002
+     ]
+    }
+   },
+   "wall_s_row": 1562.8077586650616,
+   "gpu_sharing": {
+    "label": "SHARED_GPU",
+    "co_tenant_pids": [
+     642659
+    ]
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "3807912b8fbe7439139aacb1a39a346be0ecb570",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL08b": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_b_001",
+   "verdict": "REPORTED",
+   "geometry": {
+    "L_over_t": 37.5,
+    "t_m": 0.004,
+    "W_over_t": 4.0,
+    "mu_pa": 400000.0,
+    "alpha": 0.05
+   },
+   "rows": {
+    "4": {
+     "Q": 0.000918726576216261,
+     "converged": true,
+     "init_time_s": 3.2608092485549136,
+     "particles": 77824,
+     "substeps": 173,
+     "dx_m": 0.001,
+     "invalid": 0,
+     "wall_s": 180.04058474092744,
+     "delta_EB_beta_m": 0.0009375000000000002,
+     "gravity_m_s2": 0.02027401599746576,
+     "f1_hz": 0.9200472778623248
+    },
+    "6": {
+     "Q": 0.0009147765646147612,
+     "converged": true,
+     "init_time_s": 3.31496138996139,
+     "particles": 261504,
+     "substeps": 259,
+     "dx_m": 0.0006666666666666666,
+     "invalid": 0,
+     "wall_s": 610.7148771879729,
+     "delta_EB_beta_m": 0.0009375000000000002,
+     "gravity_m_s2": 0.02027401599746576,
+     "f1_hz": 0.9200472778623248
+    },
+    "8": {
+     "Q": 0.0009136707937311044,
+     "converged": true,
+     "init_time_s": 3.315040579710145,
+     "particles": 618496,
+     "substeps": 345,
+     "dx_m": 0.0005,
+     "invalid": 0,
+     "wall_s": 1682.039739447995,
+     "delta_EB_beta_m": 0.0009375000000000002,
+     "gravity_m_s2": 0.02027401599746576,
+     "f1_hz": 0.9200472778623248
+    }
+   },
+   "study": {
+    "id": "gci_celik2008_roache_v1",
+    "h": [
+     0.125,
+     0.16666666666666666,
+     0.25
+    ],
+    "phi": [
+     0.0009136707937311044,
+     0.0009147765646147612,
+     0.000918726576216261
+    ],
+    "r21": 1.3333333333333333,
+    "r32": 1.5,
+    "e21": 1.1057708836567648e-06,
+    "e32": 3.950011601499886e-06,
+    "p": 2.6171058703164385,
+    "s": 1,
+    "converged": true,
+    "oscillatory": false,
+    "status": "MONOTONE",
+    "p_obs": 2.6171058703164385,
+    "p_eff": 2.0,
+    "fs": 1.25,
+    "order_verified": true,
+    "phi_ext": 0.00091224908830926,
+    "phi_ext_p_obs": 0.0009126862553792451,
+    "gci_fine": 0.0019450460598049162,
+    "gci_coarse": 0.009673744434364428,
+    "gci_fine_p_obs": 0.001346954448219202,
+    "gci_coarse_p_obs": 0.00821833311643821,
+    "range_rel": 0.00553348374474207
+   },
+   "bias_n_t4": 0.007100569340119822,
+   "fallback_trigger_1pct": false,
+   "decision": "not triggered: the measured bias is added to the receipts' label",
+   "wall_s_row": 2473.070025562891,
+   "gpu_sharing": {
+    "label": "SHARED_GPU",
+    "co_tenant_pids": [
+     642659
+    ]
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "3807912b8fbe7439139aacb1a39a346be0ecb570",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL06": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_c_001",
+   "steps": 400,
+   "horizon": 60,
+   "partial_resets": 53,
+   "finite_bad_steps": [],
+   "infrastructure_error": null,
+   "vram_samples": [
+    {
+     "step": 10,
+     "own_mib": 1198.0,
+     "wall_s": 82.97514828899875
+    },
+    {
+     "step": 20,
+     "own_mib": 1198.0,
+     "wall_s": 168.9114633150166
+    },
+    {
+     "step": 30,
+     "own_mib": 1198.0,
+     "wall_s": 253.15860225597862
+    },
+    {
+     "step": 40,
+     "own_mib": 1198.0,
+     "wall_s": 334.0956375049427
+    },
+    {
+     "step": 50,
+     "own_mib": 1198.0,
+     "wall_s": 420.20565170701593
+    },
+    {
+     "step": 60,
+     "own_mib": 1198.0,
+     "wall_s": 501.6149677860085
+    },
+    {
+     "step": 70,
+     "own_mib": 1198.0,
+     "wall_s": 586.4266743910266
+    },
+    {
+     "step": 80,
+     "own_mib": 1198.0,
+     "wall_s": 667.3134892919334
+    },
+    {
+     "step": 90,
+     "own_mib": 1198.0,
+     "wall_s": 750.2477193829836
+    },
+    {
+     "step": 100,
+     "own_mib": 1198.0,
+     "wall_s": 830.2816570870345
+    },
+    {
+     "step": 110,
+     "own_mib": 1198.0,
+     "wall_s": 911.0730625470169
+    },
+    {
+     "step": 120,
+     "own_mib": 1198.0,
+     "wall_s": 991.2105726780137
+    },
+    {
+     "step": 130,
+     "own_mib": 1198.0,
+     "wall_s": 1071.1159511519363
+    },
+    {
+     "step": 140,
+     "own_mib": 1198.0,
+     "wall_s": 1151.0568280259613
+    },
+    {
+     "step": 150,
+     "own_mib": 1198.0,
+     "wall_s": 1231.6618655319326
+    },
+    {
+     "step": 160,
+     "own_mib": 1198.0,
+     "wall_s": 1311.55064769194
+    },
+    {
+     "step": 170,
+     "own_mib": 1198.0,
+     "wall_s": 1391.9762902349466
+    },
+    {
+     "step": 180,
+     "own_mib": 1198.0,
+     "wall_s": 1472.0012225370156
+    },
+    {
+     "step": 190,
+     "own_mib": 1198.0,
+     "wall_s": 1552.1992012349656
+    },
+    {
+     "step": 200,
+     "own_mib": 1198.0,
+     "wall_s": 1632.0513438149355
+    },
+    {
+     "step": 210,
+     "own_mib": 1198.0,
+     "wall_s": 1712.6377737829462
+    },
+    {
+     "step": 220,
+     "own_mib": 1198.0,
+     "wall_s": 1792.4861858979566
+    },
+    {
+     "step": 230,
+     "own_mib": 1198.0,
+     "wall_s": 1873.359127179021
+    },
+    {
+     "step": 240,
+     "own_mib": 1198.0,
+     "wall_s": 1953.390876171994
+    },
+    {
+     "step": 250,
+     "own_mib": 1198.0,
+     "wall_s": 2034.00706283201
+    },
+    {
+     "step": 260,
+     "own_mib": 1198.0,
+     "wall_s": 2113.925971313962
+    },
+    {
+     "step": 270,
+     "own_mib": 1198.0,
+     "wall_s": 2194.616991110961
+    },
+    {
+     "step": 280,
+     "own_mib": 1198.0,
+     "wall_s": 2274.6103227470303
+    },
+    {
+     "step": 290,
+     "own_mib": 1198.0,
+     "wall_s": 2354.886479664012
+    },
+    {
+     "step": 300,
+     "own_mib": 1198.0,
+     "wall_s": 2435.060556308017
+    },
+    {
+     "step": 310,
+     "own_mib": 1198.0,
+     "wall_s": 2515.155747976969
+    },
+    {
+     "step": 320,
+     "own_mib": 1198.0,
+     "wall_s": 2594.83586804301
+    },
+    {
+     "step": 330,
+     "own_mib": 1198.0,
+     "wall_s": 2675.716709787026
+    },
+    {
+     "step": 340,
+     "own_mib": 1198.0,
+     "wall_s": 2755.640086906962
+    },
+    {
+     "step": 350,
+     "own_mib": 1198.0,
+     "wall_s": 2835.7901563009946
+    },
+    {
+     "step": 360,
+     "own_mib": 1198.0,
+     "wall_s": 2915.8999674710212
+    },
+    {
+     "step": 370,
+     "own_mib": 1198.0,
+     "wall_s": 2995.9072976759635
+    },
+    {
+     "step": 380,
+     "own_mib": 1198.0,
+     "wall_s": 3076.004573493032
+    },
+    {
+     "step": 390,
+     "own_mib": 1198.0,
+     "wall_s": 3162.5947714629583
+    },
+    {
+     "step": 400,
+     "own_mib": 1198.0,
+     "wall_s": 3242.7262255339883
+    }
+   ],
+   "vram_growth_mib": 0.0,
+   "reset_p95_s": 5.003697385964915,
+   "reset_median_s": 0.4010261190123856,
+   "terminations": {},
+   "invalid_terminations": 0,
+   "invalid_termination_rate_per_episode": 0.0,
+   "wall_s": 3242.726559948991,
+   "slots": [
+    "L150_t5",
+    "L125_t6",
+    "L125_t5",
+    "L100_t6",
+    "L100_t6",
+    "L100_t4",
+    "L100_t4",
+    "L100_t4"
+   ],
+   "verdict": "PASS",
+   "wall_s_row": 3275.1389967919094,
+   "gpu_sharing": {
+    "label": "SHARED_GPU",
+    "co_tenant_pids": [
+     3871658
+    ]
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "3807912b8fbe7439139aacb1a39a346be0ecb570",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  },
+  "RL02c": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_d_001",
+   "rule": "rubber_l3_band_v4",
+   "alpha_family": 0.05,
+   "steps": 50,
+   "slots": [
+    "L100_t4",
+    "L100_t6"
+   ],
+   "batch_wall_s": 439.2952880819794,
+   "invalid_batch": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "envs": {
+    "0": {
+     "single_wall_s": 2464.0208628181135,
+     "single_invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "particles": 52224,
+     "substeps": 5226
+    },
+    "1": {
+     "single_wall_s": 2785.4098021690734,
+     "single_invalid": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "particles": 78336,
+     "substeps": 5226
+    }
+   },
+   "statistics": 90,
+   "batch": {
+    "outside": 0,
+    "statistics": 90,
+    "verdict": "PASS",
+    "max_M_over_upper": 0.7742722720035378
+   },
+   "worst": [
+    {
+     "run": "batch",
+     "statistic": "env0.marker0_z",
+     "M": 2.7167288862983696e-08,
+     "upper": 3.508751358573714e-08,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.7742722720035378
+    },
+    {
+     "run": "batch",
+     "statistic": "env0.kinetic_particle",
+     "M": 2.667285906478024e-07,
+     "upper": 3.5600908980010065e-07,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.749218484274013
+    },
+    {
+     "run": "batch",
+     "statistic": "env0.Jbar_max",
+     "M": 0.0001898012313257258,
+     "upper": 0.00029343751838192356,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.6468199171405548
+    },
+    {
+     "run": "batch",
+     "statistic": "env1.marker8_x",
+     "M": 4.800710788308016e-05,
+     "upper": 7.468439218598184e-05,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.6427997400518582
+    },
+    {
+     "run": "batch",
+     "statistic": "env1.marker7_x",
+     "M": 3.736607613977205e-05,
+     "upper": 6.174667104052228e-05,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.6051512658107503
+    },
+    {
+     "run": "batch",
+     "statistic": "env1.marker6_z",
+     "M": 4.8580793812410226e-05,
+     "upper": 8.161118218995407e-05,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.5952712913695579
+    },
+    {
+     "run": "batch",
+     "statistic": "env1.marker4_y",
+     "M": 4.459888829540931e-05,
+     "upper": 7.595060852125056e-05,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.587209097645752
+    },
+    {
+     "run": "batch",
+     "statistic": "env1.marker6_x",
+     "M": 2.7282877514744897e-05,
+     "upper": 4.906315380587881e-05,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.5560767174220225
+    },
+    {
+     "run": "batch",
+     "statistic": "env1.marker3_y",
+     "M": 2.8263731413361026e-05,
+     "upper": 5.1009864427661754e-05,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.5540836410855877
+    },
+    {
+     "run": "batch",
+     "statistic": "env0.marker0_y",
+     "M": 2.309152478084664e-08,
+     "upper": 4.222743966858518e-08,
+     "method": "lognormal_prediction",
+     "class": "WITHIN",
+     "M_over_upper": 0.546836961039469
+    }
+   ],
+   "heldout": {
+    "heldout_0": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.8348401490483591
+    },
+    "heldout_1": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.6684859730535607
+    },
+    "heldout_2": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.8718830361387591
+    },
+    "heldout_3": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.6742570543901316
+    },
+    "heldout_4": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.7995851813671371
+    },
+    "heldout_5": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.6966189479763164
+    },
+    "heldout_6": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.6422556728290475
+    },
+    "heldout_7": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.895198233967032
+    },
+    "heldout_8": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.6579734566675155
+    },
+    "heldout_9": {
+     "outside": 0,
+     "statistics": 90,
+     "verdict": "PASS",
+     "max_M_over_upper": 0.8148774296181737
+    }
+   },
+   "heldout_fail": 0,
+   "bounds_methods": {
+    "env0.Jbar_max": "lognormal_prediction",
+    "env0.Jbar_min": "lognormal_prediction",
+    "env0.cfl_eff_max": "lognormal_prediction",
+    "env0.gravity": "lognormal_prediction",
+    "env0.grip_wrench0": "lognormal_prediction",
+    "env0.grip_wrench1": "lognormal_prediction",
+    "env0.grip_wrench2": "lognormal_prediction",
+    "env0.grip_wrench3": "lognormal_prediction",
+    "env0.grip_wrench4": "lognormal_prediction",
+    "env0.grip_wrench5": "lognormal_prediction",
+    "env0.kinetic_particle": "lognormal_prediction",
+    "env0.marker0_x": "lognormal_prediction",
+    "env0.marker0_y": "lognormal_prediction",
+    "env0.marker0_z": "lognormal_prediction",
+    "env0.marker1_x": "lognormal_prediction",
+    "env0.marker1_y": "lognormal_prediction",
+    "env0.marker1_z": "lognormal_prediction",
+    "env0.marker2_x": "lognormal_prediction",
+    "env0.marker2_y": "lognormal_prediction",
+    "env0.marker2_z": "lognormal_prediction",
+    "env0.marker3_x": "lognormal_prediction",
+    "env0.marker3_y": "lognormal_prediction",
+    "env0.marker3_z": "lognormal_prediction",
+    "env0.marker4_x": "lognormal_prediction",
+    "env0.marker4_y": "lognormal_prediction",
+    "env0.marker4_z": "lognormal_prediction",
+    "env0.marker5_x": "lognormal_prediction",
+    "env0.marker5_y": "lognormal_prediction",
+    "env0.marker5_z": "cantelli_fallback",
+    "env0.marker6_x": "lognormal_prediction",
+    "env0.marker6_y": "lognormal_prediction",
+    "env0.marker6_z": "lognormal_prediction",
+    "env0.marker7_x": "lognormal_prediction",
+    "env0.marker7_y": "lognormal_prediction",
+    "env0.marker7_z": "lognormal_prediction",
+    "env0.marker8_x": "lognormal_prediction",
+    "env0.marker8_y": "lognormal_prediction",
+    "env0.marker8_z": "lognormal_prediction",
+    "env0.plane_wrench0": "lognormal_prediction",
+    "env0.plane_wrench1": "lognormal_prediction",
+    "env0.plane_wrench2": "lognormal_prediction",
+    "env0.plane_wrench3": "lognormal_prediction",
+    "env0.plane_wrench4": "lognormal_prediction",
+    "env0.plane_wrench5": "lognormal_prediction",
+    "env0.psi_eq": "lognormal_prediction",
+    "env1.Jbar_max": "lognormal_prediction",
+    "env1.Jbar_min": "lognormal_prediction",
+    "env1.cfl_eff_max": "lognormal_prediction",
+    "env1.gravity": "lognormal_prediction",
+    "env1.grip_wrench0": "lognormal_prediction",
+    "env1.grip_wrench1": "lognormal_prediction",
+    "env1.grip_wrench2": "lognormal_prediction",
+    "env1.grip_wrench3": "lognormal_prediction",
+    "env1.grip_wrench4": "lognormal_prediction",
+    "env1.grip_wrench5": "lognormal_prediction",
+    "env1.kinetic_particle": "lognormal_prediction",
+    "env1.marker0_x": "lognormal_prediction",
+    "env1.marker0_y": "lognormal_prediction",
+    "env1.marker0_z": "lognormal_prediction",
+    "env1.marker1_x": "lognormal_prediction",
+    "env1.marker1_y": "lognormal_prediction",
+    "env1.marker1_z": "lognormal_prediction",
+    "env1.marker2_x": "lognormal_prediction",
+    "env1.marker2_y": "lognormal_prediction",
+    "env1.marker2_z": "lognormal_prediction",
+    "env1.marker3_x": "lognormal_prediction",
+    "env1.marker3_y": "lognormal_prediction",
+    "env1.marker3_z": "lognormal_prediction",
+    "env1.marker4_x": "lognormal_prediction",
+    "env1.marker4_y": "lognormal_prediction",
+    "env1.marker4_z": "lognormal_prediction",
+    "env1.marker5_x": "lognormal_prediction",
+    "env1.marker5_y": "lognormal_prediction",
+    "env1.marker5_z": "lognormal_prediction",
+    "env1.marker6_x": "lognormal_prediction",
+    "env1.marker6_y": "lognormal_prediction",
+    "env1.marker6_z": "lognormal_prediction",
+    "env1.marker7_x": "lognormal_prediction",
+    "env1.marker7_y": "lognormal_prediction",
+    "env1.marker7_z": "lognormal_prediction",
+    "env1.marker8_x": "lognormal_prediction",
+    "env1.marker8_y": "lognormal_prediction",
+    "env1.marker8_z": "lognormal_prediction",
+    "env1.plane_wrench0": "lognormal_prediction",
+    "env1.plane_wrench1": "lognormal_prediction",
+    "env1.plane_wrench2": "lognormal_prediction",
+    "env1.plane_wrench3": "lognormal_prediction",
+    "env1.plane_wrench4": "lognormal_prediction",
+    "env1.plane_wrench5": "lognormal_prediction",
+    "env1.psi_eq": "lognormal_prediction"
+   },
+   "verdict": "PASS",
+   "wall_s_row": 5697.773596682004,
+   "gpu_sharing": {
+    "label": "EXCLUSIVE_AT_SAMPLES",
+    "co_tenant_pids": []
+   },
+   "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+   "commit": "3807912b8fbe7439139aacb1a39a346be0ecb570",
+   "dirty_tree": false,
+   "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+  }
+ },
+ "cpu_tests": [
+  {
+   "log": "artifacts/rl_ready/p2_6/cpu_tests_p26_002/torch_cuda0.log",
+   "tail": [
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "317 passed, 2 skipped, 3 warnings in 551.49s (0:09:11)",
+    "exit=0 wall_s=553 CUDA_VISIBLE_DEVICES=0 (gpu0 lock) head=3807912"
+   ]
+  },
+  {
+   "log": "artifacts/rl_ready/p2_6/cpu_tests_p26_002/torch_cuda_none.log",
+   "tail": [
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "315 passed, 3 skipped, 1 warning in 598.23s (0:09:58)",
+    "exit=0 wall_s=599 CUDA_VISIBLE_DEVICES=''"
+   ]
+  },
+  {
+   "log": "artifacts/rl_ready/p2_6/cpu_tests_p26_002/venv_cuda0.log",
+   "tail": [
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "558 passed, 2 skipped, 2 warnings in 744.75s (0:12:24)",
+    "exit=0 wall_s=745 CUDA_VISIBLE_DEVICES=0 (gpu0 lock) head=3807912"
+   ]
+  },
+  {
+   "log": "artifacts/rl_ready/p2_6/cpu_tests_p26_002/venv_cuda_none.log",
+   "tail": [
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "558 passed, 2 skipped, 2 warnings in 822.41s (0:13:42)",
+    "exit=0 wall_s=823 CUDA_VISIBLE_DEVICES=''"
+   ]
+  },
+  {
+   "log": "artifacts/rl_ready/p2_6/cpu_tests_p26_001/torch_cuda_none.log",
+   "tail": [
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "315 passed, 3 skipped, 1 warning in 591.13s (0:09:51)",
+    "exit=0 wall_s=592 CUDA_VISIBLE_DEVICES=''"
+   ]
+  },
+  {
+   "log": "artifacts/rl_ready/p2_6/cpu_tests_p26_001/torch_cuda_none_collection_error_lab_tests.log",
+   "tail": [
+    "!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!",
+    "2 skipped, 1 error in 2.07s",
+    "exit=2 wall_s=3 CUDA_VISIBLE_DEVICES=''"
+   ]
+  },
+  {
+   "log": "artifacts/rl_ready/p2_6/cpu_tests_p26_001/venv_cuda_none.log",
+   "tail": [
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "539 passed, 2 skipped, 2 warnings in 826.44s (0:13:46)",
+    "exit=0 wall_s=827 CUDA_VISIBLE_DEVICES=''"
+   ]
+  }
+ ],
+ "notes": {
+  "declarations": "rubber_rl_tests_v2 (6db54681) + rubber_strip_drag_v2 (7395e610), committed alone at 400f5c5; the v1 pair (130ccd4) was superseded by K2-1 and never run formally",
+  "profile": "rubber_rl_env_v2: contact law grid_node_penalty_coulomb_v2, table friction fixed at 0.3 (contact_envelope_v3 range [0.3, 0.3]; label contact_friction_envelope_v2_fixed_0.3)",
+  "commits": "job A (RL01 / RL02b / RL03 / RL04b / RL05) ran at a95da89 (before the K2-2 merge); jobs B / C / D (RL07 / RL08 / RL08b, RL06, RL02c) at 3807912 (K2-2 merged, resolution label in the receipts); physics and env code identical apart from the receipt label and scene-profile validation; every row clean tree",
+  "RL05_FAIL": "rubber_scripted_drag_v1 (declared: grip xy moved by the tip error, clipped) beat the zero action in 4 of 8 envs and reached 0 evaluator successes in 80-step episodes (final tip distance 43-99 mm vs 28-72 mm zero-action). DIAGNOSTIC (CPU parity, scratch, not a protocol run): the env drags the strip as commanded (grip and tip move toward the goal for a forward goal); the declared controller ignores the strip's rotation / bending for lateral and backward goals. The FAIL is the declared sanity criterion and stands; a better scripted controller needs rubber_rl_tests_v3 declared before its run",
+  "RL06_reset_p95": "5.0 s (median 0.40 s) > the plan's 1 s trigger for the optional vectorised F8 block assembly (plan \u00a74.2); reported, not scored",
+  "RL07_errata": "the cost-arm text says 'contact v3 table plane'; the arms used the family's law, grid_node_penalty_coulomb_v2 (text-only error in the script). Phase 1 workload A was measured by the frozen harness as a child process of the rubber GPU process, which is therefore listed as its co-tenant (SHARED_GPU): N 1 0.142 / N 8 0.193 aggregate sim-time per wall = 7.1 / 9.7 env-steps/s",
+  "RL08b": "Q1 static sag on the L150_t4 geometry (L/t 37.5, W/t 4): bias(n_t 4) = +0.71 % (p_obs 2.62, p_eff 2, Fs 1.25), GCI coarse 0.97 %, fine 0.19 %; the declared 1 % fallback trigger is NOT met",
+  "dev_failures_preserved": "a development run of the CPU RL tests (before the formal suites) failed test_rl04a because the test advanced env A two extra steps without the fresh env (test bug, fixed before commit 40ad8d4); the ENV2 v2-law DRAG reported row of contact_envelope_v2_001 had a recording bug (view of a live CPU array), rerun as contact_envelope_v2_002_drag",
+  "torch_suite_selection": "tests/test_rl_lab_*.py need the Isaac Lab venv (pxr): excluded from the Torch selection; first attempt preserved (cpu_tests_p26_001/torch_cuda_none_collection_error_lab_tests.log)"
+ },
+ "not_in_this_evidence": {
+  "RL-09": "Native (P6.4 / P6.5, separate task)",
+  "RL-10 / RL-11": "P6.6"
+ }
+}
