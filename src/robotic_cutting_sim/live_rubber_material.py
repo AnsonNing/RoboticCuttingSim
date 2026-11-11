@@ -50,13 +50,19 @@ class LiveRubberMaterial:
     ``stable_step_guard`` (None = off, the v1 behaviour; a float = the limit of dt c_bound / dx, recommended
     ``rubber_constitutive.STABLE_STEP_GUARD_DEFAULT_LIMIT``) and ``deformation_reserve`` (>= 1, divides dt; 1 = v1)
     are the ADR 0023 §7 amendment options; ``dirichlet``, ``traction_work`` and ``state_precision`` are the P2-2 opt-in
-    solver options (ADR 0023 §19, ``tlmpm_rubber_v1`` module docstring; defaults = v1)."""
+    solver options (ADR 0023 §19, ``tlmpm_rubber_v1`` module docstring; defaults = v1); ``constraint_work``
+    ("end_velocity_v1" default, "kick_average_v1" with the F8 projection only) is the bookkeeping option of ADR 0023
+    §21.1 (``rubber_constraint_work``; the default builds the unchanged ``TLMPMRubber``). A material with Prony terms
+    (``MaterialValues.prony``, model ``neo_hookean_jbar_prony_v1``) or ``visco_energy="branch_work_v1"`` builds the
+    viscoelastic ``tlmpm_rubber_visco_v1.TLMPMRubberVisco`` (ADR 0023 §21.2); its visco diagnostics are read after every
+    control step (``last_visco``). The step rule uses mu0 (the instantaneous modulus) of ``step_material``."""
 
     def __init__(self, spec, *, recipe=None, material=None, control_dt=0.02, cfl=None, substeps=None,
                  step_material=None, gravity=(0.0, 0.0, -9.81), device="cpu", graph_chunk=DEFAULT_GRAPH_CHUNK,
                  capture_graph=None, record=False, strict=True, table_plane=None, fixture_boxes=None,
                  stable_step_guard=None, deformation_reserve=1.0, dirichlet="lumped_v1",
-                 traction_work="particle_velocity_v1", state_precision="float32_v1"):
+                 traction_work="particle_velocity_v1", state_precision="float32_v1",
+                 constraint_work="end_velocity_v1", visco_energy="off_v1"):
         start = time.perf_counter()
         self.recipe = rm.load_recipe() if recipe is None else recipe
         self.material = self.recipe.nominal() if material is None else material
@@ -77,12 +83,25 @@ class LiveRubberMaterial:
                                   substeps_override=True)
         self.substeps = int(self.step_rule["substeps_per_control_step"])
         self.dt = self.control_dt/self.substeps
-        self.solver = TLMPMRubber(self.scene, self.material, self.dt, substeps=self.substeps, gravity=gravity,
-                                  device=device, j_domain=self.recipe.j_domain,
-                                  contact_stiffness=self.recipe.contact_stiffness_fraction,
-                                  contact_radius_scale=self.recipe.contact_radius_scale, table_plane=table_plane,
-                                  fixture_boxes=fixture_boxes, stable_step_guard=stable_step_guard,
-                                  dirichlet=dirichlet, traction_work=traction_work, state_precision=state_precision)
+        solver_cls, extra = TLMPMRubber, {}
+        if getattr(self.material, "prony", ()) or visco_energy != "off_v1":
+            # ADR 0023 §21.2: neo_hookean_jbar_prony_v1 (the elastic solver classes are used otherwise)
+            from .rubber_constraint_work import check_options
+            from .tlmpm_rubber_visco_v1 import TLMPMRubberVisco
+            check_options(constraint_work, dirichlet)
+            solver_cls, extra = TLMPMRubberVisco, {"constraint_work": constraint_work, "visco_energy": visco_energy}
+        elif constraint_work != "end_velocity_v1":
+            # ADR 0023 §21.1: bookkeeping option of the F8 projection (the frozen solver class is used otherwise)
+            from .rubber_constraint_work import TLMPMRubberCW, check_options
+            check_options(constraint_work, dirichlet)
+            solver_cls, extra = TLMPMRubberCW, {"constraint_work": constraint_work}
+        self.solver = solver_cls(self.scene, self.material, self.dt, substeps=self.substeps, gravity=gravity,
+                                 device=device, j_domain=self.recipe.j_domain,
+                                 contact_stiffness=self.recipe.contact_stiffness_fraction,
+                                 contact_radius_scale=self.recipe.contact_radius_scale, table_plane=table_plane,
+                                 fixture_boxes=fixture_boxes, stable_step_guard=stable_step_guard,
+                                 dirichlet=dirichlet, traction_work=traction_work, state_precision=state_precision,
+                                 **extra)
         self.device = self.solver.device
         self.strict, self.record = bool(strict), bool(record)
         self.capture_graph = wp.get_device(self.device).is_cuda if capture_graph is None else bool(capture_graph)
@@ -140,6 +159,7 @@ class LiveRubberMaterial:
         self.invalid_reason = 0
         self._last_violations = 0
         self._last_cfl_violations = 0
+        self.last_visco = None
         self.records = [self.header()] if self.record else []
         return self.receipt_short()
 
@@ -158,6 +178,9 @@ class LiveRubberMaterial:
         wrench = s.end_control_step(self.control_dt)
         self.last_wrench = wrench
         diag = s.diagnostics.read()[0]
+        if getattr(s, "visco_diagnostics", None) is not None:
+            s.visco_diagnostics.launch(s.diagnostics.summary, s.dparams, s.particle_offset)
+            self.last_visco = s.visco_diagnostics.read()[0]
         violations = int(s.violations.numpy()[0])
         step_violations = violations-self._last_violations
         self._last_violations = violations
@@ -208,7 +231,8 @@ class LiveRubberMaterial:
                 "invalid_flags": decode_reason(self.invalid_reason), "j_domain_violations": int(step_violations),
                 "max_speed_m_s": diag["max_speed_m_s"], "nonfinite": bool(diag["nonfinite"] != 0.0),
                 "stable_step": {"cfl_eff_max_end_of_step": diag["cfl_eff_max"], "guard_limit": s.cfl_guard_limit,
-                                "guard_violations_step": int(step_cfl_violations)}}
+                                "guard_violations_step": int(step_cfl_violations)},
+                **({"visco": dict(self.last_visco)} if getattr(self, "last_visco", None) else {})}
 
     # ------------------------------------------------------------------ queries
 

@@ -173,7 +173,11 @@ class RubberRecipe:
         """The recipe's nominal per-env material values."""
         return MaterialValues(mu0=self.mu0(), kappa=self.kappa(), density=self.density.value,
                               friction_table=self.friction_table.value, friction_pad=self.friction_pad.value,
-                              friction_self=self.friction_self.value)
+                              friction_self=self.friction_self.value, prony=self.prony_terms())
+
+    def prony_terms(self):
+        """((g_i, tau_i), ...) of the recipe (empty for the elastic model)."""
+        return tuple((t.g, t.tau_s) for t in self.prony)
 
     def values(self, mu_eq=None, density=None, beta=None, friction_table=None, friction_pad=None,
                friction_self=None):
@@ -191,7 +195,8 @@ class RubberRecipe:
                               density=pick("density_kg_m3", self.density, density),
                               friction_table=pick("friction_table", self.friction_table, friction_table),
                               friction_pad=pick("friction_pad", self.friction_pad, friction_pad),
-                              friction_self=pick("friction_self", self.friction_self, friction_self))
+                              friction_self=pick("friction_self", self.friction_self, friction_self),
+                              prony=self.prony_terms())
 
     def step_rule(self, dx, control_dt, *, mu_eq_max=None, density_min=None, beta=None, cfl=None,
                   deformation_reserve=1.0):
@@ -208,7 +213,7 @@ class RubberRecipe:
         """Exact exponential-integrator coefficients (ADR §10) in float64: a_i = exp(-dt/tau_i),
         b_i = -g_i (tau_i/dt) expm1(-dt/tau_i)."""
         dt = _finite_positive(dt, "dt")
-        return [(math.exp(-dt/t.tau_s), -t.g*(t.tau_s/dt)*math.expm1(-dt/t.tau_s)) for t in self.prony]
+        return prony_coefficients(self.prony_terms(), dt)
 
     def resolution(self):
         profile = RESOLUTION_PROFILES[self.resolution_profile]
@@ -222,17 +227,37 @@ class RubberRecipe:
 
 @dataclass(frozen=True)
 class MaterialValues:
-    """Concrete per-env material values (SI): instantaneous shear modulus, bulk modulus, density, frictions."""
+    """Concrete per-env material values (SI): instantaneous shear modulus, bulk modulus, density, frictions and the
+    optional isochoric Prony terms ``prony`` = ((g_i, tau_i), ...) (ADR 0023 §21.2.4; empty = the elastic model
+    ``neo_hookean_jbar_v1``; mu0 is the INSTANTANEOUS modulus, mu_inf = g_inf mu0). A term with g = 0 is allowed (it
+    pads a batch to a uniform number of terms M and contributes nothing)."""
     mu0: float
     kappa: float
     density: float
     friction_table: float = 0.8
     friction_pad: float = 1.0
     friction_self: float = 0.9
+    prony: tuple = ()
+
+    def __post_init__(self):
+        object.__setattr__(self, "prony", validate_prony(self.prony))
 
     @property
     def beta(self):
         return self.kappa/self.mu0
+
+    @property
+    def g_inf(self):
+        return 1.0-math.fsum(g for g, _ in self.prony)
+
+    @property
+    def prony_terms_count(self):
+        return len(self.prony)
+
+    def params64(self, dt):
+        """float64 per-env row [g_inf, (g_i, tau_i, a_i, b_i) x M] of the batch dt (a_i, b_i with expm1, host)."""
+        from .rubber_visco_constitutive import params64_row
+        return params64_row(self.prony, dt)
 
     def c_p(self):
         return p_wave_speed(self.mu0, self.kappa, self.density)
@@ -247,7 +272,47 @@ class MaterialValues:
         return {"mu0_pa": self.mu0, "kappa_pa": self.kappa, "density_kg_m3": self.density, "beta": self.beta,
                 "friction_table": self.friction_table, "friction_pad": self.friction_pad,
                 "friction_self": self.friction_self, "nu_effective": self.poisson_effective(),
-                "young_effective_pa": self.young_effective(), "c_p_m_s": self.c_p()}
+                "young_effective_pa": self.young_effective(), "c_p_m_s": self.c_p(),
+                **({"prony": [{"g": g, "tau_s": tau} for g, tau in self.prony], "g_inf": self.g_inf}
+                   if self.prony else {})}
+
+
+def validate_prony(prony):
+    """Normalise and validate Prony terms ((g, tau), ...): at most MAX_PRONY_TERMS, g finite >= 0, tau finite > 0,
+    sum g < 1 (g_inf > 0). Raises RubberRecipeError."""
+    if prony is None:
+        return ()
+    terms = []
+    for i, term in enumerate(prony):
+        if isinstance(term, PronyTerm):
+            term = (term.g, term.tau_s)
+        if len(term) != 2:
+            _refuse(f"prony[{i}] must be (g, tau_s)")
+        g, tau = term
+        if isinstance(g, bool) or not isinstance(g, (int, float, np.floating)) or not math.isfinite(g) or g < 0:
+            _refuse(f"prony[{i}].g must be finite and >= 0, got {g!r}")
+        if isinstance(tau, np.floating):
+            tau = float(tau)
+        terms.append((float(g), _finite_positive(tau, f"prony[{i}].tau_s")))
+    if len(terms) > MAX_PRONY_TERMS:
+        _refuse(f"at most {MAX_PRONY_TERMS} Prony terms, got {len(terms)}")
+    if math.fsum(g for g, _ in terms) >= 1.0:
+        _refuse("sum of Prony g_i must be < 1 (g_inf > 0)")
+    return tuple(terms)
+
+
+def prony_coefficients(terms, dt):
+    """[(a_i, b_i)] float64 (ADR 0023 §10): a_i = exp(-dt/tau_i), b_i = -g_i (tau_i/dt) expm1(-dt/tau_i)."""
+    from .rubber_visco_constitutive import prony_coefficients as coefficients
+    return coefficients(terms, dt)
+
+
+def pad_prony(prony, M, tau_pad_s=1.0):
+    """Pad Prony terms with (0, tau_pad) to M terms (uniform M of a batch; a g = 0 term is an exact zero)."""
+    terms = validate_prony(prony)
+    if len(terms) > M:
+        _refuse(f"{len(terms)} Prony terms > M = {M}")
+    return validate_prony(terms+((0.0, float(tau_pad_s)),)*(M-len(terms)))
 
 
 def poisson_from(mu, kappa):

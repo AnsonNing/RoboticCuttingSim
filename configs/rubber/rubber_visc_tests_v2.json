@@ -1,0 +1,89 @@
+{
+ "schema": "rcs_rubber_visc_tests_v2",
+ "id": "rubber_visc_tests_v2",
+ "version": 2,
+ "adr": "docs/adr/0023-rubber-material-v1.md section 21.7",
+ "status": "FROZEN_AT_COMMIT (declared before the branch_work_kick_average_v2 implementation and before any v2 run; SHA-256 pinned in tests/test_rubber_p2_3_protocols.py; a change is v3; thresholds never move after a result)",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (numerical verification of the declared model against analytic / semi-analytic references; no real rubber data; the identification in RUBBER-VISC-03 is a synthetic dry run of the P2-5 fit/held-out split, not a calibration)",
+ "supersedes": {
+  "protocol": "configs/rubber/rubber_visc_tests_v1.json",
+  "sha256": "95ad1f94a253fe52a388249a7c34a1ecee2b9f040867dd2d65b8de0f7626f080",
+  "scope": "RUBBER-VISC-03 and RUBBER-VISC-05 only",
+  "v1_results_preserved": "artifacts/rl_ready/p2_3/visc_v1_001 (commit 555d6fb): RUBBER-VISC-03 FAIL and RUBBER-VISC-05 FAIL remain the v1 results (docs/evidence/rl_ready/p2_3_visco_001.json); v2 adds results, it does not replace them"
+ },
+ "carried_over_from_v1": {
+  "tests": ["RUBBER-VISC-01", "RUBBER-VISC-02", "RUBBER-VISC-04", "RUBBER-VISC-06", "RUBBER-VISC-07", "RUBBER-VISC-08", "RUBBER-VISC-09", "RUBBER-VISC-10"],
+  "note": "definitions, thresholds and the visc_v1_001 results unchanged; not re-scored by v2. The RUBBER-VISC-02 creep run and the RUBBER-VISC-04b cantilever runs are re-run because RUBBER-VISC-05 books them; their -02 / -04b numbers are reported as a consistency check only"
+ },
+ "provenance": {
+  "seen_before_declaration": "the visc_v1_001 raw series, the DIAGNOSTIC runs visc_diag_cantilever_books_001/_002, and the DIAGNOSTIC re-analysis visc_diag_v1_reanalysis_001 (commit b9baa57; reads v1 data, runs no simulation); ADR 0023 section 21.7.1",
+  "unchanged_from_v1": "every threshold of RUBBER-VISC-03 and -05; the fit / held-out rate split; the Prony sets; mu0, kappa, rho; the scenes; control_dt; substeps and the step rule; every solver option except visco_energy; the analytic reference E*(w) (small strain); the time stamps (common.observables.time_stamps of v1); the block finite-amplitude test (-03 e); the finite-strain model-form budget",
+  "changed": [
+   "estimator: whole-period window with sigma and eps mean-removed (v1: the last 'full' cycle, 313 / 157 samples at 16 / 32 Hz for 312.5 / 156.25 samples per period, sigma mean not removed: -0.25 / -0.69 % in E' on exact sinusoids)",
+   "run length at 16 and 32 Hz: the whole-period window must start after 6 tau_max (v1 intent of n_cycles); 1-8 Hz keep the v1 length",
+   "drive-end inertia: the measured modulus is de-embedded with the exact 1-D linear viscoelastic rod transfer (v1 compared the grip-1 reaction directly with E*: -1.45 % at 32 Hz, budgeted 0.4 %)",
+   "energy: visco_energy branch_work_kick_average_v2 (kick-paired branch work, the conjugate of the discrete kinetic energy; v1 left-point quadrature drifts by about dt w^2 tau / 2 of the branch dissipation on high-frequency content)",
+   "cycle criteria of -05 (c, d) over the v2 whole-period window (v1 window not periodic in Psi_v, Psi_eq, E_kin)",
+   "added validity conditions: de-embedding consistency (grip 0 vs grip 1) and dynamics identity with the v1 runs"
+  ]
+ },
+ "common": {
+  "inherits": "rubber_visc_tests_v1 common, unchanged, except the entries of this block: model, model_definition, solver, bulk_ratio_beta, pic, cfl, particles_per_cell_axis, density_kg_m3, gravity_m_s2, artificial_damping, step_rule, prony_sets, analytic_references, observables.block / strip / cantilever / time_stamps / prescribed_histories, validity, devices",
+  "options": {"dirichlet": "consistent_mass_projection_v1", "constraint_work": "kick_average_v1", "traction_work": "grid_displacement_v1", "state_precision": "f64_shadow_v1", "visco_energy": "branch_work_kick_average_v2", "stable_step_guard": 1.0, "visco_guard": "stable_step_guard_visco_v1 (section 21.2.6)", "deformation_reserve": 1.0},
+  "energy": {
+   "branch_work": "visco_energy branch_work_kick_average_v2: W_b = sum_n sum_p V pb_n : (dF_{n-1} + dF_n) / 2, pb_n = F_n sum_i Q_i^n (the stress pass of substep n), dF_n = dt sum_I v_I (x) grad N_I (the drift increment of substep n, float64 from the MUSL grid velocity after the BC, as branch_work_v1), dF_{-1} = 0 after a reset; float64 per env. Equivalently sum_n (pb_n + pb_{n+1}) / 2 : dF_n (+ the boundary term of the last substep): the trapezoid of the branch PK1 over the interval its Prony update spans. It is the work of the branch force conjugate to the discrete kinetic energy (the kick of substep n pairs P_n with (dF_{n-1} + dF_n) / 2)",
+   "branch_work_left_point_reported": "W_b,v1 = sum_n sum_p V pb_n : dF_n (the v1 branch_work_v1 quadrature), accumulated alongside in visco_branch_work_left with the same arithmetic as branch_work_v1; reported, not scored",
+   "option_requirements": "bookkeeping only: the stress pass, the explicit dissipation D, visco_pb, visco_d_negative and every state array are byte-identical to visco_energy branch_work_v1 and off_v1; off_v1 and branch_work_v1 are unchanged (no array, no launch added); a batch with mixed visco_energy values is refused (UNSUPPORTED_NONUNIFORM_BATCH); the masked reset clears visco_df_prev and visco_branch_work_left",
+   "psi_eq": "as v1",
+   "explicit_dissipation": "as v1 (D)",
+   "stored_viscous": "as v1 (Psi_v)",
+   "layer_N_books": "B_N(t) = E_kin + Psi_eq + E_grav + W_b - W_ext with W_b = the kick-paired branch work above (W_ext as v1); numerics only, a bounded O(dt) fluctuation of the symplectic integrator",
+   "layer_M_material": "as v1: over the steady window (whole periods) E_kin, Psi_eq and Psi_v are periodic, so dW_ext = dW_b (layer N) and dW_b = dD (layer M, small strain) = K pi eps0^2 E''(w) V (analytic)",
+   "branch_internal_identity_reported": "W_b - (D + Psi_v) at the end of every run, relative to S_N (zero for an exact linear Maxwell branch at small strain, O(strain) otherwise); reported, not scored"
+  },
+  "observables": {
+   "strip_grip0_stress": "sigma_0 = +wrench_x(grip 0) / (W t) (the fixed-end reaction; used only for the de-embedding validity check)",
+   "steady_window": "for drive frequency f: K_f = the smallest integer K >= 1 for which K / (f control_dt) is an integer (<= 64; else the configuration is refused); n_cycles = K_f * ceil((ceil(6 tau_max f) + K_f) / K_f) (equal to the v1 n_cycles for K_f = 1); run length n_cycles / (f control_dt) control steps; the steady window is the last K_f / (f control_dt) control-step samples (K_f whole periods, starting after 6 tau_max). P2 at control_dt 2e-4 s: K = 1 at 1, 2, 4, 8 Hz (10000, 5000, 3750, 2500 steps, as v1), K = 2 at 16 Hz and K = 4 at 32 Hz (2500 steps each, window 625 samples)",
+   "complex_modulus_from_window": "E*_meas = [sum_k (sigma_k - mean sigma) exp(-i w (t_k - dtc/2)) / sinc(w dtc / 2)] / [sum_k (eps_k - mean eps) exp(-i w t_k)] over the samples k of the steady window (means over the window; sinc(x) = sin(x)/x; time stamps as v1)",
+   "inertia_deembedding": "exact steady state of the 1-D linear viscoelastic rod rho u_tt = E* u_xx, u(0, t) = 0, u(L, t) = U exp(i w t), observed through the declared gauge (markers k = 2 and 6 with reference x positions a < b taken from the scene's marker_reference) and the declared grip reaction: T_1(w; E) = k (b - a) cos(k L) / (sin(k b) - sin(k a)) for the grip-1 (driven end) stress, T_0(w; E) = k (b - a) / (sin(k b) - sin(k a)) for the grip-0 (fixed end) stress, k = w sqrt(rho / E) (principal complex square root), L = the strip length (the grip-face distance), rho = the material density. The material modulus E*_mat solves E*_meas = E*_mat T(w; E*_mat), by fixed-point iteration E <- E*_meas / T(w; E) from E = E*_meas until |dE| <= 1e-14 |E| (at most 100 iterations; no convergence = FAIL). It uses only rho, L, a, b, w: no Prony parameter and no reference value; identical for every rate (fit and held-out). Rationale: the drive-end reaction differs from the gauge stress by -(about 0.37) rho w^2 L^2 / E (-1.45 % in E' at 32 Hz); lateral (Rayleigh-Love) inertia nu^2 k^2 r_p^2 is about 4e-5 at 32 Hz and is not modelled",
+   "loss_per_cycle": "(W_ext(window end) - W_ext(window start)) / K_f, window start = the sample before the window's first sample"
+  }
+ },
+ "tests": {
+  "RUBBER-VISC-03": {
+   "name": "loading-unloading hysteresis at several rates, identification on three rates, held-out rates (strip with moving grips; block at finite amplitude) - v2: whole-period estimator and inertia de-embedding",
+   "setup": {"prony_set": "P2", "strip": "rubber_visc_tests_v1 common.observables.strip; grip 0 holds; grip 1 axial displacement u(t) = eps0 L (1 - cos(2 pi f t)) (load-unload between 0 and 2 eps0, zero initial velocity)", "eps0": 0.002, "control_dt_s": 2.0e-4, "fit_rates_hz": [1.0, 4.0, 16.0], "heldout_rates_hz": [2.0, 8.0, 32.0], "n_cycles": "common.observables.steady_window", "block_finite_amplitude": {"path": "simple shear gamma(t) = gamma0 (1 - cos(2 pi f t)), gamma0 0.15", "rates_hz": [4.0, 16.0], "n_cycles": 3}},
+   "reference": "strip: analytic E*(w) (small strain; rubber_visc_tests_v1 common.analytic_references.uniaxial_complex_modulus) compared with the de-embedded E*_mat of the grip-1 stress, and the loss per cycle pi eps0^2 E''(w) L W t; block: hereditary integral (exact finite strain), as v1",
+   "criteria": {
+    "a_per_rate": "every rate (fit and held-out): E*_mat = de-embedded (T_1) E*_meas of the grip-1 stress over the steady window; |E'_mat/E'_ref - 1| <= e1_rel, |E''_mat/E''_ref - 1| <= e2_rel, |loss_per_cycle / (pi eps0^2 E''_ref V) - 1| <= loss_rel",
+    "a_validity_deembedding": "every rate: the grip-0 stress de-embedded with T_0 agrees with the grip-1 result, |E'_mat,grip0 / E'_mat,grip1 - 1| <= deembed_consistency_rel (otherwise -03 FAILs: the rod model does not describe the measurement)",
+    "b_identification": "least-squares fit of (g1, tau1, g2, tau2) (mu0, kappa known) to E'_mat, E''_mat of the three fit rates only (relative residuals, log-tau, start g 0.25 / 0.1, tau 3 ms / 100 ms): |tau_i,fit / tau_i - 1| <= tau_rel, |g_i,fit / g_i - 1| <= g_rel",
+    "c_heldout": "the fitted parameters predict E', E'' at every held-out rate within e1_heldout / e2_heldout of the SIMULATED held-out E*_mat (de-embedded, same procedure)",
+    "d_single_rate_control": "reported, not scored: a one-term fit to the 4 Hz E*_mat alone and its held-out prediction errors",
+    "e_block_finite_amplitude": "as v1: max over the last cycle of ||P - P_ref||_F / max ||P_ref||_F <= block_rel",
+    "reported_not_scored": "per rate: E*_meas (not de-embedded), T_1 at E*_ref, the v1 last-cycle estimator on the v2 series, the grip-0 de-embedded E''"
+   },
+   "thresholds": {"e1_rel": 0.01, "e2_rel": 0.03, "loss_rel": 0.03, "tau_rel": 0.10, "g_rel": 0.05, "e1_heldout": 0.01, "e2_heldout": 0.04, "block_rel": 1.0e-4, "deembed_consistency_rel": 0.002},
+   "rationale": "thresholds of v1 unchanged. Remaining budget: small-strain model form about -0.4 % in E' at mean strain 0.2 % (v1 rationale; observed -0.40 to -0.41 % on the corrected v1 data); estimator bias of the steady window <= 1e-5 (E') / 2e-4 (E'') including the start-up transient (exact linear response); 1-D rod model of the inertia validated by the grip difference (-1.968 % observed vs -1.971 % predicted at 32 Hz on v1 data). deembed_consistency_rel = e1_rel / 5 (a new validity condition of the new method, stricter than e1_rel; observed <= 0.004 % on v1 data)"
+  },
+  "RUBBER-VISC-05": {
+   "name": "energy balance with the dissipation integrated explicitly (the material, not the numerics, accounts for the loss) - v2: kick-paired branch work",
+   "runs": "every strip run of RUBBER-VISC-03 (v2 lengths), the RUBBER-VISC-02 creep run and the RUBBER-VISC-04b cantilever runs at substep factors 1, 2, 4 (v1 schedules), all with visco_energy branch_work_kick_average_v2; the 16 Hz strip is repeated at substep factor 2 for (b) and with every g_i = 0 for (e) (v2 length)",
+   "criteria": {
+    "a_books": "every run of runs except the g = 0 control (e), including the 16 Hz factor-2 run: max_t |B_N(t)| <= books_rel * S_N, S_N = max_t (E_kin + Psi_eq) + max_t |W_b| (over the whole run, W_b of v2)",
+    "b_consistency": "16 Hz: max |B_N| at factor 2 <= ratio_max * max |B_N| at factor 1, or <= floor_rel * S_N",
+    "c_cycle_books": "every steady window of RUBBER-VISC-03: |dW_ext / dW_b - 1| <= cycle_books_rel",
+    "d_explicit_dissipation": "every steady window of RUBBER-VISC-03: |dD / dW_b - 1| <= dissipation_rel; every per-substep increment of D >= 0 (visco_d_negative = 0 in every run)",
+    "e_no_numerical_loss_control": "reported, not scored: the 16 Hz run with every g_i = 0 (elastic) has |B_N| at the RUBBER-GRIP level and no secular trend",
+    "reported_not_scored": "the v1 left-point books B_N,v1 (W_b,v1 = visco_branch_work_left) on every run; the branch-internal identity W_b - (D + Psi_v)"
+   },
+   "thresholds": {"books_rel": 0.005, "ratio_max": 0.65, "floor_rel": 1.0e-4, "cycle_books_rel": 0.005, "dissipation_rel": 0.02},
+   "rationale": "thresholds of v1 unchanged. The kick-paired W_b is the conjugate of the discrete kinetic energy and the trapezoid of the branch's own work; the v1 diagnostic visc_diag_cantilever_books_002 closes the cantilever books to <= 0.021 % with it and its W_b equals D + Psi_v to 1e-5 of S_N. Remaining budget as v1: O(dt) symplectic fluctuation (RUBBER-GRIP v1 <= 0.4 %), S0-strain vs Green-Lagrange strain O(eps0) ~ 0.4 % in (d)"
+  }
+ },
+ "validity": {
+  "every_configuration": "as v1: no invalid flag (NONFINITE_STATE, RUBBER_J_DOMAIN, RUBBER_CFL_EXCEEDED incl. the visco guard term) and zero guard violations; an invalid configuration FAILs its test",
+  "dynamics_identity_with_v1": "every v2 strip, creep, cantilever and block run whose schedule, or the prefix of whose schedule, equals a visc_v1_001 run reproduces every recorded v1 column except branch_work byte-identically over the common rows, and its W_b,v1 (visco_branch_work_left) column equals the v1 branch_work column byte-identically; otherwise the v2 run is INVALID (an energy option must not change the dynamics). If the v1 raw artifacts are absent the check is NOT_RUN and recorded as such",
+  "devices": "formal run on the Warp CPU device; no GPU run is part of v2"
+ }
+}
