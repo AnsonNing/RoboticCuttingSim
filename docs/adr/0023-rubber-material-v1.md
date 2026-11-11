@@ -2288,3 +2288,46 @@ protocols). Material status `SIMULATOR_ONLY_UNCALIBRATED`; self-contact physics 
   - P2-6 mapping of bit 8 to `TERM_MATERIAL_INVALID` (task P6.1).
   - The blind-interval rate is reported, not bounded.
   - The detector does not resolve self-contact.
+
+### 23.6 Results: P2-5 calibration interface and synthetic numerical validation (amendment, 2026-11-12, rcs-impl)
+
+Branch `claude/rl-rubber-p25` (from `77f5a99`). Report `docs/reports/rl_ready/P2_5_RUBBER_CALIBRATION.md`. Material
+status `SIMULATOR_ONLY_UNCALIBRATED`; every output `NUMERICAL_VALIDATION_SYNTHETIC`; never a calibration; no recipe
+promoted. Nothing frozen changed (`rubber_calibration.py` v1 and the `REAL_CALIBRATED` block of
+`rubber_material.parse_recipe` are byte-pinned).
+
+- **Interface (P5.1–P5.3, `9b138a9`, `221c337`).**
+  - `rubber_calibration_v2.py`: manifest v2 with `data_origin`, sensors, origin-bound statuses and the sealed SHA.
+    F10 is closed: a v2 manifest is refused by the v1 gate in any directory, status or verdict. A v1 "masquerade" of
+    synthetic data passes the unchanged v1 gate (shown in a test) and is caught by the gate-directory tripwire
+    `gate_directory_audit`. `real_calibrated_gate_v2` is the versioned gate for real data (unused, NOT_RUN).
+  - `rubber_calibration_experiments.py`: population-batched forward models of T / R / C / G / F; byte-identical to
+    the single references on CPU.
+  - `rubber_calibration_fit.py`: parameter space with a stick-breaking budget G 0.5 (μ0 ≤ 0.8 MPa); objective with
+    the fit split only and no RL term; formal TRF with a speculative population Jacobian and lockstep starts; in-repo
+    CMA-ES; the ask / tell hook for the external agentic optimizer; fit receipt; one-shot held-out; sealed-path guard.
+  - `rubber_calibration_synthetic.py`: secret seeds, seal and logged reveal.
+- **Protocol** `rubber_calib_tests_v1` (sha256 `1f681641…ff2b`, declared alone in `c5054b9`, pinned in `0e43c67`). It
+  folds in the K2 conditions before the declaration:
+  - friction rows scoped to translational sliding with law v3 (K2-1); v2 has no formal row at n_t 4 / 6;
+  - fitted θ labelled `RESOLUTION_SPECIFIC` to `rubber_ref_v1`; b_mk captures only ≈ 0.4 % of the Q1w bias;
+  - the seal is procedural.
+
+  Declared deviations from the plan's matrix (lattice, cantilever frequency, simulated load phase, force-controlled
+  push, unloading to λ 1.1) are listed in the protocol.
+- **Pilot** (`p2_5_pilot_001`, commit `f042d34`): χ²_pilot 1.2732. **Thresholds** `rubber_calib_thresholds_v1`
+  (sha256 `40be2f8b…aa36`, committed alone in `4d7d2c4` before the formal dataset existed): 31 held-out
+  (experiment, metric) tolerances.
+- **Formal dataset** `p2_5_formal_001` (commit `a0250bb`): `SYNTHETIC_FROZEN_FOR_HELDOUT`, freeze `3d37a950…89c9`,
+  sealed truth `e5b5c718…9899` (never read).
+- **Formal fit: stopped, no receipt.**
+  - Formal fit: 7 TRF lockstep rounds of ≈ 28 min on GPU0 (cost 3.2–4.6e4 vs a floor of ≈ 1.5e3, −2…−13 % per round).
+  - Negative control: 12 rounds of ≈ 11 min on GPU1 (converging, reduced χ² ≈ 1.4).
+  - Both were stopped by the agent. The formal fit would have needed ≈ 15 more GPU0-hours (≈ 6× the plan's 2.5 h)
+    with P2-6 jobs queued, and the P1-6 runner (GPU1 priority) was waiting.
+  - **CAL-04…CAL-07 are NOT_RUN**; CAL-01 / -02 / -03 / -09 PASS; CAL-08 in order so far.
+  - The held-out ledger and the seal are intact, so a resumed fit (`fit_002`, same protocol) or a v2 fit-method
+    declaration (decision pending) can still complete P5.6.
+  - Preserved: `artifacts/rl_ready/p2_5/fit_001/*/{log.txt,ABORTED.json}`.
+- **CPU suites** at `40d3c29`: **593 passed** with `CUDA_VISIBLE_DEVICES=''`; the `=0` repetition is NOT_RUN (GPU0
+  queue).
