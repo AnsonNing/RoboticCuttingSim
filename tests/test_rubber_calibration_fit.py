@@ -343,3 +343,78 @@ def test_material_dedup_shares_envs():
     fric = {"id": "F", "type": "friction_sliding"}
     assert rce.material_key(tens, a) == rce.material_key(tens, b)
     assert rce.material_key(fric, a) != rce.material_key(fric, b)
+
+
+# ---------------------------------------------------------------------------- v2 staged fit with a budget
+
+TOY_STAGES = (
+    {"name": "S1_elastic", "params": ["mu_eq_pa"], "experiments": ["T1"], "starts": 1, "max_nfev": 8},
+    {"name": "S2_visco", "params": ["g1", "tau1_s", "g2", "tau2_s"], "experiments": ["R1", "T1"], "starts": 2,
+     "max_nfev": 25},
+    {"name": "S3_friction", "params": ["mu_table"], "experiments": ["F1"], "starts": 1, "max_nfev": 8},
+    {"name": "S4_joint_polish", "params": list(rcf.PARAMS), "experiments": None, "starts": 1, "max_nfev": 10},
+)
+PRIOR = {"mu_eq_pa": (2e5, 3.5e5), "g1": (0.08, 0.2), "g2": (0.06, 0.15), "tau1_s": (5e-3, 1.5e-2),
+         "tau2_s": (6e-2, 0.2), "mu_table": (0.4, 0.6)}
+
+
+def _box(sp):
+    lg = lambda p: math.log(p/(1-p))   # noqa: E731
+    G = sp.G
+    lo = {"mu_eq_pa": math.log(PRIOR["mu_eq_pa"][0]), "g1": lg(PRIOR["g1"][0]/G),
+          "g2": lg(PRIOR["g2"][0]/(G-PRIOR["g1"][0])), "tau1_s": math.log(PRIOR["tau1_s"][0]),
+          "tau2_s": math.log(PRIOR["tau2_s"][0]), "mu_table": PRIOR["mu_table"][0]}
+    hi = {"mu_eq_pa": math.log(PRIOR["mu_eq_pa"][1]), "g1": lg(PRIOR["g1"][1]/G),
+          "g2": lg(PRIOR["g2"][1]/(G-PRIOR["g1"][1])), "tau1_s": math.log(PRIOR["tau1_s"][1]),
+          "tau2_s": math.log(PRIOR["tau2_s"][1]), "mu_table": PRIOR["mu_table"][1]}
+    return np.array([lo[k] for k in rcf.PARAMS]), np.array([hi[k] for k in rcf.PARAMS])
+
+
+def _centre():
+    return {"mu_eq_pa": math.sqrt(2e5*3.5e5), "g1": 0.14, "g2": 0.105, "tau1_s": math.sqrt(5e-3*1.5e-2),
+            "tau2_s": math.sqrt(6e-2*0.2), "mu_table": 0.5}
+
+
+def test_subspace_maps_to_full_theta():
+    sp = space()
+    sub = rcf.SubSpace(sp, ["g1", "tau2_s"], TRUTH)
+    th = sub.from_u(sub.to_u(TRUTH))
+    assert all(math.isclose(th[k], TRUTH[k], rel_tol=1e-12) for k in rcf.PARAMS)
+    th2 = sub.from_u(sub.to_u(TRUTH)+np.array([0.1, 0.0]))
+    assert math.isclose(th2["mu_eq_pa"], TRUTH["mu_eq_pa"], rel_tol=1e-12) and th2["g1"] != TRUTH["g1"]
+    assert math.isclose(th2["tau2_s"], TRUTH["tau2_s"], rel_tol=1e-12)
+
+
+def test_staged_fit_recovers_toy_truth(tmp_path):
+    path = make_dataset(tmp_path)
+    sp = space()
+    calls = []
+
+    def make(exps):
+        calls.append(exps)
+        return rcf.Objective(path, forward=ToyForward(), experiments=exps)
+    res = rcf.fit_staged(make, sp, _box(sp), stages=TOY_STAGES, start_theta=_centre(), budget_s=600, fd_step=1e-4)
+    assert [s["name"] for s in res["stages"]] == [s["name"] for s in TOY_STAGES] and not res["budget_hit"]
+    assert calls == [["T1"], ["R1", "T1"], ["F1"], None]
+    _, sigma, _ = rcf.covariance(sp, res["u"], res["jac"], res["residuals"])
+    for i, k in enumerate(rcf.PARAMS):
+        assert abs(res["theta"][k]-TRUTH[k]) <= max(4*sigma[i], 0.02*TRUTH[k]), (k, res["theta"][k], TRUTH[k])
+    lo, hi = _box(sp)
+    assert np.all(np.array(res["u"]) >= lo-1e-12) and np.all(np.array(res["u"]) <= hi+1e-12)
+    rec, sha = rcf.freeze_fit_staged(tmp_path/"fit_v2.json", result=res, space=sp, provenance={"test": True},
+                                     protocol_id="rubber_calib_tests_v2")
+    assert rec["stages"][0]["name"] == "S1_elastic" and len(sha) == 64 and rec["budget_hit"] is False
+
+
+def test_budget_rule_keeps_best_iterate_and_one_final_evaluation(tmp_path):
+    """Budget exhausted: the remaining stages are skipped, the final stage still gets its first evaluation, and the
+    best iterate is the result (scored normally, never NOT_RUN)."""
+    path = make_dataset(tmp_path)
+    sp = space()
+    fwd = ToyForward()
+    res = rcf.fit_staged(lambda e: rcf.Objective(path, forward=fwd, experiments=e), sp, _box(sp),
+                         stages=TOY_STAGES, start_theta=_centre(), budget_s=0.0)
+    assert res["budget_hit"] and [s.get("skipped") for s in res["stages"][:3]] == ["BUDGET_EXHAUSTED"]*3
+    assert fwd.calls == [sp.p+1]                        # exactly one population of the final stage
+    assert all(math.isclose(res["theta"][k], _centre()[k], rel_tol=1e-9) for k in rcf.PARAMS)
+    assert res["jac"].shape == (res["n_residuals"], sp.p)

@@ -317,6 +317,7 @@ class SpeculativeJacobian:
         self.objective, self.space, self.h = objective, space, float(fd_step)
         self.cache = {}
         self.history = []
+        self.evaluated = []          # (u, r, J) of every evaluation (not written to receipts)
         self.log = log
 
     def _evaluate(self, u):
@@ -335,6 +336,7 @@ class SpeculativeJacobian:
         key = u.tobytes()
         self.cache = {key: (r0, J)}
         cost = 0.5*float(r0 @ r0)
+        self.evaluated.append((u.copy(), r0, J))
         self.history.append({"u": u.tolist(), "theta": self.space.from_u(u), "cost": cost,
                              "chi2_reduced": float(r0 @ r0)/max(1, r0.size-self.space.p)})
         if self.log:
@@ -354,7 +356,8 @@ class SpeculativeJacobian:
         return self.cache[key][1]
 
 
-def fit_trf(objective, space, starts_u, *, max_nfev=40, xtol=1e-4, ftol=1e-8, gtol=1e-8, fd_step=1e-3, log=None):
+def fit_trf(objective, space, starts_u, *, max_nfev=40, xtol=1e-4, ftol=1e-8, gtol=1e-8, fd_step=1e-3, log=None,
+            x_scale=1.0):
     """Formal method: scipy ``least_squares(method="trf")`` from every start (u); returns the per-start results and
     the best (lowest cost). Convergence: scipy's status > 0 with ``xtol`` (relative step) or the nfev budget."""
     from scipy.optimize import least_squares
@@ -364,7 +367,7 @@ def fit_trf(objective, space, starts_u, *, max_nfev=40, xtol=1e-4, ftol=1e-8, gt
                                  else None)
         t0 = time.perf_counter()
         sol = least_squares(sj.fun, np.asarray(u0, float), jac=sj.jac, bounds=(space.lb, space.ub), method="trf",
-                            x_scale=1.0, xtol=xtol, ftol=ftol, gtol=gtol, max_nfev=max_nfev)
+                            x_scale=x_scale, xtol=xtol, ftol=ftol, gtol=gtol, max_nfev=max_nfev)
         r = sol.fun
         n, p = r.size, space.p
         results.append({"start": i, "u0": np.asarray(u0, float).tolist(), "theta0": space.from_u(u0),
@@ -718,3 +721,199 @@ def evaluate_heldout(manifest_path, fit_receipt_paths, ledger_dir, *, predict, t
     with open(target, "x") as fh:          # exclusive create: a race cannot evaluate twice
         fh.write(text)
     return out
+
+
+# ============================================================================ v2: staged fit with a compute budget
+
+class SubSpace:
+    """A ParameterSpace restricted to ``active`` parameters (the others fixed at ``fixed`` theta values) and to a box
+    in u (default: the parent's bounds). ``from_u`` returns the FULL theta dict, so the objective is unchanged."""
+
+    def __init__(self, parent, active, fixed, box=None):
+        self.parent, self.active = parent, list(active)
+        self.idx = [PARAMS.index(n) for n in self.active]
+        self.fixed_u = parent.to_u(fixed)
+        lb, ub = (parent.lb, parent.ub) if box is None else box
+        self.lb, self.ub = np.asarray(lb, float)[self.idx], np.asarray(ub, float)[self.idx]
+        self.p = len(self.idx)
+
+    def full_u(self, u):
+        full = self.fixed_u.copy()
+        full[self.idx] = np.asarray(u, float)
+        return full
+
+    def from_u(self, u):
+        return self.parent.from_u(self.full_u(u))
+
+    def to_u(self, theta):
+        return self.parent.to_u(theta)[self.idx]
+
+    def inside(self, u, tol=1e-12):
+        u = np.asarray(u, float)
+        return bool(np.all(u >= self.lb-tol) and np.all(u <= self.ub+tol))
+
+    def latin_hypercube(self, n, seed):
+        rng = np.random.default_rng(seed)
+        out = np.empty((n, self.p))
+        for i in range(self.p):
+            perm = rng.permutation(n)
+            out[:, i] = self.lb[i]+(self.ub[i]-self.lb[i])*(perm+rng.uniform(size=n))/n
+        return out
+
+
+class BudgetExhausted(RuntimeError):
+    pass
+
+
+class BudgetedObjective:
+    """Wraps an objective: a new forward population is refused (``BudgetExhausted``) when the elapsed wall-clock time
+    plus the duration of the previous evaluation would exceed ``deadline`` (time.monotonic seconds)."""
+
+    def __init__(self, objective, deadline, min_evals=0):
+        self.objective, self.deadline, self.last = objective, float(deadline), 0.0
+        self.count, self.min_evals = 0, int(min_evals)
+
+    def residuals_population(self, thetas):
+        now = time.monotonic()
+        if self.count >= self.min_evals and now+self.last > self.deadline:
+            raise BudgetExhausted(f"wall-clock budget: {now:.0f} + {self.last:.0f} s > deadline {self.deadline:.0f}")
+        out = self.objective.residuals_population(thetas)
+        self.last = time.monotonic()-now
+        self.count += 1
+        return out
+
+
+def _run_stage(objective, sub, starts, *, max_nfev, fd_step, xtol, ftol, gtol, x_scale, log, deadline, min_evals=0):
+    """TRF over a SubSpace from one or more starts (lockstep); every evaluation is kept, the budget may end the stage
+    early (best iterate kept). Returns (best (u_sub, r, J, cost, start), per-start records, budget_hit)."""
+    import threading
+    bobj = BudgetedObjective(objective, deadline, min_evals)
+    pool = LockstepPool(bobj, len(starts))
+    sjs = [SpeculativeJacobian(_WorkerObjective(pool, i), sub, fd_step,
+                               log=(lambda m, i=i: log(f"[start {i}] {m}")) if log else None)
+           for i in range(len(starts))]
+    recs = [None]*len(starts)
+    budget = {"hit": False}
+
+    def work(i):
+        from scipy.optimize import least_squares
+        try:
+            sol = least_squares(sjs[i].fun, np.asarray(starts[i], float), jac=sjs[i].jac, bounds=(sub.lb, sub.ub),
+                                method="trf", x_scale=x_scale, xtol=xtol, ftol=ftol, gtol=gtol, max_nfev=max_nfev)
+            recs[i] = {"status": int(sol.status), "message": str(sol.message), "nfev": int(sol.nfev)}
+            pool.finish(i)
+        except BudgetExhausted as exc:
+            budget["hit"] = True
+            recs[i] = {"status": "BUDGET_EXHAUSTED", "message": str(exc), "nfev": len(sjs[i].evaluated)}
+            pool.finish(i)
+        except RuntimeError as exc:
+            if "lockstep coordinator failed" in str(exc) and "BudgetExhausted" in str(exc):
+                budget["hit"] = True
+                recs[i] = {"status": "BUDGET_EXHAUSTED", "message": str(exc), "nfev": len(sjs[i].evaluated)}
+                pool.finish(i)
+            else:
+                pool.finish(i, repr(exc))
+                raise
+        except Exception as exc:
+            pool.finish(i, repr(exc))
+            raise
+    threads = [threading.Thread(target=work, args=(i,), daemon=True) for i in range(len(starts))]
+    for th in threads:
+        th.start()
+    try:
+        pool.run()
+    except BudgetExhausted:
+        budget["hit"] = True
+    for th in threads:
+        th.join()
+    hard = {k: v for k, v in pool.errors.items() if "BudgetExhausted" not in str(v) and k != "coordinator"}
+    if hard:
+        raise RuntimeError(f"stage failed: {hard}")
+    best = None
+    for i, sj in enumerate(sjs):
+        recs[i] = {**(recs[i] or {}), "start": i, "u0": np.asarray(starts[i], float).tolist(),
+                   "history": sj.history}
+        for u, r, J in sj.evaluated:
+            cost = 0.5*float(r @ r)
+            if best is None or cost < best[3]:
+                best = (u, r, J, cost, i)
+    return best, recs, budget["hit"]
+
+
+V2_STAGES = (
+    {"name": "S1_elastic", "params": ["mu_eq_pa"], "experiments": ["T1"], "starts": 1, "max_nfev": 8},
+    {"name": "S2_visco", "params": ["g1", "tau1_s", "g2", "tau2_s"], "experiments": ["R1", "T2"], "starts": 3,
+     "max_nfev": 15},
+    {"name": "S3_friction", "params": ["mu_table"], "experiments": ["F1"], "starts": 1, "max_nfev": 8},
+    {"name": "S4_joint_polish", "params": list(PARAMS), "experiments": None, "starts": 1, "max_nfev": 6},
+)
+
+
+def fit_staged(make_objective, space, box, *, stages=V2_STAGES, start_theta, budget_s, seed=2513, fd_step=1e-3,
+               xtol=1e-4, ftol=1e-8, gtol=1e-8, x_scale="jac", log=None):
+    """v2 staged fit (protocol rubber_calib_tests_v2): the stages run in order, each a bounded TRF (``x_scale``,
+    bounds = ``box`` in u, i.e. the prior box) over its parameters with the others fixed at the current estimate, on its
+    experiments (``make_objective(experiment_ids or None)`` -> Objective; None = the whole fit split). Multi-start
+    stages use a seeded Latin hypercube over their box (lockstep). The wall-clock budget ``budget_s`` covers every
+    stage; when it is exhausted the best iterate so far of the current stage is kept and the remaining stages are
+    skipped, except that the final stage always gets at least one evaluation (its first population gives the full
+    residual and Jacobian at the current estimate). The result is the best evaluated point of the final stage."""
+    t0 = time.monotonic()
+    deadline = t0+float(budget_s)
+    theta = dict(start_theta)
+    out = {"stages": [], "budget_s": float(budget_s), "budget_hit": False}
+    final = None
+    for k, st in enumerate(stages):
+        last = k == len(stages)-1
+        if time.monotonic() > deadline and not last:
+            out["stages"].append({"name": st["name"], "skipped": "BUDGET_EXHAUSTED"})
+            out["budget_hit"] = True
+            continue
+        sub = SubSpace(space, st["params"], theta, box=box)
+        starts = ([sub.to_u(theta)] if st["starts"] == 1
+                  else list(sub.latin_hypercube(st["starts"], seed+k)))
+        obj = make_objective(st["experiments"])
+        ts = time.monotonic()
+        stage_deadline = deadline
+        best, recs, hit = _run_stage(obj, sub, starts, max_nfev=st["max_nfev"], fd_step=fd_step, xtol=xtol,
+                                     ftol=ftol, gtol=gtol, x_scale=x_scale,
+                                     log=(lambda m, n=st["name"]: log(f"{n} {m}")) if log else None,
+                                     deadline=stage_deadline, min_evals=1 if last else 0)
+        out["budget_hit"] |= hit
+        theta = sub.from_u(best[0])
+        out["stages"].append({"name": st["name"], "params": st["params"], "experiments": obj.exp_ids,
+                              "starts": recs, "best_start": best[4], "best_cost": best[3], "theta": dict(theta),
+                              "budget_hit": hit, "wall_s": time.monotonic()-ts,
+                              "n_residuals": int(best[1].size)})
+        if last:
+            final = (sub, best, obj)
+    sub, best, obj = final
+    u_full = sub.full_u(best[0])
+    r, J = best[1], best[2]
+    n, p = r.size, space.p
+    out.update(theta=space.from_u(u_full), u=u_full.tolist(), residuals=r, jac=J, cost=0.5*float(r @ r),
+               chi2=float(r @ r), chi2_reduced=float(r @ r)/(n-p), n_residuals=n, objective=obj,
+               wall_s=time.monotonic()-t0)
+    return out
+
+
+def freeze_fit_staged(path, *, result, space, provenance, protocol_id, extra=None):
+    """Fit receipt of a v2 staged fit (same schema keys as ``freeze_fit`` plus ``stages``; never overwrites)."""
+    obj = result["objective"]
+    final = result["stages"][-1]
+    trf = {"method": f"staged scipy.optimize.least_squares trf ({protocol_id})", "best": 0,
+           "settings": {"stages": [{k: v for k, v in s.items() if k in ("name", "params", "experiments")}
+                                   for s in result["stages"]], "budget_s": result["budget_s"],
+                        "budget_hit": result["budget_hit"], "x_scale": "jac", "bounds": "prior box (u)"},
+           "starts": [{"start": 0, "theta0": final["starts"][0]["history"][0]["theta"] if final.get("starts") else None,
+                       "u": result["u"], "theta": result["theta"], "cost": result["cost"], "chi2": result["chi2"],
+                       "chi2_reduced": result["chi2_reduced"], "n_residuals": result["n_residuals"],
+                       "status": final["starts"][0].get("status") if final.get("starts") else None,
+                       "message": final["starts"][0].get("message") if final.get("starts") else None,
+                       "nfev": sum(len(s["history"]) for s in final.get("starts", [])),
+                       "converged_xtol": final["starts"][0].get("status") in (2, 4) if final.get("starts") else False,
+                       "budget_exhausted": bool(result["budget_hit"]), "jac": result["jac"],
+                       "residuals": result["residuals"], "wall_s": result["wall_s"]}]}
+    return freeze_fit(path, objective=obj, space=space, trf=trf, provenance=provenance,
+                      extra={"stages": [{k: v for k, v in s.items()} for s in result["stages"]],
+                             "budget_hit": result["budget_hit"], **(extra or {})})
