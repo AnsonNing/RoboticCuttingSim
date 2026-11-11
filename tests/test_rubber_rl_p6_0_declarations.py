@@ -14,7 +14,8 @@ PINS = {"configs/rubber/rl/rubber_strip_drag_v1.json":
         "configs/rubber/rubber_rl_tests_v1.json": "8e4b2593e968532e10808d4828f093df964747c18c8b98d260d1eae68535fd4c",
         "configs/rubber/rl/rubber_strip_drag_v2.json":
         "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb",
-        "configs/rubber/rubber_rl_tests_v2.json": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548"}
+        "configs/rubber/rubber_rl_tests_v2.json": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+        "configs/rubber/rubber_rl_tests_v3.json": "7dc077639ab8651e4ba6a92eac037486e4268834ec9f47f32b635cb4a93c6e2f"}
 
 
 def _sha(path):
@@ -76,3 +77,18 @@ def test_v2_declarations_after_k2_1():
     assert "fallback_trigger" in p["tests"]["RL-08"] and "1.0 %" in p["tests"]["RL-08"]["fallback_trigger"]
     assert set(p["tests"]) == {f"RL-{i:02d}" for i in range(1, 12)}
     assert v2["id"] == "rubber_contact_tests_v2"
+
+
+def test_v3_supersedes_rl05_only():
+    v2 = json.loads((ROOT/"configs"/"rubber"/"rubber_rl_tests_v2.json").read_text())
+    v3 = json.loads((ROOT/"configs"/"rubber"/"rubber_rl_tests_v3.json").read_text())
+    assert v3["supersedes"]["rubber_rl_tests_v2"]["sha256"] == PINS["configs/rubber/rubber_rl_tests_v2.json"]
+    assert v3["prerequisites"] == v2["prerequisites"]
+    for k in v2["tests"]:
+        if k != "RL-05":
+            assert v3["tests"][k] == v2["tests"][k], k
+    r5 = v3["tests"]["RL-05"]
+    assert r5["pass"] == v2["tests"]["RL-05"]["pass"]               # the criterion is unchanged
+    assert "7000 + e" in r5["procedure"] and "2000 + e" not in r5["procedure"]
+    assert r5["controller_v3"]["mode"] == "pivot_grip" and r5["controller_v3"]["k_radial"] == 0.5
+    assert "5000-5011" in r5["development"]["development_seeds"]
