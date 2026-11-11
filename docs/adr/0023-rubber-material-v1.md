@@ -2208,3 +2208,83 @@ P6.0–P6.7; Z1–Z3. Deferred: B3, C1, P1, X4, X5, Q1W-A, and the real-data pro
 
 Estimate: ≈ 20 nominal agent-days (≈ 9-day critical path), ≈ 3–5 calendar days at the velocity observed in P2-3 /
 P2-4, ≈ 11 GPU-hours (mostly GPU0; the Native run needs ≥ 14 GiB free). Add 0.5–1 day per protocol v2 cycle.
+
+### 23.5 Implementation note: S1 self-penetration detector (amendment, 2026-11-11, rcs-impl)
+
+Task S1 of §23.2 decision 2 / plan §2.2, on `claude/rl-rubber` after K1. Code `a1bdeac`; GPU check declaration
+`configs/rubber/rubber_selfpen_check_v1.json` committed alone at `5effd81` (sha256 `cc5cf333…8b8bc0`, pinned in
+`tests/test_rubber_s1_protocol.py`); GPU script `bca572d`. Report `docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md`
+section 12; evidence `docs/evidence/rl_ready/p2_s1_selfpen_001.json`. Nothing frozen changed (Phase 1
+`batched/constitutive.py`, `errors.py`, `material_batch.py`, `particle_contacts.py`; `configs/rl_benchmark/*`;
+`scripts/rl_ready/*`; `tlmpm_rubber_v1.py`, `rubber_constitutive.py`, the visco and constraint-work modules; rubber
+protocols). Material status `SIMULATOR_ONLY_UNCALIBRATED`; self-contact physics stays `NOT_IMPLEMENTED_V1`.
+
+- **Module.** New `rubber_self_penetration.py`: one kernel source for the single-env owner (`LiveRubberMaterial`, N = 1)
+  and the batched owner (`BatchedRubberMaterial`, N envs). Changed Phase 2 files: `live_rubber_material.py`,
+  `batched/rubber_material_batch.py`.
+- **Option.** `self_penetration_check` ∈ {`off_v1` (default), `surface_grid_v1`} and
+  `self_penetration_check_substeps` (default 256) on `LiveRubberMaterial`. A batch takes the option from its lives; mixed
+  values are refused (`UNSUPPORTED_NONUNIFORM_BATCH`). With `off_v1` there is no detector object, no array and no launch
+  (tested by making any detector launch raise); receipts and step records gain a `self_penetration` block only when on.
+- **Test.** Surface particles p, q of one env with |x_p − x_q| < s (current positions: `x`, or the float64 shadow `x64`
+  when F10 is on; distances in float64) and |X_p − X_q| > 3·dx (reference, float32). Each pair is counted once.
+- **Grid.** The Phase 1 `FallbackGrid` pattern re-implemented for surface particles: key `env·C + hash(cell)` (Warp's
+  hashgrid cell hash, cell width s, per-axis `dims` = reference extent / s + 3, at least 3), stable
+  `wp.utils.radix_sort_pairs`, memsets, per-cell ranges and a 27-cell query. No `wp.HashGrid`. Envs cannot mix (the env
+  is in the key). A hash collision only adds candidates that fail the distance test.
+- **Cadence.** After substep k of a control step when k % `check_substeps` = 0 and after the last substep. On CUDA the
+  checks are captured inside the graph chunks; the chunk is aligned to a multiple of the interval (500 → 256), so every
+  replay checks at the same positions. On CPU they run eagerly at the same positions. One warm-up check runs before the
+  capture (radix-sort scratch) and is cleared by the reset that follows.
+- **Outputs.** Per env, int32: `hits` (pairs, summed over checks), `first_check` (→ control step and substep), `checks`,
+  `blind_steps` (control steps with 2·v_max·Δt_check ≥ t − s, from the diagnostics `max_speed_m_s`; information only).
+  After the diagnostics a kernel ORs the sticky bit **`RUBBER_SELF_CONTACT_UNRESOLVED` = 8** into the rubber
+  invalid-reason table (`INVALID_REASONS` / `decode_reason` of `live_rubber_material` and `rubber_material_batch`).
+  Batched: before `_validity_b`, so `invalid_count` and strict mode see it. Strict mode raises; training mode records.
+  The masked reset clears the detector state and the bit of the reset envs.
+- **CPU tests** (`tests/test_rubber_self_penetration.py`, 14):
+  - (a) A case-C strip (24 × 3 × 3 mm, n_t 2) whose far grip is lifted, carried back over the strip and driven down
+    through its lower leg. An independent brute-force (cKDTree) search after every substep finds the geometric overlap
+    at control step 137, substep 42. The detector (interval 8) flags at substep 48, i.e. at the next check. No other bit
+    is set. The solver state is byte-identical to a detector-free run at every step.
+  - The RUBBER-PHYS-09 v5 λ 1.5 release fold scene (t 3 mm, W/t 1, CPU) trips bit 8 in control step 4, in the same
+    control step as J_DOMAIN and CFL.
+  - (b) Prescribed U-bends of radius 3t and 5t never flag (x and x64). A closed U with inner centre gap s/2 flags.
+  - (c) L0 byte-wise single vs batched: N 1 with the P2-6 options (x64 positions) and N 3 heterogeneous, every control
+    step, over solver state, diagnostics, detector arrays and invalid bits.
+  - (d) Isolation: the crossing in env 1 leaves envs 0 / 2 byte-identical to a control batch; the bit is set for env 1
+    only.
+  - (e) Default off.
+  - (f) The masked reset clears.
+  - No false trips in the v5 -09 cantilever / vibration scenes and the visco runner jobs (smoke length), built by their
+    unchanged builders with the detector forced on.
+- **GPU check `gpu_selfpen_001`** (GPU0 RTX 5090, driver 570.211.01, blocking GPU0 lock, 30.9 GB free at start, clean
+  tree at `bca572d`, SHARED_GPU: co-tenant PID 642659 at 766 MiB present in every sample, not touched; 231 s): **PASS**.
+  - **L2 PASS**: detector-on cost arms finite, mass unchanged, audits 0, invalid bits 0, hits 0, checks = 6 × 21 per
+    env.
+  - **TRIP PASS**:
+    - single env: bit 8 at control step 139 on the GPU vs 137 on the CPU;
+    - batched N 3: bit 8 for env 1 only (step 136);
+    - no other bit before it.
+
+    The hit time is not scored, because GPU float atomics make the trajectory order-nondeterministic.
+  - **NO_FALSE_TRIP PASS**: 12 v5 -09 cantilever / vibration runs (t 3 / 4 / 6 mm × W/t 1 / 4) and the full-length visco
+    jobs v03_strip_16hz, v02_creep and v04b_cantilever_x1 show no bit at all. The 6 stretch_release runs are reported:
+    none tripped bit 8 on the GPU, including t 3 mm W/t 1, which trips on the CPU. That scene's post-release fold is
+    trajectory-sensitive, so it is not a robust trip trigger; scene (a) is.
+- **Cost** (P2-6 profile scene: 125 × 16 × 4 mm, n_t 4, 65,024 particles / 19,664 surface per env, M = 2, table plane
+  with law v3, F8 + kick + F9 + F10 + guard, 5,226 substeps per 20 ms, dt 3.827 µs, 50 Hz, no camera, no recording;
+  1 cold + 5 warm control steps per arm, interleaved; SHARED_GPU):
+
+  | N | ms/substep on | ms/substep off | overhead | env-steps/s on / off | detector memory |
+  |---|---|---|---|---|---|
+  | 1 | 0.32084 | 0.32100 | −0.05 % (noise) | 0.596 / 0.596 | 1.19 MB |
+  | 8 | 1.44038 | 1.43354 | +0.48 % | 1.063 / 1.068 | 9.53 MB |
+
+  The on arm also runs the aligned graph chunk (256 instead of 500), and the overhead includes it. The +0.48 % at N 8
+  matches the plan estimate (≤ 0.5 %).
+- **CPU suites** at `bca572d` (rubber + batched + naming + frozen pins): **540 passed** with `CUDA_VISIBLE_DEVICES=''` (778 s) and **540 passed** with `=0` under the GPU0 lock (778 s), 2 warnings (scipy IntegrationWarning in a visco reference test, as at K1); logs `artifacts/rl_ready/p2_s1/cpu_tests_s1_001/`.
+- **Open.**
+  - P2-6 mapping of bit 8 to `TERM_MATERIAL_INVALID` (task P6.1).
+  - The blind-interval rate is reported, not bounded.
+  - The detector does not resolve self-contact.

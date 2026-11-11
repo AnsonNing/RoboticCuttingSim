@@ -594,3 +594,50 @@ result stay.
 tests/test_repo_naming.py` at `eab4ef4` (src unchanged since `b668bdc`): **478 passed** with `CUDA_VISIBLE_DEVICES=''`
 (592 s) and **478 passed** with `=0` under the GPU0 lock (585 s); logs `artifacts/rl_ready/p2_4/cpu_tests_x3_001/`. New:
 `tests/test_rubber_contact_v3.py` (16), the v3 protocol pin. None of the tests needs local artifacts.
+
+## 12. Task S1 — self-penetration detector `surface_grid_v1` (ADR 0023 §23.2 decision 2, §23.5)
+
+Branch `claude/rl-rubber` (after K1). Material status **SIMULATOR_ONLY_UNCALIBRATED**. Self-contact physics stays
+**NOT_IMPLEMENTED_V1**; S1 turns a crossing into the sticky bit `RUBBER_SELF_CONTACT_UNRESOLVED` (8) and adds no force.
+Evidence `docs/evidence/rl_ready/p2_s1_selfpen_001.json`; raw `artifacts/rl_ready/p2_s1/`.
+
+| Item | Status | Key numbers |
+|---|---|---|
+| Detector, single env + batched, one kernel source (`a1bdeac`) | **DONE** | surface pairs with \|x_p − x_q\| < s and \|X_p − X_q\| > 3 dx; env-grouped sort grid, no `wp.HashGrid`; checks every 256 substeps + end of step, inside the CUDA graph; default `off_v1` = no array, no launch |
+| CPU tests (a)–(f) + no-false-trip, `tests/test_rubber_self_penetration.py` (14) | **PASS** | (a) brute-force overlap at step 137 / substep 42, flag at substep 48 (interval 8), no other bit; λ 1.5 release scene trips (CPU); (b) U-bend 3t / 5t no flag, closed U flags; (c) L0 byte-wise N 1 (x64) / N 3; (d) env 1 only; (e) off; (f) reset clears |
+| Declaration `rubber_selfpen_check_v1` (`5effd81`, sha256 `cc5cf333…8b8bc0`) | **DECLARED** before the run | COST reported; L2, TRIP, NO_FALSE_TRIP scored |
+| GPU check `gpu_selfpen_001` (`bca572d`, clean, GPU0, SHARED_GPU: PID 642659) | **PASS** | L2 PASS; TRIP PASS (GPU step 139 vs CPU 137; batched N 3: env 1 only); NO_FALSE_TRIP PASS (12 -09 runs + 3 full visco jobs) |
+| Cost (P2-6 profile scene, 65,024 particles / 19,664 surface per env, 5,226 substeps) | reported | N 1: 0.32084 vs 0.32100 ms/substep (−0.05 %, noise); N 8: 1.44038 vs 1.43354 (+0.48 %) |
+
+Command (GPU):
+
+    flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp \
+        PYTHONPATH=src .venv/bin/python scripts/rubber/p2_s1/gpu_selfpen_check.py --out artifacts/rl_ready/p2_s1/gpu_selfpen_001
+
+Run details:
+- RTX 5090, driver 570.211.01, Warp 1.17.0, Python 3.12.
+- 30.9 GB free at start; 231 s.
+- Co-tenant PID 642659 (766 MiB) present in every sample → **SHARED_GPU**.
+
+Cost rows (detector on vs off, `BatchedRubberMaterial`):
+- Scene: N 1 and 8 identical slots, case A 125 × 16 × 4 mm on the table plane (law v3), M = 2 Prony, F8 + kick + F9 +
+  F10 + guard 1.0.
+- Timing: dt 3.827 µs, 50 Hz control, no camera, no recording. 1 cold + 5 warm control steps per arm, interleaved; median
+  warm wall.
+- The on arm runs graph chunks of 256 substeps (aligned to the check interval) instead of 500; the overhead includes
+  this.
+- Detector memory: 1.19 MB per env.
+
+Observations:
+- The λ 1.5 instantaneous-release scene (RUBBER-PHYS-09 stretch_release) trips bit 8 on the CPU at t 3 mm, W/t 1, in
+  the same control step as J_DOMAIN / CFL. On the GPU, none of the 6 stretch_release runs tripped bit 8. Their
+  post-release fold is trajectory-sensitive, so they are reported, not scored.
+- The deliberate crossing (a) trips on both devices.
+- Blind-interval counts are 0 in every scored run and 2–3 control steps in the stretch_release runs (release speeds).
+
+Limitations:
+- Detection only.
+- A pass-through faster than ≈ (t − s) / (2·Δt_check) between two checks can be missed; `blind_steps` reports it.
+- The P2-6 mapping of bit 8 to `TERM_MATERIAL_INVALID` belongs to task P6.1.
+
+CPU suites at `bca572d`: **540 passed** with `CUDA_VISIBLE_DEVICES=''` (778 s) and **540 passed** with `=0` under the GPU0 lock (778 s), 2 warnings (scipy IntegrationWarning in a visco reference test, as at K1); logs `artifacts/rl_ready/p2_s1/cpu_tests_s1_001/`.
