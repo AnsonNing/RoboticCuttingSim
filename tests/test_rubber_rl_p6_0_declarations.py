@@ -1,6 +1,7 @@
 """P6.0 declarations (ADR 0023 §23.2 decision 7, plan §4.8) are frozen at commit: the task config
 ``configs/rubber/rl/rubber_strip_drag_v1.json`` and the protocol ``configs/rubber/rubber_rl_tests_v1.json`` were
-declared together, alone, before any P2-6 protocol run. A failure means a frozen file was edited: never update a pin,
+declared together, alone, before any P2-6 protocol run. v1 (130ccd4) is superseded by v2 after the K2 review
+finding K2-1 (the v3 contact law is wrong for spin / sideways drag) and was never run formally; both stay pinned. A failure means a frozen file was edited: never update a pin,
 declare v2 instead. CPU only, no Warp / Torch."""
 import hashlib
 import json
@@ -10,7 +11,10 @@ from robotic_cutting_sim.rubber_material import ROOT
 
 PINS = {"configs/rubber/rl/rubber_strip_drag_v1.json":
         "fba43424372e17fe926fad697ff8336ea7c5ed0c2d8ecdbdefb9978a994f4397",
-        "configs/rubber/rubber_rl_tests_v1.json": "8e4b2593e968532e10808d4828f093df964747c18c8b98d260d1eae68535fd4c"}
+        "configs/rubber/rubber_rl_tests_v1.json": "8e4b2593e968532e10808d4828f093df964747c18c8b98d260d1eae68535fd4c",
+        "configs/rubber/rl/rubber_strip_drag_v2.json":
+        "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb",
+        "configs/rubber/rubber_rl_tests_v2.json": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548"}
 
 
 def _sha(path):
@@ -43,3 +47,32 @@ def test_protocol_declares_rl01_to_rl11_and_pins_its_inputs():
     assert p["prerequisites"]["task_config"]["sha256"] == PINS["configs/rubber/rl/rubber_strip_drag_v1.json"]
     assert p["prerequisites"]["contact_envelope"]["sha256"] == _sha(p["prerequisites"]["contact_envelope"]["path"])
     assert p["tests"]["RL-04"]["thresholds"] == {"k_per_side": 5, "lam": 4.0, "eps_rel": 1e-06}
+
+
+def test_v2_declarations_after_k2_1():
+    from robotic_cutting_sim.rubber_contact_envelope import FrictionOutOfEnvelope
+    import pytest
+    cfg = json.loads((ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v2.json").read_text())
+    v1 = json.loads((ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v1.json").read_text())
+    p = json.loads((ROOT/"configs"/"rubber"/"rubber_rl_tests_v2.json").read_text())
+    assert cfg["supersedes"]["rubber_strip_drag_v1"]["sha256"] == PINS["configs/rubber/rl/rubber_strip_drag_v1.json"]
+    assert "K2-1" in cfg["supersedes"]["rubber_strip_drag_v1"]["reason"] and "K2-1" in p["supersedes"]["rubber_rl_tests_v1"]["reason"]
+    assert cfg["profile"]["id"] == "rubber_rl_env_v2" and cfg["contact"]["law"] == "grid_node_penalty_coulomb_v2"
+    v2 = json.loads((ROOT/"configs"/"rubber"/"rubber_contact_tests_v2.json").read_text())
+    assert cfg["contact"]["law_parameters"] == {k: v for k, v in v1["contact"]["law_parameters"].items()
+                                                if k != "slip_rate_damping_ratio_zeta_d"}
+    for key in ("profile", "scene", "slots", "preload", "goal", "action", "observation", "reward", "done", "evaluator"):
+        a, b = dict(cfg[key]) if isinstance(cfg[key], dict) else cfg[key], v1[key]
+        if key == "profile":
+            a = {k: v for k, v in a.items() if k not in ("id", "difference_to_v1")}
+            b = {k: v for k, v in b.items() if k != "id"}
+        assert a == b, key                                       # identical to v1 except the contact law / friction
+    env = load_envelope(ROOT/cfg["contact"]["envelope"]["path"], expected_sha256=cfg["contact"]["envelope"]["sha256"])
+    assert tuple(cfg["randomisation"]["ranges"]["friction_table"]) == env.friction_range(
+        cfg["contact"]["law"], [4, 5, 6], general_slip=True) == (0.3, 0.3)
+    with pytest.raises(FrictionOutOfEnvelope):
+        env.friction_range("grid_node_penalty_coulomb_v3", [4, 5, 6], general_slip=True)
+    assert p["prerequisites"]["task_config"]["sha256"] == PINS["configs/rubber/rl/rubber_strip_drag_v2.json"]
+    assert "fallback_trigger" in p["tests"]["RL-08"] and "1.0 %" in p["tests"]["RL-08"]["fallback_trigger"]
+    assert set(p["tests"]) == {f"RL-{i:02d}" for i in range(1, 12)}
+    assert v2["id"] == "rubber_contact_tests_v2"
