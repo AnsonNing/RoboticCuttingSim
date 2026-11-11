@@ -421,3 +421,181 @@ unchanged. From §20 on, batched L0 tests compare raw bytes.
 - Batched execution of `consistent_mass_projection_v1` and `f64_shadow_v1` (the batch refuses both).
 - `_bc_b` node loop (14–17 % of GPU time) → constrained-node list.
 - R2.5 xhigh review and freeze decision.
+
+## v5 — protocol `rubber_phys_tests_v5` (R2.5 review decisions (a), (b), F7, F9; ADR 0023 §21)
+
+Branch `claude/rl-rubber-v5` (from `claude/rl-rubber` @ `1b21801`). Material status: **SIMULATOR_ONLY_UNCALIBRATED**.
+Evidence: `docs/evidence/rl_ready/p2_2_v5_001.json`. Raw outputs: `artifacts/rl_ready/p2_2_v5/` (not committed).
+
+### v5.1 Declaration and order
+
+| Commit | Content | Time (KST) |
+|---|---|---|
+| `8881ff0` | `configs/rubber/rubber_phys_tests_v5.json` (sha256 `7e02f57b…67f0`) + SHA pin and v5-vs-v4 test, committed alone | 2026-11-10 21:58:10 |
+| `687f4fe` | review fixes: `rubber_rl_v1` → `reduced_fidelity: thickness_resolution_n_t3` with a measured bias, `workload_e_v2.json`, ADR 0023 E1 / §3 D5 / §4.2 / §8 errata and §21, ppc 3 refused without `quadrature_check` (F9) | before the runs |
+| `1bdef79` | v5 runners | before the runs |
+| first v5 run | `refinement_v5_001` | 22:06:45 |
+
+Nothing was re-declared after any result. What the test asserts: the -11 rule block, thresholds, CFL set, guard and
+verdict CFL are byte-identical to v4, and every threshold of every test is unchanged.
+
+### v5.2 Results
+
+| Test (v5) | Setup change | Measured | Verdict |
+|---|---|---|---|
+| -02 small sag (24) | n_t 4 / 6, extrapolation pair (4, 6) | narrow δ/δ_EB 0.9828–0.9928; wide 0.9235–0.9594 (in the bracket); **δ/δ_extrap 1.0005–1.0073** (max: Lt20 W4t n_t 4); reaction ≤ 3.4e-6; converged; no flag | **PASS** |
+| -03 scaling | n_t 4; series_t L 0.096 m | exponents 4.0077, −2.0082 | **PASS** |
+| -04 free vibration | n_t 4, guard on | f1/f_EB − 1 = +4.8e-5; f1(dt)/f1(dt/2) − 1 = −5.3e-5; energy drift ≤ 5.0e-4 of peak Ψ; amplitude ratio 1.0017; CFL_eff ≤ 0.518; no flag | **PASS** |
+| -04 batched N = 4 CPU | byte-wise L0, guard on | 312 steps × 257 substeps, 0 byte mismatches (every array, diagnostics, markers, wrench, work, counters); env 0 tip series byte-equal to the formal dt run; invalid bits 0 | **PASS** |
+| -05 large sag | n_t 4 | δ/δ_elastica 0.9995 / 0.9939 / 0.9968 (α 20 / 3 / 9); J̄ ∈ [0.9904, 1.0101] | **PASS** |
+| -08 simple shear | r = 1.5 (declared rule) | 300 substeps over the v4 interval, CFL 0.333; CFL_eff at end 0.440 / 0.560 / **0.864** (γ 0.5 / 1 / 2; the declared 0.864381); σ12 error −8.6e-7, N1 error −1.7e-6 (every γ); no flag | **PASS** |
+| -09 records | guard on | 18 / 18 records valid; cantilever and vibration runs flag-free; stretch_release (λ 1.5, instantaneous release): CFL flag in 6 / 6 runs at the first control step after the release (step 4), plus J_DOMAIN in the two W = t runs; no run became non-finite | **PASS** |
+| -11 refinement | see v5.3 | Q1 / Q2 / Q4 GCI PASS; **Q1w GCI 2.16 % > 2 %**; dt PASS; valid PASS | **FAIL** (Q1w) |
+| workload E v2, GPU | n_t 4, N 1 / 4 / 8 | L2 invariants and VRAM criterion met for every N (v5.4) | **PASS** |
+
+Not re-run, by the declaration: -01 (v2 PASS), -06 and -07 (v4 PASS; uniaxial, n_t 4), -10 (v4), -11 Q3 (v4 PASS) and
+-12 (v3). The earlier FAILs stay recorded: v4 -08 (validity), v4 -11 (Q1 at n_t 3), v3 -02 / -07, v2 -07 and v2 L3.
+
+### v5.3 RUBBER-PHYS-11 v5 (`refinement_v5_001`, CPU)
+
+Run: commit `1bdef79`, clean tree, Warp 1.17.0 CPU, `.deps/isaacsim-venv`. 24 jobs on 24 workers; host load about 45
+falling to about 1. Window 2026-11-10 22:06:45 to 2026-11-11 08:47:34 (38,450 s; the last job is Q1w n_t 8 with
+331,776 particles). Guard on; `f64_shadow_v1` for Q1 / Q1w / Q4. No invalid flag, no guard violation, every static
+initializer converged.
+
+```
+TMPDIR=/mnt/data/ningan/tmp CUDA_VISIBLE_DEVICES='' PYTHONPATH=src OMP_NUM_THREADS=1 .deps/isaacsim-venv/bin/python \
+    scripts/rubber/p2_2_v5/run_refinement_v5.py --device cpu --workers 24 --out artifacts/rl_ready/p2_2_v5/refinement_v5_001
+```
+
+Values at CFL 0.5, β 20, 2 particles per cell (h = 1/n_t). The production GCI is GCI_coarse of n_t 4 from the triplet
+(4, 6, 8), under the unchanged rule.
+
+| Q | n_t 3 | n_t 4 | n_t 6 | n_t 8 (new) | (4, 6, 8) | p_obs | p_eff / Fs | φ_ext (p_eff) | **GCI n_t 4** (≤ 2 %) | GCI_fine n_t 8 | dt CFL 0.5 → 0.25 at n_t 4 (≤ 0.1 %) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Q1 sag, W = t (m) | 4.99302e-4 | 4.96405e-4 | 4.95041e-4 | 4.94799e-4 | monotone | 3.86 | 2 / 3.0 | 4.94487e-4 | **1.48 % PASS** | 0.19 % | −1.1e-7 PASS |
+| **Q1w sag, W = 4t (m)** | 4.83413e-4 | 4.79708e-4 | 4.77789e-4 | 4.77343e-4 | monotone | 3.12 | 2 / 3.0 | 4.76769e-4 | **2.16 % FAIL** | 0.36 % | −3.5e-8 PASS |
+| Q2 f1 (Hz) | 19.2017 | 19.2877 | 19.3356 | 19.3478 | monotone | 2.90 | 2 / 1.25 | 19.3633 | **0.56 % PASS** | 0.10 % | +4.1e-5 PASS |
+| Q4 large sag (m) | 0.0658945 | 0.0658064 | 0.0657977 | 0.0658160 | oscillatory | 3.79 | 2 / 3.0 | 0.0658395 | **0.07 % PASS** | 0.11 % | +4.1e-7 PASS |
+| Q3 P11 at λ 1.5 | – | – | – | – | – | – | – | – | v4 PASS (0.01 %), not re-run | – | – |
+
+**RUBBER-PHYS-11 v5: FAIL.** Q1w (the wide strip, the workload E geometry class) has a production GCI of 2.16 %. Under
+the declared rule, p_obs 3.12 lies outside the verified window [1, 3], so Fs = 3.0 with p_eff = 2. Q1, Q2 and Q4 PASS.
+Every dt criterion and every validity criterion PASS.
+
+The verdict stands as declared. Reported for reading only, not as a re-evaluation:
+- n_t 4 lies +0.62 % from the p_eff extrapolation for Q1w (+0.56 % with p_obs);
+- the rule's Fs 1.25 branch would give 0.90 % with p_eff 2, but that branch does not apply here.
+
+A further -11 version would have to be declared as v6 before any run.
+
+**Measured bias of `rubber_rl_v1` (n_t 3), reported, not scored.**
+
+| Q | φ(3)/φ_ext − 1 (p_eff 2; p_obs) | GCI_coarse n_t 3 from (3, 4, 6), same rule | φ(4)/φ_ext − 1 (for comparison) |
+|---|---|---|---|
+| Q1 sag, L/t 20, W = t | **+0.97 %** (+0.93 %) | 3.98 % (Fs 3) | +0.39 % |
+| Q1w sag, L/t 20, W = 4t | **+1.39 %** (+1.34 %) | 2.19 % (Fs 1.25, p_obs 2.97) | +0.62 % |
+| Q2 first bending frequency | **−0.83 %** (−0.80 %) | 1.28 % | −0.39 % |
+| Q4 large-deflection tip drop | **+0.08 %** (+0.11 %) | 0.92 % (Fs 3) | −0.05 % |
+
+The `rubber_material.RESOLUTION_PROFILES["rubber_rl_v1"]["measured_bias"]` block now prints these v5 values.
+`workload_e_v2.json` is SHA-pinned and keeps its v4-based text, which points to this measurement.
+
+**Reproducibility.** 27 configurations were rerun in v5 with code paths identical to v4: Q1 / Q2 / Q4 at n_t 3 and 4
+(both CFLs) and at n_t 6, plus the twelve -02 n_t 4 configurations. All 27 equal their v4 values exactly (Warp CPU is
+deterministic).
+
+### v5.4 Workload E v2 (n_t 4, full fidelity), batched on GPU (`workload_e_v2_gpu_001`)
+
+**Run conditions:**
+- **Command:**
+  ```
+  flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=0 \
+      TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src .deps/isaacsim-venv/bin/python \
+      scripts/rubber/p2_2_v5/run_workload_e_v2.py --out artifacts/rl_ready/p2_2_v5/workload_e_v2_gpu_001
+  ```
+- **Lock and memory:** blocking lock acquired 22:07:56 with 30,959 MiB free.
+- **Code:** commit `1bdef79`, clean tree.
+- **GPU:** RTX 5090 GPU0 (uuid GPU-76f61dc7…), driver 570.211.01 (CUDA 12.8). Window 22:07:57–22:09:30.
+- **Sharing: SHARED_GPU.** Co-tenant PID 642659 held 766 MB in every sample. GPU utilisation was 0 % before the run and
+  99–100 % during it, mostly this run.
+- **Workload:** `workload_e_v2.json` row E_full: 150 × 20 × 4 mm, `rubber_ref_v1`, n_t 4, 97,280 particles per env,
+  50 Hz, dt 3.002 µs from the range maxima, 6,662 substeps per control step, per-reset material randomisation.
+- **Solver settings:** guard 1.0; v1 solver options; BC launch `motion_table_v1` (the code default; part of the P2-3
+  prep commits after 3a43d1b, which the R2.5 review did not cover); graph chunks of 500.
+- **Not used:** cameras, recording, robot.
+- **Timing:** warm = median of control steps 2–6; cold = control step 1 after build and capture; 20 masked resets with
+  resampled material.
+
+| N | particles/env | control Hz | material dt | substeps | cameras | env-steps/s (warm) | aggregate sim-time/wall | ms/substep | VRAM peak (process) | reset p95 | physics verdict | cold / warm wall per step | GPU / driver | sharing |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 97,280 | 50 | 3.002 µs | 6,662 | none | 0.865 | 0.0173 | 0.173 | 698 MB | 1.03 ms | L2 PASS | 1.255 / 1.156 s | RTX 5090 GPU0 / 570.211.01 | SHARED_GPU |
+| 4 | 97,280 | 50 | 3.002 µs | 6,662 | none | 1.057 | 0.0211 | 0.568 | 794 MB | 0.58 ms | L2 PASS | 3.857 / 3.785 s | RTX 5090 GPU0 / 570.211.01 | SHARED_GPU |
+| 8 | 97,280 | 50 | 3.002 µs | 6,662 | none | 1.033 | 0.0207 | 1.163 | 922 MB | 0.49 ms | L2 PASS | 7.830 / 7.746 s | RTX 5090 GPU0 / 570.211.01 | SHARED_GPU |
+
+**L2 for every N:**
+- finite before and after the resets;
+- per-env mass constant between resets;
+- invalid bits 0, also after one step past the resets;
+- guard violations 0 (max CFL_eff 0.48–0.53);
+- env-ownership audits 0;
+- J̄ ∈ [0.9950, 1.0049].
+
+The VRAM peak is ≤ 0.92 GB, which meets the ≤ 4 GB criterion. **Verdict: PASS.**
+
+**Throughput.** It saturates by N = 4, at 5.6e8 / 6.8e8 / 6.7e8 particle-substeps/s. These rows are not comparable with
+the P2-2 n_t 4 rows of `f2_gpu_smoke_guard_001` (0.47 env-steps/s at N 8): those ran with the `all_nodes_v1` BC launch
+on GPU1 beside a 13 GB co-tenant at 95–97 % utilisation.
+
+### v5.5 Tests
+
+Code at `1bdef79`; `.venv` Python 3.12, Warp 1.17.0. Command:
+
+```
+.venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_tlmpm_rubber_v1.py \
+    tests/test_live_rubber_material.py tests/test_batched_*.py tests/test_rl_policies_batched.py tests/test_repo_naming.py
+```
+
+| Run | Result |
+|---|---|
+| `CUDA_VISIBLE_DEVICES=''` | 331 passed, 4 skipped, 804 s |
+| `CUDA_VISIBLE_DEVICES=0`, under the GPU0 lock | 331 passed, 4 skipped, 745 s |
+
+- The 4 skips are the torch / WP-17 recording tests of `test_rl_policies_batched.py`, which are NOT_RUN in `.venv`.
+- Logs: `artifacts/rl_ready/p2_2_v5/cpu_tests_001/`.
+- New or changed tests:
+  - `test_rubber_phys_config.py`: v5 pin, v5-vs-v4 diff, -08 reserve rule, `workload_e_v1` / `v2` pins and labels;
+  - `test_rubber_phys_v5_cases.py` (5 tests);
+  - `test_rubber_refinement.py`: v5 jobs and evaluation, including a cross-check against the v4 evaluation;
+  - `test_rubber_scene.py`: ppc 3 refusal;
+  - `test_rubber_material.py`: the relabel.
+
+### v5.6 Other runs, commands and disclosures
+
+- **`rubber_phys_v5_001`:** commit `1bdef79`, clean, 56 cases, 16 workers, 22:06:47–01:56:17 (13,771 s). Command:
+  ```
+  run_rubber_phys.py --protocol v5 --tests 02,03,04,05,08,09 --device cpu --workers 16 \
+      --out artifacts/rl_ready/p2_2_v5/rubber_phys_v5_001
+  ```
+  - Its own `summary.json` has -04 as PASS_EXCEPT_NOT_RUN, because the batched part was not yet available.
+  - `summary_final.json` is the same evaluation with `--batched-04` (evaluate-only, new file, no overwrite).
+- **`batched_04_v5_001`:** started after the formal dt run, 1,834 s. Command:
+  ```
+  run_batched_04_v5.py --formal-dt .../raw/04/dt.json
+  ```
+  - Its meta records `tree_dirty: true`. The only difference from `1bdef79` was the then-untracked evidence writer
+    `write_p2_2_v5_evidence.py`, which the run does not import; it was committed in `dc26f03`.
+- **Device:** the -11 declaration pins the Warp CPU device. Every refinement job ran on the CPU; none was moved to a GPU.
+
+### v5.7 Open items
+
+- **-11 v5 FAIL (Q1w at n_t 4, GCI 2.16 % by the declared rule).** The wide strip at n_t 4 does not pass the unchanged
+  rule. A reviewer decides the next step. Options:
+  - n_t 6 as the full-fidelity grid for wide bending-dominated scenes;
+  - a v6 rule;
+  - accepting n_t 4 with its documented bias.
+
+  Any of these must be declared before a further run. This bears directly on whether `workload_e_v2` (n_t 4) can carry
+  the "full" label for wide strips.
+- GPU equivalence of the static refinement observables (float32 atomics in P2G / MUSL) is not established.
+- The `motion_table_v1` BC launch used by the GPU rows is still unreviewed (ADR 0023 §20.6).

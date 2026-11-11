@@ -39,14 +39,17 @@ RESOLUTION_PROFILES = {
     "rubber_rl_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 3,
                      "label": "reduced_fidelity: thickness_resolution_n_t3",
                      "measured_bias": {
-                         "source": "P2-2 v4 data (refinement_v4_002, rubber_phys_v4_001; R2.5 review F1); relative "
-                                   "to the n_t -> infinity extrapolation, beta 20, CFL 0.5, 2 particles per cell",
+                         "source": "protocol v5 RUBBER-PHYS-11 (refinement_v5_001, artifacts/rl_ready/p2_2_v5): "
+                                   "phi(n_t 3) / phi_ext - 1 with phi_ext the p_eff = 2 extrapolation of n_t 4 / 6 / 8, "
+                                   "beta 20, CFL 0.5, 2 particles per cell; reported, not scored",
                          "static_sag_L_over_t_10": "<= 0.5 % (ADR 0023 E1)",
-                         "static_sag_L_over_t_20_W_t": "+1.08 % (RUBBER-PHYS-11 v4 Q1, p_eff 2)",
-                         "static_sag_L_over_t_20_W_4t": "+1.26 % to +1.75 % (v4 -02 pairs, p 3.26 to 2)",
-                         "first_bending_frequency": "-0.89 % (RUBBER-PHYS-11 v4 Q2)",
-                         "large_deflection_tip_drop": "+0.16 % (RUBBER-PHYS-11 v4 Q4)",
-                         "uniaxial_stress": "grid independent (RUBBER-PHYS-11 v4 Q3)"}},
+                         "static_sag_L_over_t_20_W_t": "+0.97 % (Q1; v4 vs (3, 4, 6): +1.08 %)",
+                         "static_sag_L_over_t_20_W_4t": "+1.39 % (Q1w, the workload E geometry class)",
+                         "first_bending_frequency": "-0.83 % (Q2)",
+                         "large_deflection_tip_drop": "+0.08 % (Q4)",
+                         "uniaxial_stress": "grid independent (RUBBER-PHYS-11 v4 Q3)",
+                         "n_t_4_for_comparison": "rubber_ref_v1 itself: Q1 +0.39 %, Q1w +0.62 %, Q2 -0.39 %, Q4 "
+                                                 "-0.05 % against the same extrapolation"}},
     "rubber_coarse_v1": {"particles_per_cell_axis": 2, "min_cells_through_thickness": 2,
                          "label": "reduced_fidelity: coarse_thickness_resolution"},
 }

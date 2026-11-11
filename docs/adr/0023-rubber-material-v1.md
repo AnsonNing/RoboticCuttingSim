@@ -1129,3 +1129,24 @@ stays recorded (v4 -08 FAIL, v4 -11 FAIL, …).
 - Runners: `run_rubber_phys.py --protocol v5`, `scripts/rubber/p2_2_v5/run_refinement_v5.py`,
   `run_batched_04_v5.py`, `run_workload_e_v2.py`; `rubber_refinement.jobs_v5` / `evaluate_v5`;
   `rubber_phys.evaluate_09_v5`; the -02 evaluator takes its extrapolation pair from the protocol.
+
+### 21.3 Results (formal v5 runs; details in `docs/reports/rl_ready/P2_2_RUBBER_HYPERELASTIC.md` section v5, evidence `docs/evidence/rl_ready/p2_2_v5_001.json`)
+
+| Item | Result |
+|---|---|
+| -02 (n_t 4 / 6) | PASS: δ/δ_extrap ≤ 1.0073 |
+| -03 (n_t 4) | PASS: exponents 4.0077 / −2.0082 |
+| -04 (n_t 4, guard), with the batched N = 4 CPU L0 | PASS: f1/f_EB − 1 = +4.8e-5; byte-wise L0 equal at every step |
+| -05 (n_t 4) | PASS: δ/δ_elastica 0.9939–0.9995 |
+| -08 (r 1.5) | **PASS**: CFL_eff 0.864 at γ 2, no flag, stress errors ≤ 1.7e-6 (v4 FAIL preserved) |
+| -09 (guard) | PASS: stretch_release flags the fold at the first step after the release, never non-finite |
+| -11 v5 | **FAIL**: production GCI at n_t 4 (triplet 4 / 6 / 8): Q1 1.48 %, **Q1w 2.16 %** (p_obs 3.12 → Fs 3), Q2 0.56 %, Q4 0.07 %; dt and validity PASS |
+| n_t 3 bias (reported) | Q1 +0.97 %, Q1w +1.39 %, Q2 −0.83 %, Q4 +0.08 %; n_t 4: +0.39 / +0.62 / −0.39 / −0.05 % |
+| Workload E v2, GPU0, N 1 / 4 / 8 | PASS (L2, VRAM ≤ 0.92 GB); 0.87 / 1.06 / 1.03 env-steps/s, SHARED_GPU |
+
+Open for the reviewer: n_t 4 does not pass the unchanged GCI rule for the wide strip (Q1w). Options:
+- n_t 6 for wide bending-dominated scenes;
+- a v6 rule;
+- n_t 4 accepted with a documented bias.
+
+Whichever is chosen must be declared before a further run.
