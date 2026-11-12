@@ -12,8 +12,9 @@ identifiability, the pipeline and the generalisation of the declared protocol un
   run scripts in `0e43c67`.
 - Thresholds `configs/rubber/rubber_calib_thresholds_v1.json`, sha256 `40be2f8bb7053199ef6b29776e0a7f125dff350e224124c10b07e965182caa36`,
   committed alone in `4d7d2c4` before the formal dataset existed, pinned in `44dcc9c`.
-- **Status: P5.1–P5.5 DONE; P5.6 NOT COMPLETED** (both fits stopped before a receipt, §5). The evidence file
-  `docs/evidence/rl_ready/p2_5_calib_synthetic_001.json` is therefore NOT written yet. Raw outputs
+- **Status: P5.1–P5.6 DONE.** The v1 formal fit was aborted for compute with no receipt (§5). The formal run under
+  `rubber_calib_tests_v2` (§9–§10) gives CAL-04 / -05 / -06 FAIL and CAL-07 PASS. Evidence
+  `docs/evidence/rl_ready/p2_5_calib_synthetic_001.json`. Raw outputs
   `artifacts/rl_ready/p2_5/` (not committed, never overwritten).
 - Nothing frozen changed: `rubber_calibration.py` (v1) and the `REAL_CALIBRATED` block of `rubber_material.parse_recipe`
   are byte-pinned at the P2-5 base (`tests/test_rubber_calibration_v2.py`); no Phase 1 module, `configs/rl_benchmark/*`,
@@ -324,3 +325,147 @@ Decision needed:
 - **(b)** A reviewer-level change of the CAL-05 / CAL-06 definitions, outside the scope allowed for v2. For example:
   recovery against the fit model's own noise-free optimum instead of θ*, or tolerances whose b term uses a pilot *fit*
   rather than θ_pilot.
+
+## 10. Formal run under `rubber_calib_tests_v2` (2026-11-12)
+
+**Headline: the pipeline ran end-to-end as pre-registered, but the formal fit did not reach the fit model's optimum
+within the declared method and budget (CAL-04 FAIL, χ²_red 2.484 > 1.910). Held-out prediction FAILs (21 / 31) and
+θ recovery FAILs for g1, g2 and τ2. The negative control has power (CAL-07 PASS).** A supplementary diagnostic, run
+after the reveal and never scored, shows that on the formal data the fit model at θ* has χ²_red 1.416 and passes all
+31 held-out tolerances. The formal failure is therefore an **optimisation shortfall** (the staged fit stopped in a
+worse valley of the Prony parameters), not the resolution bias the pilot showed and the declaration predicted. The
+pilot result (§9: the n_t 4 optimum lies ≈ 10 % from the n_t 6 truth in the Prony parameters) still stands. Every
+fitted θ is resolution-specific. Labels unchanged: SIMULATOR_ONLY_UNCALIBRATED, NUMERICAL_VALIDATION_SYNTHETIC.
+
+- **Declaration.** `rubber_calib_tests_v2` was committed alone in `4218dd6` (sha256 `1606457f…01ff`) and pinned in
+  `dfd2059`, before any v2 receipt.
+  - It changes only the fit procedure (staged bounded TRF, x_scale jac, FD step 1e-2) and the budget: 3 h for the
+    formal fit and 1.5 h for the negative control, counted on the run's own GPU0-lock hold time with the lock taken
+    per evaluation.
+  - It records the corrected run order and the pre-registered predictions: CAL-04 PASS; CAL-06 FAIL on the Prony
+    parameters; CAL-05 at risk on T4 / M9.
+  - v1, the thresholds, the manifest freeze and the sealed truth are unchanged.
+- **Formal fit** (`fit_v2_001/formal`, `run_fit_v2.py` at `dfd2059` clean; receipt sha256 `617d65f3…24d7`, commit
+  `ab4faf7`).
+  - GPU0: 36 lock acquisitions, 7,737 s hold (budget 10,800 s, not hit), 858 s waiting, 8,595 s wall.
+  - Stage best costs: S1 1,665, S2 1,943, S3 296, S4 2,948 (S4 ended at max_nfev 6, status 0).
+  - θ̂: μ_eq 3.230e5 Pa, g1 0.0942, τ1 14.3 ms, g2 0.1859, τ2 72.3 ms, μ_table 0.4501.
+- **Negative control** (T2 + C1 only; receipt `3446a6d2…137f`, commit `ad4c5aa`): χ²_red 1.314 on its own data;
+  2,285 s hold, budget 5,400 s not hit.
+- **One-shot held-out** (`run_heldout.py`, ledger `fit_v2_001/heldout/heldout_3d37a950….json`, label ONE_SHOT, both
+  receipts in one call).
+- **Reveal** at 2026-11-12T00:47:30Z: SHA verified, noise-seed SHA verified, the first and only read of the sealed
+  truth (`read_log.txt`).
+
+**CAL results**
+
+| Test | Verdict | Prediction | Basis |
+|---|---|---|---|
+| CAL-01 | **PASS** | – | 599 passed in both CUDA modes at `dfd2059` (the P2-5 suites included) |
+| CAL-02 | **PASS** | – | byte-wise population = single for T / R / C / G / F, repeated calls |
+| CAL-03 | **PASS** | – | truth receipts complete, every truth env valid |
+| CAL-04 | **FAIL** | PASS (missed) | χ²_red 2.4838 > 1.9097 (the S4 termination clause was met: max_nfev) |
+| CAL-05 | **FAIL** | at risk on T4 / M9 | 21 / 31; failures below |
+| CAL-06 | **FAIL** | FAIL on g1 / τ1 / g2 / τ2 | μ_eq, τ1, μ_table PASS; g1, g2, τ2 FAIL |
+| CAL-07 | **PASS** | – | the negative control fails T5 M2 (viscous), plus M9 / F2 rows |
+| CAL-08 | **PASS** (in order) | – | protocol 10:57:19 < pilot ≤ 12:08 < thresholds 14:14:35 < formal data 15:19:09 / commit 15:19:30 < v2 21:32:42 < receipts 23:56:44 / 00:35:08 < held-out 00:35:14 < reveal 00:47:30 UTC |
+| CAL-09 | **PASS** | – | labels on every output, no recipe promoted |
+
+**CAL-05 rows of the formal fit** (FAIL rows: T4 M2 / M9 (20 /s extrapolation), C2 M6 / M9, C3 M4 / M6 / M9, C4 M4 / M6 / M9):
+
+| Exp | Metric | Value | Tol | Verdict |
+|---|---|---|---|---|
+| T3 | M1 | 0.01362 | 0.03116 | PASS |
+| T3 | M2 | 0.02241 | 0.04637 | PASS |
+| T3 | M8 | 0.0005427 | 0.001 | PASS |
+| T3 | M9 | 0.005928 | 0.02 | PASS |
+| T4 | M1 | 0.03231 | 0.04376 | PASS |
+| T4 | M2 | 0.2447 | 0.07579 | FAIL |
+| T4 | M8 | 0.0008697 | 0.001 | PASS |
+| T4 | M9 | 0.2087 | 0.02 | FAIL |
+| T5 | M1 | 0.01533 | 0.03661 | PASS |
+| T5 | M2 | 0.0163 | 0.02691 | PASS |
+| T5 | M8 | 0.0005448 | 0.001 | PASS |
+| T5 | M9 | 0.00586 | 0.02 | PASS |
+| C2 | M4 | 0.03069 | 0.05158 | PASS |
+| C2 | M5 | 0.3286 | 2 | PASS |
+| C2 | M6 | 0.06523 | 0.06326 | FAIL |
+| C2 | M8 | 8.941e-07 | 0.001 | PASS |
+| C2 | M9 | 0.0418 | 0.02 | FAIL |
+| C3 | M4 | 0.04004 | 0.02295 | FAIL |
+| C3 | M5 | 0.3039 | 2 | PASS |
+| C3 | M6 | 0.07226 | 0.02766 | FAIL |
+| C3 | M8 | 9.654e-07 | 0.001 | PASS |
+| C3 | M9 | 0.04319 | 0.02 | FAIL |
+| C4 | M4 | 0.04623 | 0.02824 | FAIL |
+| C4 | M5 | 0.004568 | 2 | PASS |
+| C4 | M6 | 0.11 | 0.03039 | FAIL |
+| C4 | M8 | 4.057e-06 | 0.001 | PASS |
+| C4 | M9 | 0.03456 | 0.02 | FAIL |
+| F2 | M7_onset | 0.01104 | 8.351 | PASS |
+| F2 | M7_slip | 0.008367 | 0.05314 | PASS |
+| F2 | M8 | 3.249e-07 | 0.001 | PASS |
+| F2 | M9 | 0.004327 | 0.02 | PASS |
+
+Negative control: 21 / 31 (FAIL T3 / T4 / T5 / C2 / C3 / C4 / F2 M9, T5 M2, F2 M7_slip / M7_onset).
+
+**CAL-06 recovery (formal fit)**
+
+| Param | θ̂ | θ* | σ̂ | rel. error | Verdict |
+|---|---|---|---|---|---|
+| mu_eq_pa | 3.23e+05 | 3.1726e+05 | 189 | 1.8% | PASS |
+| g1 | 0.094162 | 0.19257 | 0.00179 | 51.1% | FAIL |
+| tau1_s | 0.014278 | 0.014349 | 0.000557 | 0.5% | PASS |
+| g2 | 0.18593 | 0.13367 | 0.00184 | 39.1% | FAIL |
+| tau2_s | 0.072254 | 0.12332 | 0.00115 | 41.4% | FAIL |
+| mu_table | 0.45007 | 0.44689 | 0.000267 | 0.7% | PASS |
+
+Negative control (reported):
+
+| Param | θ̂ | θ* | σ̂ | rel. error | Verdict |
+|---|---|---|---|---|---|
+| mu_eq_pa | 3.2439e+05 | 3.1726e+05 | 711 | 2.2% | FAIL |
+| g1 | 0.19634 | 0.19257 | 0.0062 | 2.0% | PASS |
+| tau1_s | 0.013721 | 0.014349 | 0.000565 | 4.4% | PASS |
+| g2 | 0.11801 | 0.13367 | 0.00622 | 11.7% | PASS |
+| tau2_s | 0.10399 | 0.12332 | 0.00881 | 15.7% | PASS |
+| mu_table | 0.5 | 0.44689 | inf | 11.9% | NON_IDENTIFIABLE_REPORTED |
+
+**Supplementary diagnostic (never scored; after the reveal; 705 s of the formal fit's remaining budget).** The fit model
+was evaluated at θ̂ and at θ* in one population on the formal fit split. Mean squared weighted residual per experiment:
+
+| | T1 | T2 | R1 | C1 | G1 | F1 | χ²_red |
+|---|---|---|---|---|---|---|---|
+| θ̂ | 1.859 | 5.934 | 4.630 | 3.397 | 0.911 | 1.257 | 2.484 |
+| θ* | 1.017 | 1.163 | 2.110 | 0.975 | 0.918 | 2.311 | 1.416 |
+
+At θ* the fit model passes **31 / 31** held-out tolerances.
+- The S1 / S2 stages placed the viscous parameters in a different basin, g1 / g2 traded with τ2: T2 / R1 / C1 are
+  4–6× worse at θ̂ than at θ*.
+- The joint polish (6 evaluations) did not leave that basin.
+- θ* lies near the prior-box corner (g1 0.193 of a 0.20 upper bound, τ1 14.3 ms of 15 ms).
+- The negative control, which fitted T2 alone in S2, landed much closer.
+
+This explains the miss: the CAL-04 prediction was missed because of the S2 data choice and starts, not the GPU noise
+or the budget (1 h of the 3 h was unused because S4's max_nfev ended the fit).
+
+**GPU** (all GPU0, SHARED_GPU, PID 642659 untouched, GPU1 not used):
+- v2 development: 1.75 h.
+- Formal fit: 2.15 h hold.
+- Negative control: 0.63 h hold.
+- Held-out: 0.2 h.
+- Supplementary diagnostic: 0.2 h.
+
+CMA-ES comparison: NOT_RUN (optional in v2, not within the budget).
+
+**What this means.**
+- The interface works end-to-end with honest, pre-registered scoring: declaration → pilot → frozen data → fit →
+  one-shot held-out → reveal.
+- The negative control has power.
+- The formal outcome is a FAIL of the declared fit procedure on this dataset; the diagnostic locates it in the
+  optimiser's staging, not in the forward model or in identifiability at the truth.
+- Recovery at n_t 4 against an n_t 6 truth remains biased for the Prony parameters (pilot).
+
+Any further fit attempt on this dataset would be a new, separately declared protocol, and its result would be
+post-reveal (the truth is now known). It could not count as a blind validation. A blind re-test needs a new sealed
+formal dataset.

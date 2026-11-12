@@ -2344,4 +2344,20 @@ promoted. Nothing frozen changed (`rubber_calibration.py` v1 and the `REAL_CALIB
   - Pilot held-out (circular) 27 / 31 PASS, FAIL T4 M2 / M9 and C2 / C3 M9.
   - `rubber_calib_tests_v2` is therefore not declared (draft kept). Decision pending: declare as drafted and accept the
     expected CAL-06 (and likely CAL-05) FAIL, or revise the CAL definitions at reviewer level. Report section 9.
+- **Formal run under `rubber_calib_tests_v2` (2026-11-12; v2 sha256 `1606457f…01ff`, declared alone in `4218dd6`,
+  pinned in `dfd2059`; evidence `docs/evidence/rl_ready/p2_5_calib_synthetic_001.json`, report section 10).**
+  - **Results:**
+    - CAL-01 / -02 / -03 / -08 / -09 PASS.
+    - **CAL-04 FAIL**: χ²_red 2.484 > 1.910; S4 ended at max_nfev; 7,737 s of the 10,800 s GPU0-hold budget.
+    - **CAL-05 FAIL**: 21 / 31 held-out rows (T4 M2 / M9, C2–C4 M4 / M6 / M9).
+    - **CAL-06 FAIL**: g1 −51 %, g2 +39 %, τ2 −41 %; μ_eq +1.8 %, τ1 −0.5 % and μ_table +0.7 % PASS.
+    - **CAL-07 PASS**: the T2 + C1 control fails T5 M2.
+  - **Supplementary diagnostic** (post-reveal, unscored): the fit model at θ* has χ²_red 1.416 on the formal fit
+    split and passes 31 / 31 held-out tolerances. The formal failure is an optimisation shortfall of the staged
+    procedure (a wrong Prony basin after S1 / S2), not resolution bias. The pilot's resolution bias in the Prony
+    parameters (≈ 10 %) stands separately.
+  - **Headline:** pipeline and protocol validated end-to-end (pre-registered, one-shot, negative control with power);
+    the declared fit procedure FAILED to recover θ on the formal synthetic dataset; fitted θ is resolution-specific.
+  - The dataset's truth is now revealed, so any re-fit on it is post-hoc. A blind re-test needs a new sealed dataset.
+  - Material status `SIMULATOR_ONLY_UNCALIBRATED`; `NUMERICAL_VALIDATION_SYNTHETIC`; no recipe promoted.
 
