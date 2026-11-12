@@ -1,0 +1,526 @@
+{
+ "schema": "rcs_rubber_contact_tests_v2",
+ "id": "rubber_contact_tests_v2",
+ "version": 2,
+ "adr": "docs/adr/0023-rubber-material-v1.md section 22.9",
+ "status": "DECLARED_BEFORE_ANY_FORMAL_RUN",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (friction coefficients, contact stiffness and dashpot ratios are declared numerical / illustrative values, not measured)",
+ "supersedes_for_the_law_decision": "rubber_contact_tests_v1 (sha256 4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c); its formal run contact_v1_001 and every v1 FAIL stay preserved and reported; nothing in v1 is edited",
+ "prerequisites": {
+  "rubber_contact_tests_v1": {
+   "sha256": "4d3dc68fc50aeeb247c2b544c65312fd2a651a90a99eb394b11f3fa478b46e4c"
+  },
+  "rubber_visc_tests_v2": {
+   "sha256": "212fe7af3e92dcb854aa95c8192ecb787f52cb6bd186bbc1d48414b8030c4663"
+  },
+  "rubber_moving_grip_tests_v1": {
+   "sha256": "ff14f39dc750fcf095a1a84ba8c7a48d3f0721a27b08062e6e03680eab7678bc"
+  },
+  "code_commit_of_the_law": "0b33246",
+  "batched_path": "B1 (claude/rl-rubber-p24b f1ece86) merged at 77cdd10"
+ },
+ "decision_x1": {
+  "root_cause": "two defects of grid_node_penalty_coulomb_v1, both DIAGNOSTIC-proven (scripts/rubber/p2_4/diag_contact_x1.py, x1_dev_laws.py, diag_x1_scenes.py; artifacts/rl_ready/p2_4/x1_diag_001): (1) the dashpots act on the predicted lumped velocity new_v = M_l^-1 pi_n + dt f / m_I, not on the velocity with which the node actually moves (the TLMPM drift velocity B pi_n); for the face's grid-scale modes they are not dissipative: a FRICTIONLESS elastic block at rest keeps a self-excited contact rattle (27 % of the bottom nodes in contact per substep, vibration energy ~100x the static elastic energy, sustained over 0.3 s, net POSITIVE kick-paired normal contact work while the nominal dashpot dissipation is 300x the vibration energy); (2) on top of it, the per-node friction cap mu F_n follows the grid-scale penalty normal force instantaneously (dF_t/du_n = mu k_n with k_n = kappa m_I / dt^2, a compliance tied to the grid): a friction-normal mode-coupling flutter that grows with mu (bottom-node contact fraction 0.28 / 0.19 / 0.08 / 0.03 / 0.02 at mu 0.2 / 0.4 / 0.6 / 0.8 / 1.0), makes the friction bursty and misaligned and its work correlated with braked node velocities (friction deficit, energy into vibration); not removed by dt or dx refinement (cfl 0.25 / 0.125, n_t 4 / 6) or by any kappa / zeta in the allowed range. It is not continuum physics below mu = 1: rigid-flat Coulomb sliding of an elastic half-space is linearly stable for mu < 1.000 (scripts/rubber/p2_4/halfspace_sliding_stability.py, nu 0.3-0.49). Ruled out as causes: the dashpot dissipation missing from mu N slip (D_contact contains every dashpot and the deficit has the opposite sign), stick-slip hysteresis (stick nodes carry < 0.2 % of the load while sliding), the slip direction (trial vs -v_t: < 0.4 % of g cos theta), a cone on the spring force only (worse).",
+  "decision": "route (a)+(b): the law v2 corrects defect (1) (dashpots on the realised velocity; parameters unchanged, not tuned); defect (2) is NOT corrected in v2 and is declared as a mu envelope with a measured error model (mu_envelope below). A normal-force memory regularisation of the cap (Prakash-Clifton type, lag ntau dt) removes defect (2) in steady sliding up to mu 1.2 (DIAGNOSTIC) but slips 0.04-0.5 mm near threshold under rising load at every mu and collapses beyond its stabilised range; it is not adopted (task X2)",
+  "n_t_2_impact_books": "rubber_coarse_v1 (n_t 2) is the declared reduced_fidelity coarse profile, not a production grid; the v1 1.024 % is the O(dt) symplectic books error of the coarsest dt (n_t 4: 0.59 / 0.25 %, first order); the threshold is kept for every run",
+  "pinch_clamp_balance": "the v1 per-step |F_x(clamp) + T| measures the strip's axial vibration (dominant 229-286 Hz = the clamped / sliding-end quarter-wave mode c / 4L = 267 Hz of the 30 mm strip; window-mean imbalance 0.002-0.6 % in v1), not a contact or moving-clamp work coupling: with sustained unidirectional rate-independent Coulomb slip the sliding end carries a constant force and the undamped elastic strip keeps the slip-onset vibration (estimate k_ax v_pull / omega ~ 0.047 N against 5 % of T = 0.017 N at 20 um), so the per-step 5 % is unattainable for the exact solution of the declared model; v2 scores the window-mean (momentum) balance at the same 5 %"
+ },
+ "common": {
+  "law_parameters": {
+   "normal_stiffness_kappa_n": 0.25,
+   "tangential_stiffness_kappa_t": 0.25,
+   "normal_damping_ratio_zeta_n": 0.5,
+   "tangential_damping_ratio_zeta_t": 0.5
+  },
+  "contact_work": "kick_average_v1: W_n, W_t = sum J . (g_n + g_{n+1}) / 2 with g_n = old after the P2G grid update and g_{n+1} = old after the final MUSL grid update; obstacle power P = sum J . v_obs; D_contact = (P_n - W_n) + (P_t - W_t)",
+  "books_layer_N": "B(t) = E_kin + Psi_eq + E_grav + W_b - W_ext - (W_n + W_t), all from the reset state (E_kin particle KE, Psi_eq the equilibrium free energy = the frozen elastic energy for elastic materials, W_b the kick-paired Prony branch work with visco_energy = branch_work_kick_average_v2, W_ext the traction and Dirichlet work with traction_work = grid_displacement_v1 and constraint_work = kick_average_v1)",
+  "options": {
+   "dirichlet": "consistent_mass_projection_v1",
+   "constraint_work": "kick_average_v1",
+   "traction_work": "grid_displacement_v1",
+   "state_precision": "f64_shadow_v1",
+   "stable_step_guard": 1.0,
+   "deformation_reserve": 1.0,
+   "visco_energy_with_prony": "branch_work_kick_average_v2"
+  },
+  "material_elastic": {
+   "model": "neo_hookean_jbar_v1",
+   "mu0_pa": 400000.0,
+   "bulk_ratio_beta": 20.0,
+   "density_kg_m3": 1150.0
+  },
+  "material_prony_P2": {
+   "model": "neo_hookean_jbar_prony_v1",
+   "mu0_pa": 400000.0,
+   "terms": [
+    {
+     "g": 0.2,
+     "tau_s": 0.005
+    },
+    {
+     "g": 0.15,
+     "tau_s": 0.05
+    }
+   ],
+   "g_inf": 0.65,
+   "bulk_ratio_beta": 20.0,
+   "density_kg_m3": 1150.0
+  },
+  "pic": 0.0,
+  "cfl": 0.5,
+  "particles_per_cell_axis": 2,
+  "step_rule": "dt = control_dt / ceil(control_dt / (cfl dx / c_p)), c_p with mu0 (instantaneous modulus)",
+  "loading": "gravity and tractions ramped with 1/2 (1 - cos(pi t / T_ramp)) and updated every SUBSTEP on the CPU (quasi-static: a step load on an undamped elastic body overshoots by 2 and unloads its contacts periodically)",
+  "artificial_damping": "none in the material; the contact law's declared dashpots act only on contact nodes and their dissipation is booked as contact dissipation (never as material or viscoelastic damping)",
+  "device": "CPU (Warp) for RUBBER-CONT-01..07 and -10; GPU0 for -09 / -11",
+  "self_contact": "NOT_IMPLEMENTED_V1 (RUBBER-CONT-06)",
+  "contact_law": "grid_node_penalty_coulomb_v2",
+  "law_definition": "per reference-grid node with mass (TLMPM nodes are the Q1 material points; the strip lies on the particle lattice so the outer nodes are on the faces), x_I = X_I + u_I (u_I float64, advanced with the drift velocity); every penetrated obstacle (gap < 0 at the start of the substep): F_n = max(k_n (-gap) - c_n v_n, 0), k_n = kappa_n m_I / dt^2, c_n = 2 zeta_n sqrt(k_n m_I); one Coulomb spring-dashpot-slider on the deepest obstacle: F_t = -k_t xi_t - c_t v_t capped at mu F_n (slip: the anchor slides, xi_t = -F_t / k_t), k_t = kappa_t m_I / dt^2, c_t = 2 zeta_t sqrt(k_t m_I); v = the node's REALISED velocity relative to the obstacle point: g_n = old after the P2G grid update (= B pi_n, the drift velocity with which the node moved in the previous substep; v1 used the predicted lumped velocity new_v); at a static fixed point g_n = 0, so the spring carries the whole load (delta_I = F_I / k_n); the impulse dt (F_n + F_t) enters the kick after the P2G grid update; xi_t += dt (v_I - v_obs) after the drift; a node leaving contact or changing obstacle releases its anchor; nodes of an active Dirichlet group are skipped",
+  "law_parameter_status": "unchanged from v1 (declared numerical values; not re-tuned after contact_v1_001 or the X1 diagnostics)",
+  "solver": "single env: LiveRubberMaterial(contact=ContactSpec(law='grid_node_penalty_coulomb_v2', ...)) -> TLMPMRubberContact (kernel rubber_contact.node_penalty_contact_v2, same arguments as v1); batched: BatchedRubberMaterial (rubber_contact_batch.BatchedTLMPMRubberContact, the same launch, no extra state)",
+  "mu_envelope": {
+   "status": "DECLARED (route b); error model DIAGNOSTIC on the seen INC scene (x1_diag_001/sweepK_v2_errormodel.jsonl); the unseen INC2 rows below test the sliding-accuracy claim at mu 0.6",
+   "continuum": "rigid-flat Coulomb sliding of an elastic body is linearly stable for mu < 1.000 and ill-posed (growth rate proportional to wavenumber) for mu >= 1.000 (nu 0.3-0.49): rows with mu >= 1.0 are regularisation-defined, label contact_coulomb_ill_posed",
+   "sliding_friction_supported_mu_max": 0.6,
+   "static_friction_supported_mu_max": 0.8,
+   "error_model_v2_INC": {
+    "mu": [
+     0.2,
+     0.4,
+     0.6,
+     0.8,
+     1.0,
+     1.2,
+     1.5
+    ],
+    "slip_acc_error_over_g_cos_theta_ratios_1.1_1.2_1.3": [
+     [
+      0.0003,
+      0.0001,
+      0.0
+     ],
+     [
+      0.0009,
+      0.0004,
+      0.0002
+     ],
+     [
+      0.007,
+      0.0016,
+      0.0019
+     ],
+     [
+      0.0183,
+      0.0126,
+      0.0246
+     ],
+     [
+      0.0575,
+      0.0381,
+      0.027
+     ],
+     [
+      0.1465,
+      0.1108,
+      0.0462
+     ],
+     [
+      0.3065,
+      0.1988,
+      0.4348
+     ]
+    ],
+    "dissipation_over_mu_N_slip": [
+     [
+      0.994,
+      0.997,
+      0.998
+     ],
+     [
+      0.986,
+      0.996,
+      0.997
+     ],
+     [
+      0.962,
+      0.989,
+      0.986
+     ],
+     [
+      0.931,
+      0.943,
+      0.869
+     ],
+     [
+      0.847,
+      0.862,
+      0.877
+     ],
+     [
+      0.703,
+      0.724,
+      0.824
+     ],
+     [
+      0.624,
+      0.646,
+      0.571
+     ]
+    ],
+    "hold_at_0.95_mu_elastic_and_P2": {
+     "0.8": "holds (7e-10 m / 3e-8 m)",
+     "1.0": "slides 7 mm",
+     "1.2": "slides 8-10 mm",
+     "1.5": "slides 12-16 mm"
+    }
+   },
+   "labels": {
+    "mu > 0.6 with sliding": "contact_sliding_friction_deficit_v2 (sliding friction low by the error model; dissipation low)",
+    "mu > 0.8": "contact_friction_flutter (near-threshold static friction not reliable)",
+    "mu >= 1.0": "contact_coulomb_ill_posed"
+   },
+   "consequence": "the generic rubber recipes randomise friction_table / friction_pad over [0.3, 1.5] (nominal 0.8 / 1.0): scored contact rows must stay inside the envelope or carry the labels; this is a real limitation for rubber-steel / rubber-table friction (task X2)"
+  }
+ },
+ "scenes": {
+  "INC": {
+   "what": "block on an inclined table: strip-local block 16 x 8 x 4 mm, n_t 3 (dx 4/3 mm), case free, corner at the origin; table plane z = 0 (normal +z); gravity 9.81 (sin theta, 0, -cos theta) (the incline as a tilted gravity); friction friction_table = mu",
+   "ramp_s": 0.02,
+   "control_dt_s": 0.001,
+   "duration_s": 0.14,
+   "hold_window_s": [
+    0.02,
+    0.14
+   ],
+   "fit_window_s": [
+    0.05,
+    0.14
+   ],
+   "mu_set": [
+    0.4,
+    0.8
+   ],
+   "stick_ratios_tan_theta_over_mu": [
+    0.6,
+    0.85
+   ],
+   "slip_ratios_tan_theta_over_mu": [
+    1.1,
+    1.2,
+    1.3
+   ],
+   "visco_stick_row": {
+    "material": "material_prony_P2",
+    "mu": 0.8,
+    "ratio": 0.95
+   },
+   "books_order_row": {
+    "mu": 0.4,
+    "ratio": 1.2,
+    "cfl_set": [
+     0.5,
+     0.25
+    ]
+   },
+   "size_m": [
+    0.016,
+    0.008,
+    0.004
+   ],
+   "n_t": 3,
+   "elastic_stick_row_near_threshold": {
+    "mu": 0.8,
+    "ratio": 0.95
+   },
+   "seen": "formal v1 run contact_v1_001 and the X1 diagnostics (every mu / ratio)"
+  },
+  "INC2": {
+   "what": "UNSEEN envelope scene: strip-local block 24 x 12 x 6 mm, n_t 3 (dx 2 mm), case free, corner at the origin, table plane z = 0, gravity 9.81 (sin theta, 0, -cos theta) ramped every substep over 20 ms, friction_table = mu",
+   "size_m": [
+    0.024,
+    0.012,
+    0.006
+   ],
+   "n_t": 3,
+   "ramp_s": 0.02,
+   "control_dt_s": 0.001,
+   "duration_s": 0.14,
+   "hold_window_s": [
+    0.02,
+    0.14
+   ],
+   "fit_window_s": [
+    0.05,
+    0.14
+   ],
+   "mu_set": [
+    0.6
+   ],
+   "stick_ratios_tan_theta_over_mu": [
+    0.6,
+    0.85,
+    0.95
+   ],
+   "slip_ratios_tan_theta_over_mu": [
+    1.1,
+    1.2,
+    1.3
+   ],
+   "visco_stick_row": {
+    "material": "material_prony_P2",
+    "mu": 0.6,
+    "ratio": 0.95
+   }
+  },
+  "PEN": {
+   "what": "block 8 x 6 x 4 mm, case free, on a FRICTIONLESS table z = 0 (uniform base pressure), Prony P2 material, gravity -z, top traction pressure p (traction group: the top particle layer) ramped over 20 ms; mean node displacements over [0.04, 0.06] s",
+   "p_top_pa": 100000.0,
+   "duration_s": 0.06,
+   "control_dt_s": 0.0005,
+   "measure_window_s": [
+    0.04,
+    0.06
+   ],
+   "resolutions": [
+    {
+     "n_t": 2,
+     "cfl": 0.5
+    },
+    {
+     "n_t": 2,
+     "cfl": 0.25
+    },
+    {
+     "n_t": 4,
+     "cfl": 0.5
+    }
+   ],
+   "law_check_variant": {
+    "n_t": 2,
+    "cfl": 0.5,
+    "zeta_n": 0.0,
+    "zeta_t": 0.0
+   }
+  },
+  "IMP": {
+   "what": "rod 40 x 4 x 4 mm along x, case free, no gravity, uniform initial velocity -0.3 m/s along x onto the FRICTIONLESS wall x = 0 (normal +x; the rod's end face starts on the wall)",
+   "V_m_s": 0.3,
+   "control_dt_s": 2e-05,
+   "duration_s": 0.008,
+   "materials": [
+    "material_elastic",
+    "material_prony_P2"
+   ],
+   "runs": [
+    {
+     "n_t": 4,
+     "cfl": 0.5
+    },
+    {
+     "n_t": 4,
+     "cfl": 0.25
+    },
+    {
+     "n_t": 2,
+     "cfl": 0.5
+    }
+   ],
+   "reference": "1-D elastic rod on a rigid frictionless wall: contact duration 2 L / c0, c0 = sqrt(E_eff / rho), E_eff = 9 kappa mu0 / (3 kappa + mu0); rebound velocity = impact velocity (energy-conserving)"
+  },
+  "PINCH": {
+   "what": "case A strip, free length L 30 mm, W 10 mm, t 4 mm, n_t 3, jaw 2 dx clamped (group 0, F8 projection, kick-average work, held fixed); two pad frames of kind pad (friction_pad = mu_pad): top box x in [L - 8, L + 2] mm, y in [-2, W + 2] mm, z in [t, t + 2] mm, bottom box mirrored below z = 0; elastic material; no gravity",
+   "mu_pad": 0.5,
+   "squeeze_depths_m": [
+    2e-05,
+    4e-05,
+    6e-05
+   ],
+   "squeeze_ramp_s": 0.02,
+   "hold_s": 0.01,
+   "pull_speed_m_s": 0.1,
+   "pull_duration_s": 0.05,
+   "design_estimate": "uniaxial squeeze pressure E_eff 2 delta / t gives mu_pad (N_top + N_bottom) ~ 0.95 / 1.9 / 2.85 N, reached after ~0.5 / 1.1 / 1.6 mm of the 5 mm pull (axial stiffness ~1.8 kN/m)",
+   "control_dt_s": 0.0005,
+   "slip_detection": "tip-marker velocity along x below 0.5 x pull speed while the pads move: slip; the sustained-slip window is the last 10 ms of the pull"
+  },
+  "COUPLE": {
+   "carried_over": "contact-free scene (no ContactSpec): the v1 result of contact_v1_001 (RUBBER-CONT-07 PASS, every point coupling_delay_significant) applies unchanged; not rerun"
+  }
+ },
+ "tests": {
+  "RUBBER-CONT-01": {
+   "name": "incline: stick below and Coulomb slip above tan theta = mu, slip onset at tan theta = mu",
+   "scene": "INC and INC2",
+   "reference": "rigid-body Coulomb: stick (a = 0) for tan theta < mu; a = g (sin theta - mu cos theta) for tan theta > mu; with a/(g cos theta) = tan theta - mu the onset is the zero of the linear slip branch",
+   "criteria": {
+    "a_stick": "every stick run (INC: both mu, ratios 0.6 and 0.85, the P2 row at 0.95 and the elastic mu 0.8 row at 0.95; INC2: mu 0.6 at 0.6 / 0.85 / 0.95 and its P2 row at 0.95): |x_cm(end) - x_cm(0.02 s)| <= stick_disp_rel * s and |a_fit| <= stick_acc_rel * g cos theta",
+    "b_slip": "every slip run of INC and INC2",
+    "c_onset": "per mu (0.4, 0.6 from INC2, 0.8): linear fit over the three slip runs at cfl 0.5 (elastic); |mu_eff / mu - 1| <= onset_rel",
+    "d_books": "every run: max_t |B(t)| <= books_rel * S, S = max_t (E_kin + Psi) + max_t |E_grav(t)|; books_order_row: max |B| at cfl 0.25 <= ratio_max * max |B| at cfl 0.5, or both <= floor_rel * S",
+    "e_validity": "no invalid flag (nonfinite, J domain, CFL guard) in any run"
+   },
+   "thresholds": {
+    "stick_disp_rel": 0.01,
+    "stick_acc_rel": 0.001,
+    "slip_acc_rel": 0.01,
+    "onset_rel": 0.02,
+    "books_rel": 0.01,
+    "ratio_max": 0.65,
+    "floor_rel": 0.001
+   },
+   "rationale": "probe_contact_laws_004 (12 x 6 x 3 mm block, mu 0.5, seen before declaration): stick creep <= 1e-6 m at ratios 0.8 / 0.9 vs >= 2e-3 m of slip; slip error 0.1-0.5 % of g cos theta at 1.15-1.25; the elastic block at ratio 0.95 creeps (friction-induced flutter of the HF-undamped elastic model, ADR 0023 section 22.1) and is therefore NOT a scored stick row for the elastic material; the P2 material held at 0.95 in the diagnostic sweep and is scored; v2: the elastic row at 0.95 is scored (v2 holds it in the diagnostics) and the unseen INC2 scene tests the envelope at mu 0.6",
+   "expectation_declared_before_the_run": "mu 0.4 and mu 0.6 rows inside the envelope (PASS expected); mu 0.8 slip rows outside the sliding envelope (error model +1.3 ... +2.5 % > 1 %: FAIL expected and reported, never re-scored); stick rows at mu <= 0.8 hold; books of the stick runs: the v1 stick-run books were 0.69-1.03 % of their tiny energy scale S (~2.5e-10 J), v2 diagnostic 0.4-1.7 % (float32 velocity noise against the static contact impulses): FAIL possible, reported"
+  },
+  "RUBBER-CONT-02": {
+   "name": "penetration vs grid / dt refinement",
+   "scene": "PEN",
+   "reference": "the v2 law: the dashpot sees the realised velocity, 0 at a static fixed point, so delta_I = F_I / k_n for the damped and the undamped law alike (proportional to dt^2 / dx at fixed pressure and CFL)",
+   "criteria": {
+    "a_bound": "every resolution: max node penetration over the window <= pen_max_rel * s",
+    "b_dt": "mean interior-face-node penetration: delta(n_t 2, cfl 0.25) / delta(n_t 2, cfl 0.5) in dt_ratio_band (law: 0.25)",
+    "c_dx": "delta(n_t 4, cfl 0.5) / delta(n_t 2, cfl 0.5) in dx_ratio_band (law: 0.5)",
+    "d_law": "undamped variant: sum over face nodes of k_n delta_I = table reaction within law_rel, and the mean interior-face delta_I / (p A_I / k_n) within law_rel_node",
+    "e_balance": "every run: mean table reaction over the window = weight + p A within balance_rel",
+    "f_law_v2": "every DAMPED run: sum over face nodes of k_n delta_I = table reaction within law_rel (v1: 0.5 by design; tighter, new in v2)"
+   },
+   "thresholds": {
+    "pen_max_rel": 0.25,
+    "dt_ratio_band": [
+     0.2,
+     0.3
+    ],
+    "dx_ratio_band": [
+     0.4,
+     0.6
+    ],
+    "law_rel": 0.02,
+    "law_rel_node": 0.05,
+    "balance_rel": 0.002
+   }
+  },
+  "RUBBER-CONT-03": {
+   "name": "normal impact and rebound: energy accounting with contact work, elastic energy and viscoelastic dissipation separated",
+   "scene": "IMP",
+   "criteria": {
+    "a_books": "every run: max_t |B(t)| <= books_rel * E0 (E0 = 1/2 M V^2) and |B(end)| <= books_end_rel * E0; elastic and P2 at n_t 4: max |B| at cfl 0.25 <= ratio_max * max |B| at cfl 0.5 (first order) or both <= floor_rel * E0",
+    "b_contact_time": "elastic, n_t 4, cfl 0.5: first to last substep-sampled contact (any normal impulse in a control step) t_c satisfies |t_c / (2 L / c0) - 1| <= tc_rel",
+    "c_attribution": "every run, after separation: the energy missing from E_kin + Psi_eq is exactly the booked dissipation: D_contact = -(W_n + W_t) >= 0 (static wall) and, with Prony terms, D_b = W_b - Psi_v >= 0 (branch work minus the stored branch energy); D_contact / E0 <= contact_loss_max at n_t 4 (reported with its normal / tangential split; the wall is frictionless, so the tangential part is ~0)",
+    "d_convergence": "elastic, cfl 0.5: D_contact(n_t 4) <= conv_ratio_max * D_contact(n_t 2) (the declared dashpots act on the contact node layer, whose mass fraction is O(dx))",
+    "e_penetration": "every run: max node penetration <= pen_max_rel * s",
+    "f_reported": "rebound centroid velocity / V, the elastic vs P2 rebound, D_b / E0, the undamped-law rebound (probe) for comparison"
+   },
+   "thresholds": {
+    "books_rel": 0.01,
+    "books_end_rel": 0.0025,
+    "ratio_max": 0.65,
+    "floor_rel": 0.001,
+    "tc_rel": 0.05,
+    "contact_loss_max": 0.08,
+    "conv_ratio_max": 0.75,
+    "pen_max_rel": 0.25
+   },
+   "rationale": "probe (rod 30 x 4 x 4 mm, V 0.2 m/s, seen): books max 0.79 / 0.33 % at cfl 0.5 / 0.25, end 0.04 %, contact 1.92 ms vs 2L/c0 1.87 ms, contact dissipation 3.9 % of E0 at n_t 4",
+   "note_v2": "unchanged scene and thresholds (the n_t 2 reduced_fidelity run keeps the 1 % books limit)"
+  },
+  "RUBBER-CONT-04": {
+   "name": "friction dissipation = mu N x slip distance",
+   "scene": "INC and INC2 (every slip run)",
+   "reference": "rigid Coulomb sliding: dissipation = mu integral N dx_cm",
+   "criteria": {
+    "a_total": "every slip run: |D_contact / (mu sum_k N_k dx_cm,k) - 1| <= dissipation_rel, N_k the table normal force of control step k (wrench), dx_cm,k the centroid increment along the slope; D_contact = -(W_n + W_t) over the whole run",
+    "b_split": "reported: Coulomb-slider, tangential-dashpot and normal-dashpot shares (sliding excites normal contact vibration that the normal dashpot dissipates; the tangential share alone is not the rigid-body value)"
+   },
+   "thresholds": {
+    "dissipation_rel": 0.05
+   },
+   "rationale": "probe (seen): total interface dissipation / (mu integral N dx) = 0.97 / 0.99 / 0.99 at ratios 1.05 / 1.15 / 1.25 with N from the ramp formula; the tangential share alone 0.90-0.96",
+   "expectation_declared_before_the_run": "mu 0.4 / 0.6 PASS expected; mu 0.8 outside the sliding envelope (error model 0.87-0.94 < 0.95: FAIL expected and reported)"
+  },
+  "RUBBER-CONT-05": {
+   "name": "gripper pinch-and-pull: slip onset vs grip force, per-pad wrenches",
+   "scene": "PINCH",
+   "reference": "two-pad Coulomb: pull force T <= mu_pad (N_top + N_bottom), equality while the strip slips in the pads",
+   "criteria": {
+    "a_slip_ratio": "every squeeze depth: mean over the sustained-slip window of |T| / (mu_pad (N_top + N_bottom)) in slip_ratio_band (T = sum of the pads' x forces, N from the pads' z forces, all from the per-pad wrenches [F, B, 6])",
+    "b_cone": "every control step of every run: |T| <= cone_tol * mu_pad (N_top + N_bottom) (no friction above the cone)",
+    "c_grip_scaling": "the three depths give distinct N (each >= 1.3 x the previous) and their slip ratios agree within scaling_rel",
+    "e_penetration": "max node penetration <= pen_max_rel * s",
+    "d_balance": "sustained-slip window: |mean_window(F_x(clamp) + T)| <= balance_rel * mean_window |T| (momentum balance of the strip over the window; the clamp is the F8 group with kick-average work)",
+    "d_reported_v1_per_step": "mean_window |F_x(clamp) + T| / mean_window |T| (the v1 metric): reported, not scored (it is the strip's axial vibration, decision_x1.pinch_clamp_balance)"
+   },
+   "thresholds": {
+    "slip_ratio_band": [
+     0.97,
+     1.02
+    ],
+    "cone_tol": 1.02,
+    "scaling_rel": 0.03,
+    "balance_rel": 0.05,
+    "pen_max_rel": 0.25
+   },
+   "expectation_declared_before_the_run": "mu_pad 0.5 is inside the static envelope and inside the sliding envelope (<= 0.6) on the incline; the two-sided pinch was seen in the X1 diagnostics with slip ratios 0.978 / 0.982 / 0.964 (one below the band): a FAIL of criterion a is possible, reported"
+  },
+  "RUBBER-CONT-06": {
+   "name": "self-contact (fold scene)",
+   "status": "NOT_IMPLEMENTED_V1: declared limitation (ADR 0023 section 22.3); not part of the P2-4 acceptance; reported as NOT_RUN",
+   "requirement_until_implemented": "a fold must end in a flag (RUBBER-PHYS-12 guard / J domain) or be detected by the self-contact detector task (ADR 0023 section 22.8); fold scenes are outside the v1 domain"
+  },
+  "RUBBER-CONT-07": {
+   "name": "20 ms delayed force handoff: coupling-delay assessment",
+   "status": "CARRIED_OVER: contact-free scene, the law does not enter; the contact_v1_001 result applies (PASS, every point coupling_delay_significant); not rerun"
+  },
+  "RUBBER-CONT-08": {
+   "name": "batched contact: L0 byte-wise and L1 isolation (CPU)",
+   "criteria": {
+    "a_L0": "N = 1 and N = 3 heterogeneous (geometry, mu_table, mu_pad, material incl. P2, planes, pad frames and their motions): every array of every env byte-identical to its single-env TLMPMRubberContact reference after every control step, including ct_node_u, ct_xi, ct_obst, ct_vobs, ct_work, reactions and the per-pad wrenches [N, G, B, 6]",
+    "b_L1": "perturbing one env's input (pad motion, friction, plane) changes no byte of the other envs; masked partial reset of one env equals a fresh env (vars()-complete with the contact arrays) and evolves like one",
+    "c_refusals": "mixed contact laws / parameters / obstacle counts in one batch are refused (UNSUPPORTED_NONUNIFORM_BATCH)"
+   },
+   "under_v2": "tests/test_rubber_contact_v2.py::test_v2_batched_l0_heterogeneous (N = 3 heterogeneous incline / pinch / pinch P2 batches byte-identical to their single-env v2 references after every control step) and ::test_v1_and_v2_in_one_batch_are_refused; the B1 L1 / reset / refusal tests (tests/test_rubber_contact_batched.py) are law-independent (v2 adds no state and uses the same row indexing) and run under v1"
+  },
+  "RUBBER-CONT-09": {
+   "name": "GPU per-env wrench and state isolation",
+   "criteria": {
+    "a_zero_rows": "N = 4 on GPU0, env 1 pinched by pads and resting on the table, envs 0 / 2 / 3 with their pads and planes out of reach: every contact row of envs 0 / 2 / 3 (plane and pad wrenches, contact work, penetration, event counts) is exactly 0.0 after every control step",
+    "b_perturbation_band": "N = 4 on GPU0, the -09 v1 configuration with the v2 law; k = 5 episodes A (reference) and k = 5 episodes B (env 1 squeeze changed) run in ONE batch / process, interleaved A, B, A, B, ... (each from a full reset); for every control step, every env e in {0, 2, 3}, every observable of v1 (markers, energies summary, group / clamp wrenches, plane / box / pad / pending wrenches) and every component c: d = max_{i,j} |A_i - B_j|, s = max(max_i A_i - min_i A_i, max_j B_j - min_j B_j); PASS iff d <= lam * s + eps_rel * max_i |A_i| (eps_rel times the largest |component| of the observable vector)",
+    "c_audits": "env-ownership audits 0 (nodes, cells, markers, groups, tractions, contact rows); finite; invalid bits 0"
+   },
+   "thresholds": {
+    "k_per_side": 5,
+    "lam": 4.0,
+    "eps_rel": 1e-06
+   },
+   "calibration": "scripts/rubber/p2_4/cont09_band_calibration.py (seed 20261111, 2e6 samples): under H0 (A and B exchangeable run-to-run noise) the per-scalar false-reject probability of the rule is <= 5.5e-6 for Gaussian, Laplace, Student-t(3) and uniform noise (eps_rel = 0, worst case); family-wise <= n_scalars * 5.5e-6 by the union bound (valid under any dependence), <= 0.4 % for the <= 648 scalars of the v1 configuration. A coupling is rejected for sure when its A-to-B shift exceeds (lam + 1) s",
+   "v1_rule_assessment": "UNSOUND as declared: the v1 band max|A - A'| + 1e-6 max|A| uses ONE repeat; under H0 P(|A - B| > |A - A'|) = 1/2 by exchangeability (simulated 0.500), so every scalar whose run-to-run noise exceeds the 1e-6 floor is a coin flip and ~10^2 scalars reject almost surely. The v1 FAIL of gpu_cont09_001 (1 of 108 rows, a clamp wrench 1.23e-7 N vs 9.2e-8 N) stays preserved; it is not evidence of coupling",
+   "run": "GPU0 only, blocking flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock, >= 4 GB free, SHARED_GPU labels; task B2-v2 (not part of the CPU run contact_v2_001)"
+  },
+  "RUBBER-CONT-10": {
+   "name": "contact off and law checks (CPU unit tests)",
+   "criteria": {
+    "a_off": "without a ContactSpec LiveRubberMaterial builds the unchanged TLMPMRubber / TLMPMRubberCW / TLMPMRubberVisco; with an empty ContactSpec every state array is byte-identical to TLMPMRubberVisco / the elastic solver after every control step (elastic and P2)",
+    "b_twins": "float64 box SDF and Coulomb projection kernels equal their host references",
+    "c_law": "static penetration law (RUBBER-CONT-02 d on a small block), conservative undamped normal law in a frictionless impact, reset clears every contact array and episodes repeat byte-wise"
+   },
+   "under_v2": "tests/test_rubber_contact_v2.py (v1 kernels unchanged and default; v1 rattles / v2 settles at rest frictionless; v2 static spring law; v2 impact books; batched v2) and tests/test_rubber_contact.py (v1)"
+  },
+  "RUBBER-CONT-11": {
+   "name": "cost (reported, not scored)",
+   "measure": "GPU0 single env and batched: ms per substep with and without contact (table plane + 2 pad frames), stage split of the contact kernels; SHARED_GPU labels, co-tenant samples, driver, dirty-tree flag and this protocol's sha256 in every row",
+   "note_v2": "the v2 kernel has the v1 cost (one changed load); not re-measured"
+  }
+ },
+ "provenance": {
+  "seen_before_declaration": [
+   "probe incline block 12 x 6 x 3 mm (n_t 3, mu 0.5, ratios 0.8 / 0.9 / 0.95 / 1.05 / 1.15 / 1.25)",
+   "probe rod 30 x 4 x 4 mm impact at 0.2 m/s (n_t 4)",
+   "unit-test blocks 6 x 4 x 2 mm and rods 12 x 2 x 2 mm (n_t 2)",
+   "every v1 formal scene (INC, PEN, IMP, PINCH, COUPLE) in contact_v1_001",
+   "X1 diagnostics on INC (mu 0-1.5, ratios 0.6-1.3, cfl 0.125-0.5, n_t 3-6, kappa 0.0005-1, zeta 0.5-22, P2), the rest blocks 6 x 4 x 2 / 8 x 6 x 3 / 16 x 8 x 4 mm and the v1 scenes INC / PEN / IMP / PINCH with the v2 law (x1_v2c1_scenes_001)"
+  ],
+  "unseen_before_declaration": [
+   "INC2 (24 x 12 x 6 mm, n_t 3, mu 0.6)",
+   "RUBBER-CONT-09 under the v2 rule"
+  ],
+  "rule": "thresholds are never loosened after a result; a change is a v2 declared before its run; failures are preserved; every v1 threshold is kept except the -05 d metric, replaced because the v1 per-step metric is unattainable for the exact solution of the declared undamped model (decision_x1.pinch_clamp_balance), and the -09 b band, replaced because the v1 band was statistically unsound (RUBBER-CONT-09.v1_rule_assessment); both v1 FAILs stay"
+ }
+}

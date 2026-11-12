@@ -1,0 +1,211 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_6_rubber_rl_p66_001",
+ "phase": "P2-6 P6.6 at the final head: RL-06 reset re-measure, RL-10, RL-11",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "rl06_reset_remeasure": {
+  "run": "artifacts/rl_ready/p2_6/gpu_rl06_reset_remeasure_001",
+  "protocol_sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+  "commit": "8b8e9055dcb21ef8e2848a5529b241e75a8a6236",
+  "dirty_tree": false,
+  "blas_threads_env": {
+   "OPENBLAS_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": null,
+   "MKL_NUM_THREADS": null
+  },
+  "started": "2026-11-12T07:37:09+0900",
+  "ended": "2026-11-12T09:12:08+0900",
+  "row": {
+   "verdict": "PASS",
+   "partial_resets": 53,
+   "reset_median_s": 0.08087494596838951,
+   "reset_p95_s": 0.09275320363231003,
+   "vram_growth_mib": 0.0,
+   "invalid_terminations": 0,
+   "finite_bad_steps": [],
+   "infrastructure_error": null,
+   "wall_s": 5697.013061259058
+  },
+  "gpu_sharing": {
+   "label": "SHARED_GPU",
+   "co_tenant_pids": [
+    1778327
+   ],
+   "samples": [
+    {
+     "t": "2026-11-12T07:37:09+0900",
+     "tag": "RL06:start",
+     "gpu": "4516 MiB, 32607 MiB, 91 %",
+     "apps": [
+      {
+       "pid": 1778327,
+       "used_mib": 4438.0
+      }
+     ]
+    },
+    {
+     "t": "2026-11-12T09:12:08+0900",
+     "tag": "RL06:end",
+     "gpu": "5720 MiB, 32607 MiB, 99 %",
+     "apps": [
+      {
+       "pid": 1778327,
+       "used_mib": 4438.0
+      },
+      {
+       "pid": 1819804,
+       "used_mib": 1198.0
+      }
+     ]
+    }
+   ]
+  },
+  "formal_reference": {
+   "run": "artifacts/rl_ready/p2_6/gpu_rl_c_001",
+   "reset_median_s": 0.401,
+   "reset_p95_s": 5.004,
+   "OPENBLAS_NUM_THREADS": null
+  },
+  "reading": "same row, same protocol; only OPENBLAS_NUM_THREADS=1 differs. Reset p95 5.004 -> 0.093 s. The verdict of record stays gpu_rl_c_001 PASS; wall time is longer because of the GPU1 co-tenant and is not scored"
+ },
+ "rl10": {
+  "file": "artifacts/rl_ready/p2_6/rl10_provenance_001.json",
+  "sha256": "e3815b15227b5598786762e91c7b6c43bd6250b2477c7189aa758b756601b5dc",
+  "head": "73c624bca4ad3617233d6fd18e9e88a52e85e095",
+  "runs": [
+   {
+    "run": "gpu_rl_a_001",
+    "commit": "a95da89",
+    "pass": true,
+    "problems": []
+   },
+   {
+    "run": "gpu_rl_b_001",
+    "commit": "3807912",
+    "pass": true,
+    "problems": []
+   },
+   {
+    "run": "gpu_rl_c_001",
+    "commit": "3807912",
+    "pass": true,
+    "problems": []
+   },
+   {
+    "run": "gpu_rl_d_001",
+    "commit": "3807912",
+    "pass": true,
+    "problems": []
+   },
+   {
+    "run": "gpu_rl05_v3_001",
+    "commit": "ae38c9e",
+    "pass": true,
+    "problems": []
+   },
+   {
+    "run": "gpu_rl05_v4_001",
+    "commit": "e0bce4e",
+    "pass": true,
+    "problems": []
+   }
+  ],
+  "writers": [
+   {
+    "writer": "scripts/rubber/p2_6/write_rubber_rl_evidence.py",
+    "refuses_overwrite": true
+   },
+   {
+    "writer": "scripts/rubber/p2_6/write_contact_envelope_v2.py",
+    "refuses_overwrite": true
+   },
+   {
+    "writer": "scripts/rubber/p2_6/write_contact_envelope_v3.py",
+    "refuses_overwrite": true
+   },
+   {
+    "writer": "scripts/rubber/p2_6/run_rubber_rl_gpu.py",
+    "refuses_overwrite": true
+   },
+   {
+    "writer": "scripts/rubber/p2_6/run_contact_envelope_v1.py",
+    "refuses_overwrite": true
+   },
+   {
+    "writer": "scripts/rubber/p2_6/run_contact_envelope_v2.py",
+    "refuses_overwrite": true
+   }
+  ],
+  "verdict": "PASS"
+ },
+ "rl11": {
+  "suites": {
+   "venv_full_cuda_none_d92550d": [
+    "2911 passed, 40 skipped, 6 xfailed, 605 warnings in 2913.27s (0:48:33)",
+    "exit=0 wall_s=2917 head=d92550d"
+   ],
+   "torch_cuda_none_d92550d": [
+    "385 passed, 3 skipped, 1 warning in 654.50s (0:10:54)",
+    "exit=0 wall_s=656 head=d92550d"
+   ],
+   "venv_full_cuda_none_73c624b": [
+    "2914 passed, 40 skipped, 6 xfailed, 605 warnings in 2872.80s (0:47:52)",
+    "exit=0 wall_s=2878 head=73c624b"
+   ],
+   "torch_cuda_none_73c624b": [
+    "386 passed, 3 skipped, 1 warning in 639.05s (0:10:39)",
+    "exit=0 wall_s=640 head=73c624b"
+   ],
+   "venv_full_cuda_gpu1_73c624b": [
+    "2914 passed, 40 skipped, 6 xfailed, 605 warnings in 2890.11s (0:48:10)",
+    "exit=0 wall_s=2894 head=73c624b"
+   ],
+   "torch_cuda_gpu1_73c624b": [
+    "388 passed, 2 skipped, 1 warning in 610.32s (0:10:10)",
+    "exit=0 wall_s=612 head=73c624b"
+   ]
+  },
+  "commands": "full .venv suite: CUDA_VISIBLE_DEVICES=<''|0> OPENBLAS_NUM_THREADS=8 .venv/bin/python -m pytest -q -p no:cacheprovider -rfEs tests\nTorch suites: CUDA_VISIBLE_DEVICES=<''|0> OPENBLAS_NUM_THREADS=8 PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src .deps/isaacsim-venv/bin/python -m pytest -q -p no:cacheprovider -rfEs tests/test_vector_env_*.py tests/test_rl_actions.py tests/test_rl_benchmark.py tests/test_rl_observations.py tests/test_rl_policies_batched.py tests/test_rl_replay.py tests/test_rl_reward_packed.py tests/test_rl_stability.py tests/test_rl_supervision.py tests/test_rl_termination.py tests/test_perf_acceptance.py tests/test_rubber_rl_*.py tests/test_rubber_device_staging.py tests/test_rubber_scripted.py tests/test_native_rubber_*.py\n=0 runs under flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock\n",
+  "deviation": "CUDA-visible suites ran with CUDA_VISIBLE_DEVICES=1 under the GPU1 lock (GPU0 held by P2-5), not =0",
+  "workload_a_contract_n2": {
+   "run": "artifacts/rl_ready/p2_6/rl11_workload_a_contract_n2_001",
+   "status": "PASS",
+   "clauses": [
+    "receipt/spaces/metadata",
+    "full reset",
+    "partial reset",
+    "steps",
+    "evaluate"
+   ],
+   "N": 2,
+   "particles_per_env": [
+    102732,
+    103898
+   ],
+   "control_hz": 50,
+   "material_dt_s": 0.0001,
+   "substeps": 200,
+   "cameras": "none",
+   "recording": "none (evaluation stream on the device when enabled)",
+   "commit": {
+    "sha": "e0bce4e095de35af9c399bef93a2bf7484eaf457",
+    "tracked_src_or_scripts_modified": false
+   },
+   "gpu": {
+    "name": "NVIDIA GeForce RTX 5090",
+    "index": 1,
+    "driver": "570.211.01",
+    "memory_total_mb": 32607.0,
+    "memory_used_mb": 4516.0,
+    "utilization_pct": 90.0
+   },
+   "sharing": "SHARED_GPU (PID 1778327 on GPU1 at the time)"
+  },
+  "frozen_paths_vs_origin_main": {
+   "main": "bfe6d5e",
+   "configs/rl_benchmark + scripts/rl_ready + Phase 1 batched frozen modules": "empty diff",
+   "rl/vector_env.py": "+13 lines (the dispatch branch)"
+  },
+  "verdict": "PASS"
+ }
+}

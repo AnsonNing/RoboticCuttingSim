@@ -1,0 +1,205 @@
+{
+  "schema": "rcs_rubber_phys_tests_v1",
+  "version": 1,
+  "adr": "docs/adr/0023-rubber-material-v1.md section 14.3",
+  "status": "FROZEN_AT_COMMIT (declared before any RUBBER-PHYS run; a change is rubber_phys_tests_v2, this file is never edited; SHA-256 pinned in tests/test_rubber_phys_config.py)",
+  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (numerical verification only; no real rubber data)",
+  "common": {
+    "model": "neo_hookean_jbar_v1",
+    "solver": "tlmpm_rubber_v1",
+    "bulk_ratio_beta": 20.0,
+    "pic": 0.0,
+    "cfl": 0.5,
+    "particles_per_cell_axis": 2,
+    "density_kg_m3": 1150.0,
+    "artificial_damping_in_dynamics": "none",
+    "frame": "strip-local: x along the length, free length x in [0, L] from the clamp face, y in [0, W], z in [0, t], gravity -z; clamp jaw x in [-2 dx, 0] (case A) has every component of every grid node with mass and reference x <= 0 prescribed",
+    "grid": "dx = t / n_t, particle spacing s = dx / 2, particles at cell-centred lattice points, geometry on the lattice (L, W, t, jaw length multiples of s; minimum corner on a grid line)",
+    "young_effective": "E_eff = 9 kappa mu / (3 kappa + mu), nu_eff = (3 kappa - 2 mu) / (2 (3 kappa + mu)), kappa = beta mu",
+    "tip": "tip marker = centroid of the particles of the last lattice layer (reference x = L - s/2); deflection = reference z minus current z of that centroid",
+    "markers": "K = 9 cross-section centroids at reference x_k = k L / 8 (k = 0..8), each the particles of the lattice layer nearest to x_k",
+    "step_rule": "dt = control_dt / ceil(control_dt / (cfl dx / c_p)), c_p = sqrt((kappa + 4 mu / 3) / rho) of the test material",
+    "energy": "E_total = KE_particle + Psi + E_grav - W_ext; Psi = sum_p V mu/2 (J^-2/3 I1 - 3) + sum_c V_c kappa/4 (Jbar^2 - 1 - 2 ln Jbar); E_grav = -sum m g.x relative to the start; grid KE reported alongside",
+    "static_initializer": {
+      "id": "relax_mass_proportional_v1",
+      "label": "initializer (never part of an episode; its result is the starting state, not a dynamic observable)",
+      "method": "mass-proportional damping impulse -c m_p v_p dt at the solver CFL 0.5, c = 2 omega_1 with omega_1 = 2 pi f1_EB(E_eff) of the free length (critical for the first linear mode)",
+      "stop": "checked every check_interval_s: max particle speed < min(1e-5 m/s, 1e-4 omega_1 delta_ref) AND |R_z + M g| / (M g) < 1e-3 (R = time-averaged clamp reaction over the interval, M = total mass)",
+      "check_interval_s": "T1_EB / 20",
+      "max_time": "15 T1_EB (not converged = FAIL of that configuration)",
+      "alternative": "kinetic damping (zero particle velocities at kinetic-energy peaks) is only admitted at CFL <= 0.25 (ADR 0023 E4 preserved failure) and is not used by v1 runs"
+    }
+  },
+  "tests": {
+    "RUBBER-PHYS-01": {
+      "name": "patch test: homogeneous F imposed by Dirichlet on every node",
+      "phase": "P2-1",
+      "device": "cpu",
+      "setup": {"block_cells": [6, 6, 6], "dx_m": 0.001, "block_center_m": [0.0, 0.0, 0.0],
+                "mu_pa": 4.0e5, "gravity_m_s2": 0.0, "substeps": 1,
+                "imposed": "one affine Dirichlet group holding every node with mass: target x = F X about the block centre (origin), F linearly interpolated from I over the single substep (float64 target evaluation)",
+                "cases": [{"id": "uniaxial_0.7", "kind": "uniaxial_stress", "stretch": 0.7},
+                          {"id": "uniaxial_1.25", "kind": "uniaxial_stress", "stretch": 1.25},
+                          {"id": "uniaxial_1.5", "kind": "uniaxial_stress", "stretch": 1.5},
+                          {"id": "uniaxial_2", "kind": "uniaxial_stress", "stretch": 2.0},
+                          {"id": "uniaxial_3", "kind": "uniaxial_stress", "stretch": 3.0},
+                          {"id": "shear_0.3", "kind": "simple_shear", "gamma": 0.3},
+                          {"id": "shear_1", "kind": "simple_shear", "gamma": 1.0},
+                          {"id": "rot90z_x_stretch_1.5", "kind": "rotation_times_uniaxial", "rotation_deg_z": 90.0, "stretch": 1.5}],
+                "uniaxial_lateral_stretch": "from the compressible uniaxial-stress solution (rubber_reference.uniaxial_stress)"},
+      "reference": "section 5 PK1 in float64 evaluated on each particle's stored F with the float64 cell mean J-bar; objectivity P(RF) = R P(F)",
+      "criteria": {
+        "pk1_per_particle": "||P - P_ref||_F <= 1e-5 ||P_ref||_F + 1e-3 Pa for every particle",
+        "jbar_consistency": "|Jbar_c - J_p| <= 1e-6 for every particle p of every cell c",
+        "jbar_analytic": "|Jbar_c - det F_target| <= 1e-5 for every cell (ADR section 6 patch tolerance)",
+        "interior_force": "max over interior nodes ||f_I|| <= 1e-5 max over boundary nodes ||f_I|| (internal nodal force of the frozen P2G, gravity 0; interior = all 8 adjacent cells occupied)",
+        "objectivity": "||P(RF) - R P(F)||_F <= 1e-5 ||P(F)||_F for R in {90 deg about z, 37 deg about (1,2,3)/|.|} and every non-rotated case F (stress kernel, float32 storage)"
+      },
+      "thresholds": {"pk1_rel": 1e-5, "pk1_abs_pa": 1e-3, "jbar_consistency": 1e-6, "jbar_analytic": 1e-5,
+                     "interior_force_ratio": 1e-5, "objectivity_rel": 1e-5}
+    },
+    "RUBBER-PHYS-02": {
+      "name": "small-deflection cantilever sag (static, initializer)",
+      "phase": "P2-1",
+      "device": "cpu or cuda (recorded)",
+      "setup": {"L_over_t": [10, 20], "t_m": [0.003, 0.004, 0.006], "W_over_t": [1, 4], "n_t": [3, 4],
+                "mu_pa": 4.0e5, "clamp_jaw": "2 dx", "alpha_target": 0.05,
+                "gravity_m_s2": "per configuration such that the load parameter alpha = rho g A L^3 / (E_eff I) = 0.05 (linear regime: elastica / linear = 0.99997); the reference uses the same g",
+                "initializer": "relax_mass_proportional_v1", "configurations": 24},
+      "reference": "Euler-Bernoulli q L^4 / (8 E_eff I) for W <= 2t; plate bracket [EB (1 - nu_eff^2), EB] for W > 2t; two-grid extrapolation from n_t 3 and 4 with assumed order 2 (observed order needs three grids: P2-2)",
+      "criteria": {
+        "narrow_eb": "W = t: |delta / delta_EB - 1| <= 0.04",
+        "wide_bracket": "W = 4t: delta in [delta_EB (1 - nu_eff^2), delta_EB] (reported; ADR reference)",
+        "extrapolated": "every configuration at n_t >= 3: |delta / delta_extrap - 1| <= 0.02 (delta_extrap of the same L/t, t, W)",
+        "reaction": "|R_z + M g| / (M g) <= 1e-3 at convergence",
+        "initializer_converged": "within 15 T1_EB"
+      },
+      "thresholds": {"narrow_eb_rel": 0.04, "extrap_rel": 0.02, "reaction_rel": 1e-3}
+    },
+    "RUBBER-PHYS-03": {
+      "name": "geometry scaling of the small-deflection sag",
+      "phase": "P2-1",
+      "device": "cpu or cuda (recorded)",
+      "setup": {"series_L": {"L_m": [0.06, 0.09, 0.12], "t_m": 0.004}, "series_t": {"t_m": [0.003, 0.004, 0.006], "L_m": 0.1},
+                "W_over_t": 1, "n_t": 3, "mu_pa": 4.0e5, "gravity_m_s2": 0.4, "clamp_jaw": "2 dx",
+                "alpha_range": "0.063 .. 0.52 (elastica / linear >= 0.9969)", "initializer": "relax_mass_proportional_v1"},
+      "reference": "delta proportional to L^4 t^-2 (Euler-Bernoulli)",
+      "criteria": {"length_exponent": "least-squares slope of log delta vs log L = 4 +- 0.15",
+                   "thickness_exponent": "least-squares slope of log delta vs log t = -2 +- 0.1",
+                   "initializer_converged": "every configuration within 15 T1_EB"},
+      "thresholds": {"length_exponent": [3.85, 4.15], "thickness_exponent": [-2.1, -1.9]}
+    },
+    "RUBBER-PHYS-04": {
+      "name": "free vibration of a clamped strip released straight under gravity",
+      "phase": "P2-1",
+      "device": "cpu or cuda (recorded)",
+      "setup": {"L_m": 0.06, "W_m": 0.006, "t_m": 0.006, "n_t": 3, "mu_pa": 2.0e6, "gravity_m_s2": 9.81,
+                "alpha": "0.138 (small deflection)", "duration": "6 T1_EB", "record_interval_s": 0.001,
+                "runs": [{"id": "dt", "cfl": 0.5}, {"id": "dt_half", "substeps": "2 x those of the dt run"}],
+                "batched": "the dt run is repeated as env 0 of a heterogeneous CPU batch N = 4 (envs 1-3: L 0.048 m / W 0.012 m / mu 1.0e6 Pa and rho 1000; uniform dx and dt) and must equal the single run bitwise (L0); envs 1-3 must equal their own single runs bitwise"},
+      "reference": "f_EB = (1.8751^2 / 2 pi) sqrt(E_eff I / (rho A L^4))",
+      "measurement": {
+        "frequency": "tip z minus its mean over the run; upward zero crossings (linear interpolation); f1 = (number of whole periods) / (last crossing - first crossing)",
+        "energy_drift": "max_t |E_total(t) - E_total(0)| over the record samples",
+        "amplitude": "half peak-to-peak tip z over the first whole period and over the last whole period (periods delimited by upward zero crossings)"
+      },
+      "criteria": {"frequency": "|f1 / f_EB - 1| <= 0.03", "energy": "energy drift <= 0.005 max_t Psi(t)",
+                   "amplitude": "last-period amplitude >= 0.95 first-period amplitude",
+                   "dt_independence": "|f1(dt) / f1(dt/2) - 1| <= 0.002",
+                   "batched_equal": "batched N = 4 CPU records bitwise equal to the single runs"},
+      "thresholds": {"frequency_rel": 0.03, "energy_rel_peak_psi": 0.005, "amplitude_ratio_min": 0.95, "dt_rel": 0.002}
+    },
+    "RUBBER-PHYS-05": {
+      "name": "large-deflection gravity sag vs the elastica",
+      "phase": "P2-1",
+      "device": "cpu or cuda (recorded)",
+      "setup": {"L_over_t": 20, "W_over_t": 1, "n_t": 3, "mu_pa": 2.0e5, "gravity_m_s2": 9.81,
+                "alpha": [3.0, 9.0, 20.0], "geometry": "L = alpha E_eff / (12 rho g (L/t)^2), t = W = L / 20",
+                "clamp_jaw": "2 dx", "initializer": "relax_mass_proportional_v1 (delta_ref = elastica tip drop)"},
+      "reference": "inextensible elastica BVP theta'' = alpha (1 - s) cos theta",
+      "criteria": {"tip_drop": "|delta / delta_elastica - 1| <= 0.03", "jbar": "every cell Jbar in [0.97, 1.03] at the static state",
+                   "initializer_converged": "within 15 T1_EB (linear)"},
+      "thresholds": {"tip_rel": 0.03, "jbar_range": [0.97, 1.03]}
+    },
+    "RUBBER-PHYS-06": {
+      "name": "uniaxial quasi-static load-unload",
+      "phase": "P2-1",
+      "device": "cpu or cuda (recorded)",
+      "setup": {"L_m": 0.06, "W_m": 0.01, "t_m": 0.004, "n_t": 4, "mu_pa": 4.0e5, "gravity_m_s2": 0.0,
+                "grips": "group 0: grid nodes with mass on the face x = 0, group 1: on the face x = L; component mask x on every face node, plus y and z on the face-centre node (y = W/2, z = t/2) and y on the node (y = W/2, z = 0) of each face (rigid modes pinned on symmetry lines); group 0 fixed, group 1 translates along x",
+                "path": "stretch lambda(t) = 1 + (lambda_max - 1)(1 - cos(pi t / T_r)) / 2 up to lambda_max = 2 over T_r, the mirror path back to 1 over T_r, then a hold of 10 T_ax at lambda = 1",
+                "T_ax": "2 L / sqrt(E_eff / rho) (fixed-fixed axial period at small strain)", "T_r": "60 T_ax rounded up to a multiple of the control interval",
+                "control_interval_s": 0.005},
+      "reference": "compressible-model uniaxial stress P11(lambda), J(lambda) (rubber_reference.uniaxial_stress)",
+      "measurement": {
+        "nominal_stress": "-R1_x / (W t), R1 = group-1 reaction averaged over a control interval, compared with the average of the analytic P11 over the interval's substep stretches; evaluated at the intervals whose mid-interval stretch is nearest to 1.25, 1.5, 2.0 (load) and 1.25, 1.5 (unload)",
+        "gauge_jbar": "mean Jbar over the cells with reference centre x in [L/4, 3L/4] at the end of an interval vs J(lambda_end), all intervals",
+        "residual": "time-averaged distance between markers k = 2 and k = 6 over the final hold vs its reference value"
+      },
+      "criteria": {"stress": "relative error <= 0.01 at each evaluation point", "gauge_jbar": "|mean Jbar - J| <= 5e-3",
+                   "unload_equals_load": "|P_unload / P_load - 1| <= 0.01 at lambda 1.25 and 1.5", "residual_length": "<= 1e-3 relative"},
+      "thresholds": {"stress_rel": 0.01, "gauge_jbar_abs": 0.005, "unload_rel": 0.01, "residual_rel": 0.001}
+    },
+    "RUBBER-PHYS-07": {
+      "name": "stretch and release",
+      "phase": "P2-1",
+      "device": "cpu or cuda (recorded)",
+      "setup": {"strip": "as RUBBER-PHYS-06", "path": "cosine ramp to lambda 1.5 over 60 T_ax, hold 10 T_ax, then group 1 is removed (its nodes become free); afterwards 10 fixed-free axial periods (10 x 4 L / c0 = 20 T_ax)",
+                "control_interval_s": 0.005},
+      "reference": "elastic recovery; energy conservation after release (no external work: group 0 fixed, no gravity)",
+      "measurement": {"length": "x(marker 8) - x(marker 0) time-averaged over the post-release window, relative to its reference value",
+                      "energy": "max over post-release control intervals of |E_total - E_total(release)| / E_total(release)"},
+      "criteria": {"mean_length": "within 0.005 of the reference length", "energy": "drift <= 0.01",
+                   "no_permanent_set": "the elastic model has no internal variable; judged by the mean-length criterion"},
+      "thresholds": {"length_rel": 0.005, "energy_rel": 0.01}
+    },
+    "RUBBER-PHYS-08": {
+      "name": "homogeneous simple shear",
+      "phase": "P2-1",
+      "device": "cpu",
+      "setup": {"block_cells": [6, 6, 6], "dx_m": 0.001, "mu_pa": 4.0e5, "gravity_m_s2": 0.0, "gamma": [0.5, 1.0, 2.0],
+                "imposed": "affine Dirichlet group on every node, gamma ramped linearly over 200 substeps (one control interval)"},
+      "reference": "sigma_12 = mu gamma, sigma_11 - sigma_22 = mu gamma^2 (J = 1)",
+      "measurement": "mean Cauchy stress over all particles at the end",
+      "criteria": {"shear": "|sigma_12 / (mu gamma) - 1| <= 0.005", "normal_difference": "|(sigma_11 - sigma_22) / (mu gamma^2) - 1| <= 0.005"},
+      "thresholds": {"rel": 0.005}
+    },
+    "RUBBER-PHYS-09": {
+      "name": "observables and records",
+      "phase": "P2-1",
+      "device": "cpu or cuda (recorded)",
+      "setup": {"scenarios": ["cantilever_gravity (as -02 type, mu 2 MPa, g 9.81, from straight)", "free_vibration (as -04 type)", "stretch_release (as -07 type, ramp to 1.5 over 2 control steps, release after step 3)"],
+                "t_m": [0.003, 0.004, 0.006], "W_over_t": [1, 4], "L_over_t": 10, "n_t": 3, "control_steps": 5, "control_dt_s": 0.02},
+      "reference": "schema rcs_rubber_record_v1 (configs/rubber/rubber_record_v1.schema.json)",
+      "criteria": {"records": "one record per control step for all 18 runs, every required field present with the declared shape, finite, header with surface particle ids and marker CSR"},
+      "thresholds": {}
+    },
+    "RUBBER-PHYS-10": {
+      "name": "single-env reference vs batched",
+      "phase": "P2-1",
+      "device": "cpu (L0, L1) and cuda (L2 smoke, L3 band)",
+      "setup": {"L0": "batched vs single bitwise on CPU for every array after every control step: N = 1, N = 3 heterogeneous (L, W, mu, rho, friction), N = 3 copies",
+                "L1": "perturbing env k leaves every other env bitwise unchanged; masked partial reset of one env equals a fresh env for every device array (vars()-complete), including resampled material parameters",
+                "L2": "GPU smoke N = 1, 4, 8: finite state, mass constant between resets, J domain, env-ownership audits, <= 1.5 GB at about 100k particles per env",
+                "L3": "GPU batched N = 4 per-env observables (tip marker z, Jbar min / max, elastic energy) at every control step inside [min, max] of 3 single-env GPU repeats, widened by max(1e-5 |value|, 1e-9)"},
+      "reference": "ADR 0021 parity levels L0-L3",
+      "criteria": {"L0": "bitwise", "L1": "bitwise", "L2": "all invariants hold, VRAM peak <= 1.5 GB", "L3": "every observable inside the band"},
+      "thresholds": {"l3_band_floor_rel": 1e-5, "l2_vram_gb": 1.5}
+    },
+    "RUBBER-PHYS-11": {
+      "name": "dt / spacing refinement (GCI)",
+      "phase": "P2-2",
+      "device": "-",
+      "setup": "ADR 0023 section 14.4",
+      "reference": "Richardson / GCI (Roache, Fs 1.25)",
+      "criteria": {"gci": "GCI <= 2 % for Q1-Q4 at rubber_rl_v1; CFL 0.5 -> 0.25 changes Q1-Q4 by <= 0.1 %"},
+      "thresholds": {"gci": 0.02, "dt_rel": 0.001},
+      "p2_1_status": "NOT_RUN (P2-2 work package R2.2)"
+    }
+  },
+  "p2_1_scope": {
+    "single_env": "RUBBER-PHYS-01..09 in the single-env reference",
+    "batched": "RUBBER-PHYS-04 as a heterogeneous CPU batch (bitwise vs single) and RUBBER-PHYS-10 L0/L1 (CPU tests), L2/L3 on GPU when a GPU slot is available; batched runs of -02/-03/-05..-09 belong to R2.1 (P2-2)",
+    "verdict_rule": "a test PASSes only if every configuration meets every criterion; a configuration that did not run is NOT_RUN, never PASS"
+  }
+}

@@ -1215,6 +1215,19 @@ def open_vector_env(num_envs, runtime=RUNTIME, task=None, material=MATERIAL, obs
     (``rl.vector_contract``). ``tasks``: per-env task selection (``resolve_tasks``), e.g. ``tasks=[512, 15]`` or
     configured scenes ``[{"scene": "cut_v7_2_v1", "seed": 3}, ...]``. Workload B options (``tool_mount``,
     ``grip_contact_profile`` incl. the opt-in ``mjwarp_grip_v1``) go to the Lab env; workload A refuses them."""
+    if backend == "kinematic_grip_batched" or getattr(task, "is_rubber_task_family", False):
+        # P2-6 rubber (ADR 0023 §23.2 decision 7): RubberStripTaskFamily on backend "kinematic_grip_batched" ->
+        # rl.rubber_env.RubberVectorEnv (lazy import; refusals and the cutting-default mapping live there)
+        from .rubber_env import open_rubber_vector_env
+        env = open_rubber_vector_env(num_envs, task=task, tasks=tasks, runtime=runtime, material=material,
+                                     observation_profile=observation_profile, device=device, backend=backend,
+                                     action_spec=action_spec, reward=reward, autoreset=autoreset, strict=strict,
+                                     output_dir=output_dir, **options)
+        try:
+            yield env
+        finally:
+            env.close()
+        return
     task = resolve_tasks(num_envs, task, tasks)
     robot_only = sorted(k for k in ("tool_mount", "grip_contact_profile") if k in options)
     if backend != LAB_BACKEND and robot_only:

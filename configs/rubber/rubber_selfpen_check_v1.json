@@ -1,0 +1,49 @@
+{
+ "schema": "rcs_rubber_check_declaration_v1",
+ "id": "rubber_selfpen_check_v1",
+ "task": "S1 (ADR 0023 §23.2 decision 2; docs/reports/rl_ready/P2_REMAINING_PLAN.md §2.2): GPU smoke of the self-penetration detector surface_grid_v1",
+ "declared": "2026-11-11, committed alone and SHA-pinned (tests/test_rubber_s1_protocol.py) before any GPU run of the check",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "detector": {
+  "option": "self_penetration_check = surface_grid_v1",
+  "check_substeps": 256,
+  "distance_threshold": "particle spacing s",
+  "reference_exclusion": "3 dx",
+  "grid": "env-grouped sort grid, no wp.HashGrid"
+ },
+ "common": {
+  "device": "GPU0 (RTX 5090), CUDA graph chunks, under flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock",
+  "min_free_mb_at_start": 4096,
+  "gpu_label": "SHARED_GPU when nvidia-smi shows another compute process before, during or after the run, else EXCLUSIVE_AT_SAMPLES",
+  "run_meta": "commit, dirty-tree flag, this file's sha256, driver, GPU name, co-tenant samples, Warp / Python versions, command",
+  "output": "new directory under artifacts/rl_ready/p2_s1/ (refuses to overwrite)"
+ },
+ "rows": {
+  "COST": {
+   "what": "ms per substep with the detector on vs off (reported, not scored)",
+   "scene": "P2-6 profile rubber_rl_env_v1 without S1 as the off arm: case A strip 125 x 16 x 4 mm, n_t 4, dx 1 mm (rubber_ref_v1), on the table plane z = 0 (contact law grid_node_penalty_coulomb_v3 with the rubber_contact_tests_v3 parameters), gravity -z, recipe rubber_generic_visco_v1 nominal (M = 2), step material mu0 0.8 MPa / rho 1000 (5,226 substeps per 20 ms), options F8 consistent_mass_projection_v1 + kick_average_v1 + F9 grid_displacement_v1 + F10 f64_shadow_v1 + guard 1.0",
+   "batches": "BatchedRubberMaterial N = 1 and N = 8 (identical slots), detector on (check_substeps 256) and off",
+   "procedure": "per N: build both arms, 1 cold control step each, then 5 warm control steps per arm interleaved (on, off, on, off, ...), synchronised wall time per control step; ms/substep = median warm wall / substeps; overhead = on / off - 1",
+   "criterion": "reported; the plan estimate is <= 0.5 % of a control step"
+  },
+  "L2": {
+   "what": "GPU invariants of the detector-on arms of COST after their warm steps (scored)",
+   "criterion": "state finite (diagnostics nonfinite 0); per-env particle mass unchanged since the build; audits() empty; invalid_reason 0 for every env; detector hits 0 and checks = control steps x checks per control step for every env"
+  },
+  "TRIP": {
+   "what": "deliberate crossing on the GPU (scored)",
+   "scene": "tests/test_rubber_self_penetration.py fold scene (case C 24 x 3 x 3 mm, n_t 2, grip 1 lifted, carried back over the strip and driven down through its lower leg; check_substeps 8), single env and BatchedRubberMaterial N = 3 with the fold in env 1 and benign grip motions in envs 0 / 2, 140 control steps",
+   "criterion": "bit 8 set for the fold env (single and batched env 1) and for no other env; no other invalid bit before bit 8; the first-hit control step and substep reported next to the CPU value of the same scene (GPU atomics make the trajectory order-nondeterministic, so the hit time is not scored)"
+  },
+  "NO_FALSE_TRIP": {
+   "what": "v5 / visco regression scenes with the detector forced on (check_substeps 256), built by their unchanged builders (scored)",
+   "scenes": [
+    "RUBBER-PHYS-09 v5 (rubber_phys.case_records, guard 1.0): cantilever_gravity and free_vibration at t 3 / 4 / 6 mm x W/t 1 / 4 (12 runs, 5 control steps each)",
+    "RUBBER-PHYS-09 v5 stretch_release at the same 6 sizes (the lambda 1.5 instantaneous-release fold scene of ADR 0023 §18.3): bit 8 reported, not scored",
+    "rubber_visc_tests_v1 runner jobs (scripts/rubber/p2_3/run_visc_v1.py, full length, device forced to the GPU): v03_strip_16hz, v02_creep, v04b_cantilever_x1"
+   ],
+   "criterion": "no RUBBER_SELF_CONTACT_UNRESOLVED (and no other invalid bit) in any cantilever_gravity, free_vibration or visco run; detector checks > 0 in each"
+  }
+ },
+ "verdict": "PASS if L2, TRIP and NO_FALSE_TRIP pass; COST is reported. A failed or aborted run is preserved and reported."
+}

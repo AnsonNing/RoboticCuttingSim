@@ -1,0 +1,2238 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_4_contact_x1_001",
+ "phase": "P2-4 rubber contact, task X1 (decision on the v1 contact FAILs)",
+ "adr": "docs/adr/0023-rubber-material-v1.md section 22.9",
+ "report": "docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md section 8",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "protocol": {
+  "path": "configs/rubber/rubber_contact_tests_v2.json",
+  "sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+  "declared_at_commit": "8842573",
+  "law_commit": "0b33246"
+ },
+ "decision": {
+  "root_cause": "two defects of grid_node_penalty_coulomb_v1, both DIAGNOSTIC-proven (scripts/rubber/p2_4/diag_contact_x1.py, x1_dev_laws.py, diag_x1_scenes.py; artifacts/rl_ready/p2_4/x1_diag_001): (1) the dashpots act on the predicted lumped velocity new_v = M_l^-1 pi_n + dt f / m_I, not on the velocity with which the node actually moves (the TLMPM drift velocity B pi_n); for the face's grid-scale modes they are not dissipative: a FRICTIONLESS elastic block at rest keeps a self-excited contact rattle (27 % of the bottom nodes in contact per substep, vibration energy ~100x the static elastic energy, sustained over 0.3 s, net POSITIVE kick-paired normal contact work while the nominal dashpot dissipation is 300x the vibration energy); (2) on top of it, the per-node friction cap mu F_n follows the grid-scale penalty normal force instantaneously (dF_t/du_n = mu k_n with k_n = kappa m_I / dt^2, a compliance tied to the grid): a friction-normal mode-coupling flutter that grows with mu (bottom-node contact fraction 0.28 / 0.19 / 0.08 / 0.03 / 0.02 at mu 0.2 / 0.4 / 0.6 / 0.8 / 1.0), makes the friction bursty and misaligned and its work correlated with braked node velocities (friction deficit, energy into vibration); not removed by dt or dx refinement (cfl 0.25 / 0.125, n_t 4 / 6) or by any kappa / zeta in the allowed range. It is not continuum physics below mu = 1: rigid-flat Coulomb sliding of an elastic half-space is linearly stable for mu < 1.000 (scripts/rubber/p2_4/halfspace_sliding_stability.py, nu 0.3-0.49). Ruled out as causes: the dashpot dissipation missing from mu N slip (D_contact contains every dashpot and the deficit has the opposite sign), stick-slip hysteresis (stick nodes carry < 0.2 % of the load while sliding), the slip direction (trial vs -v_t: < 0.4 % of g cos theta), a cone on the spring force only (worse).",
+  "decision": "route (a)+(b): the law v2 corrects defect (1) (dashpots on the realised velocity; parameters unchanged, not tuned); defect (2) is NOT corrected in v2 and is declared as a mu envelope with a measured error model (mu_envelope below). A normal-force memory regularisation of the cap (Prakash-Clifton type, lag ntau dt) removes defect (2) in steady sliding up to mu 1.2 (DIAGNOSTIC) but slips 0.04-0.5 mm near threshold under rising load at every mu and collapses beyond its stabilised range; it is not adopted (task X2)",
+  "n_t_2_impact_books": "rubber_coarse_v1 (n_t 2) is the declared reduced_fidelity coarse profile, not a production grid; the v1 1.024 % is the O(dt) symplectic books error of the coarsest dt (n_t 4: 0.59 / 0.25 %, first order); the threshold is kept for every run",
+  "pinch_clamp_balance": "the v1 per-step |F_x(clamp) + T| measures the strip's axial vibration (dominant 229-286 Hz = the clamped / sliding-end quarter-wave mode c / 4L = 267 Hz of the 30 mm strip; window-mean imbalance 0.002-0.6 % in v1), not a contact or moving-clamp work coupling: with sustained unidirectional rate-independent Coulomb slip the sliding end carries a constant force and the undamped elastic strip keeps the slip-onset vibration (estimate k_ax v_pull / omega ~ 0.047 N against 5 % of T = 0.017 N at 20 um), so the per-step 5 % is unattainable for the exact solution of the declared model; v2 scores the window-mean (momentum) balance at the same 5 %"
+ },
+ "mu_envelope": {
+  "status": "DECLARED (route b); error model DIAGNOSTIC on the seen INC scene (x1_diag_001/sweepK_v2_errormodel.jsonl); the unseen INC2 rows below test the sliding-accuracy claim at mu 0.6",
+  "continuum": "rigid-flat Coulomb sliding of an elastic body is linearly stable for mu < 1.000 and ill-posed (growth rate proportional to wavenumber) for mu >= 1.000 (nu 0.3-0.49): rows with mu >= 1.0 are regularisation-defined, label contact_coulomb_ill_posed",
+  "sliding_friction_supported_mu_max": 0.6,
+  "static_friction_supported_mu_max": 0.8,
+  "error_model_v2_INC": {
+   "mu": [
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0,
+    1.2,
+    1.5
+   ],
+   "slip_acc_error_over_g_cos_theta_ratios_1.1_1.2_1.3": [
+    [
+     0.0003,
+     0.0001,
+     0.0
+    ],
+    [
+     0.0009,
+     0.0004,
+     0.0002
+    ],
+    [
+     0.007,
+     0.0016,
+     0.0019
+    ],
+    [
+     0.0183,
+     0.0126,
+     0.0246
+    ],
+    [
+     0.0575,
+     0.0381,
+     0.027
+    ],
+    [
+     0.1465,
+     0.1108,
+     0.0462
+    ],
+    [
+     0.3065,
+     0.1988,
+     0.4348
+    ]
+   ],
+   "dissipation_over_mu_N_slip": [
+    [
+     0.994,
+     0.997,
+     0.998
+    ],
+    [
+     0.986,
+     0.996,
+     0.997
+    ],
+    [
+     0.962,
+     0.989,
+     0.986
+    ],
+    [
+     0.931,
+     0.943,
+     0.869
+    ],
+    [
+     0.847,
+     0.862,
+     0.877
+    ],
+    [
+     0.703,
+     0.724,
+     0.824
+    ],
+    [
+     0.624,
+     0.646,
+     0.571
+    ]
+   ],
+   "hold_at_0.95_mu_elastic_and_P2": {
+    "0.8": "holds (7e-10 m / 3e-8 m)",
+    "1.0": "slides 7 mm",
+    "1.2": "slides 8-10 mm",
+    "1.5": "slides 12-16 mm"
+   }
+  },
+  "labels": {
+   "mu > 0.6 with sliding": "contact_sliding_friction_deficit_v2 (sliding friction low by the error model; dissipation low)",
+   "mu > 0.8": "contact_friction_flutter (near-threshold static friction not reliable)",
+   "mu >= 1.0": "contact_coulomb_ill_posed"
+  },
+  "consequence": "the generic rubber recipes randomise friction_table / friction_pad over [0.3, 1.5] (nominal 0.8 / 1.0): scored contact rows must stay inside the envelope or carry the labels; this is a real limitation for rubber-steel / rubber-table friction (task X2)"
+ },
+ "root_cause_evidence_DIAGNOSTIC": {
+  "frictionless_rest_v1": {
+   "normal_work_material_J_at_0.3s": 1.1448957688259503e-08,
+   "nominal_dashpot_dissipation_J_at_0.3s": 3.0050718059128897e-06,
+   "KE_vib_J_at_0.3s": 6.978379912743655e-09,
+   "psi_J_at_0.3s": 3.687774108175674e-09
+  },
+  "frictionless_rest_v1_vs_v2_0.3s": {
+   "grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": NaN,
+    "bottom_contact_fraction": 1.0,
+    "normal_impulse_fluctuation": 0.004186989922220719,
+    "stick_disp_m": 1.39822875500073e-12,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": NaN,
+    "KE_vib_end_over_S": 0.00016874957184083387
+   },
+   "grid_node_penalty_coulomb_v1": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": NaN,
+    "bottom_contact_fraction": 0.2745217244294262,
+    "normal_impulse_fluctuation": 2.0518994766326273,
+    "stick_disp_m": 1.3523994424335939e-11,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": NaN,
+    "KE_vib_end_over_S": 0.47662701794755136
+   }
+  },
+  "v1_mu_sweep_ratio_1.2": {
+   "mu=0.4 ratio=1.2": {
+    "slip_err_over_g_cos": 0.0005822116360085564,
+    "dissipation_ratio_run": 0.9927173076782665,
+    "friction_efficiency": 0.9984366863780948,
+    "bottom_contact_fraction": 0.1938320653705299,
+    "normal_impulse_fluctuation": 2.3901243177110754,
+    "stick_disp_m": 0.006041291811727708,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.0015633136219052534
+   },
+   "mu=1.2 ratio=1.2": {
+    "slip_err_over_g_cos": 0.1187572200654009,
+    "dissipation_ratio_run": 0.6530873837930893,
+    "friction_efficiency": 0.8809687034031208,
+    "bottom_contact_fraction": 0.008945242791396767,
+    "normal_impulse_fluctuation": 7.258149036962632,
+    "stick_disp_m": 0.019526388219315967,
+    "stick_load_share": 0.1652946580203248,
+    "slip_misalignment_loss": 0.048027831647745954
+   },
+   "mu=0.2 ratio=1.2": {
+    "slip_err_over_g_cos": 0.00024589377467770313,
+    "dissipation_ratio_run": 0.9949019615937111,
+    "friction_efficiency": 0.9985596045327512,
+    "bottom_contact_fraction": 0.27869165023011216,
+    "normal_impulse_fluctuation": 2.034849062129435,
+    "stick_disp_m": 0.0032570669124819714,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.0014403954672488797
+   },
+   "mu=0.6 ratio=1.2": {
+    "slip_err_over_g_cos": 0.002551748687664627,
+    "dissipation_ratio_run": 0.9787329798298979,
+    "friction_efficiency": 0.9955431960399368,
+    "bottom_contact_fraction": 0.0795604395604376,
+    "normal_impulse_fluctuation": 3.9729653160083767,
+    "stick_disp_m": 0.008827451802984294,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.0044568039600629775
+   },
+   "mu=0.8 ratio=1.2": {
+    "slip_err_over_g_cos": 0.018836591734998052,
+    "dissipation_ratio_run": 0.9295260569654837,
+    "friction_efficiency": 0.9791514527056835,
+    "bottom_contact_fraction": 0.03162674931905911,
+    "normal_impulse_fluctuation": 5.8415203767957795,
+    "stick_disp_m": 0.011347507243761606,
+    "stick_load_share": 0.005062996905492516,
+    "slip_misalignment_loss": 0.019100743416067375
+   },
+   "mu=1.0 ratio=1.2": {
+    "slip_err_over_g_cos": 0.0682614052846355,
+    "dissipation_ratio_run": 0.8265614751057784,
+    "friction_efficiency": 0.9467710019604151,
+    "bottom_contact_fraction": 0.018670047900818495,
+    "normal_impulse_fluctuation": 7.280744885792985,
+    "stick_disp_m": 0.013684312123414982,
+    "stick_load_share": 0.05163746393222311,
+    "slip_misalignment_loss": 0.034347501658355165
+   }
+  },
+  "v1_refinement_mu_0.8": {
+   "mu=0.8 ratio=1.2 zt=1.0 zn=1.0": {
+    "slip_err_over_g_cos": 0.011435016173333904,
+    "dissipation_ratio_run": 0.95019221724303,
+    "friction_efficiency": 0.9855269446969925,
+    "bottom_contact_fraction": 0.031223818916128392,
+    "normal_impulse_fluctuation": 6.322504441303841,
+    "stick_disp_m": 0.011802565917619582,
+    "stick_load_share": 0.002064040092348319,
+    "slip_misalignment_loss": 0.013969112669290292
+   },
+   "mu=0.8 ratio=1.2 kn=0.1 kt=0.1 zn=0.5 zt=0.5": {
+    "slip_err_over_g_cos": 0.016704610660012394,
+    "dissipation_ratio_run": 0.8955264817364682,
+    "friction_efficiency": 0.9780072796948959,
+    "bottom_contact_fraction": 0.04073166150089454,
+    "normal_impulse_fluctuation": 4.904694294075491,
+    "stick_disp_m": 0.011984664654299287,
+    "stick_load_share": 0.007930122263513438,
+    "slip_misalignment_loss": 0.02019180883233319
+   },
+   "mu=0.8 ratio=1.2 kn=1.0 kt=1.0 zn=0.5 zt=0.5": {
+    "slip_err_over_g_cos": 0.015040487238149792,
+    "dissipation_ratio_run": 0.9163237886571719,
+    "friction_efficiency": 0.9804126519521479,
+    "bottom_contact_fraction": 0.015713346482578605,
+    "normal_impulse_fluctuation": 8.293275278496964,
+    "stick_disp_m": 0.012571605323778852,
+    "stick_load_share": 0.00427111466413489,
+    "slip_misalignment_loss": 0.01825447410957103
+   },
+   "mu=0.8 ratio=1.2 zt=0.5 zn=1.0": {
+    "slip_err_over_g_cos": 0.012155741367130232,
+    "dissipation_ratio_run": 0.9398050501515346,
+    "friction_efficiency": 0.9862954689241833,
+    "bottom_contact_fraction": 0.03144735606274304,
+    "normal_impulse_fluctuation": 5.9439581768452205,
+    "stick_disp_m": 0.011216204701799558,
+    "stick_load_share": 0.00592083846519888,
+    "slip_misalignment_loss": 0.01269414461520913
+   },
+   "mu=0.8 ratio=1.2 zt=1.0 zn=0.5": {
+    "slip_err_over_g_cos": 0.015598209606276347,
+    "dissipation_ratio_run": 0.9034415733549964,
+    "friction_efficiency": 0.9755657487631945,
+    "bottom_contact_fraction": 0.03200150277073549,
+    "normal_impulse_fluctuation": 5.972838117348236,
+    "stick_disp_m": 0.011444189118312667,
+    "stick_load_share": 0.001626971225428449,
+    "slip_misalignment_loss": 0.023674212807929522
+   },
+   "mu=0.8 ratio=1.2 kn=1.0 kt=0.25 zn=0.5 zt=0.5": {
+    "slip_err_over_g_cos": 0.015136726148304759,
+    "dissipation_ratio_run": 0.9358362626683251,
+    "friction_efficiency": 0.9820033912485735,
+    "bottom_contact_fraction": 0.019397952474877165,
+    "normal_impulse_fluctuation": 7.246397245456925,
+    "stick_disp_m": 0.011650987119806935,
+    "stick_load_share": 0.028258850595252318,
+    "slip_misalignment_loss": 0.011797068490473964
+   },
+   "mu=0.8 ratio=1.2 kn=0.25 kt=1.0 zn=0.5 zt=0.5": {
+    "slip_err_over_g_cos": 0.00801990619183766,
+    "dissipation_ratio_run": 0.9493934489938556,
+    "friction_efficiency": 0.9888761647468295,
+    "bottom_contact_fraction": 0.04076829153752452,
+    "normal_impulse_fluctuation": 5.073473098359249,
+    "stick_disp_m": 0.011245543092958788,
+    "stick_load_share": 0.00019534535070315988,
+    "slip_misalignment_loss": 0.011016333744675633
+   },
+   "mu=0.8 ratio=1.2 material=P2": {
+    "slip_err_over_g_cos": 0.010062546838038965,
+    "dissipation_ratio_run": 0.9014360982778108,
+    "friction_efficiency": 0.985529740040983,
+    "bottom_contact_fraction": 0.03679440217901948,
+    "normal_impulse_fluctuation": 5.561822472187938,
+    "stick_disp_m": 0.012225438670216584,
+    "stick_load_share": 0.002242627259324446,
+    "slip_misalignment_loss": 0.013836857454614632
+   },
+   "mu=0.8 ratio=1.2 mu0=1.6e6": {
+    "slip_err_over_g_cos": 0.006991953126957018,
+    "dissipation_ratio_run": 0.965122406132761,
+    "friction_efficiency": 0.9915245597453706,
+    "bottom_contact_fraction": 0.028538899967470655,
+    "normal_impulse_fluctuation": 5.697087984729298,
+    "stick_disp_m": 0.01088211941076153,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.008475440254629398
+   },
+   "mu=0.8 ratio=1.2 cfl=0.25": {
+    "slip_err_over_g_cos": 0.01415153912978777,
+    "dissipation_ratio_run": 0.9095728284308793,
+    "friction_efficiency": 0.9792424415928617,
+    "bottom_contact_fraction": 0.017369331655048115,
+    "normal_impulse_fluctuation": 7.955413294830322,
+    "stick_disp_m": 0.01211816429835881,
+    "stick_load_share": 0.0027942211051506277,
+    "slip_misalignment_loss": 0.019573864335233258
+   },
+   "mu=0.8 ratio=1.2 nt=4": {
+    "slip_err_over_g_cos": 0.022769253349475972,
+    "dissipation_ratio_run": 0.899519370203998,
+    "friction_efficiency": 0.9717352343400282,
+    "bottom_contact_fraction": 0.026870380374442223,
+    "normal_impulse_fluctuation": 5.458052841744204,
+    "stick_disp_m": 0.01205318264651769,
+    "stick_load_share": 0.0070076307024750616,
+    "slip_misalignment_loss": 0.02566916177734288
+   },
+   "mu=0.8 ratio=1.2 mu0=6.4e6": {
+    "slip_err_over_g_cos": 0.0049743392270874395,
+    "dissipation_ratio_run": 0.9786903989370243,
+    "friction_efficiency": 0.9935766427092324,
+    "bottom_contact_fraction": 0.018809795405537243,
+    "normal_impulse_fluctuation": 6.61219493277333,
+    "stick_disp_m": 0.010162450440409941,
+    "stick_load_share": 3.428639281249007e-05,
+    "slip_misalignment_loss": 0.006412523796414738
+   },
+   "mu=0.8 ratio=1.2 cfl=0.125": {
+    "slip_err_over_g_cos": 0.01292943382867614,
+    "dissipation_ratio_run": 0.9338247098652789,
+    "friction_efficiency": 0.9836138755650552,
+    "bottom_contact_fraction": 0.010403780616549129,
+    "normal_impulse_fluctuation": 10.480466905362652,
+    "stick_disp_m": 0.011961765167673905,
+    "stick_load_share": 0.0014832461339403177,
+    "slip_misalignment_loss": 0.015760692697233743
+   },
+   "mu=0.8 ratio=1.2 nt=6": {
+    "slip_err_over_g_cos": 0.026802683592963485,
+    "dissipation_ratio_run": 0.8907430464730383,
+    "friction_efficiency": 0.9675034070889595,
+    "bottom_contact_fraction": 0.023197307197308878,
+    "normal_impulse_fluctuation": 5.715065850495519,
+    "stick_disp_m": 0.01268000963912481,
+    "stick_load_share": 0.010846195396854526,
+    "slip_misalignment_loss": 0.02787630507077308
+   }
+  },
+  "v2_error_model": {
+   "mu=1.5 ratio=1.3 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.43482875914540314,
+    "dissipation_ratio_run": 0.5705381937474286,
+    "friction_efficiency": 0.8186342771029895,
+    "bottom_contact_fraction": 0.005169531323377882,
+    "normal_impulse_fluctuation": 9.058945393616115,
+    "stick_disp_m": 0.02829624474084174,
+    "stick_load_share": 0.338771386413192,
+    "slip_misalignment_loss": 0.039748935911179416
+   },
+   "mu=0.6 ratio=1.3 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.001898971410412544,
+    "dissipation_ratio_run": 0.9856512188483145,
+    "friction_efficiency": 0.9962593113903169,
+    "bottom_contact_fraction": 0.07198835352681424,
+    "normal_impulse_fluctuation": 4.73433980541175,
+    "stick_disp_m": 0.012143654517670322,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.0037406886096831233
+   },
+   "mu=1.5 ratio=1.1 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.30648237956438534,
+    "dissipation_ratio_run": 0.6235254005251715,
+    "friction_efficiency": 0.830712896211825,
+    "bottom_contact_fraction": 0.007492251338405554,
+    "normal_impulse_fluctuation": 9.207761250810524,
+    "stick_disp_m": 0.020876257353889937,
+    "stick_load_share": 0.28664293104279887,
+    "slip_misalignment_loss": 0.042495602788346874
+   },
+   "mu=1.2 ratio=1.3 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.046196131402959174,
+    "dissipation_ratio_run": 0.8242554635563046,
+    "friction_efficiency": 0.9520842207732134,
+    "bottom_contact_fraction": 0.011082934159857616,
+    "normal_impulse_fluctuation": 6.57262403530885,
+    "stick_disp_m": 0.022065939920296748,
+    "stick_load_share": 0.06610085364757522,
+    "slip_misalignment_loss": 0.027922676460165764
+   },
+   "mu=1.0 ratio=1.1 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.057547272821797876,
+    "dissipation_ratio_run": 0.847252277258551,
+    "friction_efficiency": 0.9364659309459338,
+    "bottom_contact_fraction": 0.022298299990609297,
+    "normal_impulse_fluctuation": 6.532271627744615,
+    "stick_disp_m": 0.010960735172276673,
+    "stick_load_share": 0.06082125922837906,
+    "slip_misalignment_loss": 0.03912187840377539
+   },
+   "mu=0.4 ratio=1.3 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.00017856939130410926,
+    "dissipation_ratio_run": 0.9971719218970637,
+    "friction_efficiency": 0.9994700829783764,
+    "bottom_contact_fraction": 0.2635869258946179,
+    "normal_impulse_fluctuation": 2.4467674486877575,
+    "stick_disp_m": 0.00881195993832227,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.0005299170216236505
+   },
+   "mu=1.0 ratio=1.3 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.026982461565183198,
+    "dissipation_ratio_run": 0.8772562877938176,
+    "friction_efficiency": 0.9769207202479968,
+    "bottom_contact_fraction": 0.018644688644689877,
+    "normal_impulse_fluctuation": 6.088431315542797,
+    "stick_disp_m": 0.01725768070081081,
+    "stick_load_share": 0.010134166175166362,
+    "slip_misalignment_loss": 0.018960595733157042
+   },
+   "mu=0.8 ratio=0.95 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": 0.9499989432935799,
+    "bottom_contact_fraction": 1.0,
+    "normal_impulse_fluctuation": 0.0035017545617794404,
+    "stick_disp_m": 7.388875743891132e-10,
+    "stick_load_share": 0.9928176193370626,
+    "slip_misalignment_loss": 0.00014273990895608143
+   },
+   "mu=1.0 ratio=0.95 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": 0.8742262883416171,
+    "bottom_contact_fraction": 0.027516671362826817,
+    "normal_impulse_fluctuation": 5.908952005630856,
+    "stick_disp_m": 0.00745973810409215,
+    "stick_load_share": 0.12556370688698473,
+    "slip_misalignment_loss": 0.06217957674389086
+   },
+   "mu=0.8 ratio=1.3 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.024563396957735965,
+    "dissipation_ratio_run": 0.8687187313729863,
+    "friction_efficiency": 0.978121254768211,
+    "bottom_contact_fraction": 0.023621677467832666,
+    "normal_impulse_fluctuation": 6.411140827319487,
+    "stick_disp_m": 0.015735757991019488,
+    "stick_load_share": 0.007966976728156237,
+    "slip_misalignment_loss": 0.01958124310189375
+   },
+   "mu=1.2 ratio=1.1 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.14649802857858268,
+    "dissipation_ratio_run": 0.7026731487271682,
+    "friction_efficiency": 0.8705980185400669,
+    "bottom_contact_fraction": 0.011526251526251995,
+    "normal_impulse_fluctuation": 7.707647547826462,
+    "stick_disp_m": 0.016421333526456458,
+    "stick_load_share": 0.15612872783874104,
+    "slip_misalignment_loss": 0.059870347430514205
+   },
+   "mu=0.8 ratio=1.1 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.018268289245898645,
+    "dissipation_ratio_run": 0.9308904376967403,
+    "friction_efficiency": 0.9763944389296347,
+    "bottom_contact_fraction": 0.04665915281299963,
+    "normal_impulse_fluctuation": 5.310512994483501,
+    "stick_disp_m": 0.007669111560687681,
+    "stick_load_share": 0.0055775510858691695,
+    "slip_misalignment_loss": 0.021490056813970385
+   },
+   "mu=0.4 ratio=1.2 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.0003947044573290878,
+    "dissipation_ratio_run": 0.996150495893031,
+    "friction_efficiency": 0.9990002491686503,
+    "bottom_contact_fraction": 0.2875345167652839,
+    "normal_impulse_fluctuation": 2.106138634997688,
+    "stick_disp_m": 0.006035473994759481,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.0009997508313497807
+   },
+   "mu=0.6 ratio=1.1 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.0070441222324189225,
+    "dissipation_ratio_run": 0.9621683247509601,
+    "friction_efficiency": 0.9892362389886172,
+    "bottom_contact_fraction": 0.09338311261388081,
+    "normal_impulse_fluctuation": 3.5718353722602556,
+    "stick_disp_m": 0.0054651829609513765,
+    "stick_load_share": 0.0009104799500435039,
+    "slip_misalignment_loss": 0.010316800219795218
+   },
+   "mu=1.5 ratio=0.95 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": 0.8065184931819294,
+    "bottom_contact_fraction": 0.008003193387808947,
+    "normal_impulse_fluctuation": 7.524506778273905,
+    "stick_disp_m": 0.015790422352272074,
+    "stick_load_share": 0.31880122440084163,
+    "slip_misalignment_loss": 0.05395484295047218
+   },
+   "mu=1.2 ratio=1.2 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.11075106620295185,
+    "dissipation_ratio_run": 0.7242545105004381,
+    "friction_efficiency": 0.9084704939540483,
+    "bottom_contact_fraction": 0.00871794871794888,
+    "normal_impulse_fluctuation": 7.4650697320004555,
+    "stick_disp_m": 0.019684098185657195,
+    "stick_load_share": 0.11964557498484009,
+    "slip_misalignment_loss": 0.04215297796181097
+   },
+   "mu=1.5 ratio=1.2 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.19876584438946102,
+    "dissipation_ratio_run": 0.6455481284462987,
+    "friction_efficiency": 0.8790242137373151,
+    "bottom_contact_fraction": 0.006131304592843233,
+    "normal_impulse_fluctuation": 8.218366666093823,
+    "stick_disp_m": 0.02190674545685596,
+    "stick_load_share": 0.22805918405754783,
+    "slip_misalignment_loss": 0.04285412801350283
+   },
+   "mu=0.4 ratio=1.1 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.0009252162474786065,
+    "dissipation_ratio_run": 0.9856766421239646,
+    "friction_efficiency": 0.9967566655011242,
+    "bottom_contact_fraction": 0.27350051657743646,
+    "normal_impulse_fluctuation": 2.2534040914769418,
+    "stick_disp_m": 0.003268902912716266,
+    "stick_load_share": 2.7873486649215065e-05,
+    "slip_misalignment_loss": 0.003229274604208228
+   },
+   "mu=0.2 ratio=1.1 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.0002531341963623974,
+    "dissipation_ratio_run": 0.993596946066163,
+    "friction_efficiency": 0.9990030176546295,
+    "bottom_contact_fraction": 0.6254822954822989,
+    "normal_impulse_fluctuation": 0.7494357960847494,
+    "stick_disp_m": 0.0016174476735755765,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.000996982345370312
+   },
+   "mu=0.2 ratio=1.3 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 3.377883592039074e-05,
+    "dissipation_ratio_run": 0.9981748934992831,
+    "friction_efficiency": 0.9998710391727804,
+    "bottom_contact_fraction": 0.5981215365830737,
+    "normal_impulse_fluctuation": 0.915428532445233,
+    "stick_disp_m": 0.004786840204110729,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.00012896082721989305
+   },
+   "mu=0.2 ratio=1.2 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 5.4946753838509274e-05,
+    "dissipation_ratio_run": 0.9966700656674949,
+    "friction_efficiency": 0.9997642696335997,
+    "bottom_contact_fraction": 0.6526411195641935,
+    "normal_impulse_fluctuation": 0.7181043993734523,
+    "stick_disp_m": 0.003207556823767707,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.00023573036640030568
+   },
+   "mu=1.2 ratio=0.95 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": 0.8359723169687721,
+    "bottom_contact_fraction": 0.01712970789893974,
+    "normal_impulse_fluctuation": 6.954999145494909,
+    "stick_disp_m": 0.009801181759457505,
+    "stick_load_share": 0.23632918650002097,
+    "slip_misalignment_loss": 0.053336244562807375
+   },
+   "mu=0.8 ratio=1.2 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.012614676397451896,
+    "dissipation_ratio_run": 0.9426732849124414,
+    "friction_efficiency": 0.9842498179186183,
+    "bottom_contact_fraction": 0.033826429980278,
+    "normal_impulse_fluctuation": 5.966809957876207,
+    "stick_disp_m": 0.01143419047156709,
+    "stick_load_share": 0.001996942936090259,
+    "slip_misalignment_loss": 0.015120556238637329
+   },
+   "mu=1.0 ratio=1.2 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.03807595887248232,
+    "dissipation_ratio_run": 0.8623985877851581,
+    "friction_efficiency": 0.9645958434419629,
+    "bottom_contact_fraction": 0.021504649196958197,
+    "normal_impulse_fluctuation": 7.076158046744087,
+    "stick_disp_m": 0.013368592580526596,
+    "stick_load_share": 0.026431852379537386,
+    "slip_misalignment_loss": 0.027088204944806984
+   },
+   "mu=1.2 ratio=0.95 law=grid_node_penalty_coulomb_v2 material=P2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": 0.8527635254555431,
+    "bottom_contact_fraction": 0.023604771297080912,
+    "normal_impulse_fluctuation": 5.338972570280452,
+    "stick_disp_m": 0.008426668453668153,
+    "stick_load_share": 0.19590328080682737,
+    "slip_misalignment_loss": 0.04806015737705571
+   },
+   "mu=1.5 ratio=0.95 law=grid_node_penalty_coulomb_v2 material=P2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": 0.848978217837773,
+    "bottom_contact_fraction": 0.014500798346952773,
+    "normal_impulse_fluctuation": 6.6162549188891155,
+    "stick_disp_m": 0.011888669834185085,
+    "stick_load_share": 0.25465038705550547,
+    "slip_misalignment_loss": 0.0437973600344796
+   },
+   "mu=0.6 ratio=1.2 law=grid_node_penalty_coulomb_v2": {
+    "slip_err_over_g_cos": 0.0016238729980477353,
+    "dissipation_ratio_run": 0.9888591517595589,
+    "friction_efficiency": 0.9974589044495951,
+    "bottom_contact_fraction": 0.10887198271813736,
+    "normal_impulse_fluctuation": 3.719718013200018,
+    "stick_disp_m": 0.008939826473530869,
+    "stick_load_share": 0.0,
+    "slip_misalignment_loss": 0.002541095550404904
+   },
+   "mu=1.0 ratio=0.95 law=grid_node_penalty_coulomb_v2 material=P2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": 0.8928562453781941,
+    "bottom_contact_fraction": 0.032152719075797906,
+    "normal_impulse_fluctuation": 5.757122231009079,
+    "stick_disp_m": 0.006814686322718361,
+    "stick_load_share": 0.12399839557940125,
+    "slip_misalignment_loss": 0.04868774607925396
+   },
+   "mu=0.8 ratio=0.95 law=grid_node_penalty_coulomb_v2 material=P2": {
+    "slip_err_over_g_cos": null,
+    "dissipation_ratio_run": null,
+    "friction_efficiency": 0.9500000579789422,
+    "bottom_contact_fraction": 0.9895548041703159,
+    "normal_impulse_fluctuation": 0.002963726266180754,
+    "stick_disp_m": 2.911324508553248e-08,
+    "stick_load_share": 0.9551477430762031,
+    "slip_misalignment_loss": 0.0013811586055163668
+   }
+  },
+  "normal_force_lag_not_adopted": {
+   "sliding (capmode 2, ntau 100 / 200 / 400)": {
+    "mu=0.8 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": 1.1351887493815965e-05,
+     "dissipation_ratio_run": 0.9968941754842144,
+     "friction_efficiency": 0.9999855260620727,
+     "bottom_contact_fraction": 0.986193293885739,
+     "normal_impulse_fluctuation": 0.004734777578596659,
+     "stick_disp_m": 0.01570768945300787,
+     "stick_load_share": 0.9997889670342236,
+     "slip_misalignment_loss": -3.832284366014599e-12
+    },
+    "mu=0.4 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": -4.585848589757619e-08,
+     "dissipation_ratio_run": 0.9969110408522351,
+     "friction_efficiency": 0.9999996929710119,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.004537876836781811,
+     "stick_disp_m": 0.01005286619474398,
+     "stick_load_share": 0.9997825619292494,
+     "slip_misalignment_loss": 4.155891706518114e-12
+    },
+    "mu=0.4 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": -3.789493963566692e-08,
+     "dissipation_ratio_run": 0.9950034772493034,
+     "friction_efficiency": 0.9999996264571909,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.004316158849402338,
+     "stick_disp_m": 0.004336863551347674,
+     "stick_load_share": 0.9997826644143051,
+     "slip_misalignment_loss": 1.247310012023775e-11
+    },
+    "mu=1.5 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": 0.9451204253262444,
+     "dissipation_ratio_run": 0.4000595437716397,
+     "friction_efficiency": 0.4517765045596745,
+     "bottom_contact_fraction": 0.3308603362449494,
+     "normal_impulse_fluctuation": 1.6974633418088492,
+     "stick_disp_m": 0.02167963511617952,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=0.8 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": 1.162542061670787e-05,
+     "dissipation_ratio_run": 0.9993856660256261,
+     "friction_efficiency": 0.9999845741499431,
+     "bottom_contact_fraction": 0.9861735700198611,
+     "normal_impulse_fluctuation": 0.004436267956539156,
+     "stick_disp_m": 0.0054882970607461525,
+     "stick_load_share": 0.999730185284511,
+     "slip_misalignment_loss": 1.409001545197039e-13
+    },
+    "mu=0.4 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": -4.6996662385443374e-08,
+     "dissipation_ratio_run": 0.9994075797255039,
+     "friction_efficiency": 1.000000202463379,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.004305323503304005,
+     "stick_disp_m": 0.0033455082639123907,
+     "stick_load_share": 0.9997930677598277,
+     "slip_misalignment_loss": 7.605178007954458e-13
+    },
+    "mu=1.2 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": 0.025862595731824936,
+     "dissipation_ratio_run": 0.8658935995741153,
+     "friction_efficiency": 0.912089212376087,
+     "bottom_contact_fraction": 0.817787170094852,
+     "normal_impulse_fluctuation": 0.08245715790356101,
+     "stick_disp_m": 0.007086014358325973,
+     "stick_load_share": 0.9999926819754944,
+     "slip_misalignment_loss": -7.831922565273485e-13
+    },
+    "mu=1.2 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": 0.0004954818908992183,
+     "dissipation_ratio_run": 0.9979401980016311,
+     "friction_efficiency": 0.9996317888255348,
+     "bottom_contact_fraction": 0.9078144078142535,
+     "normal_impulse_fluctuation": 0.015472885803808987,
+     "stick_disp_m": 0.0072853480636246755,
+     "stick_load_share": 0.9998643739061831,
+     "slip_misalignment_loss": 3.5076539340283506e-12
+    },
+    "mu=1.2 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": 0.04258569096305586,
+     "dissipation_ratio_run": 0.8476847274171371,
+     "friction_efficiency": 0.8899331141835698,
+     "bottom_contact_fraction": 0.7957847280924143,
+     "normal_impulse_fluctuation": 0.08327961184127927,
+     "stick_disp_m": 0.017205622686685525,
+     "stick_load_share": 0.999973443211569,
+     "slip_misalignment_loss": 2.63190726239477e-12
+    },
+    "mu=0.4 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": -5.8813327521388285e-08,
+     "dissipation_ratio_run": 0.9989483597752139,
+     "friction_efficiency": 0.999999793153213,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.00448179559627321,
+     "stick_disp_m": 0.009413039879902496,
+     "stick_load_share": 0.9997781806451711,
+     "slip_misalignment_loss": -4.161781336207517e-12
+    },
+    "mu=1.5 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": 0.0005546102559427927,
+     "dissipation_ratio_run": 0.9964706299220375,
+     "friction_efficiency": 0.999655906344343,
+     "bottom_contact_fraction": 0.8402282333051713,
+     "normal_impulse_fluctuation": 0.004263549153120549,
+     "stick_disp_m": 0.019415212264242934,
+     "stick_load_share": 0.999867471743244,
+     "slip_misalignment_loss": 1.102713565585905e-11
+    },
+    "mu=0.4 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": -3.615413367305631e-08,
+     "dissipation_ratio_run": 0.9983272566945837,
+     "friction_efficiency": 1.0000000854711162,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0043680962830541115,
+     "stick_disp_m": 0.003676779153118268,
+     "stick_load_share": 0.9997575692350398,
+     "slip_misalignment_loss": -6.538081627887621e-12
+    },
+    "mu=1.5 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": 1.0009693101752826,
+     "dissipation_ratio_run": 0.38880850947368517,
+     "friction_efficiency": 0.4021515369782711,
+     "bottom_contact_fraction": 0.28974077204846177,
+     "normal_impulse_fluctuation": 2.0251172063044014,
+     "stick_disp_m": 0.03223005103499937,
+     "stick_load_share": 0.9999958517843228,
+     "slip_misalignment_loss": 4.705117464415841e-12
+    },
+    "mu=1.2 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": 0.0007165620430677161,
+     "dissipation_ratio_run": 0.998192512832877,
+     "friction_efficiency": 0.9993077592266539,
+     "bottom_contact_fraction": 0.9101728186342176,
+     "normal_impulse_fluctuation": 0.02383293156975591,
+     "stick_disp_m": 0.017188483681132308,
+     "stick_load_share": 0.9999483292138861,
+     "slip_misalignment_loss": 5.451212294101963e-12
+    },
+    "mu=1.0 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": 0.00010679799717788272,
+     "dissipation_ratio_run": 0.9988237483669875,
+     "friction_efficiency": 0.9998881051869267,
+     "bottom_contact_fraction": 0.9260139006292483,
+     "normal_impulse_fluctuation": 0.0074725914158951315,
+     "stick_disp_m": 0.016174212023791216,
+     "stick_load_share": 0.9998931412260412,
+     "slip_misalignment_loss": 3.804693719842341e-12
+    },
+    "mu=0.8 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": 1.0996926436036335e-05,
+     "dissipation_ratio_run": 0.9989325151009317,
+     "friction_efficiency": 0.9999865564394893,
+     "bottom_contact_fraction": 0.9864064994835571,
+     "normal_impulse_fluctuation": 0.00472872293716008,
+     "stick_disp_m": 0.014707818018135185,
+     "stick_load_share": 0.9997534275279992,
+     "slip_misalignment_loss": -1.2156183532905223e-11
+    },
+    "mu=1.2 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": 1.3168193518174645e-05,
+     "dissipation_ratio_run": 0.9949575606027802,
+     "friction_efficiency": 0.9999811372505073,
+     "bottom_contact_fraction": 0.9021480229170488,
+     "normal_impulse_fluctuation": 0.005663203539575605,
+     "stick_disp_m": 0.00858803785143586,
+     "stick_load_share": 0.9998205919953909,
+     "slip_misalignment_loss": 1.9737667178340956e-11
+    },
+    "mu=1.0 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": -9.53489571223909e-08,
+     "dissipation_ratio_run": 0.9949862167488731,
+     "friction_efficiency": 1.0000002078633121,
+     "bottom_contact_fraction": 0.9230769230768707,
+     "normal_impulse_fluctuation": 0.004393576057091364,
+     "stick_disp_m": 0.007971012035903663,
+     "stick_load_share": 0.9997977954694989,
+     "slip_misalignment_loss": 6.033409205023271e-13
+    },
+    "mu=1.0 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": 4.4932926063326625e-05,
+     "dissipation_ratio_run": 0.9982401479215258,
+     "friction_efficiency": 0.9999304798489393,
+     "bottom_contact_fraction": 0.9248915187376359,
+     "normal_impulse_fluctuation": 0.0045496783298159425,
+     "stick_disp_m": 0.006756495034858586,
+     "stick_load_share": 0.9998541939830156,
+     "slip_misalignment_loss": -9.988341345520867e-12
+    },
+    "mu=1.0 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": 0.0006476465086320189,
+     "dissipation_ratio_run": 0.9987759385367604,
+     "friction_efficiency": 0.9992539282831755,
+     "bottom_contact_fraction": 0.9345712407250671,
+     "normal_impulse_fluctuation": 0.024673031897855774,
+     "stick_disp_m": 0.015632979636587534,
+     "stick_load_share": 0.9999658958773883,
+     "slip_misalignment_loss": 3.631472780032912e-12
+    },
+    "mu=0.8 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": 1.3548294918063283e-05,
+     "dissipation_ratio_run": 0.9995647303655919,
+     "friction_efficiency": 0.9999822615864996,
+     "bottom_contact_fraction": 0.985677655677801,
+     "normal_impulse_fluctuation": 0.004755462919218984,
+     "stick_disp_m": 0.014206151280935914,
+     "stick_load_share": 0.999814206589095,
+     "slip_misalignment_loss": 2.805334138925061e-12
+    },
+    "mu=0.8 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": 1.0755066040843456e-05,
+     "dissipation_ratio_run": 0.9983085107740867,
+     "friction_efficiency": 0.9999865393349453,
+     "bottom_contact_fraction": 0.9866422466423798,
+     "normal_impulse_fluctuation": 0.00435150115173236,
+     "stick_disp_m": 0.006031717630184527,
+     "stick_load_share": 0.9997746355516616,
+     "slip_misalignment_loss": 1.556122619870485e-12
+    },
+    "mu=1.2 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": -6.716670891197348e-08,
+     "dissipation_ratio_run": 0.9968931238799132,
+     "friction_efficiency": 0.9999988704642855,
+     "bottom_contact_fraction": 0.9011101718791906,
+     "normal_impulse_fluctuation": 0.005819876549987697,
+     "stick_disp_m": 0.01834851322484007,
+     "stick_load_share": 0.9998422853658158,
+     "slip_misalignment_loss": -1.7352937322354785e-11
+    },
+    "mu=1.0 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": 0.0005861676675793486,
+     "dissipation_ratio_run": 0.998757003638776,
+     "friction_efficiency": 0.9993789867778008,
+     "bottom_contact_fraction": 0.9341401333708846,
+     "normal_impulse_fluctuation": 0.02232433843304648,
+     "stick_disp_m": 0.006159075506902723,
+     "stick_load_share": 0.9999595004298599,
+     "slip_misalignment_loss": 1.3486663724475337e-11
+    },
+    "mu=0.8 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": 1.0373092274661802e-05,
+     "dissipation_ratio_run": 0.9949857839559658,
+     "friction_efficiency": 0.9999871349681037,
+     "bottom_contact_fraction": 0.9868197614352772,
+     "normal_impulse_fluctuation": 0.00436513315906115,
+     "stick_disp_m": 0.007114705895894868,
+     "stick_load_share": 0.9997523342766591,
+     "slip_misalignment_loss": -6.287424742953755e-12
+    },
+    "mu=1.0 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": 6.41159077395103e-08,
+     "dissipation_ratio_run": 0.9969010658361371,
+     "friction_efficiency": 1.00000079411198,
+     "bottom_contact_fraction": 0.9230769230768707,
+     "normal_impulse_fluctuation": 0.004887930063089663,
+     "stick_disp_m": 0.017274106068906628,
+     "stick_load_share": 0.9998024168905306,
+     "slip_misalignment_loss": -4.365755076894113e-12
+    },
+    "mu=1.5 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=400": {
+     "slip_err_over_g_cos": 0.00045309664313263493,
+     "dissipation_ratio_run": 0.9946214005895998,
+     "friction_efficiency": 0.9997203961594967,
+     "bottom_contact_fraction": 0.8402319902320035,
+     "normal_impulse_fluctuation": 0.003895156052752581,
+     "stick_disp_m": 0.009237793440372394,
+     "stick_load_share": 0.9998667390582826,
+     "slip_misalignment_loss": -1.603063215041483e-11
+    },
+    "mu=0.4 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=100": {
+     "slip_err_over_g_cos": -6.640053625124539e-08,
+     "dissipation_ratio_run": 0.9995847105861361,
+     "friction_efficiency": 0.9999996378000076,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0045724178250042885,
+     "stick_disp_m": 0.009091924927529214,
+     "stick_load_share": 0.9998110012318411,
+     "slip_misalignment_loss": -5.56209470532274e-12
+    },
+    "mu=1.5 ratio=1.3 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": 0.04292883653241947,
+     "dissipation_ratio_run": 0.8513302941602355,
+     "friction_efficiency": 0.8922724051711427,
+     "bottom_contact_fraction": 0.7402254156100174,
+     "normal_impulse_fluctuation": 0.009929798240792105,
+     "stick_disp_m": 0.01870497193683015,
+     "stick_load_share": 0.9999727327694347,
+     "slip_misalignment_loss": 6.211901511670057e-12
+    },
+    "mu=1.5 ratio=1.1 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": 0.04834731537051692,
+     "dissipation_ratio_run": 0.8365233997817163,
+     "friction_efficiency": 0.890793347934182,
+     "bottom_contact_fraction": 0.736409317178534,
+     "normal_impulse_fluctuation": 0.01051391043531532,
+     "stick_disp_m": 0.008488417140108798,
+     "stick_load_share": 0.9999544659534512,
+     "slip_misalignment_loss": 1.1255040662510013e-11
+    },
+    "mu=0.8 ratio=0.6 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.5999975797541824,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0032187048527802103,
+     "stick_disp_m": 1.2443328676475796e-09,
+     "stick_load_share": 0.9999999999999998,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.2 ratio=0.95 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9499826566714397,
+     "bottom_contact_fraction": 0.9012313327695823,
+     "normal_impulse_fluctuation": 0.0071399739587235085,
+     "stick_disp_m": 8.216142041208088e-05,
+     "stick_load_share": 0.999986827690735,
+     "slip_misalignment_loss": 3.489785302287438e-10
+    },
+    "mu=0.8 ratio=0.95 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9499775837546015,
+     "bottom_contact_fraction": 0.9999943646097491,
+     "normal_impulse_fluctuation": 0.006144757318797406,
+     "stick_disp_m": 6.598963956766513e-05,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.2 ratio=0.6 dev=1 vmode=1 capmode=2 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.5999980150575964,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0038959091668923653,
+     "stick_disp_m": 1.1435369734469347e-09,
+     "stick_load_share": 0.9999999999999997,
+     "slip_misalignment_loss": 0.0
+    }
+   },
+   "stick_instant_lag_in_slip (capmode 7)": {
+    "mu=0.4 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": -5.994217505098606e-08,
+     "dissipation_ratio_run": 0.9983421029079476,
+     "friction_efficiency": 0.9999996821454453,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.004347350078253894,
+     "stick_disp_m": 0.003671630114757367,
+     "stick_load_share": 0.9997569797261289,
+     "slip_misalignment_loss": -3.2035039952646658e-12
+    },
+    "mu=0.8 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": 1.1062566666351245e-05,
+     "dissipation_ratio_run": 0.9989393282717619,
+     "friction_efficiency": 0.9999863981737402,
+     "bottom_contact_fraction": 0.9864234056543072,
+     "normal_impulse_fluctuation": 0.004830036073866426,
+     "stick_disp_m": 0.014698657064972935,
+     "stick_load_share": 0.999777178329398,
+     "slip_misalignment_loss": 4.428995203521137e-12
+    },
+    "mu=0.4 ratio=0.85 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.849976677087684,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.005689744153584101,
+     "stick_disp_m": 4.623650969037829e-09,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=0.8 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": 1.05407589980477e-05,
+     "dissipation_ratio_run": 0.9950607548099754,
+     "friction_efficiency": 0.9999871492835767,
+     "bottom_contact_fraction": 0.9867108105570969,
+     "normal_impulse_fluctuation": 0.0043547702014250685,
+     "stick_disp_m": 0.007088078401003272,
+     "stick_load_share": 0.9997859403988658,
+     "slip_misalignment_loss": 5.150153875733901e-12
+    },
+    "mu=0.8 ratio=0.6 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.6000001088911382,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.002349121186219929,
+     "stick_disp_m": -1.675707836379381e-11,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=0.8 ratio=0.85 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.8500001533815271,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0030913086957597524,
+     "stick_disp_m": -4.1122760578715667e-10,
+     "stick_load_share": 0.9999974898852,
+     "slip_misalignment_loss": 1.1438779861918078e-07
+    },
+    "mu=1.5 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": 0.0009935695388681486,
+     "dissipation_ratio_run": 0.994384681871176,
+     "friction_efficiency": 0.999274430545907,
+     "bottom_contact_fraction": 0.8423499577346052,
+     "normal_impulse_fluctuation": 0.006508778540357121,
+     "stick_disp_m": 0.00915268706739215,
+     "stick_load_share": 0.9999473983861036,
+     "slip_misalignment_loss": -1.0046292031089579e-11
+    },
+    "mu=1.2 ratio=0.95 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9500112501123295,
+     "bottom_contact_fraction": 0.9013243167087197,
+     "normal_impulse_fluctuation": 0.006923194976148237,
+     "stick_disp_m": 7.608115949404512e-05,
+     "stick_load_share": 0.9999999999999999,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.5 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": 0.28063804773366674,
+     "dissipation_ratio_run": 0.6300404850928001,
+     "friction_efficiency": 0.7545650519920665,
+     "bottom_contact_fraction": 0.6140499671268868,
+     "normal_impulse_fluctuation": 0.01966905580841043,
+     "stick_disp_m": 0.010740526361236544,
+     "stick_load_share": 0.9999750232605872,
+     "slip_misalignment_loss": 3.873917936219223e-12
+    },
+    "mu=1.5 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": 0.9534417635533537,
+     "dissipation_ratio_run": 0.3456329535207069,
+     "friction_efficiency": 0.3543894099073889,
+     "bottom_contact_fraction": 0.2857396449704169,
+     "normal_impulse_fluctuation": 2.212110128643671,
+     "stick_disp_m": 0.055313389802662524,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.2 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": 0.0006950675284151601,
+     "dissipation_ratio_run": 0.9984208795710893,
+     "friction_efficiency": 0.9994700860625194,
+     "bottom_contact_fraction": 0.9098581760118851,
+     "normal_impulse_fluctuation": 0.02310830502153694,
+     "stick_disp_m": 0.017165798926972717,
+     "stick_load_share": 0.9999352849477127,
+     "slip_misalignment_loss": 4.3475430322154666e-12
+    },
+    "mu=0.4 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": -6.264806527152551e-08,
+     "dissipation_ratio_run": 0.9969319445549857,
+     "friction_efficiency": 0.9999994223843542,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.004580998624495324,
+     "stick_disp_m": 0.010043580332962692,
+     "stick_load_share": 0.9997854680991065,
+     "slip_misalignment_loss": -3.6521420470243815e-12
+    },
+    "mu=0.4 ratio=0.6 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.5999998115335312,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0023860606962015146,
+     "stick_disp_m": -6.943206270343394e-10,
+     "stick_load_share": 0.999993719879857,
+     "slip_misalignment_loss": 2.313589849058805e-06
+    },
+    "mu=0.8 ratio=0.95 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9500206010463967,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.006445890808971665,
+     "stick_disp_m": 6.253165356427497e-05,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.5 ratio=0.95 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9499931926224117,
+     "bottom_contact_fraction": 0.8388062364985674,
+     "normal_impulse_fluctuation": 0.004286146117651551,
+     "stick_disp_m": 7.889201738216743e-05,
+     "stick_load_share": 0.9999898491433017,
+     "slip_misalignment_loss": 1.7618716920779784e-11
+    },
+    "mu=1.2 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": 0.0004937443158814316,
+     "dissipation_ratio_run": 0.9978054956842629,
+     "friction_efficiency": 0.9994927076013996,
+     "bottom_contact_fraction": 0.9077881093264151,
+     "normal_impulse_fluctuation": 0.015336579038757158,
+     "stick_disp_m": 0.007261311113622052,
+     "stick_load_share": 0.9999223446663691,
+     "slip_misalignment_loss": 2.0968491704032493e-12
+    },
+    "mu=0.4 ratio=0.95 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.950026421611677,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.004221733845760227,
+     "stick_disp_m": 3.7362012870070446e-05,
+     "stick_load_share": 0.9999995741775108,
+     "slip_misalignment_loss": 5.101293193716474e-10
+    },
+    "mu=1.2 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": 3.4803540856061454e-05,
+     "dissipation_ratio_run": 0.9969083817560622,
+     "friction_efficiency": 0.9999730185427527,
+     "bottom_contact_fraction": 0.902456090917429,
+     "normal_impulse_fluctuation": 0.006618954779002715,
+     "stick_disp_m": 0.018314530917194573,
+     "stick_load_share": 0.9998789637362102,
+     "slip_misalignment_loss": 4.594387926121047e-12
+    },
+    "mu=0.8 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": 1.1628039273530748e-05,
+     "dissipation_ratio_run": 0.9969206383586573,
+     "friction_efficiency": 0.9999853263783637,
+     "bottom_contact_fraction": 0.9861604207759387,
+     "normal_impulse_fluctuation": 0.004748423324181485,
+     "stick_disp_m": 0.015689076508790534,
+     "stick_load_share": 0.9997941178971144,
+     "slip_misalignment_loss": -8.96010775743105e-12
+    },
+    "mu=1.0 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": 0.00015700553178874086,
+     "dissipation_ratio_run": 0.9987569730954384,
+     "friction_efficiency": 0.9998166552192747,
+     "bottom_contact_fraction": 0.9271334648257428,
+     "normal_impulse_fluctuation": 0.00986213584305936,
+     "stick_disp_m": 0.016163260767303823,
+     "stick_load_share": 0.9998998999176154,
+     "slip_misalignment_loss": 8.563125296500314e-12
+    },
+    "mu=0.4 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": -5.273218097419007e-08,
+     "dissipation_ratio_run": 0.9950553476765396,
+     "friction_efficiency": 0.9999999492558439,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0044115210273988304,
+     "stick_disp_m": 0.004325706473346095,
+     "stick_load_share": 0.999778686252744,
+     "slip_misalignment_loss": 5.830775722914913e-12
+    },
+    "mu=1.5 ratio=0.85 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.849987043462803,
+     "bottom_contact_fraction": 0.9321715037097914,
+     "normal_impulse_fluctuation": 0.006498754253351005,
+     "stick_disp_m": 4.590688705910506e-09,
+     "stick_load_share": 1.0000000000000002,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.0 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": -8.280959658329344e-08,
+     "dissipation_ratio_run": 0.9950598489886682,
+     "friction_efficiency": 1.0000007190176015,
+     "bottom_contact_fraction": 0.9230769230768707,
+     "normal_impulse_fluctuation": 0.004432519395402336,
+     "stick_disp_m": 0.007941803508095431,
+     "stick_load_share": 0.9997815656724186,
+     "slip_misalignment_loss": 1.897394871684164e-11
+    },
+    "mu=0.8 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": 1.077806276070207e-05,
+     "dissipation_ratio_run": 0.9983263142297611,
+     "friction_efficiency": 0.9999866009378525,
+     "bottom_contact_fraction": 0.986523903447115,
+     "normal_impulse_fluctuation": 0.004354742710299105,
+     "stick_disp_m": 0.006021797469033046,
+     "stick_load_share": 0.9997576544108828,
+     "slip_misalignment_loss": 7.87895740382128e-12
+    },
+    "mu=1.0 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": 9.001898354922189e-05,
+     "dissipation_ratio_run": 0.9982567626240078,
+     "friction_efficiency": 0.9999055387685002,
+     "bottom_contact_fraction": 0.9256635672019886,
+     "normal_impulse_fluctuation": 0.006464081870940547,
+     "stick_disp_m": 0.006733262747236481,
+     "stick_load_share": 0.9998598592055233,
+     "slip_misalignment_loss": 1.3641155911062369e-11
+    },
+    "mu=0.4 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": -6.823311128245845e-08,
+     "dissipation_ratio_run": 0.9989535575737317,
+     "friction_efficiency": 0.9999999008141608,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.004517424319500991,
+     "stick_disp_m": 0.00940871976364495,
+     "stick_load_share": 0.9997962606501151,
+     "slip_misalignment_loss": -3.115752321398053e-13
+    },
+    "mu=1.0 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": 1.8676066009726573e-05,
+     "dissipation_ratio_run": 0.996904599645568,
+     "friction_efficiency": 0.9999722689047087,
+     "bottom_contact_fraction": 0.9240659340658943,
+     "normal_impulse_fluctuation": 0.005463677080617595,
+     "stick_disp_m": 0.017247044853472948,
+     "stick_load_share": 0.9998123443898901,
+     "slip_misalignment_loss": -8.365134835078753e-12
+    },
+    "mu=1.5 ratio=1.3 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": 0.27805770951130804,
+     "dissipation_ratio_run": 0.663784182968044,
+     "friction_efficiency": 0.7507663239401655,
+     "bottom_contact_fraction": 0.6130440499671226,
+     "normal_impulse_fluctuation": 0.01868479633890633,
+     "stick_disp_m": 0.02075076278661444,
+     "stick_load_share": 0.9999940173260917,
+     "slip_misalignment_loss": -1.1374659318945085e-12
+    },
+    "mu=1.5 ratio=0.6 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.5999998284107453,
+     "bottom_contact_fraction": 0.9230769230768707,
+     "normal_impulse_fluctuation": 0.0028032430686212,
+     "stick_disp_m": 3.161219723490927e-11,
+     "stick_load_share": 0.9999986961883863,
+     "slip_misalignment_loss": 3.282281987180799e-08
+    },
+    "mu=1.2 ratio=0.6 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.600000144906852,
+     "bottom_contact_fraction": 0.9947487555180329,
+     "normal_impulse_fluctuation": 0.002687423781805867,
+     "stick_disp_m": -5.617427877024905e-11,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.2 ratio=0.85 dev=1 vmode=1 capmode=7 ntau=200": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.8500022213797798,
+     "bottom_contact_fraction": 0.9230769230768707,
+     "normal_impulse_fluctuation": 0.004051929544099459,
+     "stick_disp_m": 1.1704258465194961e-09,
+     "stick_load_share": 0.9999840351412782,
+     "slip_misalignment_loss": 3.4989000477367966e-07
+    },
+    "mu=1.2 ratio=1.1 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": 7.460024575481613e-05,
+     "dissipation_ratio_run": 0.9950027205824996,
+     "friction_efficiency": 0.9999051614302294,
+     "bottom_contact_fraction": 0.9031342162109461,
+     "normal_impulse_fluctuation": 0.007280533877580401,
+     "stick_disp_m": 0.008535403997215448,
+     "stick_load_share": 0.999835114934531,
+     "slip_misalignment_loss": -6.7143860492430584e-12
+    },
+    "mu=0.4 ratio=0.95 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9615234599774573,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0056106170739023,
+     "stick_disp_m": 0.00023276486012582115,
+     "stick_load_share": 0.9999459043211595,
+     "slip_misalignment_loss": 1.9857454889590604e-10
+    },
+    "mu=0.4 ratio=0.85 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.8500617911329394,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.007910604745879592,
+     "stick_disp_m": 2.551601911610947e-05,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=0.8 ratio=0.85 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.8499999404375936,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.003150810433377063,
+     "stick_disp_m": -3.0937132369790454e-10,
+     "stick_load_share": 0.999988655501744,
+     "slip_misalignment_loss": 9.286536547107817e-07
+    },
+    "mu=0.8 ratio=0.6 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.6000000230946797,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0023194009624291773,
+     "stick_disp_m": -2.470705931512107e-11,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.2 ratio=0.6 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.5999999209878056,
+     "bottom_contact_fraction": 0.9951028458721215,
+     "normal_impulse_fluctuation": 0.002647253159762513,
+     "stick_disp_m": -5.231182327591899e-11,
+     "stick_load_share": 1.0,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=0.4 ratio=0.6 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.6000000017140962,
+     "bottom_contact_fraction": 1.0,
+     "normal_impulse_fluctuation": 0.0023652548842671333,
+     "stick_disp_m": -6.366669032253913e-10,
+     "stick_load_share": 0.9999897982313731,
+     "slip_misalignment_loss": 2.169993289919962e-06
+    },
+    "mu=0.8 ratio=0.95 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9610152925561747,
+     "bottom_contact_fraction": 0.9970564478256808,
+     "normal_impulse_fluctuation": 0.008257159448267786,
+     "stick_disp_m": 0.00038197226393748424,
+     "stick_load_share": 0.9999532904215627,
+     "slip_misalignment_loss": 8.304134514533339e-10
+    },
+    "mu=1.2 ratio=0.85 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.8500007147809844,
+     "bottom_contact_fraction": 0.9230769230768707,
+     "normal_impulse_fluctuation": 0.004285225873998973,
+     "stick_disp_m": 1.3438120234632311e-09,
+     "stick_load_share": 0.999988236073328,
+     "slip_misalignment_loss": 3.213241675240461e-07
+    },
+    "mu=1.5 ratio=0.95 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9605832160405504,
+     "bottom_contact_fraction": 0.8382060674368642,
+     "normal_impulse_fluctuation": 0.014683176685248534,
+     "stick_disp_m": 0.0004991920513419176,
+     "stick_load_share": 0.9999648808083356,
+     "slip_misalignment_loss": 5.9390204251570174e-12
+    },
+    "mu=1.2 ratio=0.95 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.9610529661549805,
+     "bottom_contact_fraction": 0.9023631069782813,
+     "normal_impulse_fluctuation": 0.01002609889430535,
+     "stick_disp_m": 0.00047567107284647407,
+     "stick_load_share": 0.9999396378726783,
+     "slip_misalignment_loss": 7.496755861392111e-11
+    },
+    "mu=1.5 ratio=0.85 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.8500059306486646,
+     "bottom_contact_fraction": 0.9302620456464858,
+     "normal_impulse_fluctuation": 0.00742224789328594,
+     "stick_disp_m": 4.979236076007622e-05,
+     "stick_load_share": 1.0000000000000002,
+     "slip_misalignment_loss": 0.0
+    },
+    "mu=1.5 ratio=0.6 dev=1 vmode=1 capmode=7 ntau=400": {
+     "slip_err_over_g_cos": null,
+     "dissipation_ratio_run": null,
+     "friction_efficiency": 0.5999999916229832,
+     "bottom_contact_fraction": 0.9230769230768707,
+     "normal_impulse_fluctuation": 0.0028024679360816444,
+     "stick_disp_m": -1.2698593912507938e-11,
+     "stick_load_share": 0.9999991174313648,
+     "slip_misalignment_loss": 6.711397002210696e-09
+    }
+   }
+  },
+  "halfspace_stability": [
+   "0.3 {\"mu_c\": 1.000244140625, \"root_at_mu_c_plus_0.05\": [[0.0223961, -1.414164]], \"scan\": {\"0.4\": false, \"0.6\": false, \"0.8\": false, \"1.0\": false, \"1.2\": true, \"1.5\": true}}",
+   "0.4 {\"mu_c\": 1.000244140625, \"root_at_mu_c_plus_0.05\": [[0.0280748, -1.4136649]], \"scan\": {\"0.4\": false, \"0.6\": false, \"0.8\": false, \"1.0\": false, \"1.2\": true, \"1.5\": true}}",
+   "0.45 {\"mu_c\": 1.000244140625, \"root_at_mu_c_plus_0.05\": [[0.0312011, -1.4133394]], \"scan\": {\"0.4\": false, \"0.6\": false, \"0.8\": false, \"1.0\": false, \"1.2\": true, \"1.5\": true}}",
+   "0.4754 {\"mu_c\": 1.000244140625, \"root_at_mu_c_plus_0.05\": [[0.0328975, -1.4131473]], \"scan\": {\"0.4\": false, \"0.6\": false, \"0.8\": false, \"1.0\": false, \"1.2\": true, \"1.5\": true}}",
+   "0.49 {\"mu_c\": 1.000244140625, \"root_at_mu_c_plus_0.05\": [[0.0339124, -1.4130272]], \"scan\": {\"0.4\": false, \"0.6\": false, \"0.8\": false, \"1.0\": false, \"1.2\": true, \"1.5\": true}}"
+  ]
+ },
+ "formal_run_v2": {
+  "dir": "artifacts/rl_ready/p2_4/contact_v2_001",
+  "meta": {
+   "label": "FORMAL rubber_contact_tests_v2",
+   "protocol_sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+   "law": "grid_node_penalty_coulomb_v2",
+   "commit": "ffb099f0466827c6b6238d929c05ae285e168895",
+   "dirty": false,
+   "python": "3.12.12",
+   "warp": "1.17.0",
+   "numpy": "2.5.4",
+   "argv": [
+    "scripts/rubber/p2_4/run_contact_v2.py",
+    "--out",
+    "/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p2_4/contact_v2_001",
+    "--jobs",
+    "32"
+   ],
+   "start": "2026-11-11 05:33:44 KST",
+   "host": "user-System-Product-Name",
+   "cpu_count_used": 32,
+   "end": "2026-11-11 05:34:19 KST",
+   "wall_s": 34.50579855206888
+  },
+  "verdicts": {
+   "RUBBER-CONT-01": {
+    "verdict": "FAIL",
+    "criteria": {
+     "a_stick": "PASS",
+     "b_slip": "FAIL",
+     "c_onset": "PASS",
+     "d_books": "FAIL",
+     "e_validity": "PASS"
+    },
+    "reason": null
+   },
+   "RUBBER-CONT-02": {
+    "verdict": "PASS",
+    "criteria": {
+     "a_bound": "PASS",
+     "b_dt": "PASS",
+     "c_dx": "PASS",
+     "d_law": "PASS",
+     "e_balance": "PASS",
+     "f_law_v2": "PASS"
+    },
+    "reason": null
+   },
+   "RUBBER-CONT-03": {
+    "verdict": "PASS",
+    "criteria": {
+     "a_books": "PASS",
+     "b_contact_time": "PASS",
+     "c_attribution": "PASS",
+     "d_convergence": "PASS",
+     "e_penetration": "PASS"
+    },
+    "reason": null
+   },
+   "RUBBER-CONT-04": {
+    "verdict": "FAIL",
+    "criteria": {
+     "a_total": "FAIL"
+    },
+    "reason": null
+   },
+   "RUBBER-CONT-05": {
+    "verdict": "FAIL",
+    "criteria": {
+     "a_slip_ratio": "FAIL",
+     "b_cone": "PASS",
+     "c_grip_scaling": "PASS",
+     "d_balance": "PASS",
+     "e_penetration": "PASS",
+     "d_reported_v1_per_step": "REPORTED"
+    },
+    "reason": null
+   },
+   "RUBBER-CONT-06": {
+    "verdict": "NOT_RUN",
+    "criteria": null,
+    "reason": "NOT_IMPLEMENTED_V1 (declared limitation, ADR 0023 \u00a722.3)"
+   },
+   "RUBBER-CONT-07": {
+    "verdict": "CARRIED_OVER",
+    "criteria": null,
+    "reason": "CARRIED_OVER: contact-free scene, the law does not enter; the contact_v1_001 result applies (PASS, every point coupling_delay_significant); not rerun"
+   },
+   "RUBBER-CONT-08": {
+    "verdict": "SEE_PYTEST",
+    "criteria": null,
+    "reason": "tests/test_rubber_contact_v2.py::test_v2_batched_l0_heterogeneous (N = 3 heterogeneous incline / pinch / pinch P2 batches byte-identical to their single-env v2 references after every control step) and ::test_v1_and_v2_in_one_batch_are_refused; the B1 L1 / reset / refusal tests (tests/test_rubber_contact_batched.py) are law-independent (v2 adds no state and uses the same row indexing) and run under v1"
+   },
+   "RUBBER-CONT-09": {
+    "verdict": "NOT_RUN",
+    "criteria": null,
+    "reason": "GPU task B2-v2 (protocol RUBBER-CONT-09.run)"
+   },
+   "RUBBER-CONT-10": {
+    "verdict": "SEE_PYTEST",
+    "criteria": null,
+    "reason": "tests/test_rubber_contact_v2.py (v1 kernels unchanged and default; v1 rattles / v2 settles at rest frictionless; v2 static spring law; v2 impact books; batched v2) and tests/test_rubber_contact.py (v1)"
+   },
+   "RUBBER-CONT-11": {
+    "verdict": "NOT_RUN",
+    "criteria": null,
+    "reason": "the v2 kernel has the v1 cost (one changed load); not re-measured"
+   }
+  },
+  "errors": {}
+ },
+ "v1_vs_v2": {
+  "RUBBER-CONT-01_slip": {
+   "v1": [
+    [
+     "INC_mu0.4_r1.1",
+     0.001999685766167036
+    ],
+    [
+     "INC_mu0.4_r1.2",
+     0.0005822116360085564
+    ],
+    [
+     "INC_mu0.4_r1.3",
+     0.00033153847959172726
+    ],
+    [
+     "INC_mu0.8_r1.1",
+     0.016461103459313634
+    ],
+    [
+     "INC_mu0.8_r1.2",
+     0.018836591734998052
+    ],
+    [
+     "INC_mu0.8_r1.3",
+     0.010570533148785378
+    ],
+    [
+     "INC_mu0.4_r1.2_cfl0.25",
+     0.0005188470163238209
+    ]
+   ],
+   "v2": [
+    [
+     "INC2_mu0.6_r1.1",
+     0.007847406222214208
+    ],
+    [
+     "INC2_mu0.6_r1.2",
+     0.004231188476368481
+    ],
+    [
+     "INC2_mu0.6_r1.3",
+     0.0038420774614324983
+    ],
+    [
+     "INC_mu0.4_r1.1",
+     0.0009252162474786065
+    ],
+    [
+     "INC_mu0.4_r1.2",
+     0.0003947044573290878
+    ],
+    [
+     "INC_mu0.4_r1.2_cfl0.25",
+     0.00048376800912018175
+    ],
+    [
+     "INC_mu0.4_r1.3",
+     0.00017856939130410926
+    ],
+    [
+     "INC_mu0.8_r1.1",
+     0.018268289245898645
+    ],
+    [
+     "INC_mu0.8_r1.2",
+     0.012614676397451896
+    ],
+    [
+     "INC_mu0.8_r1.3",
+     0.024563396957735965
+    ]
+   ]
+  },
+  "RUBBER-CONT-01_onset": {
+   "v1": [
+    [
+     0.4,
+     -0.006738746727090739
+    ],
+    [
+     0.8,
+     -0.027486935485913744
+    ]
+   ],
+   "v2": [
+    [
+     0.6,
+     -0.01605628841618445
+    ],
+    [
+     0.4,
+     -0.003144708723218259
+    ],
+    [
+     0.8,
+     -0.014657091628107022
+    ]
+   ]
+  },
+  "RUBBER-CONT-01_stick": {
+   "v1": [
+    [
+     "INC_mu0.4_r0.6",
+     0.00014095604829178487
+    ],
+    [
+     "INC_mu0.4_r0.85",
+     0.00014162972270491403
+    ],
+    [
+     "INC_mu0.8_r0.6",
+     0.0009077752241961126
+    ],
+    [
+     "INC_mu0.8_r0.85",
+     0.004407641474856415
+    ],
+    [
+     "INC_P2_mu0.8_r0.95",
+     4.824854739505898
+    ]
+   ],
+   "v2": [
+    [
+     "INC2_P2_mu0.6_r0.95",
+     6.761723280769572e-05
+    ],
+    [
+     "INC2_mu0.6_r0.6",
+     -4.496728198133404e-07
+    ],
+    [
+     "INC2_mu0.6_r0.85",
+     -7.564385333391765e-07
+    ],
+    [
+     "INC2_mu0.6_r0.95",
+     2.6421723593739177e-06
+    ],
+    [
+     "INC_P2_mu0.8_r0.95",
+     4.366986762829872e-05
+    ],
+    [
+     "INC_mu0.4_r0.6",
+     -1.1310545260795335e-06
+    ],
+    [
+     "INC_mu0.4_r0.85",
+     -9.21219845198551e-08
+    ],
+    [
+     "INC_mu0.8_r0.6",
+     1.3928025399678745e-09
+    ],
+    [
+     "INC_mu0.8_r0.85",
+     -6.54675215081002e-07
+    ],
+    [
+     "INC_mu0.8_r0.95",
+     1.1083313615836698e-06
+    ]
+   ]
+  },
+  "RUBBER-CONT-01_books": {
+   "v1": [
+    [
+     "INC_mu0.4_r0.6",
+     0.010322790693338857
+    ],
+    [
+     "INC_mu0.4_r0.85",
+     0.00687035595597724
+    ],
+    [
+     "INC_mu0.4_r1.1",
+     0.00014336445644373103
+    ],
+    [
+     "INC_mu0.4_r1.2",
+     8.59354710432651e-05
+    ],
+    [
+     "INC_mu0.4_r1.3",
+     5.2996414009544975e-05
+    ],
+    [
+     "INC_mu0.8_r0.6",
+     0.002959411835974528
+    ],
+    [
+     "INC_mu0.8_r0.85",
+     0.00041541501534119325
+    ],
+    [
+     "INC_mu0.8_r1.1",
+     0.00036839590053513657
+    ],
+    [
+     "INC_mu0.8_r1.2",
+     0.0003148059138705875
+    ],
+    [
+     "INC_mu0.8_r1.3",
+     0.00023317236976874053
+    ],
+    [
+     "INC_P2_mu0.8_r0.95",
+     0.0004214638193536036
+    ],
+    [
+     "INC_mu0.4_r1.2_cfl0.25",
+     2.5062578366713522e-05
+    ],
+    [
+     "order",
+     0.2916441611647827
+    ]
+   ],
+   "v2": [
+    [
+     "INC2_P2_mu0.6_r0.95",
+     0.0018178827062123382
+    ],
+    [
+     "INC2_mu0.6_r0.6",
+     0.0044042060956117806
+    ],
+    [
+     "INC2_mu0.6_r0.85",
+     0.0034505291786204803
+    ],
+    [
+     "INC2_mu0.6_r0.95",
+     0.002862713747325085
+    ],
+    [
+     "INC2_mu0.6_r1.1",
+     0.00020920896717829682
+    ],
+    [
+     "INC2_mu0.6_r1.2",
+     0.0001530168848726367
+    ],
+    [
+     "INC2_mu0.6_r1.3",
+     0.00014463337698850245
+    ],
+    [
+     "INC_P2_mu0.8_r0.95",
+     0.0038052787293564715
+    ],
+    [
+     "INC_mu0.4_r0.6",
+     0.016672569139912278
+    ],
+    [
+     "INC_mu0.4_r0.85",
+     0.012750653234153529
+    ],
+    [
+     "INC_mu0.4_r1.1",
+     8.395026099384456e-05
+    ],
+    [
+     "INC_mu0.4_r1.2",
+     3.787773830783532e-05
+    ],
+    [
+     "INC_mu0.4_r1.2_cfl0.25",
+     2.1631094920121117e-05
+    ],
+    [
+     "INC_mu0.4_r1.3",
+     1.7913471086955618e-05
+    ],
+    [
+     "INC_mu0.8_r0.6",
+     0.011892249464229308
+    ],
+    [
+     "INC_mu0.8_r0.85",
+     0.008947947452735043
+    ],
+    [
+     "INC_mu0.8_r0.95",
+     0.005904547109037855
+    ],
+    [
+     "INC_mu0.8_r1.1",
+     0.00025405786187440916
+    ],
+    [
+     "INC_mu0.8_r1.2",
+     0.0002450995008685642
+    ],
+    [
+     "INC_mu0.8_r1.3",
+     0.00087899982182815
+    ],
+    [
+     "order",
+     0.5710767296696421
+    ]
+   ]
+  },
+  "RUBBER-CONT-04": {
+   "v1": [
+    [
+     "INC_mu0.4_r1.1",
+     0.9876478352095275
+    ],
+    [
+     "INC_mu0.4_r1.2",
+     0.9927173076782665
+    ],
+    [
+     "INC_mu0.4_r1.3",
+     0.9949860364052717
+    ],
+    [
+     "INC_mu0.8_r1.1",
+     0.9319322146403777
+    ],
+    [
+     "INC_mu0.8_r1.2",
+     0.9295260569654837
+    ],
+    [
+     "INC_mu0.8_r1.3",
+     0.9425341826148157
+    ],
+    [
+     "INC_mu0.4_r1.2_cfl0.25",
+     0.9940256338580888
+    ]
+   ],
+   "v2": [
+    [
+     "INC2_mu0.6_r1.1",
+     0.9540515572593692
+    ],
+    [
+     "INC2_mu0.6_r1.2",
+     0.969283099613911
+    ],
+    [
+     "INC2_mu0.6_r1.3",
+     0.9717061413065472
+    ],
+    [
+     "INC_mu0.4_r1.1",
+     0.9856766421239646
+    ],
+    [
+     "INC_mu0.4_r1.2",
+     0.996150495893031
+    ],
+    [
+     "INC_mu0.4_r1.2_cfl0.25",
+     0.9942875314066895
+    ],
+    [
+     "INC_mu0.4_r1.3",
+     0.9971719218970637
+    ],
+    [
+     "INC_mu0.8_r1.1",
+     0.9308904376967403
+    ],
+    [
+     "INC_mu0.8_r1.2",
+     0.9426732849124414
+    ],
+    [
+     "INC_mu0.8_r1.3",
+     0.8687187313729863
+    ]
+   ]
+  },
+  "RUBBER-CONT-02_f": [
+   {
+    "run": "PEN_nt2_cfl0.25",
+    "spring_sum_over_reaction": 0.9999992599582229,
+    "inner_ratio": 1.0528953523549835,
+    "ok": true
+   },
+   {
+    "run": "PEN_nt2_cfl0.5",
+    "spring_sum_over_reaction": 1.0000002066727331,
+    "inner_ratio": 1.049815580567541,
+    "ok": true
+   },
+   {
+    "run": "PEN_nt4_cfl0.5",
+    "spring_sum_over_reaction": 1.000001275273666,
+    "inner_ratio": 1.015524173193728,
+    "ok": true
+   }
+  ],
+  "RUBBER-CONT-03_books": {
+   "v1": [
+    [
+     "IMP_elastic_nt4_cfl0.5",
+     0.005907084451115815
+    ],
+    [
+     "IMP_elastic_nt4_cfl0.25",
+     0.0024631741793197347
+    ],
+    [
+     "IMP_elastic_nt2_cfl0.5",
+     0.010241351861354286
+    ],
+    [
+     "IMP_P2_nt4_cfl0.5",
+     0.005412332483062025
+    ],
+    [
+     "IMP_P2_nt4_cfl0.25",
+     0.00203431269109957
+    ],
+    [
+     "IMP_P2_nt2_cfl0.5",
+     0.009437796049818275
+    ],
+    [
+     "order_elastic",
+     0.4169864507107995
+    ],
+    [
+     "order_P2",
+     0.3758661718336746
+    ]
+   ],
+   "v2": [
+    [
+     "IMP_P2_nt2_cfl0.5",
+     0.0052016824831143515
+    ],
+    [
+     "IMP_P2_nt4_cfl0.25",
+     0.001476290854451268
+    ],
+    [
+     "IMP_P2_nt4_cfl0.5",
+     0.002971355666885096
+    ],
+    [
+     "IMP_elastic_nt2_cfl0.5",
+     0.007123129100246561
+    ],
+    [
+     "IMP_elastic_nt4_cfl0.25",
+     0.002078065957099322
+    ],
+    [
+     "IMP_elastic_nt4_cfl0.5",
+     0.0035511737532316805
+    ],
+    [
+     "order_elastic",
+     0.5851772122409432
+    ],
+    [
+     "order_P2",
+     0.4968408430212865
+    ]
+   ]
+  },
+  "RUBBER-CONT-05": {
+   "v1_slip_ratio": [
+    0.9714856417034176,
+    0.9640447887016466,
+    0.9564258267590218
+   ],
+   "v2_slip_ratio": [
+    0.9779192727540279,
+    0.982057854381277,
+    0.9637132830104737
+   ],
+   "v1_per_step_balance": [
+    0.09786257689180626,
+    0.060140477433296334,
+    0.06340583900685916
+   ],
+   "v2_window_mean_balance": [
+    0.0077917681386478095,
+    0.013524764603376012,
+    0.00452533743991375
+   ],
+   "v2_per_step_reported": [
+    {
+     "run": "PINCH_d2e-05",
+     "per_step_rel_v1_metric": 0.09793180384629192,
+     "rms_over_mean_T": 0.12330607037038917
+    },
+    {
+     "run": "PINCH_d4e-05",
+     "per_step_rel_v1_metric": 0.0694939501332863,
+     "rms_over_mean_T": 0.0788496657135898
+    },
+    {
+     "run": "PINCH_d6e-05",
+     "per_step_rel_v1_metric": 0.06879692705128122,
+     "rms_over_mean_T": 0.10356509316400388
+    }
+   ]
+  }
+ },
+ "cont09_band": {
+  "v1_assessment": "UNSOUND as declared: the v1 band max|A - A'| + 1e-6 max|A| uses ONE repeat; under H0 P(|A - B| > |A - A'|) = 1/2 by exchangeability (simulated 0.500), so every scalar whose run-to-run noise exceeds the 1e-6 floor is a coin flip and ~10^2 scalars reject almost surely. The v1 FAIL of gpu_cont09_001 (1 of 108 rows, a clamp wrench 1.23e-7 N vs 9.2e-8 N) stays preserved; it is not evidence of coupling",
+  "v2_rule": "N = 4 on GPU0, the -09 v1 configuration with the v2 law; k = 5 episodes A (reference) and k = 5 episodes B (env 1 squeeze changed) run in ONE batch / process, interleaved A, B, A, B, ... (each from a full reset); for every control step, every env e in {0, 2, 3}, every observable of v1 (markers, energies summary, group / clamp wrenches, plane / box / pad / pending wrenches) and every component c: d = max_{i,j} |A_i - B_j|, s = max(max_i A_i - min_i A_i, max_j B_j - min_j B_j); PASS iff d <= lam * s + eps_rel * max_i |A_i| (eps_rel times the largest |component| of the observable vector)",
+  "calibration_rows": [
+   {
+    "k": 3,
+    "lam": 1.0,
+    "gauss": 0.600032,
+    "laplace": 0.6000135,
+    "t3": 0.5998615,
+    "uniform": 0.6007395
+   },
+   {
+    "k": 3,
+    "lam": 1.5,
+    "gauss": 0.1388095,
+    "laplace": 0.1348765,
+    "t3": 0.129128,
+    "uniform": 0.1185515
+   },
+   {
+    "k": 3,
+    "lam": 2.0,
+    "gauss": 0.03316,
+    "laplace": 0.025051,
+    "t3": 0.025679,
+    "uniform": 0.037721
+   },
+   {
+    "k": 3,
+    "lam": 3.0,
+    "gauss": 0.003937,
+    "laplace": 0.0024595,
+    "t3": 0.0026045,
+    "uniform": 0.0073785
+   },
+   {
+    "k": 3,
+    "lam": 4.0,
+    "gauss": 0.000989,
+    "laplace": 0.00052,
+    "t3": 0.0005655,
+    "uniform": 0.002286
+   },
+   {
+    "k": 3,
+    "lam": 5.0,
+    "gauss": 0.0003325,
+    "laplace": 0.000179,
+    "t3": 0.000186,
+    "uniform": 0.0009605
+   },
+   {
+    "k": 4,
+    "lam": 1.0,
+    "gauss": 0.571125,
+    "laplace": 0.571321,
+    "t3": 0.572425,
+    "uniform": 0.571974
+   },
+   {
+    "k": 4,
+    "lam": 1.5,
+    "gauss": 0.0696145,
+    "laplace": 0.0755655,
+    "t3": 0.0681265,
+    "uniform": 0.0501255
+   },
+   {
+    "k": 4,
+    "lam": 2.0,
+    "gauss": 0.00747,
+    "laplace": 0.0050835,
+    "t3": 0.005186,
+    "uniform": 0.0089675
+   },
+   {
+    "k": 4,
+    "lam": 3.0,
+    "gauss": 0.0002785,
+    "laplace": 0.000124,
+    "t3": 0.0001235,
+    "uniform": 0.0007895
+   },
+   {
+    "k": 4,
+    "lam": 4.0,
+    "gauss": 3.55e-05,
+    "laplace": 1.4e-05,
+    "t3": 1.55e-05,
+    "uniform": 0.0001475
+   },
+   {
+    "k": 4,
+    "lam": 5.0,
+    "gauss": 5e-06,
+    "laplace": 5e-07,
+    "t3": 3.5e-06,
+    "uniform": 4.65e-05
+   },
+   {
+    "k": 5,
+    "lam": 1.0,
+    "gauss": 0.55529,
+    "laplace": 0.5561765,
+    "t3": 0.5553525,
+    "uniform": 0.5557425
+   },
+   {
+    "k": 5,
+    "lam": 1.5,
+    "gauss": 0.0370855,
+    "laplace": 0.0473335,
+    "t3": 0.041106,
+    "uniform": 0.021705
+   },
+   {
+    "k": 5,
+    "lam": 2.0,
+    "gauss": 0.0016525,
+    "laplace": 0.001107,
+    "t3": 0.0011205,
+    "uniform": 0.0021905
+   },
+   {
+    "k": 5,
+    "lam": 3.0,
+    "gauss": 2.05e-05,
+    "laplace": 4.5e-06,
+    "t3": 1.15e-05,
+    "uniform": 7e-05
+   },
+   {
+    "k": 5,
+    "lam": 4.0,
+    "gauss": 2.5e-06,
+    "laplace": 0.0,
+    "t3": 0.0,
+    "uniform": 5.5e-06
+   },
+   {
+    "k": 5,
+    "lam": 5.0,
+    "gauss": 0.0,
+    "laplace": 0.0,
+    "t3": 0.0,
+    "uniform": 2e-06
+   },
+   {
+    "v1_rule_simulated_gauss": 0.5002255
+   }
+  ],
+  "gpu_rerun": "NOT_RUN (task B2-v2)"
+ },
+ "cpu_tests": {
+  "no_cuda": [
+   "455 passed, 2 warnings in 579.29s (0:09:39)",
+   "exit 0"
+  ],
+  "cuda_visible_0": [
+   "455 passed, 2 warnings in 577.98s (0:09:37)",
+   "exit 0"
+  ]
+ },
+ "frozen": "v1 contact kernels byte-identical (source hashes pinned in tests/test_rubber_contact_v2.py; four contact_v1_001 jobs rerun byte-identical in x1_v1_identity_002); rubber_contact_tests_v1 and its results unchanged; no Phase 1 module, configs/rl_benchmark/*, scripts/rl_ready/* or frozen rubber module changed",
+ "review_corrections_k2": {
+  "header": "Additive notes of the K2 combined review fixes (2026-11-11; findings in docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md). No recorded value, verdict or command of this file is changed; no GPU job was re-run for these notes.",
+  "K2-6": "decision.root_cause states that defect 2 'is not continuum physics below mu = 1' (the rigid-flat half-space stability argument). Task X2 withdrew this as unproven: the half-space analysis keeps bilateral contact and does not cover the separating solutions the model produces (ADR 0023 section 22.10, 'Converged in dt, not in dx'; evidence p2_4_contact_x2_001.json). The original text is kept above; read it with this correction.",
+  "K2-5": "RUBBER-CONT-05 d: v1 FAIL; rubber_contact_tests_v2 changed the metric after the v1 FAIL (window-mean balance instead of the per-step one, same 5 %): a post-hoc metric correction; the v1 per-step metric is reported."
+ }
+}

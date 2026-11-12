@@ -1,0 +1,645 @@
+"""``rubber_material_v1`` recipe: loader, validator and derived quantities (ADR 0023 §5, §6, §14.1; task R0.1).
+
+A recipe is a JSON document (schema ``rcs_rubber_material_v1``, SI units). Inputs are the equilibrium shear
+modulus ``mu_eq``, the numerical bulk ratio ``beta`` (kappa = beta * mu0), the density, optional isochoric Prony
+terms and contact/numerics settings. Poisson's ratio is never an input (it is derived); unknown keys are refused at
+every level; ``pic`` must be 0 (pure FLIP, ADR §7). Every value is provisional: there is no real rubber data on this
+machine, so the only admissible status without a frozen held-out calibration is ``SIMULATOR_ONLY_UNCALIBRATED``.
+
+Derived (never input): mu0 = mu_eq / g_inf, kappa = beta mu0, nu_eff, E_eff, c_s, c_p, dt_max(dx) = cfl dx / c_p,
+the step rule (dt rounded down so that control_dt / dt is an integer, c_p,max over a declared randomisation range)
+and the Prony update coefficients a_i, b_i (float64, ADR §10).
+"""
+from dataclasses import dataclass, field
+import hashlib
+import json
+import math
+from pathlib import Path
+
+import numpy as np
+
+SCHEMA = "rcs_rubber_material_v1"
+CALIBRATION_STATUSES = ("SIMULATOR_ONLY_UNCALIBRATED", "PILOT_FIT_NOT_HELDOUT", "REAL_CALIBRATED")
+ELASTIC_MODEL = "neo_hookean_jbar_v1"
+PRONY_MODEL = "neo_hookean_jbar_prony_v1"
+MODELS = (ELASTIC_MODEL, PRONY_MODEL)
+MAX_PRONY_TERMS = 4
+ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_RECIPE = ROOT/"configs"/"materials"/"rubber_generic_soft_v1.json"
+CALIBRATION_DIR = ROOT/"configs"/"rubber"/"calibration"
+
+# ADR 0023 §8 resolution profiles (ppc per axis, minimum cells through the thickness, label). R2.5 review decision (a)
+# (ADR 0023 §19A): rubber_ref_v1 is the full-fidelity grid for bending-dominated scenes; rubber_rl_v1 (n_t 3) is a
+# labelled reduced-fidelity profile whose receipts carry its measured bending bias (the earlier label "full
+# (<= 0.5 % bending error, E1)" generalised the L/t 10 rows of E1 and is refuted at L/t 20 and for wide strips).
+#
+# K2 review (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md, K2-2 and the Q1w decision, option (c)): EVERY profile
+# carries ``measured_bias`` (schema rcs_resolution_bias_v1) and ``known_limitation`` (an ``id`` plus a summary with
+# width / slenderness qualifiers), and every rubber scene receipt carries them (``rubber_scene.resolution_label``).
+# Profiles are bands of n_t = t / dx (``cells_through_thickness_band`` [lo, hi)); the scene compiler refuses a profile
+# whose band does not contain the scene's n_t. Numbers (percent, phi(n_t) / phi_true - 1, positive = the grid is too
+# soft in bending) are from protocol v5 RUBBER-PHYS-11 (refinement_v5_001, four grids n_t 3 / 4 / 6 / 8) and the
+# RUBBER-PHYS-02 rows (v5: n_t 4 / 6; v4: n_t 3), evidence docs/evidence/rl_ready/p2_2_v5_001.json and
+# p2_2_rubber_001.json. Point value: against the p_eff = 2 extrapolation of n_t 4 / 6 / 8; range: lower end against
+# the n_t 8 value itself (monotone convergence from above), upper end against the p = 1 extrapolation of n_t 6 / 8.
+_BIAS_SOURCE = ("protocol v5 RUBBER-PHYS-11 (refinement_v5_001, artifacts/rl_ready/p2_2_v5; evidence "
+                "docs/evidence/rl_ready/p2_2_v5_001.json refinement_v5.table): phi(n_t) / phi_true - 1, point value "
+                "against the p_eff = 2 Richardson extrapolation of n_t 4 / 6 / 8, range from the n_t 8 value (lower "
+                "magnitude) to the p = 1 extrapolation of n_t 6 / 8 (upper magnitude); width / slenderness rows from "
+                "RUBBER-PHYS-02 (v5 rows n_t 4 / 6, v4 rows n_t 3): range from the n_t 6 value to the -02 two-grid "
+                "(n_t 4 / 6, p 2) extrapolation, identical for t 3 / 4 / 6 mm")
+_BIAS_SCOPE = {"case": "A clamp under gravity (static sag Q1 / Q1w, f1 Q2, large-deflection tip drop Q4)",
+               "L_over_t": [10, 20], "W_over_t": [1, 4], "t_m": [0.003, 0.006], "alpha_small_deflection": 0.05,
+               "alpha_large_deflection": 9.0, "beta": 20, "cfl": 0.5, "particles_per_cell_axis": 2,
+               "model": "neo_hookean_jbar_v1 (elastic; Q1 / Q1w mu 0.4 MPa, Q2 mu 2 MPa, Q4 mu 0.2 MPa)",
+               "outside_measured_class": "L/t > 20 (the deviation grows with L/t; the P2-6 slots reach L/t 37.5), "
+                                         "W/t outside [1, 4], another n_t, CFL or beta, Prony terms, contact and "
+                                         "moving grips are not measured: these numbers are not evidence there "
+                                         "(K2 Q1w condition 3: RL-08 measures the bias on the RL geometry)"}
+
+
+def _signed(geometry, point, lo, hi, **extra):
+    return {"geometry": geometry, "sign": "signed", "bias_pct": point, "bias_range_pct": [lo, hi],
+            "text": f"{point:+.2f} % ({lo:+.2f} ... {hi:+.2f} %)", **extra}
+
+
+def _oscillatory(geometry, abs_max, estimates, **extra):
+    return {"geometry": geometry, "sign": "OSCILLATORY (no signed bias: the n_t 4 / 6 / 8 triplet is oscillatory)",
+            "bias_pct": None, "abs_bias_pct_max": abs_max, "point_estimates_pct": estimates,
+            "text": f"oscillatory, |bias| <= {abs_max:.2f} % (not a signed value)", **extra}
+
+
+_Q1 = "static sag, L/t 20, W = t, t 4 mm, alpha 0.05 (RUBBER-PHYS-11 Q1)"
+_Q1W = "static sag, L/t 20, W = 4t, t 4 mm, alpha 0.05 (RUBBER-PHYS-11 Q1w, the workload E geometry class)"
+_Q2 = "first bending frequency f1, 60 x 6 x 6 mm (RUBBER-PHYS-11 Q2)"
+_Q4 = "large-deflection tip drop, L/t 20, alpha 9 (RUBBER-PHYS-11 Q4)"
+
+RESOLUTION_PROFILES = {
+    "rubber_ref_v1": {
+        "particles_per_cell_axis": 2, "min_cells_through_thickness": 4, "cells_through_thickness_band": [4, None],
+        "label": "full_with_known_limitation: rubber_phys_11_v5_q1w_gci_2.16pct",
+        "use": "full-fidelity production grid for bending-dominated scenes (acceptance tests, P2-5 calibration fits, "
+               "the Full Native reference), with its measured wide-strip sag bias labelled (K2 Q1w decision (c))",
+        "measured_bias": {
+            "schema": "rcs_resolution_bias_v1", "measured_at_cells_through_thickness": 4, "source": _BIAS_SOURCE,
+            "scope": _BIAS_SCOPE,
+            "observables": {
+                "Q1": _signed(_Q1, 0.39, 0.33, 0.47, p_obs_point_pct=0.35, gci_production_pct=1.48),
+                "Q1w": _signed(_Q1W, 0.62, 0.50, 0.78, p_obs_point_pct=0.56, gci_production_pct=2.16, fs=3.0,
+                               p_obs=3.12, verdict="RUBBER-PHYS-11 v5 FAIL (GCI 2.16 % > 2 %; Fs 3 because p_obs "
+                                               "3.12 lies outside [1, 3]); kept recorded, no v6 rule"),
+                "Q2": _signed(_Q2, -0.39, -0.50, -0.31, p_obs_point_pct=-0.36, gci_production_pct=0.56),
+                "Q4": _oscillatory(_Q4, 0.05, [-0.015, -0.029, -0.050], gci_production_pct=0.07),
+                "Q3_uniaxial_stress": {"sign": "grid independent", "bias_pct": None,
+                                       "text": "grid independent (RUBBER-PHYS-11 v4 Q3, GCI 0.01 %)"}},
+            "width_and_slenderness_RUBBER_PHYS_02": {
+                "L_over_t_10_W_t": [0.06, 0.11], "L_over_t_10_W_4t": [0.30, 0.53],
+                "L_over_t_20_W_t": [0.28, 0.50], "L_over_t_20_W_4t": [0.40, 0.73],
+                "unit": "percent static sag bias of n_t 4 (range, see source)"}},
+        "known_limitation": {
+            "id": "rubber_phys_11_v5_q1w_gci_2.16pct",
+            "summary": "n_t 4 overestimates small-deflection static sag of wide strips: +0.62 % (+0.50 ... +0.78 %) "
+                       "at L/t 20, W = 4t (RUBBER-PHYS-11 v5 Q1w FAIL, GCI 2.16 %, Fs 3, p_obs 3.12); narrow strips "
+                       "W = t: +0.39 % (+0.33 ... +0.47 %) at L/t 20, +0.06 ... +0.11 % at L/t 10; W = 4t at L/t 10: "
+                       "+0.30 ... +0.53 %; f1 -0.39 % (-0.50 ... -0.31 %); large-deflection tip drop oscillatory, "
+                       "|bias| <= 0.05 %; the deviation grows with L/t and W/t and is unmeasured beyond L/t 20 / W/t 4",
+            "decision": "K2 Q1w decision option (c) (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md §3): accepted as "
+                        "a labelled limitation; RUBBER-PHYS-11 v5 stays FAIL",
+            "cite_when": "sub-percent small-deflection stiffness, sag or f1 of wide or slender strips; Native analytic "
+                         "comparisons; bending-dominated calibration fits (fitted parameters are specific to this "
+                         "profile, never carried to n_t 3 or 6 without the bias shift)"}},
+    "rubber_rl_v1": {
+        "particles_per_cell_axis": 2, "min_cells_through_thickness": 3, "cells_through_thickness_band": [3, 4],
+        "label": "reduced_fidelity: thickness_resolution_n_t3",
+        "measured_bias": {
+            "schema": "rcs_resolution_bias_v1", "measured_at_cells_through_thickness": 3, "source": _BIAS_SOURCE,
+            "scope": _BIAS_SCOPE,
+            "observables": {
+                "Q1": _signed(_Q1, 0.97, 0.91, 1.06, p_obs_point_pct=0.93, v4_point_pct=1.08,
+                              gci_triplet_3_4_6_pct=3.98),
+                "Q1w": _signed(_Q1W, 1.39, 1.27, 1.56, p_obs_point_pct=1.34, gci_triplet_3_4_6_pct=2.19),
+                "Q2": _signed(_Q2, -0.83, -0.94, -0.76, p_obs_point_pct=-0.80, gci_triplet_3_4_6_pct=1.28),
+                "Q4": _oscillatory(_Q4, 0.12, [0.119, 0.105, 0.083], gci_triplet_3_4_6_pct=0.92),
+                "Q3_uniaxial_stress": {"sign": "grid independent", "bias_pct": None,
+                                       "text": "grid independent (RUBBER-PHYS-11 v4 Q3, GCI 0.01 %)"}},
+            "width_and_slenderness_RUBBER_PHYS_02": {
+                "L_over_t_10_W_t": [0.44, 0.49], "L_over_t_10_W_4t": [1.05, 1.29],
+                "L_over_t_20_W_t": [0.86, 1.08], "L_over_t_20_W_4t": [1.18, 1.50],
+                "unit": "percent static sag bias of n_t 3 (range, see source)"}},
+        "known_limitation": {
+            "id": "rubber_rl_v1_n_t3_bending_bias_1.39pct",
+            "summary": "reduced fidelity: n_t 3 overestimates small-deflection static sag by +0.97 % "
+                       "(+0.91 ... +1.06 %) at L/t 20, W = t and +1.39 % (+1.27 ... +1.56 %) at L/t 20, W = 4t; at "
+                       "L/t 10: +0.44 ... +0.49 % (W = t; the old '<= 0.5 % (E1)' holds only here) and +1.05 ... "
+                       "+1.29 % (W = 4t); f1 -0.83 % (-0.94 ... -0.76 %); large-deflection tip drop oscillatory, "
+                       "|bias| <= 0.12 %; unmeasured beyond L/t 20 / W/t 4",
+            "decision": "R2.5 review decision (a) (ADR 0023 §19A): a labelled reduced-fidelity profile",
+            "cite_when": "every bending-dominated observable; never a full-fidelity row"}},
+    "rubber_coarse_v1": {
+        "particles_per_cell_axis": 2, "min_cells_through_thickness": 2, "cells_through_thickness_band": [2, 3],
+        "label": "reduced_fidelity: coarse_thickness_resolution",
+        "measured_bias": {"schema": "rcs_resolution_bias_v1", "measured_at_cells_through_thickness": None,
+                          "status": "NOT_MEASURED", "observables": {},
+                          "text": "no refinement study covers n_t 2; its bending bias is unknown and larger than "
+                                  "n_t 3's (+0.97 ... +1.39 % static sag at L/t 20)"},
+        "known_limitation": {
+            "id": "rubber_coarse_v1_bias_not_measured",
+            "summary": "coarse n_t 2 grid: bending bias not measured (expected larger than n_t 3); for unit tests and "
+                       "declared reduced-fidelity rows only (e.g. the contact impact books of rubber_contact_tests_v2)",
+            "decision": "ADR 0023 §8 coarse profile; never a production or acceptance grid",
+            "cite_when": "always"}},
+}
+
+_TOP_KEYS = {"schema", "id", "calibration_status", "material_identity", "density_kg_m3", "model", "elastic",
+             "viscoelastic", "contact", "numerics", "derived", "provenance", "calibration_manifest",
+             "heldout_verdict"}
+_REQUIRED_TOP = _TOP_KEYS - {"derived", "calibration_manifest", "heldout_verdict"}
+_ELASTIC_KEYS = {"shear_modulus_eq_pa", "bulk_ratio_numerical", "bulk_modulus_physical_pa"}
+_VISCO_KEYS = {"applies_to", "max_terms", "prony"}
+_PRONY_KEYS = {"g", "tau_s"}
+_CONTACT_KEYS = {"friction_table", "friction_pad", "friction_self"}
+_NUMERICS_KEYS = {"resolution_profile", "particles_per_cell_axis", "min_cells_through_thickness", "cfl", "pic",
+                  "contact_stiffness_fraction", "self_contact_stiffness_fraction", "contact_radius_scale",
+                  "j_domain", "j_physical_tolerance"}
+_IDENTITY_KEYS = {"family", "candidates", "evidence"}
+_PROVENANCE_KEYS = {"defined", "values"}
+_REFUSED_INPUTS = {"poisson_ratio", "nu", "young_modulus_pa", "lame_lambda", "bulk_modulus_pa"}
+
+
+class RubberRecipeError(ValueError):
+    """A recipe that violates ADR 0023 §14.1 (message names the rule)."""
+
+
+def _refuse(message):
+    raise RubberRecipeError(message)
+
+
+def _check_keys(obj, allowed, where, required=None):
+    if not isinstance(obj, dict):
+        _refuse(f"{where} must be an object")
+    for key in obj:
+        if key in _REFUSED_INPUTS:
+            _refuse(f"{where}.{key}: refused input (nu/E/lambda are derived from mu and beta, ADR 0023 §6)")
+    unknown = set(obj) - set(allowed)
+    if unknown:
+        _refuse(f"{where}: unknown keys {sorted(unknown)}")
+    missing = set(required if required is not None else allowed) - set(obj)
+    if missing:
+        _refuse(f"{where}: missing keys {sorted(missing)}")
+
+
+def _finite_positive(value, where):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+        _refuse(f"{where} must be a finite positive number, got {value!r}")
+    return float(value)
+
+
+@dataclass(frozen=True)
+class Ranged:
+    """A value with an admissible (or randomisation) range [lo, hi]."""
+    value: float
+    lo: float
+    hi: float
+
+    @classmethod
+    def parse(cls, obj, where):
+        _check_keys(obj, {"value", "range"}, where)
+        value = _finite_positive(obj["value"], f"{where}.value")
+        rng = obj["range"]
+        if not isinstance(rng, list) or len(rng) != 2:
+            _refuse(f"{where}.range must be [lo, hi]")
+        lo, hi = (_finite_positive(v, f"{where}.range") for v in rng)
+        if not lo <= value <= hi:
+            _refuse(f"{where}: value {value} outside its range [{lo}, {hi}]")
+        return cls(value, lo, hi)
+
+    def to_dict(self):
+        return {"value": self.value, "range": [self.lo, self.hi]}
+
+
+@dataclass(frozen=True)
+class PronyTerm:
+    g: float
+    tau_s: float
+
+
+@dataclass(frozen=True)
+class RubberRecipe:
+    """Validated ``rubber_material_v1`` recipe (immutable). Build with :func:`load_recipe` / :func:`parse_recipe`."""
+    id: str
+    calibration_status: str
+    model: str
+    density: Ranged
+    shear_modulus_eq: Ranged
+    bulk_ratio: Ranged
+    bulk_modulus_physical_pa: float
+    bulk_modulus_physical_status: str
+    prony: tuple
+    friction_table: Ranged
+    friction_pad: Ranged
+    friction_self: Ranged
+    resolution_profile: str
+    particles_per_cell_axis: int
+    min_cells_through_thickness: int
+    cfl: float
+    pic: float
+    contact_stiffness_fraction: float
+    self_contact_stiffness_fraction: float
+    contact_radius_scale: float
+    j_domain: tuple
+    j_physical_tolerance: float
+    material_identity: dict
+    provenance: dict
+    calibration_manifest: str = None
+    heldout_verdict: str = None
+    source_sha256: str = None
+    raw: dict = field(default=None, compare=False, repr=False)
+
+    # ------------------------------------------------------------------ derived quantities (float64)
+
+    @property
+    def g_inf(self):
+        return 1.0-sum(t.g for t in self.prony)
+
+    def mu0(self, mu_eq=None):
+        """Instantaneous shear modulus mu0 = mu_eq / g_inf (= mu_eq for the elastic model)."""
+        return float(self.shear_modulus_eq.value if mu_eq is None else mu_eq)/self.g_inf
+
+    def kappa(self, mu_eq=None, beta=None):
+        return float(self.bulk_ratio.value if beta is None else beta)*self.mu0(mu_eq)
+
+    def derived(self, mu_eq=None, density=None, beta=None, dx=None):
+        mu0 = self.mu0(mu_eq)
+        kappa = self.kappa(mu_eq, beta)
+        rho = float(self.density.value if density is None else density)
+        out = {"mu0_pa": mu0, "mu_eq_pa": mu0*self.g_inf, "g_inf": self.g_inf, "kappa_pa": kappa,
+               "beta": kappa/mu0, "nu_effective": poisson_from(mu0, kappa), "young_effective_pa": young_from(mu0, kappa),
+               "lame_lambda_pa": kappa-2*mu0/3, "c_s_m_s": math.sqrt(mu0/rho), "c_p_m_s": p_wave_speed(mu0, kappa, rho),
+               "density_kg_m3": rho, "cfl": self.cfl,
+               "bulk_modulus_physical_pa": self.bulk_modulus_physical_pa,
+               "bulk_modulus_physical_status": self.bulk_modulus_physical_status}
+        if dx is not None:
+            out["dx_m"] = float(dx)
+            out["dt_max_s"] = self.cfl*float(dx)/out["c_p_m_s"]
+        return out
+
+    def nominal(self):
+        """The recipe's nominal per-env material values."""
+        return MaterialValues(mu0=self.mu0(), kappa=self.kappa(), density=self.density.value,
+                              friction_table=self.friction_table.value, friction_pad=self.friction_pad.value,
+                              friction_self=self.friction_self.value, prony=self.prony_terms())
+
+    def prony_terms(self):
+        """((g_i, tau_i), ...) of the recipe (empty for the elastic model)."""
+        return tuple((t.g, t.tau_s) for t in self.prony)
+
+    def values(self, mu_eq=None, density=None, beta=None, friction_table=None, friction_pad=None,
+               friction_self=None):
+        """Per-env values with optional overrides; every override must lie inside the recipe's range."""
+        def pick(name, ranged, value):
+            if value is None:
+                return ranged.value
+            value = _finite_positive(value, name)
+            if not ranged.lo <= value <= ranged.hi:
+                _refuse(f"{name} = {value} outside the recipe range [{ranged.lo}, {ranged.hi}]")
+            return value
+        mu_eq = pick("shear_modulus_eq_pa", self.shear_modulus_eq, mu_eq)
+        beta = pick("bulk_ratio_numerical", self.bulk_ratio, beta)
+        return MaterialValues(mu0=self.mu0(mu_eq), kappa=self.kappa(mu_eq, beta),
+                              density=pick("density_kg_m3", self.density, density),
+                              friction_table=pick("friction_table", self.friction_table, friction_table),
+                              friction_pad=pick("friction_pad", self.friction_pad, friction_pad),
+                              friction_self=pick("friction_self", self.friction_self, friction_self),
+                              prony=self.prony_terms())
+
+    def step_rule(self, dx, control_dt, *, mu_eq_max=None, density_min=None, beta=None, cfl=None,
+                  deformation_reserve=1.0):
+        """ADR §7 step rule: dt <= cfl dx / (c_p,max r) with c_p,max over the declared randomisation range
+        (mu_eq max, density min; defaults: the recipe ranges) and the declared deformation reserve r >= 1 (ADR §7
+        amendment; 1 = the v1 rule), rounded down so that control_dt / dt is an integer."""
+        cfl = self.cfl if cfl is None else float(cfl)
+        mu_max = self.shear_modulus_eq.hi if mu_eq_max is None else float(mu_eq_max)
+        rho_min = self.density.lo if density_min is None else float(density_min)
+        return step_rule(dx, control_dt, mu0_max=self.mu0(mu_max), kappa_max=self.kappa(mu_max, beta),
+                         density_min=rho_min, cfl=cfl, deformation_reserve=deformation_reserve)
+
+    def prony_coefficients(self, dt):
+        """Exact exponential-integrator coefficients (ADR §10) in float64: a_i = exp(-dt/tau_i),
+        b_i = -g_i (tau_i/dt) expm1(-dt/tau_i)."""
+        dt = _finite_positive(dt, "dt")
+        return prony_coefficients(self.prony_terms(), dt)
+
+    def resolution(self):
+        profile = RESOLUTION_PROFILES[self.resolution_profile]
+        return {"resolution_profile": self.resolution_profile, **profile}
+
+    def receipt(self):
+        return {"schema": SCHEMA, "id": self.id, "model": self.model, "calibration_status": self.calibration_status,
+                "source_sha256": self.source_sha256, "derived_nominal": self.derived(),
+                "prony": [{"g": t.g, "tau_s": t.tau_s} for t in self.prony], "resolution": self.resolution()}
+
+
+@dataclass(frozen=True)
+class MaterialValues:
+    """Concrete per-env material values (SI): instantaneous shear modulus, bulk modulus, density, frictions and the
+    optional isochoric Prony terms ``prony`` = ((g_i, tau_i), ...) (ADR 0023 §21.2.4; empty = the elastic model
+    ``neo_hookean_jbar_v1``; mu0 is the INSTANTANEOUS modulus, mu_inf = g_inf mu0). A term with g = 0 is allowed (it
+    pads a batch to a uniform number of terms M and contributes nothing)."""
+    mu0: float
+    kappa: float
+    density: float
+    friction_table: float = 0.8
+    friction_pad: float = 1.0
+    friction_self: float = 0.9
+    prony: tuple = ()
+
+    def __post_init__(self):
+        object.__setattr__(self, "prony", validate_prony(self.prony))
+
+    @property
+    def beta(self):
+        return self.kappa/self.mu0
+
+    @property
+    def g_inf(self):
+        return 1.0-math.fsum(g for g, _ in self.prony)
+
+    @property
+    def prony_terms_count(self):
+        return len(self.prony)
+
+    def params64(self, dt):
+        """float64 per-env row [g_inf, (g_i, tau_i, a_i, b_i) x M] of the batch dt (a_i, b_i with expm1, host)."""
+        from .rubber_visco_constitutive import params64_row
+        return params64_row(self.prony, dt)
+
+    def c_p(self):
+        return p_wave_speed(self.mu0, self.kappa, self.density)
+
+    def young_effective(self):
+        return young_from(self.mu0, self.kappa)
+
+    def poisson_effective(self):
+        return poisson_from(self.mu0, self.kappa)
+
+    def to_dict(self):
+        return {"mu0_pa": self.mu0, "kappa_pa": self.kappa, "density_kg_m3": self.density, "beta": self.beta,
+                "friction_table": self.friction_table, "friction_pad": self.friction_pad,
+                "friction_self": self.friction_self, "nu_effective": self.poisson_effective(),
+                "young_effective_pa": self.young_effective(), "c_p_m_s": self.c_p(),
+                **({"prony": [{"g": g, "tau_s": tau} for g, tau in self.prony], "g_inf": self.g_inf}
+                   if self.prony else {})}
+
+
+def validate_prony(prony):
+    """Normalise and validate Prony terms ((g, tau), ...): at most MAX_PRONY_TERMS, g finite >= 0, tau finite > 0,
+    sum g < 1 (g_inf > 0). Raises RubberRecipeError."""
+    if prony is None:
+        return ()
+    terms = []
+    for i, term in enumerate(prony):
+        if isinstance(term, PronyTerm):
+            term = (term.g, term.tau_s)
+        if len(term) != 2:
+            _refuse(f"prony[{i}] must be (g, tau_s)")
+        g, tau = term
+        if isinstance(g, bool) or not isinstance(g, (int, float, np.floating)) or not math.isfinite(g) or g < 0:
+            _refuse(f"prony[{i}].g must be finite and >= 0, got {g!r}")
+        if isinstance(tau, np.floating):
+            tau = float(tau)
+        terms.append((float(g), _finite_positive(tau, f"prony[{i}].tau_s")))
+    if len(terms) > MAX_PRONY_TERMS:
+        _refuse(f"at most {MAX_PRONY_TERMS} Prony terms, got {len(terms)}")
+    if math.fsum(g for g, _ in terms) >= 1.0:
+        _refuse("sum of Prony g_i must be < 1 (g_inf > 0)")
+    return tuple(terms)
+
+
+def prony_coefficients(terms, dt):
+    """[(a_i, b_i)] float64 (ADR 0023 §10): a_i = exp(-dt/tau_i), b_i = -g_i (tau_i/dt) expm1(-dt/tau_i)."""
+    from .rubber_visco_constitutive import prony_coefficients as coefficients
+    return coefficients(terms, dt)
+
+
+def pad_prony(prony, M, tau_pad_s=1.0):
+    """Pad Prony terms with (0, tau_pad) to M terms (uniform M of a batch; a g = 0 term is an exact zero)."""
+    terms = validate_prony(prony)
+    if len(terms) > M:
+        _refuse(f"{len(terms)} Prony terms > M = {M}")
+    return validate_prony(terms+((0.0, float(tau_pad_s)),)*(M-len(terms)))
+
+
+def poisson_from(mu, kappa):
+    return (3*kappa-2*mu)/(2*(3*kappa+mu))
+
+
+def young_from(mu, kappa):
+    return 9*kappa*mu/(3*kappa+mu)
+
+
+def p_wave_speed(mu, kappa, rho):
+    return math.sqrt((kappa+4*mu/3)/rho)
+
+
+def step_rule(dx, control_dt, *, mu0_max, kappa_max, density_min, cfl=0.5, deformation_reserve=1.0):
+    """dt = control_dt / ceil(control_dt / (cfl dx / (c_p,max r))); returns a receipt dict.
+
+    ``deformation_reserve`` r >= 1 (ADR 0023 §7 amendment, P2-1 follow-up) declares the stiffening of the
+    reference-frame wave speed the scene is built for (r = 1: the v1 rule, unchanged dt). The deformed-state speed is
+    checked on the device by the opt-in stable-step guard; r only buys margin up front."""
+    dx = _finite_positive(dx, "dx")
+    control_dt = _finite_positive(control_dt, "control_dt")
+    if not 0 < cfl <= 1.0:
+        _refuse(f"cfl must be in (0, 1], got {cfl} (measured critical CFL 1.2-1.5, ADR §2 E2)")
+    r = float(deformation_reserve)
+    if not (math.isfinite(r) and r >= 1.0):
+        _refuse(f"deformation_reserve must be finite and >= 1, got {deformation_reserve}")
+    c_p = p_wave_speed(mu0_max, kappa_max, density_min)
+    dt_max = cfl*dx/(c_p*r)
+    substeps = int(math.ceil(control_dt/dt_max*(1-1e-12)))
+    dt = control_dt/substeps
+    return {"dx_m": dx, "control_dt_s": control_dt, "cfl_declared": cfl, "c_p_max_m_s": c_p, "dt_max_s": dt_max,
+            "dt_s": dt, "substeps_per_control_step": substeps, "cfl_actual": dt*c_p/dx,
+            "margin_to_measured_critical_1_2": 1.2/(dt*c_p/dx), "mu0_max_pa": mu0_max, "kappa_max_pa": kappa_max,
+            "density_min_kg_m3": density_min, "deformation_reserve": r}
+
+
+# ----------------------------------------------------------------------------- parsing
+
+def parse_recipe(obj, *, source_sha256=None, manifest_dir=None):
+    """Validate a recipe dict (ADR §14.1 rules) and return a :class:`RubberRecipe`."""
+    _check_keys(obj, _TOP_KEYS, "recipe", required=_REQUIRED_TOP)
+    if obj["schema"] != SCHEMA:
+        _refuse(f"schema must be {SCHEMA!r}")
+    if not isinstance(obj["id"], str) or not obj["id"]:
+        _refuse("id must be a non-empty string")
+    status = obj["calibration_status"]
+    if status not in CALIBRATION_STATUSES:
+        _refuse(f"calibration_status {status!r} not in {CALIBRATION_STATUSES}")
+    if "derived" in obj and not isinstance(obj["derived"], str):
+        _refuse("derived values are computed by the loader and never input ('derived' may only be a note string)")
+    _check_keys(obj["material_identity"], _IDENTITY_KEYS, "material_identity")
+    _check_keys(obj["provenance"], _PROVENANCE_KEYS, "provenance")
+    density = Ranged.parse(obj["density_kg_m3"], "density_kg_m3")
+    model = obj["model"]
+    if model not in MODELS:
+        _refuse(f"model {model!r} not in {MODELS}")
+    el = obj["elastic"]
+    _check_keys(el, _ELASTIC_KEYS, "elastic")
+    mu = Ranged.parse(el["shear_modulus_eq_pa"], "elastic.shear_modulus_eq_pa")
+    beta = Ranged.parse(el["bulk_ratio_numerical"], "elastic.bulk_ratio_numerical")
+    kphys = el["bulk_modulus_physical_pa"]
+    _check_keys(kphys, {"value", "status"}, "elastic.bulk_modulus_physical_pa")
+    kphys_value = _finite_positive(kphys["value"], "elastic.bulk_modulus_physical_pa.value")
+    if kphys["status"] not in ("LITERATURE_TYPICAL_UNMEASURED", "MEASURED"):
+        _refuse("elastic.bulk_modulus_physical_pa.status must be LITERATURE_TYPICAL_UNMEASURED or MEASURED")
+    ve = obj["viscoelastic"]
+    _check_keys(ve, _VISCO_KEYS, "viscoelastic")
+    if ve["applies_to"] != "isochoric":
+        _refuse("viscoelastic.applies_to must be 'isochoric' (no volumetric viscosity, ADR §10)")
+    if ve["max_terms"] != MAX_PRONY_TERMS:
+        _refuse(f"viscoelastic.max_terms must be {MAX_PRONY_TERMS}")
+    if not isinstance(ve["prony"], list) or len(ve["prony"]) > MAX_PRONY_TERMS:
+        _refuse(f"viscoelastic.prony must be a list of at most {MAX_PRONY_TERMS} terms")
+    terms = []
+    for i, term in enumerate(ve["prony"]):
+        _check_keys(term, _PRONY_KEYS, f"viscoelastic.prony[{i}]")
+        g, tau = term["g"], term["tau_s"]
+        if isinstance(g, bool) or not isinstance(g, (int, float)) or not math.isfinite(g) or g < 0:
+            _refuse(f"viscoelastic.prony[{i}].g must be finite and >= 0")
+        terms.append(PronyTerm(float(g), _finite_positive(tau, f"viscoelastic.prony[{i}].tau_s")))
+    if sum(t.g for t in terms) >= 1.0:
+        _refuse("sum of Prony g_i must be < 1 (g_inf > 0)")
+    if (model == PRONY_MODEL) != bool(terms):
+        _refuse(f"model {model!r} does not match the Prony terms ({PRONY_MODEL} iff prony is non-empty)")
+    ct = obj["contact"]
+    _check_keys(ct, _CONTACT_KEYS, "contact")
+    frictions = {k: Ranged.parse(ct[k], f"contact.{k}") for k in sorted(_CONTACT_KEYS)}
+    nm = obj["numerics"]
+    _check_keys(nm, _NUMERICS_KEYS, "numerics")
+    profile = nm["resolution_profile"]
+    if profile not in RESOLUTION_PROFILES:
+        _refuse(f"numerics.resolution_profile {profile!r} not in {sorted(RESOLUTION_PROFILES)}")
+    expected = RESOLUTION_PROFILES[profile]
+    if nm["particles_per_cell_axis"] != expected["particles_per_cell_axis"]:
+        _refuse("numerics.particles_per_cell_axis must be 2 (1 per cell is under-integrated, ADR §2 E1)")
+    if nm["min_cells_through_thickness"] != expected["min_cells_through_thickness"]:
+        _refuse(f"numerics.min_cells_through_thickness must be {expected['min_cells_through_thickness']} "
+                f"for {profile}")
+    if isinstance(nm["pic"], bool) or nm["pic"] != 0:
+        _refuse("numerics.pic must be 0: rubber runs pure FLIP; PIC blending is dt-dependent numerical damping "
+                "(ADR 0023 §2 E3, D4)")
+    cfl = _finite_positive(nm["cfl"], "numerics.cfl")
+    if cfl > 0.5:
+        _refuse("numerics.cfl must be <= 0.5 (ADR §7 step rule; measured critical 1.2-1.5)")
+    for key in ("contact_stiffness_fraction", "self_contact_stiffness_fraction"):
+        v = _finite_positive(nm[key], f"numerics.{key}")
+        if v > 1:
+            _refuse(f"numerics.{key} must be in (0, 1]")
+    radius = _finite_positive(nm["contact_radius_scale"], "numerics.contact_radius_scale")
+    jd = nm["j_domain"]
+    if (not isinstance(jd, list) or len(jd) != 2 or not 0 < float(jd[0]) < 1 < float(jd[1])
+            or not all(math.isfinite(float(v)) for v in jd)):
+        _refuse("numerics.j_domain must be [lo, hi] with 0 < lo < 1 < hi")
+    jtol = _finite_positive(nm["j_physical_tolerance"], "numerics.j_physical_tolerance")
+    manifest = obj.get("calibration_manifest")
+    verdict = obj.get("heldout_verdict")
+    if status == "REAL_CALIBRATED":
+        if not manifest or verdict != "PASS":
+            _refuse("REAL_CALIBRATED requires calibration_manifest and heldout_verdict 'PASS' (P2-5)")
+        from .rubber_calibration import load_manifest
+        directory = Path(manifest_dir) if manifest_dir is not None else CALIBRATION_DIR
+        path = directory/f"{manifest}.json"
+        if not path.is_file():
+            _refuse(f"REAL_CALIBRATED: calibration manifest {manifest!r} not found in {directory}")
+        loaded = load_manifest(path, check_files=False)
+        if loaded["status"] != "FROZEN_FOR_HELDOUT":
+            _refuse(f"REAL_CALIBRATED: manifest {manifest!r} has status {loaded['status']!r}, "
+                    "not FROZEN_FOR_HELDOUT")
+    elif verdict is not None and verdict not in ("PASS", "FAIL", "NOT_RUN"):
+        _refuse("heldout_verdict must be PASS, FAIL or NOT_RUN")
+    return RubberRecipe(
+        id=obj["id"], calibration_status=status, model=model, density=density, shear_modulus_eq=mu,
+        bulk_ratio=beta, bulk_modulus_physical_pa=kphys_value, bulk_modulus_physical_status=kphys["status"],
+        prony=tuple(terms), friction_table=frictions["friction_table"], friction_pad=frictions["friction_pad"],
+        friction_self=frictions["friction_self"], resolution_profile=profile,
+        particles_per_cell_axis=int(nm["particles_per_cell_axis"]),
+        min_cells_through_thickness=int(nm["min_cells_through_thickness"]), cfl=cfl, pic=0.0,
+        contact_stiffness_fraction=float(nm["contact_stiffness_fraction"]),
+        self_contact_stiffness_fraction=float(nm["self_contact_stiffness_fraction"]), contact_radius_scale=radius,
+        j_domain=(float(jd[0]), float(jd[1])), j_physical_tolerance=jtol,
+        material_identity=dict(obj["material_identity"]), provenance=dict(obj["provenance"]),
+        calibration_manifest=manifest, heldout_verdict=verdict, source_sha256=source_sha256, raw=obj)
+
+
+def load_recipe(path=DEFAULT_RECIPE, **kwargs):
+    """Load and validate a recipe JSON file (receipts carry its SHA-256)."""
+    data = Path(path).read_bytes()
+    return parse_recipe(json.loads(data), source_sha256=hashlib.sha256(data).hexdigest(), **kwargs)
+
+
+def profile_for_n_t(n_t):
+    """The resolution profile whose band [lo, hi) of cells through the thickness contains ``n_t`` (K2-2); raises for
+    n_t < 2 (no profile)."""
+    n_t = float(n_t)
+    for name, prof in RESOLUTION_PROFILES.items():
+        lo, hi = prof["cells_through_thickness_band"]
+        if n_t >= lo-1e-9 and (hi is None or n_t < hi-1e-9):
+            return name
+    _refuse(f"no resolution profile covers {n_t:.4g} cells through the thickness (bands: "
+            f"{ {k: v['cells_through_thickness_band'] for k, v in RESOLUTION_PROFILES.items()} })")
+
+
+def resolution_label(name, n_t, compact=False):
+    """The receipt block of profile ``name`` at ``n_t`` cells through the thickness (K2-2): profile, label,
+    ``measured_bias`` and ``known_limitation``. Refuses an unknown name and a profile whose band does not contain n_t
+    (e.g. n_t 3 labelled ``rubber_ref_v1`` or n_t 4 labelled ``rubber_rl_v1``). ``compact`` (the per-env scene
+    receipt) keeps ``known_limitation`` whole and reduces ``measured_bias`` to its per-observable texts and a pointer to
+    the full block (carried once per run by the live / batched receipts)."""
+    if name not in RESOLUTION_PROFILES:
+        _refuse(f"unknown resolution profile {name!r} (known: {sorted(RESOLUTION_PROFILES)})")
+    expected = profile_for_n_t(n_t)
+    if name != expected:
+        lo, hi = RESOLUTION_PROFILES[name]["cells_through_thickness_band"]
+        _refuse(f"resolution profile {name!r} covers n_t in [{lo}, {'inf' if hi is None else hi}); this scene has "
+                f"n_t = {float(n_t):.4g} cells through the thickness, i.e. {expected!r}")
+    prof = RESOLUTION_PROFILES[name]
+    bias = prof["measured_bias"]
+    measured = bias["measured_at_cells_through_thickness"]
+    if compact:
+        bias = {"schema": bias["schema"], "measured_at_cells_through_thickness": measured,
+                **({"status": bias["status"]} if "status" in bias else {}),
+                "observables": {k: v["text"] for k, v in bias["observables"].items()},
+                "full": f"robotic_cutting_sim.rubber_material.RESOLUTION_PROFILES[{name!r}]['measured_bias']"}
+    return {"resolution_profile": name, "label": prof["label"], "cells_through_thickness": float(n_t),
+            "measured_at_cells_through_thickness": measured,
+            "bias_measured_at_this_n_t": measured is not None and abs(float(n_t)-measured) < 1e-9,
+            "measured_bias": bias, "known_limitation": prof["known_limitation"]}
+
+
+def resolution_check(recipe, thickness_min, dx, profile=None):
+    """n_t = t_min / dx against the profile's minimum (ADR §8); returns the label or raises. The returned block also
+    carries the profile's ``measured_bias`` and ``known_limitation`` (K2-2)."""
+    name = recipe.resolution_profile if profile is None else profile
+    if name not in RESOLUTION_PROFILES:
+        _refuse(f"unknown resolution profile {name!r}")
+    n_t = float(thickness_min)/float(dx)
+    required = RESOLUTION_PROFILES[name]["min_cells_through_thickness"]
+    if n_t < required-1e-9:
+        _refuse(f"{name}: {n_t:.3f} cells through the thickness < {required}")
+    return {"resolution_profile": name, "cells_through_thickness": n_t, "label": RESOLUTION_PROFILES[name]["label"],
+            "measured_bias": RESOLUTION_PROFILES[name]["measured_bias"],
+            "known_limitation": RESOLUTION_PROFILES[name]["known_limitation"]}
+
+
+def lattice_check(length, spacing):
+    """Geometry on the particle lattice: ``length`` must be an integer multiple of ``spacing`` (ADR §8)."""
+    k = float(length)/float(spacing)
+    if abs(k-round(k)) > 1e-6 or round(k) < 1:
+        _refuse(f"length {length} is not a positive multiple of the particle spacing {spacing}")
+    return int(round(k))
+
+
+def mass_per_particle(density, spacing):
+    """rho s^3 in float64 then float32: one function for the single and the batched solver (same bits)."""
+    return np.float32(float(density)*float(spacing)**3)

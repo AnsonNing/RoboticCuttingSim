@@ -1,0 +1,158 @@
+{
+ "schema": "rcs_rubber_visc_tests_v1",
+ "id": "rubber_visc_tests_v1",
+ "version": 1,
+ "adr": "docs/adr/0023-rubber-material-v1.md sections 10 and 21.2-21.4",
+ "status": "FROZEN_AT_COMMIT (declared before any neo_hookean_jbar_prony_v1 implementation run; SHA-256 pinned in tests/test_rubber_p2_3_protocols.py; a change is v2; thresholds never move after a result)",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (numerical verification of the declared model against analytic / semi-analytic references; no real rubber data; the identification in RUBBER-VISC-03 is a synthetic dry run of the P2-5 fit/held-out split, not a calibration)",
+ "prerequisites": {
+  "rubber_moving_grip_tests_v1": {"sha256": "ff14f39dc750fcf095a1a84ba8c7a48d3f0721a27b08062e6e03680eab7678bc", "result": "artifacts/rl_ready/p2_3/moving_grip_v1_001: RUBBER-GRIP-01..04 PASS at commit ea32f2a (ADR 0023 section 21.1)", "why": "every moving-grip test below scores energy with constraint_work kick_average_v1"},
+  "resolution": "bending observables (RUBBER-VISC-04b) use n_t 4 (rubber_ref_v1), per the P2-0..P2-2 acceptance review decision (a); homogeneous tests are grid-independent (RUBBER-PHYS-11 Q3)",
+  "implementation": "ADR 0023 section 21.2 (model, storage, update order, float64 state, guard, energy accounting) and the section 21.4 task list"
+ },
+ "common": {
+  "model": "neo_hookean_jbar_prony_v1",
+  "model_definition": "isochoric PK2 S0(C) = mu0 J^-2/3 (I - I1/3 C^-1); S = g_inf S0 + sum_i Q_i; P = F S + p(Jbar) cof F = P_NH(F, Jbar; mu0, kappa) + F sum_i (Q_i - g_i S0); Q_i^{n+1} = a_i Q_i^n + b_i (S0_{n+1} - S0_n), a_i = exp(-dt/tau_i), b_i = -g_i (tau_i/dt) expm1(-dt/tau_i) (float64, host); Q_i and S0_prev float64 per particle; volumetric part elastic (kappa = beta mu0)",
+  "solver": "single env: TLMPMRubberVisco (the tlmpm_rubber_v1 launch sequence with the Prony stress pass; ADR 0023 section 21.2); batched: BatchedRubberMaterial with registry model neo_hookean_jbar_prony_v1",
+  "options": {"dirichlet": "consistent_mass_projection_v1", "constraint_work": "kick_average_v1", "traction_work": "grid_displacement_v1", "state_precision": "f64_shadow_v1", "visco_energy": "branch_work_v1", "stable_step_guard": 1.0, "visco_guard": "stable_step_guard_visco_v1 (section 21.2.6)", "deformation_reserve": 1.0},
+  "bulk_ratio_beta": 20.0,
+  "pic": 0.0,
+  "cfl": 0.5,
+  "particles_per_cell_axis": 2,
+  "density_kg_m3": 1150.0,
+  "gravity_m_s2": [0.0, 0.0, 0.0],
+  "artificial_damping": "none (losses only from the declared Prony terms; the constraint is the projected F8 grip, energy-consistent per RUBBER-GRIP v1)",
+  "step_rule": "dt = control_dt / ceil(control_dt / (cfl dx / c_p)), c_p = sqrt((kappa + 4 mu0 / 3) / rho) with the INSTANTANEOUS modulus mu0 (never mu_inf)",
+  "prony_sets": {
+   "SLS": {"mu0_pa": 4.0e5, "terms": [{"g": 0.3, "tau_s": 0.01}], "g_inf": 0.7, "note": "one term = standard linear solid"},
+   "P2": {"mu0_pa": 4.0e5, "terms": [{"g": 0.2, "tau_s": 0.005}, {"g": 0.15, "tau_s": 0.05}], "g_inf": 0.65}
+  },
+  "analytic_references": {
+   "relaxation_function": "g(t) = g_inf + sum_i g_i exp(-t/tau_i); step at fixed C: S_iso(t) = g(t) S0(C) exactly",
+   "hereditary_integral": "S_iso(t) = g_inf S0(t) + sum_i g_i int_0^t exp(-(t-s)/tau_i) dS0/ds ds for a prescribed C(t), evaluated by adaptive quadrature in float64 (scipy.integrate.quad, epsrel 1e-12) independently of the solver's update",
+   "complex_shear_modulus": "G*(w) = mu0 [g_inf + sum_i g_i i w tau_i / (1 + i w tau_i)]",
+   "uniaxial_complex_modulus": "E*(w) = 9 kappa G* / (3 kappa + G*) (viscosity on the isochoric part only)",
+   "uniaxial_relaxation_and_creep": "E(s) = 9 kappa G(s) / (3 kappa + G(s)), G(s) = mu0 [g_inf + sum_i g_i s tau_i / (1 + s tau_i)] rational; E(t) and the creep compliance J_E(t) (Laplace 1 / (s E(s)) = 1 / (3 s G(s)) + 1 / (9 kappa s)) by partial fractions (numpy polynomial roots, float64); load histories by Boltzmann superposition with the actual ramp",
+   "beam_free_decay": "Euler-Bernoulli cantilever with a viscoelastic modulus: s^2 + (beta1 / L)^4 (I / (rho A)) E(s) = 0, beta1 = 1.8751040687; the oscillatory root s1 = -zeta + i omega_d by Newton from the instantaneous elastic root (P2, L 40 mm, 4 x 4 mm: zeta 4.743 1/s, f_d 11.706 Hz, log decrement 0.405)",
+   "small_strain_note": "the analytic moduli are small-strain; the finite-strain model differs by O(strain amplitude) (about 0.4 % at a mean strain 0.2 %); the block tests (RUBBER-VISC-01, -03b, -04a) compare with the exact finite-strain hereditary integral instead"
+  },
+  "energy": {
+   "psi_eq": "Psi_eq = sum_p V g_inf mu0/2 (J^-2/3 I1 - 3) + sum_c V_c kappa/4 (Jbar^2 - 1 - 2 ln Jbar) (equilibrium free energy; NOT the frozen diagnostics' 'elastic' column, which uses mu0)",
+   "branch_work": "W_b = sum_n sum_p V (F_n sum_i Q_i^n) : (F_{n+1} - F_n), float64 per env (the discrete work of the internal force on the viscous branches; exact conjugate of the drift)",
+   "explicit_dissipation": "D = sum_n sum_p V sum_i dt (|Q_i^n|^2 + |Q_i^{n+1}|^2) / (4 g_i mu0 tau_i) (trapezoid of the Maxwell-branch dissipation rate in S0-strain space, float64 per env; |Q|^2 = Q:Q)",
+   "stored_viscous": "Psi_v = sum_p V sum_i |Q_i|^2 / (4 g_i mu0) (Maxwell-branch stored energy in S0-strain space; exact in the small-strain limit)",
+   "layer_N_books": "B_N(t) = E_kin + Psi_eq + E_grav + W_b - W_ext (W_ext = kick-average constraint work + grid-displacement traction work); numerics only, exact at any strain up to the O(dt) symplectic fluctuation",
+   "layer_M_material": "over a closed steady cycle Psi_v, Psi_eq, E_kin are periodic, so the loss per cycle is dW_ext = dW_b (layer N) and should equal dD (the explicit dissipation integral; equal at small strain) and the analytic pi eps0^2 E''(w) V"
+  },
+  "observables": {
+   "block": "per-particle PK1 (all particles; the block is homogeneous), case 'block' (affine group on every node), 4 x 4 x 4 mm, dx 1 mm",
+   "strip": "case C 30 x 6 x 3 mm, n_t 3 (dx 1 mm), end_mask 'x' (axial grips, lateral free, rigid modes pinned): gauge strain eps = (x_6 - x_2) / (X_6 - X_2) - 1 from markers k = 2 and 6 (reference x = L/4, 3L/4); nominal stress sigma = -wrench_x(grip 1) / (W t) (grip tests) or traction / (W t) (creep)",
+   "cantilever": "case A 40 x 4 x 4 mm, n_t 4 (dx 1 mm), tip marker z",
+   "steady_cycle": "the last full cycle of a run with n_cycles = max(2, ceil(6 tau_max f) + 1)",
+   "complex_modulus_from_cycle": "E* = [sum_k sigma_k exp(-i w (t_k - dtc/2)) / sinc(w dtc / 2)] / [sum_k (eps_k - mean eps) exp(-i w t_k)] over the control-step samples k of the steady cycle (Fourier projection at the drive frequency; sinc(x) = sin(x)/x; dtc = control_dt)",
+   "time_stamps": "a grip wrench is the AVERAGE reaction over control step k, (t_{k-1}, t_k]: time stamp t_k - dtc/2 (with the sinc amplitude factor above); markers, energies and work are instantaneous at t_k; the per-particle stress array and the Prony state after control step k belong to the stress pass of the last substep, i.e. to time t_k - dt with F(t_k - dt): block references are evaluated at that time",
+   "prescribed_histories": "group poses (affine maps, grip displacements) are the declared formulas evaluated at the control-step ends t_k and linear in time within a control step (the solver's interpolation); a traction force is constant within control step k and equals the declared load at t_k - dtc/2; every reference uses these actual piecewise histories"
+  },
+  "validity": "every configuration: no invalid flag (NONFINITE_STATE, RUBBER_J_DOMAIN, RUBBER_CFL_EXCEEDED incl. the visco guard term); an invalid configuration FAILs its test",
+  "devices": "block, L0/L1, reset and elastic-limit tests on the Warp CPU device; strip and cantilever single-env runs on CPU or on one GPU under the GPU lock rules (device, driver, SHARED_GPU and co-tenants recorded); CPU and GPU results are reported separately, never mixed in one criterion"
+ },
+ "tests": {
+  "RUBBER-VISC-01": {
+   "name": "stress relaxation after a step strain (block, exact finite-strain reference)",
+   "setup": {"prony_sets": ["SLS", "P2"], "paths": {"uniaxial_isochoric": "F = diag(lambda, lambda^-1/2, lambda^-1/2), lambda 1.5", "simple_shear": "F = I + gamma e1 (x) e2, gamma 1.0"}, "control_dt_s": 2.0e-4, "ramp": "affine map linear over one control step from F = I", "hold_until_s": "6 tau_max (SLS 0.06 s, P2 0.3 s)"},
+   "reference": "hereditary integral of the ramp (common.analytic_references.hereditary_integral); the instantaneous-step closed form g(t) S0 is reported alongside",
+   "criteria": "max over the hold and over particles of ||P - P_ref||_F / ||P_ref(t_ramp)||_F <= rel_max",
+   "thresholds": {"rel_max": 1.0e-4},
+   "rationale": "the exponential update is exact for S0 piecewise linear in time; S0 is constant in the hold; float32 F / stress give ~1e-7"
+  },
+  "RUBBER-VISC-02": {
+   "name": "creep under constant load and creep recovery (strip, traction)",
+   "setup": {"prony_set": "P2", "strip": "common.observables.strip; grip 0 holds, grip 1 inactive from the start; traction group = the end particle layer at x = L", "load": "sigma(t) = sigma0 (1 - cos(pi t / T_r)) / 2 for t < T_r, sigma0 for T_r <= t < t1, then the same cosine ramp down to 0 over T_r, 0 until t2", "sigma0_pa": 1543.0, "T_r_s": 0.02, "t1_s": 0.4, "t2_s": 0.8, "control_dt_s": 2.0e-4, "note": "sigma0 = 0.002 E_inf (small strain)"},
+   "reference": "Boltzmann superposition of the uniaxial creep compliance J_E(t) with the actual load history (common.analytic_references.uniaxial_relaxation_and_creep)",
+   "criteria": ["|eps(t) - eps_ref(t)| <= curve_rel * max eps_ref for every control step with t in [T_r + 10 T_ax, t1] and [t1 + T_r + 10 T_ax, t2] (T_ax = 4 L / sqrt(E0 / rho), fixed-free axial period)", "creep ratio eps(t1) / eps(T_r + 10 T_ax) within ratio_rel of the reference ratio", "recovery: |eps(t2) - eps_ref(t2)| <= curve_rel * max eps_ref"],
+   "thresholds": {"curve_rel": 0.02, "ratio_rel": 0.01},
+   "rationale": "small-strain model form O(0.2 %), inertia after a 5-period cosine ramp, gauge homogeneity"
+  },
+  "RUBBER-VISC-03": {
+   "name": "loading-unloading hysteresis at several rates, identification on three rates, held-out rates (strip with moving grips; block at finite amplitude)",
+   "setup": {"prony_set": "P2", "strip": "common.observables.strip; grip 0 holds; grip 1 axial displacement u(t) = eps0 L (1 - cos(2 pi f t)) (load-unload between 0 and 2 eps0, zero initial velocity)", "eps0": 0.002, "control_dt_s": 2.0e-4, "fit_rates_hz": [1.0, 4.0, 16.0], "heldout_rates_hz": [2.0, 8.0, 32.0], "n_cycles": "common.observables.steady_cycle", "block_finite_amplitude": {"path": "simple shear gamma(t) = gamma0 (1 - cos(2 pi f t)), gamma0 0.15", "rates_hz": [4.0, 16.0], "n_cycles": 3}},
+   "reference": "strip: analytic E*(w) (small strain) and the loss per cycle pi eps0^2 E''(w) L W t; block: hereditary integral (exact finite strain)",
+   "criteria": {
+    "a_per_rate": "every rate (fit and held-out): |E'/E'_ref - 1| <= e1_rel, |E''/E''_ref - 1| <= e2_rel, |loss_cycle / (pi eps0^2 E''_ref V) - 1| <= loss_rel, loss_cycle = W_ext over the steady cycle",
+    "b_identification": "least-squares fit of (g1, tau1, g2, tau2) (mu0, kappa known) to E', E'' of the three fit rates only (relative residuals, log-tau, start g 0.25 / 0.1, tau 3 ms / 100 ms): |tau_i,fit / tau_i - 1| <= tau_rel, |g_i,fit / g_i - 1| <= g_rel",
+    "c_heldout": "the fitted parameters predict E', E'' at every held-out rate within e1_heldout / e2_heldout of the SIMULATED held-out values",
+    "d_single_rate_control": "reported, not scored: a one-term fit to the 4 Hz rate alone and its held-out prediction errors (a single-rate fit is not generalisation)",
+    "e_block_finite_amplitude": "max over the steady cycle of ||P - P_ref||_F / max ||P_ref||_F <= block_rel"
+   },
+   "thresholds": {"e1_rel": 0.01, "e2_rel": 0.03, "loss_rel": 0.03, "tau_rel": 0.10, "g_rel": 0.05, "e1_heldout": 0.01, "e2_heldout": 0.04, "block_rel": 1.0e-4},
+   "rationale": "small-strain model form about 0.4 % at mean strain 0.2 %; axial inertia (f / f_ax)^2 <= 0.4 % at 32 Hz (f_ax 533 Hz); synthetic identifiability check before declaration: 0.3 % noise gives tau errors <= 6 % and held-out errors <= 2.8 %"
+  },
+  "RUBBER-VISC-04": {
+   "name": "dt-independence of the relaxation time scale and of the damped dynamics (dt, dt/2, dt/4)",
+   "setup": {"substep_factors": [1, 2, 4], "a_block": "RUBBER-VISC-01 P2 uniaxial_isochoric at each factor", "b_cantilever": {"prony_set": "P2", "geometry": "common.observables.cantilever", "tap": "grip z(t) = A sin^2(pi t / T_p), A 2.0e-4 m, T_p 0.043 s, then hold", "record_s": 0.55, "control_dt_s": 1.0e-3}},
+   "reference": "a: declared tau_i, g_i; b: beam_free_decay root",
+   "criteria": {
+    "a": "least-squares fit of P_11(t) = A_inf + sum_{i=1,2} A_i exp(-(t - t_ramp) / tau_i) (five free parameters) to the hold phase of P_11 (particle mean, time stamps per common.observables) at each factor: |tau_i(k) / tau_i(1) - 1| <= tau_dt_rel for k = 2, 4 and |tau_i(k) / tau_i,declared - 1| <= tau_dt_rel for every k",
+    "b": "zeta and f_d from the tip signal after T_p + 0.5 / f_d (damped-sinusoid least squares with a free offset and one free decaying real exponential): |zeta(k) / zeta(1) - 1| <= zeta_dt_rel, |f_d(k) / f_d(1) - 1| <= f_dt_rel for k = 2, 4; vs the reference root: |f_d / f_ref - 1| <= f_ref_rel, |zeta / zeta_ref - 1| <= zeta_ref_rel at k = 1"
+   },
+   "thresholds": {"tau_dt_rel": 0.005, "zeta_dt_rel": 0.005, "f_dt_rel": 0.002, "f_ref_rel": 0.03, "zeta_ref_rel": 0.05},
+   "rationale": "ADR 0023 section 10 (fitted tau at dt and dt/2 within 0.5 %); RUBBER-PHYS-04 (f1 at dt, dt/2 within 0.2 %, EB within 3 %); damping model form EB + 3-D"
+  },
+  "RUBBER-VISC-05": {
+   "name": "energy balance with the dissipation integrated explicitly (the material, not the numerics, accounts for the loss)",
+   "runs": "every strip and cantilever run of RUBBER-VISC-02, -03 and -04b; the 16 Hz hysteresis run is repeated at substep factor 2 for (b)",
+   "criteria": {
+    "a_books": "max_t |B_N(t)| <= books_rel * S_N, S_N = max_t (E_kin + Psi_eq) + max_t |W_b|",
+    "b_consistency": "16 Hz: max |B_N| at factor 2 <= ratio_max * max |B_N| at factor 1, or <= floor_rel * S_N",
+    "c_cycle_books": "every steady cycle of RUBBER-VISC-03: |dW_ext / dW_b - 1| <= cycle_books_rel",
+    "d_explicit_dissipation": "every steady cycle of RUBBER-VISC-03: |dD / dW_b - 1| <= dissipation_rel; every per-substep increment of D >= 0",
+    "e_no_numerical_loss_control": "reported, not scored: the same 16 Hz run with every g_i = 0 (elastic) has |B_N| at the RUBBER-GRIP level and no secular trend"
+   },
+   "thresholds": {"books_rel": 0.005, "ratio_max": 0.65, "floor_rel": 1.0e-4, "cycle_books_rel": 0.005, "dissipation_rel": 0.02},
+   "rationale": "RUBBER-GRIP v1: residual O(dt) <= 0.4 % with the kick-average work; the branch-work quadrature adds O(w dt) ~ 1e-3 of the loss; S0-strain vs Green-Lagrange strain differ by O(eps0) ~ 0.4 %"
+  },
+  "RUBBER-VISC-06": {
+   "name": "partial reset clears material memory (no carry-over between episodes)",
+   "setup": "BatchedRubberMaterial N = 3 on the Warp CPU device (parity mode): env 0 P2 strip, env 1 SLS strip padded to M = 2 (g2 = 0), env 2 P2 strip with mu0 x 1.4, rho 1050 and L 24 mm; all envs stretch to lambda 1.1 over 10 control steps (control_dt 2e-4 s) and hold 10; env 1 is reset (masked) at step 20; then every env repeats the stretch-hold schedule from its current state for 20 steps",
+   "criteria": [
+    "right after the reset, every array of env 1 (vars()-complete: registry state visco_q, visco_s_prev, params64, energy accumulators, option arrays) is byte-identical to a freshly built batch's env 1, and envs 0 and 2 are byte-unchanged",
+    "the following 20 control steps of env 1 are byte-identical to the fresh batch's env 1 and to a fresh single-env reference (no memory of the first episode: its relaxation after the new step strain equals a fresh relaxation)",
+    "before the reset visco_q of env 1 is nonzero (the test loads memory) and the reset kernel touches no other env",
+    "a reset with resampled Prony parameters (g scale 0.8, tau scale 1.5, inside declared ranges) equals a single reference built with them; params64 a_i, b_i are byte-equal to the host float64 expm1 values; the next plain reset restores the packed values",
+    "single env: reset() clears visco_q and visco_s_prev; two episodes from reset() are byte-identical"
+   ]
+  },
+  "RUBBER-VISC-07": {
+   "name": "single env vs batched (ADR 0021 L0 / L1)",
+   "setup": "Warp CPU device: N = 1 and N = 3 heterogeneous (geometry, mu0, rho, g_i, tau_i; M = 2 uniform, SLS padded), case A moving grip with rotation, case C two grips with one inactive grip for one step, block affine; options of common.options; >= 5 control steps each",
+   "criteria": [
+    "L0: after every control step every solver array of every env (particle, node, group, traction, cell CSR, index, work, violations, cfl_violations, registry state visco_q / visco_s_prev, params / params64, every option array, visco energy accumulators), segmented diagnostics, visco diagnostics, markers and wrenches are byte-identical (dtype, shape, raw bytes) to the single references",
+    "L1: perturbing one env leaves the others byte-unchanged; the vars()-complete reset classification covers every array",
+    "mixed models / M / options in one batch are refused (UNSUPPORTED_NONUNIFORM_BATCH / UNSUPPORTED_MIXED_CONSTITUTIVE_MODELS)"
+   ]
+  },
+  "RUBBER-VISC-08": {
+   "name": "stable step: guard on mu0 plus the Prony tangent check",
+   "criteria": {
+    "a_step_rule": "the step rule of a Prony recipe uses mu0 = mu_eq / g_inf (test: dt of the visco recipe equals the elastic rule at mu0, not at mu_eq)",
+    "b_tangent_check": ">= 2000 states (F with principal stretches 0.6-1.6 and shear <= 1, random rotations; Q_i from random load-unload histories integrated with the exponential update at the batch dt, P2 and SLS): the largest eigenvalue over 512 unit directions N of the exact algorithmic acoustic tensor (central finite differences in float64 of the discrete stress update F -> P_{n+1} with Q_n frozen) is <= rho c_bound,visco^2 (section 21.2.6) for every sample; the maximum ratio is reported",
+    "c_validity": "zero guard violations in every RUBBER-VISC configuration at r = 1"
+   },
+   "thresholds": {"ratio_max": 1.0},
+   "on_failure": "the visco guard formula is amended in a declared v2 before any further visco run; the v1 result is preserved"
+  },
+  "RUBBER-VISC-09": {
+   "name": "elastic limit (regression)",
+   "criteria": [
+    "prony = [] runs the frozen elastic stress pass: byte-identical to tlmpm_rubber_v1 (with the same options) for 5 control steps of case A, case C and the block",
+    "M = 2 with every g_i = 0: byte-identical to the elastic run (the overstress term is an exact zero)",
+    "single and batched"
+   ]
+  },
+  "RUBBER-VISC-10": {
+   "name": "cost (reported, not scored; ADR 0023 D11 columns)",
+   "setup": "GPU, workload E geometry at n_t 4 (rubber_ref_v1) and the labelled n_t 3 row, N 1 / 4 / 8, guard on, motion table BC launch; elastic vs P2 (M = 2) with visco_energy off_v1 and branch_work_v1",
+   "report": "ms per substep, env-steps/s, VRAM peak, bytes per particle of the registry state, stage split of the stress pass; SHARED_GPU labels and co-tenant samples; no comparison without substeps per control step"
+  }
+ }
+}

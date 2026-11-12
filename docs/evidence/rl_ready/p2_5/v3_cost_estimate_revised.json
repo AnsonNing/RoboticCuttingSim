@@ -1,0 +1,40 @@
+{
+ "schema": "rcs_p2_5_v3_cost_estimate_v2",
+ "date": "2026-11-12",
+ "supersedes": "docs/evidence/rl_ready/p2_5/v3_cost_estimate.json (b79d377) for the decision; that file is kept unchanged",
+ "development_evidence": {
+  "dev_formal001_001": {
+   "data": "revealed formal_001 fit split (development, never scored)",
+   "gpu": "GPU0",
+   "hold_s": 3803,
+   "stage_A": "mu_eq + 4 Prony on R1 + T2, 2 starts, stick-breaking parametrisation: start 0 cost 54,302 -> 247.4 after 20 evaluations (-2.3 % in the last), NON_CONVERGED at the 3,240 s development budget; start 1 ended bound-active (g1 0.020, tau1 30 ms, g2 0.31, tau2 0.48 s) with ftol 'convergence'; at the end theta was g1 0.140 / tau1 9.4 ms / g2 0.176 / tau2 64 ms vs theta* 0.193 / 14.3 ms / 0.134 / 123 ms while the R1 + T2 cost (247) was already BELOW the cost of theta* on the same data (~403 from the post-reveal diagnostic): R1 + T2 alone do not separate the two Prony branches at n_t 4",
+   "per_evaluation_hold_s": {
+    "stage_A_P12": 155,
+    "stage_C_P7": "~700"
+   }
+  },
+  "dev2_formal001_stageA_001": {
+   "what": "moduli parametrisation (ModuliParameterSpace), stage A only, GPU1",
+   "status": "stopped after 1 evaluation (GPU1 shared with another workload at 93 % utilisation; the hold time was inflated); not informative",
+   "hold_s_estimate": 900
+  }
+ },
+ "revised_estimate_gpu_h": {
+  "new_formal_dataset": 1.07,
+  "fit_to_convergence": {
+   "stage_A": "35-45 evaluations x 155 s = 1.5-1.9",
+   "stage_B": 0.1,
+   "stage_C": "the joint stage must separate the branches with T1 / C1 / G1: >= 10-20 joint evaluations x ~700 s = 1.9-3.9 (no development evidence of convergence)",
+   "total": "3.5-5.9"
+  },
+  "negative_control": "1.0-1.7",
+  "heldout_and_reveal": 0.25,
+  "development_used": 1.3,
+  "total": "7.1-10.2, central ~8.6"
+ },
+ "decision": "DO NOT RUN v3 (orchestrator rule: if the estimate exceeds 8 GPU-h, write it into the report and stop). With a hard fit budget inside 8 GPU-h the fit would very likely end budget-limited and non-converged, i.e. repeat the v2 failure mode instead of testing a converged fit. No v3 protocol was declared, no new dataset was generated, no truth was drawn.",
+ "labels": {
+  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+  "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC"
+ }
+}

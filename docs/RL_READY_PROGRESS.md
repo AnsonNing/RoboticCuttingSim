@@ -7,23 +7,32 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 
 ## 進行中
 
-- **Phase 1: complete pending merge.** xhigh acceptance review at `f03fbff`: **PASS_WITH_LIMITATIONS**, merge to
-  `main` GO with conditions, no BLOCKER ([review](reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md), decision D-13).
-  The documentation fixes the review requires before the PR (findings 2, 6, 7, 8, 9) are on `claude/rl-phase1`;
-  the PR description is [PHASE1_PR_BODY.md](reports/rl_ready/PHASE1_PR_BODY.md).
-- **Next, in order:** PR #12 → merge into `main` (record the merge commit in D-11; `acceptance_v1` freezes there,
-  sha256 `3592d9408f314c3d2825171361b8ec640534c60577bb6216a10c4f2b22897bf4`) → first descriptor pin in the external
-  agentic optimizer repository (status `MERGED_RCS_PENDING_OPTIMIZER_SYNC` until then, SYNCED after) →
-  `acceptance_v2` (G9 window covering contact and cutting, review findings 1 and 2; `acceptance_v1` is not used for
-  any P1-6 acceptance) → first P1-6 optimizer cycle.
-- **Follow-up after the merge (own review):** fixes for review findings 3 (workload B `fidelity()` ignores
-  `material_dt_s`) and 4 (non-strict B2 forgets a failed pregrasp settle), both required before B2 training-mode
-  use; findings 10 (two infrastructure cases classified as task failures) and 12 (oracle-derived rollout fields
-  without a non-deployable label). Findings 5 and 11 (EXCLUSIVE spot check at the merge commit, unmeasured columns)
-  are optional follow-ups.
-- **Phase 2 (rubber, D-12):** P2-0..P2-2 done on `claude/rl-rubber`; xhigh review P2-0 PASS, P2-1 and P2-2
-  PASS_WITH_LIMITATIONS, merge GO for `3a43d1b`, held until the Phase 1 PR branch is cut so no Phase 2 code rides
-  into the Phase 1 PR. Now: batched P2-3 prerequisites. Status `SIMULATOR_ONLY_UNCALIBRATED`. Details below.
+- **Status 2026-11-12.** **Phase 1 complete on `main`:**
+  - PR #12 `40c94c7`, PR #13 `bfe6d5e`, PR #14 `9ee1e9d` (P1-6 cycle `p16c1`, opt-in `alias_free_v2`) and
+    PR #15 `62caecc` (its review follow-ups).
+  - The external agentic optimizer repository is SYNCED twice: `rcs_rl_vector_v1` @ `bfe6d5e` and
+    `rcs_rl_vector_v2` @ `9ee1e9d`.
+- **Phase 2 (rubber) complete on this branch** (92e671a, `claude/rl-rubber` e13339b): P2-0..P2-6 with every
+  FAIL kept.
+  - P2-5 calibration: interface ready for real data; the synthetic formal v2 FAILs CAL-04/05/06 (truncated fit;
+    v3 not run, U-P2-6).
+  - P2-6: the RL strip-drag task (RL-01..RL-12; RL-05 PASS on its v4 controller) and the Native rubber host
+    (RL-09 PASS).
+  - Status SIMULATOR_ONLY_UNCALIBRATED; friction fixed at μ 0.3 (U-P2-3).
+- **Z1 Phase 2 xhigh acceptance review: GO_WITH_CONDITIONS**
+  ([PHASE2_ACCEPTANCE_REVIEW.md](reports/rl_ready/PHASE2_ACCEPTANCE_REVIEW.md)): integration PASS; full `.venv` suite
+  3,011 passed / 0 failed; Isaac Lab Torch selection 521 passed / 0 failed; findings LOW/INFO.
+  - **In progress:**
+    - doc conditions D1–D3: final-report fixes, the calibration→RL handoff note, the batching-gain and RL-05 5/8
+      errata, README contract wording;
+    - D4 (this rewrite);
+    - a supplementary exclusive-GPU RL-07 row on the idle GPU1 (M2).
+- **Next:**
+  - Z2: the Phase 2 PR to `main` (CI green, review linked, Done table and known limitations in the body).
+  - Z3: a new pin in the external agentic optimizer repository at the merge commit → SYNCED.
+  - Fill in FINAL_REPORT §(i), then create DONE.
+- Earlier 進行中 entries (Phase 1 merges, SYNCED records, p16c1 narrative, Phase 2 step narrative) moved
+  unchanged to [Status log](#status-log-moved-from-進行中-2026-11-12) below.
 
 ## 待使用者決定
 
@@ -31,10 +40,28 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   calibration status will stay `SIMULATOR_ONLY_UNCALIBRATED` unless data is provided.
 - P1-6 defaults in force until the user decides otherwise (none blocks work):
   U1 optimizer-written candidate code runs on GPU1 only (not GPU0);
-  U2 `acceptance_v1` speed gate: at N=16 paired median ≥ 1.05 with ≥ 4/5 pairs faster, every N ≥ 0.97,
-  VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms;
+  U2 speed gate (first optimizer acceptance uses `acceptance_v2`, D-14; `acceptance_v1` is frozen and not used):
+  v2 times the cutting phase (window being finalised to start at tool contact), N ∈ {1, 16}, 3 ABBA pairs, N=16
+  paired median ≥ 1.05 with all 3 pairs faster, every N ≥ 0.97 (v1 was: N=16 median ≥ 1.05 with ≥ 4/5 pairs
+  faster); both: VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms (shared GPU: WARN up
+  to + 10 ms);
   U3 per-cycle budget: research agent $20 / 6 h plus one xhigh review (~1 working day, 3–5 GPU-h);
   U4 the research agent gets no web access.
+- Phase 2 defaults in force until the user decides otherwise (none blocks work; plan `docs/reports/rl_ready/P2_REMAINING_PLAN.md` / ADR 0023 §23 on the rubber branches):
+  U-P2-1 robot-coupled rubber (rubber pad wrenches fed back to the Isaac Lab robot, tasks B3 + C1) stays out of
+  Phase 2; P2-6 uses kinematic grips (no coupling error; the 20 ms handoff was assessed significant, CONT-07);
+  U-P2-2 RUBBER-PHYS-11 Q1w (wide-strip sag GCI 2.16 % vs 2 % at n_t 4): accept n_t 4 with its measured +0.62 %
+  bias as a labelled limitation (the v5 FAIL stays recorded; a v6 rule passing the existing data would be loosening
+  after seeing results; n_t 6 costs ~5× per step); final call in the combined rubber review;
+  U-P2-3 rubber friction in the RL rubber task is FIXED at μ = 0.3 with contact law v2 (formal v2 envelope check:
+  0.4 fails on the strip scene; K2-1: the v3 law is
+  valid for straight-line sliding only); higher μ (real rubber is often 0.6–1.0+) is a labelled limitation
+  (friction–normal flutter, X2 negative result; a torque-bounded equalisation is future work).
+  **U-P2-4 (P2-5 fit compute)**: the v1 formal synthetic fit (`rubber_calib_tests_v1`) converged too slowly (projected ~15 GPU0-h vs the plan's 2.5 GPU-h) and was stopped before any fit receipt; truth still sealed. **Default:** declare `rubber_calib_tests_v2` changing only the fit method (staged, bounded, FD step from a measured repeatability) with a hard budget (fit ≤ 3 GPU-h, negative control ≤ 1.5 GPU-h; on exhaustion the best iterate is scored normally). **Alternative:** fund the unchanged v1 fit (~10–15 GPU0-h).
+  **U-P2-5 (Prony identifiability)**: the pilot suggested the n_t 4 fit model biases the Prony parameters by ~10–15 % against n_t 6 data, but that figure came from an unconverged fit (P5.7 review) and is unmeasured. **Default:** keep fitted θ labelled resolution-specific (n_t 4); the bias size is whatever a converged fit shows. **Alternative:** fit with an n_t 6 forward model (several-fold GPU cost).
+  **U-P2-6 (P2-5 synthetic recovery FAIL)**: the declared v2 staged fit failed fit quality, held-out and recovery on the sealed formal dataset because its per-stage evaluation caps truncated a still-improving fit. A final blind v3 was estimated at 7.1–10.2 GPU-h (> the 8 GPU-h rule) and not run. **Default:** the v2 FAIL is this round's result; the calibration interface, parity, sealing/one-shot machinery and negative control are validated, the fit procedure is not. **Alternative:** fund a v3 (~9–10 GPU-h: branch-modulus parametrisation, joint stage with all experiments from the start, Broyden Jacobian updates; new sealed dataset).
+  **U-P2-7 (BLAS threads)**: the rubber reset's F8 inverse is fast and thread-count-deterministic only with `OPENBLAS_NUM_THREADS=1` (p95 5.0 s → 0.09 s); `threadpoolctl` is in neither venv, so the library cannot enforce it. **Default:** documented user-facing note (README, P2-6 report); bits are comparable only across processes with the same setting. **Alternative:** install `threadpoolctl` and enforce one thread around the inverse.
+  **U-P2-8 (Torch in CI)**: GitHub CI has no Torch, so every Torch-gated test (all P2-6 env tests, Phase 1 vector-env tests) is NOT_RUN there and runs only in the local Isaac Lab venv. **Default:** keep CI as is and run the Torch selection locally before merges. **Alternative:** add a CPU Torch CI job (longer CI, ~2 h today).
 - P1-5 defaults (none blocks work; [P1_5_PLAN.md](reports/rl_ready/P1_5_PLAN.md)):
   U-P15-1 the frozen `tlmpm_v5` CUT is **not** batched in Phase 1 (option (a), ~3–4 agent-days, deferred): the batched
   path runs CUT on a new opt-in `bar_flat_board_tlmpm_v7_2_v1` scene, the frozen v5 CUT runs single-env headless
@@ -122,6 +149,21 @@ P1-4 and every partial-reset latency are `SHARED_GPU`.
 - **Phase 1 xhigh acceptance review at f03fbff: PASS_WITH_LIMITATIONS**, merge GO with conditions
   ([review](reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md)). Tests in the review: CPU selection 511 passed / 26
   skipped (CUDA hidden and GPU0 visible); Torch venv 334 passed / 10 skipped; Isaac Lab venv 56 passed.
+
+## Status log (moved from 進行中, 2026-11-12)
+
+
+- **Phase 1 merged into `main` (PR #12, merge `40c94c7`, 2026-11-11).** xhigh acceptance review PASS_WITH_LIMITATIONS
+  ([review](reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md), D-13); limitations in the PR body and
+  [P1_PARITY_MATRIX.md](reports/rl_ready/P1_PARITY_MATRIX.md). GitHub CI green on the merged head (CI fixes: local-only
+  Franka USD tests and OpenBLAS-kernel-specific pose-interpolation comparisons are NOT_RUN where their inputs are
+  absent; narrow xhigh review PASS). `acceptance_v1` frozen at `40c94c7` (D-11). Status
+  **`MERGED_RCS_PENDING_OPTIMIZER_SYNC`** until the first descriptor pin in the external agentic optimizer repository.
+- **PR #13 merged into `main` (merge `bfe6d5e`, 2026-11-11):** `acceptance_v2` (G9 times steps 229–400 = all s512 tool contact; `G9:window` gates tool contacts and labels; frozen at `bfe6d5e`, D-14), findings 3/4/10/12, CI concurrency; xhigh review PASS_WITH_LIMITATIONS + re-review PASS; CI green on both runner types.
+- **SYNCED (2026-11-11):** the external agentic optimizer repository pinned a NEW versioned descriptor `rcs_rl_vector_v1` at RCS `bfe6d5e` (frozen checkout `/mnt/data/ningan/lab_records/external/rcs_rl_bfe6d5eaee0d`; historical descriptors untouched); smoke PASS (CPU contract; host contract in a verified writable copy: RCS tests 266 passed / 0 failed / 40 skipped; GPU contract N=2 with partial reset PASS on GPU1 under `rcs_rl_runner/gpu1.lock`); its PR merged; sync receipt chain `baseline_pin` MERGED_RCS_PENDING_OPTIMIZER_SYNC → **SYNCED** (receipt verify ok). Adapter: xhigh review PASS_WITH_LIMITATIONS + re-check GO; fixes incl. evidence path sanitising, baseline-side faults BLOCKED not REJECTED, early proposal text checks, protected pytest configs / hook refusal, `--no-renames`, writable verified test copies.
+- **P1-6 cycle `p16c1` (2026-11-11):** baseline measurement under `acceptance_v2` PASS (B0 `bfe6d5e`, GPU1: N=1 9.57, N=8 13.76, N=16 13.44 env-steps/s); the external agentic optimizer's research run (1 session, $6.02, 67 min) profiled RCS (particle contacts 35.5 % of GPU time, then P2G, MUSL) and produced candidate `alias_free_v2` (opt-in; regrouped contact candidates + per-env search radius from a speed bound; its own dev runs: N=8 1.22×, identical episode codes). Both acceptance attempts **BLOCKED** (no status word, not counted) by evaluation-sandbox runtime bugs in the adapter (CUDA temp dir, interpreter mount, test artifacts, kernel cache); adapter fixed (private temp/caches per run, interpreter chain mounts, read-only test artifacts, process-based SHARED_GPU label, counted GPU budget, queue-fair GPU lock wait). Attempt a03 stopped by us (lock starvation, not counted); **attempt a04 ACCEPTED** (counted): every gate PASS (G1 2545/2545 CPU tests, G2, G4, G6, G7, G8, G9 n1/n16/window, integrity), speed-up candidate/baseline N=1 1.168×, **N=16 1.279×** (threshold 1.05; SHARED_GPU, interleaved ABBA pairs) → RCS PR #14 (head 8d6a2b3, CI green) → xhigh review **PASS_WITH_LIMITATIONS** (`docs/reports/rl_ready/P1_6_P16C1_PR14_REVIEW.md`: shrink is speed-conditional, CPU tests barely exercise it, v2 capped at N ≤ 2495; follow-ups non-blocking) → **merged into main at 9ee1e9d** → pin `rcs_rl_vector_v2` at 9ee1e9d (keeps the default contact mode; `alias_free_v2` is an explicit opt-in), smoke PASS incl. GPU stage, optimizer-side PR merged → **SYNCED** (receipt chain verifies). **P1-6 complete** (one accepted, merged and pinned improvement; research run closed). Review follow-ups (slow-contact test, shrink counter, fail-closed r/dt check) **merged as PR #15 at 62caecc** (xhigh review PASS, counter GPU cost 1.0006×, CI green 2483 passed / 0 failed; frozen `acceptance_v2` harness unchanged, audit notes kept for a future `acceptance_v3`).
+- **Phase 2 (rubber, D-12):** rubber line merged here (aa62bb5) after the **K2 combined xhigh review** ([P2_K2_COMBINED_REVIEW.md](reports/rl_ready/P2_K2_COMBINED_REVIEW.md), merge GO): v5 PASS_WITH_LIMITATIONS (Q1w: n_t 4 kept with its +0.62 % wide-strip bias labelled; v5 FAIL recorded), contact v1 PASS / v2 PASS_WITH_LIMITATIONS / B1 PASS / B2 PASS_WITH_LIMITATIONS, S1 PASS_WITH_LIMITATIONS; **K2-1 (MAJOR): contact law v3 (patch slip-rate equalisation) has unbounded patch torque — a spinning block reverses within 1 ms, a sideways-dragged strip translates rigidly — so v3 is accepted for straight-line sliding only; P2-6 uses law v2 with table friction U[0.3, 0.4] (labelled limitation)**; the first P6.0 declarations (130ccd4, v3, μ ≤ 0.8) are superseded before any P6 formal run by the v2 pair (400f5c5: `rubber_strip_drag_v2` 7395e610…, `rubber_rl_tests_v2` 6db54681…; profile `rubber_rl_env_v2` = contact law v2), after a formal v2 friction-envelope check (`rubber_contact_envelope_v2`, declared 08b9dcd: μ 0.3 PASS everywhere, μ 0.4 FAIL on the strip scene at n_t 4/6; K2-1 spin-down PASS under v2) — **RL rubber table friction FIXED at 0.3 (labelled limitation, not randomised)**; RL-08 measures the Q1w bias on the P2-6 geometry with a declared fallback. **P2-6 through P6.3 done** (`claude/rl-rubber-p26` aeb3f64): `open_vector_env(backend="kinematic_grip_batched")` rubber strip-drag task (6-D grip actions, 78-dim deployable obs, opt-in privileged), RL-01 contract, RL-02 L2/L3, RL-03 seeds, RL-04 isolation, RL-06 long rollout (53 partial resets, VRAM growth 0), RL-07 throughput (N 8 / N 1 1.46×, 0.96 env-steps/s at N 8 full fidelity, 3.28 reduced), RL-08 convergence PASS; RL-08 b Q1w bias on L/t 37.5 +0.71 % (trigger not met); **RL-05 sanity FAIL** (declared scripted controller too naive); **RL-05 v3 FAIL** (`rubber_rl_tests_v3`, pivot controller, fresh seeds: beats zero action 8/8 but 0 successes — the tip reaches the goal and then swings out) → **RL-05 v4 PASS** (`rubber_rl_tests_v4`, declared alone as the final scripted attempt; hold-phase controller developed at full resolution on dev seeds 5000–5007, formal seeds 8000+e: beats zero action 7/8, 5 evaluator successes; v2/v3 FAILs kept). **P6.6 done** (`claude/rl-rubber-p26` 145777d): RL-06 reset re-measure PASS (p95 5.0 s → 0.093 s with `OPENBLAS_NUM_THREADS=1`; user-facing note), RL-10 provenance PASS (6 formal runs), RL-11 PASS (`.venv` 2914 passed / 0 failed, Torch 386–388 passed, CUDA hidden and visible; workload A contract N 2 PASS; frozen paths vs main unchanged except the 13-line dispatch); report, ADR §23.6, frozen-source pins committed. P6.7 xhigh review **GO_WITH_CONDITIONS** (`docs/reports/rl_ready/P2_6_ACCEPTANCE_REVIEW.md`): protocol integrity, main merge, Native host (first review) and 24 recomputed numbers all check out; new finding **host memory grows ~2.2 MB per reset** (F8 inverse cache never evicts; RL-06 measured only GPU memory) → bounded cache + a declared host-memory row; API gaps vs the Phase 1 contract (privileged info keys, strict-mode classification, unsupported-option error) and doc errata. **Conditions done** (`claude/rl-rubber-p26` c21ae8d): bounded LRU inverse cache (byte-identical), `rubber_material_batch.py` pinned, API gaps fixed additively (physics and policy observation byte-identical), `rubber_rl_tests_v5` declared alone adding **RL-12 host memory: PASS** (RSS flat at 2,298 MiB over resets 10–80), current main merged, P2-5 merged in with ADR §23 sections renumbered additively; CI on c21ae8d running. Trial merges into `claude/rl-rubber` and this branch are clean. CI on c21ae8d green (2951 passed, 0 failed) → **p26 merged into `claude/rl-rubber` (e13339b) and `claude/rl-rubber` into this branch (92e671a)**. **Next (Phase 2 close):** Z1 Phase 2 xhigh acceptance review (running); Z2 Phase 2 PR to main (CI green); Z3 external pin SYNCED; then FINAL_REPORT (draft at [FINAL_REPORT.md](reports/rl_ready/FINAL_REPORT.md), README updated) and DONE. Main merged into this branch at ecb703f. Reset cost: the 5 s p95 traced to the OpenBLAS all-core thread pool on a loaded host (1 thread: 0.06 s). **Native RL-09 PASS** (`claude/rl-rubber-p26n` 4093f49): the same rubber recipe (profile `rubber_rl_env_v2`) runs in a new Kit host fed by PhysX-measured clamp poses (`native_rubber_001`, GPU0, 100/100 steps, 1.81 s/step, SHARED_GPU); 30 headless replays (GPU1): receipts identical, material inputs bitwise equal, 0/46 physics statistics outside the declared band (max 0.65 of limit), held-out 10/10 inside, 0 invalid bits, bridge error 7.45e-9 m. Frozen `isaac_sim_runner.py` / `live_material.py` untouched. **P2-5** (`claude/rl-rubber-p25` fd2699e): calibration interface, protocol v1, pilot, thresholds and frozen sealed formal dataset done (CAL-01/02/03 PASS on CPU); formal fit stopped for compute before a receipt (CAL-04..07 NOT_RUN) → v2 fit method (U-P2-4). v2 development on the pilot only (1.75 GPU-h): staged bounded fit converges (reduced χ² 1.17, below the 1.27 of the true pilot θ) but **recovers only μ_eq/μ_table; the Prony parameters miss by 8–15 %** — a resolution bias (fit model n_t 4 vs truth n_t 6), not an optimiser failure. Decision: declare v2 with unchanged CAL definitions and pre-registered predictions (CAL-06 expected FAIL on the Prony parameters), then run the formal test as confirmation (U-P2-5). **Formal v2 result (bc08564): FAIL** — CAL-01/02/03/07/08/09 PASS (interface, batched=single parity, truth receipts, negative control has power, order/sealing, labels); CAL-04 FAIL (χ²_red 2.48 > 1.91; joint polish hit its 6-evaluation cap), CAL-05 FAIL (held-out 21/31), CAL-06 FAIL (g1 −51 %, g2 +39 %, τ2 −41 %; μ_eq, τ1, μ_table recovered). Post-reveal unscored diagnostic: the true θ gives χ²_red 1.42 and passes all held-out. P5.7 xhigh review **GO_WITH_CONDITIONS** (`docs/reports/rl_ready/P2_5_ACCEPTANCE_REVIEW.md`): the fit receipt shows stages S2–S4 all stopped on their declared evaluation caps while the cost was still falling 1.6–7.1 % per evaluation (g1 rising toward the truth, 0.85 h budget unused) — a truncated fit, not a demonstrated basin; the pilot's "≈10 % resolution bias" also came from an unconverged fit and is unmeasured. Conditions: additive report/ADR errata, real-data guidance, held-out gate fix. Because the FAIL traces to a declared cap, one final blind re-test (v3: new sealed dataset, stages stop on convergence or budget) was authorised only if its estimated cost stayed ≤ 8 GPU-h. Development on the revealed formal_001 (1.3 GPU-h) showed R1+T2 cannot separate the two Prony branches before the joint stage and raised the estimate to 7.1–10.2 GPU-h (central ~8.6) → **v3 not declared or run; the P2-5 synthetic result is the v2 FAIL** (U-P2-6). Errata C1–C4, a real-data guidance section and a global one-shot held-out registry (gate refuses hand-written receipts) are done; re-review **GO** (Addendum A; 616 tests pass, `fit_staged` defaults bitwise unchanged); follow-ups R1 (audit before the one-shot now refused), R2, R3 fixed → **P2-5 merged into `claude/rl-rubber` at 75aa34c**. Running: K2 fixes (Q1w label in receipts, -09 sub-check, wording); P2-6 env (P6.0 v2 → P6.1–P6.3) on `claude/rl-rubber-p26`; Native rubber host (P6.4/P6.5) on `claude/rl-rubber-p26n`; P2-5 calibration on `claude/rl-rubber-p25`. Status `SIMULATOR_ONLY_UNCALIBRATED`.
+- **2026-11-11 usage-limit pause** (weekly API limit, ~06:30–18:00 KST): agents resumed afterwards; no work lost.
 
 ## Phase 2 (rubber) detail
 

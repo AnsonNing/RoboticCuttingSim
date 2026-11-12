@@ -1,0 +1,878 @@
+{
+ "schema": "rcs_p2_1_rubber_evidence_v1",
+ "date": "2026-11-10",
+ "adr": "docs/adr/0023-rubber-material-v1.md",
+ "work_packages": [
+  "P2-0 (R0.1-R0.4)",
+  "P2-1 (R1.1-R1.7)"
+ ],
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (no real rubber data; numerical verification only)",
+ "branch": "claude/rl-rubber",
+ "protocol": {
+  "file": "configs/rubber/rubber_phys_tests_v2.json",
+  "sha256": "e4ff8502817458fe723295ead88d9531757b1cff5c771d5d8c352828bab83060",
+  "v1": "configs/rubber/rubber_phys_tests_v1.json (frozen, superseded only in the initializer stop rule; reason and evidence: artifacts/rl_ready/p2_1/protocol_diagnostics_001)"
+ },
+ "formal_run": {
+  "dir": "artifacts/rl_ready/p2_1/rubber_phys_001",
+  "meta": {
+   "command": "scripts/rubber/run_rubber_phys.py --tests 01,02,03,04,05,06,07,08,09 --device cpu --workers 24 --out artifacts/rl_ready/p2_1/rubber_phys_001",
+   "python": "/home/ningan/RoboticCuttingSim-rl-rubber/.deps/isaacsim-venv/bin/python",
+   "commit": "63ecfd1a68aab3d3b119366995d668729ac948d3",
+   "src_or_configs_dirty": false,
+   "config": "configs/rubber/rubber_phys_tests_v2.json",
+   "config_sha256": "e4ff8502817458fe723295ead88d9531757b1cff5c771d5d8c352828bab83060",
+   "device": "cpu",
+   "workers": 24,
+   "jobs": 66,
+   "warp": "1.17.0",
+   "numpy": "2.3.1",
+   "cpu": "x86_64",
+   "host": "user-System-Product-Name",
+   "started": "2026-11-10T15:28:22+0900",
+   "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+   "wall_s": 876.2371420990676,
+   "finished": "2026-11-10T15:42:58+0900"
+  }
+ },
+ "rubber_phys": {
+  "RUBBER-PHYS-01": {
+   "verdict": "PASS",
+   "criteria": {
+    "pk1_per_particle": "PASS",
+    "jbar_consistency": "PASS",
+    "jbar_analytic": "PASS",
+    "interior_force": "PASS",
+    "objectivity": "PASS"
+   },
+   "measured": {
+    "pk1_max_error_over_allowed": 0.00591076953072407,
+    "jbar_consistency_max": 3.236200594169958e-07,
+    "jbar_analytic_max": 2.8267826412964325e-07,
+    "interior_force_ratio_max": 6.723526753776785e-06,
+    "objectivity_max_relative": 3.656339072107674e-06
+   },
+   "cases": 8,
+   "errors": [],
+   "devices": [
+    "?"
+   ],
+   "case_wall_s_total": 2.9959391651209444
+  },
+  "RUBBER-PHYS-02": {
+   "verdict": "PASS",
+   "criteria": {
+    "narrow_eb": "PASS",
+    "wide_bracket": "PASS",
+    "extrapolated": "PASS",
+    "reaction": "PASS",
+    "initializer_converged": "PASS"
+   },
+   "measured": {
+    "rows": [
+     {
+      "label": "Lt10_t3mm_Wt1_nt3",
+      "ratio_EB": 0.9839895458253891,
+      "ratio_extrap": 1.0085037943123365,
+      "reaction_residual": 0.0008937679350360433,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t3mm_Wt1_nt4",
+      "ratio_EB": 0.980359569836909,
+      "ratio_extrap": 1.0047833843006893,
+      "reaction_residual": 0.0009428609751121515,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t3mm_Wt4_nt3",
+      "ratio_EB": 0.9301036380046042,
+      "ratio_extrap": 1.0165447866503863,
+      "reaction_residual": 0.0009944474928105804,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t3mm_Wt4_nt4",
+      "ratio_EB": 0.9234808011907879,
+      "ratio_extrap": 1.0093064424908422,
+      "reaction_residual": 0.0008215550865879208,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t4mm_Wt1_nt3",
+      "ratio_EB": 0.9832010449091393,
+      "ratio_extrap": 1.0067464270520199,
+      "reaction_residual": 0.0009658683652504448,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t4mm_Wt1_nt4",
+      "ratio_EB": 0.9803185130197161,
+      "ratio_extrap": 1.0037948652167612,
+      "reaction_residual": 0.0005523319221708577,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t4mm_Wt4_nt3",
+      "ratio_EB": 0.929758481396782,
+      "ratio_extrap": 1.0158977213476288,
+      "reaction_residual": 0.0009056792461934636,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t4mm_Wt4_nt4",
+      "ratio_EB": 0.9233929729263751,
+      "ratio_extrap": 1.0089424682580412,
+      "reaction_residual": 0.0007121468490478347,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t6mm_Wt1_nt3",
+      "ratio_EB": 0.9837681303507929,
+      "ratio_extrap": 1.0079827643310317,
+      "reaction_residual": 0.000679540707860641,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t6mm_Wt1_nt4",
+      "ratio_EB": 0.980359569836909,
+      "ratio_extrap": 1.0044903049362053,
+      "reaction_residual": 0.0009428609751121515,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t6mm_Wt4_nt3",
+      "ratio_EB": 0.9302601004666196,
+      "ratio_extrap": 1.0169393764165462,
+      "reaction_residual": 0.0004738120890335916,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt10_t6mm_Wt4_nt4",
+      "ratio_EB": 0.9234808011907879,
+      "ratio_extrap": 1.0095283992343071,
+      "reaction_residual": 0.0008215550865879208,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t3mm_Wt1_nt3",
+      "ratio_EB": 0.9956612665016499,
+      "ratio_extrap": 1.0084319757469478,
+      "reaction_residual": 0.0008465859644350708,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t3mm_Wt1_nt4",
+      "ratio_EB": 0.9920189942058605,
+      "ratio_extrap": 1.004742986357658,
+      "reaction_residual": 0.0008976609899370157,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t3mm_Wt4_nt3",
+      "ratio_EB": 0.9646726316972923,
+      "ratio_extrap": 1.015441199693011,
+      "reaction_residual": 0.0009729438335286767,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t3mm_Wt4_nt4",
+      "ratio_EB": 0.9582548598433888,
+      "ratio_extrap": 1.0086856748273187,
+      "reaction_residual": 0.0007177498017966285,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t4mm_Wt1_nt3",
+      "ratio_EB": 0.9970983163673538,
+      "ratio_extrap": 1.0137624523781705,
+      "reaction_residual": 0.0006173742050045517,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t4mm_Wt1_nt4",
+      "ratio_EB": 0.9911762173069318,
+      "ratio_extrap": 1.007741379462721,
+      "reaction_residual": 0.0006708442633298106,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t4mm_Wt4_nt3",
+      "ratio_EB": 0.9644591150831253,
+      "ratio_extrap": 1.0177393020672867,
+      "reaction_residual": 0.0007667962376240745,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t4mm_Wt4_nt4",
+      "ratio_EB": 0.9571044675830984,
+      "ratio_extrap": 1.0099783574128487,
+      "reaction_residual": 0.0005549801782506876,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t6mm_Wt1_nt3",
+      "ratio_EB": 0.9959845766425148,
+      "ratio_extrap": 1.0091843157106364,
+      "reaction_residual": 0.0008005649816133261,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t6mm_Wt1_nt4",
+      "ratio_EB": 0.9920189942058605,
+      "ratio_extrap": 1.005166177587233,
+      "reaction_residual": 0.0008976609899370157,
+      "converged": true,
+      "narrow_eb_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t6mm_Wt4_nt3",
+      "ratio_EB": 0.9649779399063607,
+      "ratio_extrap": 1.0183514613538003,
+      "reaction_residual": 0.000881844739749423,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     },
+     {
+      "label": "Lt20_t6mm_Wt4_nt4",
+      "ratio_EB": 0.9573699766745756,
+      "ratio_extrap": 1.0103226970115127,
+      "reaction_residual": 0.0009849338092946863,
+      "converged": true,
+      "bracket": [
+       0.7739854877721043,
+       1.0
+      ],
+      "wide_bracket_ok": true,
+      "extrap_ok": true
+     }
+    ]
+   },
+   "cases": 24,
+   "errors": [],
+   "devices": [
+    "cpu"
+   ],
+   "case_wall_s_total": 5185.128575536073
+  },
+  "RUBBER-PHYS-03": {
+   "verdict": "PASS",
+   "criteria": {
+    "length_exponent": "PASS",
+    "thickness_exponent": "PASS",
+    "initializer_converged": "PASS"
+   },
+   "measured": {
+    "length_exponent": 4.011545975444077,
+    "thickness_exponent": -2.010564928592694,
+    "ratio_EB": {
+     "series_L_L120mm": 0.9990232198163564,
+     "series_L_L60mm": 0.9912623995524074,
+     "series_L_L90mm": 0.9976098197166993,
+     "series_t_t3mm": 1.0001315550582583,
+     "series_t_t4mm": 0.9989259885287171,
+     "series_t_t6mm": 0.9930294430791458
+    }
+   },
+   "cases": 6,
+   "errors": [],
+   "devices": [
+    "cpu"
+   ],
+   "case_wall_s_total": 1099.0041248970665
+  },
+  "RUBBER-PHYS-04": {
+   "verdict": "PASS",
+   "criteria": {
+    "frequency": "PASS",
+    "energy": "PASS",
+    "amplitude": "PASS",
+    "dt_independence": "PASS",
+    "batched_equal": "PASS"
+   },
+   "measured": {
+    "f1_hz": 19.201974510264264,
+    "f_EB_hz": 19.287077398254333,
+    "f1_over_fEB_minus_1": -0.0044124304700394745,
+    "energy_drift_rel_peak_psi": 0.000582844091633316,
+    "amplitude_ratio_last_first": 1.0015941462634008,
+    "f1_dt_over_f1_dthalf_minus_1": -9.55564525917385e-06,
+    "batched": {
+     "test": "RUBBER-PHYS-04 batched",
+     "N": 4,
+     "envs": [
+      {
+       "L": 0.06,
+       "W": 0.006,
+       "mu": 2000000.0,
+       "rho": 1150.0
+      },
+      {
+       "L": 0.048,
+       "W": 0.006,
+       "mu": 2000000.0,
+       "rho": 1150.0
+      },
+      {
+       "L": 0.06,
+       "W": 0.012,
+       "mu": 2000000.0,
+       "rho": 1150.0
+      },
+      {
+       "L": 0.06,
+       "W": 0.006,
+       "mu": 1000000.0,
+       "rho": 1000.0
+      }
+     ],
+     "steps": 312,
+     "control_dt_s": 0.001,
+     "substeps": 193,
+     "dt_s": 5.1813471502590676e-06,
+     "particles": [
+      2304,
+      1872,
+      4608,
+      2304
+     ],
+     "array_mismatches": 0,
+     "first_mismatch": null,
+     "bitwise_equal": true,
+     "wall_s": 453.1469599949196,
+     "device": "cpu",
+     "single_dt_s": 5.1813471502590676e-06,
+     "formal_dt_run_tip_equal": true,
+     "formal_dt_run_dt_equal": true,
+     "per_env_vibration_metrics": [
+      {
+       "f1_hz": 19.201974510264264,
+       "amplitude_first_m": 0.0010316941427138066,
+       "amplitude_last_m": 0.0010335289888543128,
+       "whole_periods": 5,
+       "energy_drift_j": 3.1643240231587263e-09,
+       "peak_elastic_j": 2.0053401111644316e-05,
+       "energy_drift_rel_peak_psi": 0.00015779488005759348,
+       "f_EB_hz": 19.287077398254333
+      },
+      {
+       "f1_hz": 29.96209528656685,
+       "amplitude_first_m": 0.00041998538169233757,
+       "amplitude_last_m": 0.0004222644428308639,
+       "whole_periods": 8,
+       "energy_drift_j": 2.739683115348151e-09,
+       "peak_elastic_j": 6.5889921442931465e-06,
+       "energy_drift_rel_peak_psi": 0.0004157969922184599,
+       "f_EB_hz": 30.136058434772394
+      },
+      {
+       "f1_hz": 19.373501402653314,
+       "amplitude_first_m": 0.0010142804411670012,
+       "amplitude_last_m": 0.001014614700883006,
+       "whole_periods": 5,
+       "energy_drift_j": 8.224443627268582e-09,
+       "peak_elastic_j": 3.91991197538702e-05,
+       "energy_drift_rel_peak_psi": 0.00020981194677098758,
+       "f_EB_hz": 19.287077398254333
+      },
+      {
+       "f1_hz": 14.564844382766951,
+       "amplitude_first_m": 0.001793510414851577,
+       "amplitude_last_m": 0.0017970741754551353,
+       "whole_periods": 3,
+       "energy_drift_j": 6.887685561012788e-09,
+       "peak_elastic_j": 3.0212582670518332e-05,
+       "energy_drift_rel_peak_psi": 0.0002279740741175975,
+       "f_EB_hz": 14.625150559074443
+      }
+     ]
+    }
+   },
+   "cases": 2,
+   "errors": [],
+   "devices": [
+    "cpu"
+   ],
+   "case_wall_s_total": 176.42632783111185,
+   "batched_source": "artifacts/rl_ready/p2_1/batched_04_001/batched_04.json"
+  },
+  "RUBBER-PHYS-05": {
+   "verdict": "PASS",
+   "criteria": {
+    "tip_drop": "PASS",
+    "jbar": "PASS",
+    "initializer_converged": "PASS"
+   },
+   "measured": {
+    "rows": [
+     {
+      "label": "alpha20",
+      "alpha": 20.000000000000004,
+      "ratio_elastica": 0.9988302608728509,
+      "Jbar": [
+       0.9918174418648907,
+       1.0087698724802314
+      ],
+      "converged": true
+     },
+     {
+      "label": "alpha3",
+      "alpha": 3.0000000000000004,
+      "ratio_elastica": 0.9973767033135998,
+      "Jbar": [
+       0.9979200707664384,
+       1.002114062140424
+      ],
+      "converged": true
+     },
+     {
+      "label": "alpha9",
+      "alpha": 8.999999999999996,
+      "ratio_elastica": 0.9982534044541018,
+      "Jbar": [
+       0.9950073510385464,
+       1.0052239154169507
+      ],
+      "converged": true
+     }
+    ]
+   },
+   "cases": 3,
+   "errors": [],
+   "devices": [
+    "cpu"
+   ],
+   "case_wall_s_total": 201.83321032102685
+  },
+  "RUBBER-PHYS-06": {
+   "verdict": "PASS",
+   "criteria": {
+    "stress": "PASS",
+    "gauge_jbar": "PASS",
+    "unload_equals_load": "PASS",
+    "residual_length": "PASS"
+   },
+   "measured": {
+    "stress_points": [
+     {
+      "phase": "load",
+      "lam_target": 1.25,
+      "lam_mid": 1.2352017741323134,
+      "measured_pa": 227161.08838987327,
+      "analytic_pa": 227026.78989495442,
+      "rel_error": 0.0005915535121692184
+     },
+     {
+      "phase": "load",
+      "lam_target": 1.5,
+      "lam_mid": 1.5,
+      "measured_pa": 410762.1197884359,
+      "analytic_pa": 410737.4130214151,
+      "rel_error": 6.015221949007277e-05
+     },
+     {
+      "phase": "load",
+      "lam_target": 2.0,
+      "lam_mid": 1.999391012564956,
+      "measured_pa": 669918.5857335931,
+      "analytic_pa": 670185.4121178982,
+      "rel_error": -0.0003981381562184749
+     },
+     {
+      "phase": "unload",
+      "lam_target": 1.25,
+      "lam_mid": 1.2352017741323134,
+      "measured_pa": 227321.62090881876,
+      "analytic_pa": 227109.4633016894,
+      "rel_error": 0.0009341645391831577
+     },
+     {
+      "phase": "unload",
+      "lam_target": 1.5,
+      "lam_mid": 1.5,
+      "measured_pa": 410770.85214582784,
+      "analytic_pa": 410811.34499757696,
+      "rel_error": -9.856799779806025e-05
+     }
+    ],
+    "gauge_jbar_max_abs_error": 5.7998782935220206e-05,
+    "unload_vs_load": [
+     {
+      "lam_mid": 1.2352017741323134,
+      "lam_mid_unload": 1.2352017741323134,
+      "rel": 0.0007066902174281964
+     },
+     {
+      "lam_mid": 1.5,
+      "lam_mid_unload": 1.5,
+      "rel": 2.1258915978927817e-05
+     }
+    ],
+    "residual_length_rel": 1.0582458339736256e-05,
+    "max_lateral_drift_m": 2.172953827376395e-08
+   },
+   "cases": 1,
+   "errors": [],
+   "devices": [
+    "cpu"
+   ],
+   "case_wall_s_total": 489.607917145011
+  },
+  "RUBBER-PHYS-07": {
+   "verdict": "FAIL",
+   "criteria": {
+    "run": "FAIL",
+    "all_cases_ran": "FAIL"
+   },
+   "measured": {},
+   "cases": 1,
+   "errors": [
+    {
+     "label": "stretch_release",
+     "traceback": "Traceback (most recent call last):\n  File \"/home/ningan/RoboticCuttingSim-rl-rubber/scripts/rubber/run_rubber_phys.py\", line 78, in _run_job\n    result = getattr(P, func)(cfg, device=kw[\"device\"])\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ningan/RoboticCuttingSim-rl-rubber/src/robotic_cutting_sim/rubber_phys.py\", line 490, in case_stretch_release\n    live.advance({1: {\"active\": False}} if k == 0 else None)\n  File \"/home/ningan/RoboticCuttingSim-rl-rubber/src/robotic_cutting_sim/live_rubber_material.py\", line 160, in advance\n    raise RubberInvalidState(decode_reason(self.invalid_reason), self.step_count)\nrobotic_cutting_sim.live_rubber_material.RubberInvalidState: rubber state invalid after control step 56: ['NONFINITE_STATE', 'RUBBER_J_DOMAIN']\n"
+    }
+   ],
+   "devices": [],
+   "case_wall_s_total": 294.2741087860195
+  },
+  "RUBBER-PHYS-08": {
+   "verdict": "PASS",
+   "criteria": {
+    "shear": "PASS",
+    "normal_difference": "PASS"
+   },
+   "measured": {
+    "max_abs_sigma_12_rel_error": 7.877604166761643e-07,
+    "max_abs_N1_rel_error": 1.5725542890088207e-06
+   },
+   "cases": 3,
+   "errors": [],
+   "devices": [
+    "?"
+   ],
+   "case_wall_s_total": 0.687955797999166
+  },
+  "RUBBER-PHYS-09": {
+   "verdict": "PASS",
+   "criteria": {
+    "records": "PASS"
+   },
+   "measured": {
+    "runs": 18,
+    "valid": 18,
+    "problems": []
+   },
+   "cases": 18,
+   "errors": [],
+   "devices": [
+    "cpu"
+   ],
+   "case_wall_s_total": 857.0915164879989
+  },
+  "RUBBER-PHYS-10": {
+   "verdict": "PASS_EXCEPT_NOT_RUN",
+   "criteria": {
+    "L0": "PASS",
+    "L1": "PASS",
+    "L2": "NOT_RUN",
+    "L3": "NOT_RUN"
+   },
+   "sources": [
+    "tests/test_rubber_batched.py (CPU L0/L1)",
+    "artifacts/rl_ready/p2_1/batched_04_001 (CPU L0, RUBBER-PHYS-04 batch)",
+    "artifacts/rl_ready/p2_1/gpu_smoke_001 (GPU L2/L3)"
+   ]
+  },
+  "RUBBER-PHYS-11": {
+   "verdict": "NOT_RUN",
+   "reason": "P2-2 work package R2.2 (refinement / GCI)"
+  }
+ },
+ "diagnostics_not_formal": {
+  "RUBBER-PHYS-07_release": {
+   "cfl_0.500": {
+    "label": "DIAGNOSTIC (not the formal RUBBER-PHYS-07 result)",
+    "substeps": 862,
+    "dt_s": 5.80046403712297e-06,
+    "first_flag": {
+     "step": 56,
+     "phase": "post",
+     "J_min": 1e+30,
+     "J_max": -1e+30,
+     "Jbar_min": 1e+30,
+     "Jbar_max": -1e+30,
+     "max_speed_m_s": 0.0,
+     "energy_total_j": NaN,
+     "elastic_j": 23.971029148171297,
+     "kinetic_j": 0.0,
+     "length_rel": NaN,
+     "lateral_marker_max_m": null,
+     "flags": [
+      "NONFINITE_STATE",
+      "RUBBER_J_DOMAIN"
+     ],
+     "j_domain_violations": 3032784,
+     "nonfinite": true
+    },
+    "post_J_min": 0.8359317318167716,
+    "post_Jbar_range": [
+     0.9580970795365575,
+     1.0387207963930893
+    ],
+    "post_energy_drift_rel": null,
+    "post_mean_length_rel": NaN,
+    "wall_s": 332.9861600769218
+   },
+   "cfl_0.250": {
+    "label": "DIAGNOSTIC (not the formal RUBBER-PHYS-07 result)",
+    "substeps": 1724,
+    "dt_s": 2.900232018561485e-06,
+    "first_flag": {
+     "step": 56,
+     "phase": "post",
+     "J_min": 0.18770071236586836,
+     "J_max": 1.95430554623926,
+     "Jbar_min": 0.8861131879447333,
+     "Jbar_max": 1.1086032349671335,
+     "max_speed_m_s": 35.63121735478952,
+     "energy_total_j": -0.0033955473065054864,
+     "elastic_j": 0.13182807268997568,
+     "kinetic_j": 0.13838609567757773,
+     "length_rel": 0.6145182788889795,
+     "lateral_marker_max_m": 0.008437443185131992,
+     "flags": [
+      "RUBBER_J_DOMAIN"
+     ],
+     "j_domain_violations": 443,
+     "nonfinite": false
+    },
+    "post_J_min": 0.18770071236586836,
+    "post_Jbar_range": [
+     0.8252082349175186,
+     1.2287884582721538
+    ],
+    "post_energy_drift_rel": 416.144452979056,
+    "post_mean_length_rel": 0.7880567512335142,
+    "wall_s": 638.5784370489419
+   }
+  },
+  "initializer_stop_v1": "artifacts/rl_ready/p2_1/protocol_diagnostics_001/README.txt"
+ },
+ "batched_04": {
+  "test": "RUBBER-PHYS-04 batched",
+  "N": 4,
+  "envs": [
+   {
+    "L": 0.06,
+    "W": 0.006,
+    "mu": 2000000.0,
+    "rho": 1150.0
+   },
+   {
+    "L": 0.048,
+    "W": 0.006,
+    "mu": 2000000.0,
+    "rho": 1150.0
+   },
+   {
+    "L": 0.06,
+    "W": 0.012,
+    "mu": 2000000.0,
+    "rho": 1150.0
+   },
+   {
+    "L": 0.06,
+    "W": 0.006,
+    "mu": 1000000.0,
+    "rho": 1000.0
+   }
+  ],
+  "steps": 312,
+  "control_dt_s": 0.001,
+  "substeps": 193,
+  "dt_s": 5.1813471502590676e-06,
+  "particles": [
+   2304,
+   1872,
+   4608,
+   2304
+  ],
+  "array_mismatches": 0,
+  "first_mismatch": null,
+  "bitwise_equal": true,
+  "wall_s": 453.1469599949196,
+  "device": "cpu",
+  "single_dt_s": 5.1813471502590676e-06,
+  "formal_dt_run_tip_equal": true,
+  "formal_dt_run_dt_equal": true,
+  "per_env_vibration_metrics": [
+   {
+    "f1_hz": 19.201974510264264,
+    "amplitude_first_m": 0.0010316941427138066,
+    "amplitude_last_m": 0.0010335289888543128,
+    "whole_periods": 5,
+    "energy_drift_j": 3.1643240231587263e-09,
+    "peak_elastic_j": 2.0053401111644316e-05,
+    "energy_drift_rel_peak_psi": 0.00015779488005759348,
+    "f_EB_hz": 19.287077398254333
+   },
+   {
+    "f1_hz": 29.96209528656685,
+    "amplitude_first_m": 0.00041998538169233757,
+    "amplitude_last_m": 0.0004222644428308639,
+    "whole_periods": 8,
+    "energy_drift_j": 2.739683115348151e-09,
+    "peak_elastic_j": 6.5889921442931465e-06,
+    "energy_drift_rel_peak_psi": 0.0004157969922184599,
+    "f_EB_hz": 30.136058434772394
+   },
+   {
+    "f1_hz": 19.373501402653314,
+    "amplitude_first_m": 0.0010142804411670012,
+    "amplitude_last_m": 0.001014614700883006,
+    "whole_periods": 5,
+    "energy_drift_j": 8.224443627268582e-09,
+    "peak_elastic_j": 3.91991197538702e-05,
+    "energy_drift_rel_peak_psi": 0.00020981194677098758,
+    "f_EB_hz": 19.287077398254333
+   },
+   {
+    "f1_hz": 14.564844382766951,
+    "amplitude_first_m": 0.001793510414851577,
+    "amplitude_last_m": 0.0017970741754551353,
+    "whole_periods": 3,
+    "energy_drift_j": 6.887685561012788e-09,
+    "peak_elastic_j": 3.0212582670518332e-05,
+    "energy_drift_rel_peak_psi": 0.0002279740741175975,
+    "f_EB_hz": 14.625150559074443
+   }
+  ]
+ },
+ "gpu_smoke": {
+  "status": "NOT_RUN (no GPU slot obtained)"
+ },
+ "tests": {
+  "rubber_batched_l0_l1": "PASS",
+  "runs": [
+   {
+    "command": ".venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_tlmpm_rubber_v1.py tests/test_live_rubber_material.py tests/test_batched_frozen_sources.py tests/test_repo_naming.py",
+    "result": "110 passed (90 rubber tests + 18 frozen-source pins + 2 naming)",
+    "wall_s": 7.9
+   },
+   {
+    "command": ".venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_tlmpm_rubber_v1.py tests/test_live_rubber_material.py tests/test_batched_*.py tests/test_repo_naming.py tests/test_wp12_phase5_frozen.py",
+    "result": "276 passed, 3 failed",
+    "wall_s": 546.2,
+    "failed": [
+     "tests/test_batched_particle_contacts.py::test_fallback_grid_reproduces_warp_grouped_query_sequence[dims0,dims1,dims2]"
+    ],
+    "failed_note": "pre-existing in this environment: the test and every module it imports are byte-identical to the branch base 2f316c1 (this branch only adds files)"
+   },
+   {
+    "command": ".venv/bin/python -m pytest -q -p no:cacheprovider tests/",
+    "result": "NOT_COMPLETED: stopped at about 4 % after 20 min (estimated several hours on the shared host); 2383 tests collected"
+   }
+  ],
+  "per_file": {
+   "test_rubber_material.py": 21,
+   "test_rubber_calibration_manifest.py": 11,
+   "test_rubber_reference.py": 12,
+   "test_rubber_phys_config.py": 4,
+   "test_rubber_constitutive.py": 7,
+   "test_rubber_scene.py": 9,
+   "test_tlmpm_rubber_v1.py": 7,
+   "test_live_rubber_material.py": 6,
+   "test_rubber_initializer.py": 3,
+   "test_rubber_batched.py": 10
+  },
+  "torch_runtime_tests": "NOT_RUN (the rubber modules have no torch dependency; the open_vector_env torch surface is P2-6)"
+ }
+}

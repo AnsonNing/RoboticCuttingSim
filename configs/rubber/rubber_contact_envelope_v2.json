@@ -1,0 +1,259 @@
+{
+ "schema": "rcs_rubber_contact_envelope_check_v1",
+ "id": "rubber_contact_envelope_v2",
+ "version": 2,
+ "task": "ENV2 for the P2-6 contact law after the K2 review (finding K2-1; docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md on claude/rl-rubber @60e9119): formal envelope check of law grid_node_penalty_coulomb_v2 at n_t 4 / 5 / 6 (the P2-6 slot set) for mu 0.3 / 0.4 (the plan \u00a72.4 contingency 'v2, mu <= 0.4 after ENV2 at n_t 4-6'), with the K2-1 non-translational scene (a) torsional spin-down scored and (b) lateral strip drag reported",
+ "status": "DECLARED_BEFORE_ANY_RUN",
+ "declared": "2026-11-11, committed alone and SHA-pinned (tests/test_rubber_contact_envelope_check.py) before any run of it; rubber_contact_envelope_v1 (law v3) and its run contact_envelope_v1_001 stay recorded and unchanged",
+ "why": "K2-1 (MAJOR): the v3 patch slip-rate equalisation exerts an unbounded, mu-independent torque and removes rotation and in-plane bending in slip; v3 is accepted for translational sliding only and is not the P2-6 law. The fallback is law v2 with mu <= 0.4, which has no formally scored row at n_t >= 4 (contact_envelope_v1/v2: NOT_ESTABLISHED; X2 DIAGNOSTIC only: sliding <= 0.4, static <= 0.6 at n_t 4, mu 0.4 sliding 0.18 % at n_t 6). Diagnostic rows cannot establish an envelope (envelope rules), so this check scores it",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (friction coefficients, contact stiffness and dashpot ratios are declared numerical values, not measured)",
+ "prerequisites": {
+  "contact_envelope_v2": {
+   "path": "configs/rubber/contact_envelope_v2.json",
+   "sha256": "46f74efa880cf7121e50070a0cf5fb2358e87d7e390f67cd7b608802f9f03b78"
+  },
+  "rubber_contact_tests_v2": {
+   "sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+   "formal_run": "contact_v2_001 (n_t 3)"
+  }
+ },
+ "common": {
+  "contact_law": "grid_node_penalty_coulomb_v2",
+  "law_definition": "rubber_contact_tests_v2 common.law_definition (grid_node_penalty_coulomb_v2), unchanged",
+  "law_parameters": {
+   "normal_stiffness_kappa_n": 0.25,
+   "tangential_stiffness_kappa_t": 0.25,
+   "normal_damping_ratio_zeta_n": 0.5,
+   "tangential_damping_ratio_zeta_t": 0.5
+  },
+  "contact_work": "kick_average_v1: W_n, W_t = sum J . (g_n + g_{n+1}) / 2 with g_n = old after the P2G grid update and g_{n+1} = old after the final MUSL grid update; obstacle power P = sum J . v_obs; D_contact = (P_n - W_n) + (P_t - W_t)",
+  "books_layer_N": "B(t) = E_kin + Psi_eq + E_grav + W_b - W_ext - (W_n + W_t), all from the reset state (E_kin particle KE, Psi_eq the equilibrium free energy = the frozen elastic energy for elastic materials, W_b the kick-paired Prony branch work with visco_energy = branch_work_kick_average_v2, W_ext the traction and Dirichlet work with traction_work = grid_displacement_v1 and constraint_work = kick_average_v1)",
+  "options": {
+   "dirichlet": "consistent_mass_projection_v1",
+   "constraint_work": "kick_average_v1",
+   "traction_work": "grid_displacement_v1",
+   "state_precision": "f64_shadow_v1",
+   "stable_step_guard": 1.0,
+   "deformation_reserve": 1.0,
+   "visco_energy_with_prony": "branch_work_kick_average_v2"
+  },
+  "material_elastic": {
+   "model": "neo_hookean_jbar_v1",
+   "mu0_pa": 400000.0,
+   "bulk_ratio_beta": 20.0,
+   "density_kg_m3": 1150.0
+  },
+  "material_prony_P2": {
+   "model": "neo_hookean_jbar_prony_v1",
+   "mu0_pa": 400000.0,
+   "terms": [
+    {
+     "g": 0.2,
+     "tau_s": 0.005
+    },
+    {
+     "g": 0.15,
+     "tau_s": 0.05
+    }
+   ],
+   "g_inf": 0.65,
+   "bulk_ratio_beta": 20.0,
+   "density_kg_m3": 1150.0
+  },
+  "pic": 0.0,
+  "cfl": 0.5,
+  "particles_per_cell_axis": 2,
+  "step_rule": "dt = control_dt / ceil(control_dt / (cfl dx / c_p)), c_p with mu0 (instantaneous modulus)",
+  "loading": "gravity and tractions ramped with 1/2 (1 - cos(pi t / T_ramp)) and updated every SUBSTEP on the CPU (quasi-static: a step load on an undamped elastic body overshoots by 2 and unloads its contacts periodically)",
+  "artificial_damping": "none in the material; the contact law's declared dashpots act only on contact nodes and their dissipation is booked as contact dissipation (never as material or viscoelastic damping)",
+  "device": "CPU (Warp), CUDA_VISIBLE_DEVICES='', single env per job (LiveRubberMaterial, the ENV2 incline job of scripts/rubber/p2_6/run_contact_envelope_v1.py (v2 law) with the scene and n_t as parameters)",
+  "self_contact": "NOT_IMPLEMENTED_V1 (not exercised: a free block / strip on the table)",
+  "run_meta": "commit, dirty-tree flag (must be clean), this file's sha256, Warp / Python / numpy versions, command, wall times; output: a new directory under artifacts/rl_ready/p2_6/ (refuses to overwrite)"
+ },
+ "scenes": {
+  "INC2": {
+   "what": "block 24 x 12 x 6 mm (strip-local), case free, corner at the origin; table plane z = 0 (normal +z); gravity 9.81 (sin theta, 0, -cos theta) ramped every substep with 1/2 (1 - cos(pi t / T_ramp)); friction_table = mu (the rubber_contact_tests_v3 INC2 scene)",
+   "size_m": [
+    0.024,
+    0.012,
+    0.006
+   ],
+   "n_t_set": [
+    4,
+    5,
+    6
+   ],
+   "ramp_s": 0.02,
+   "control_dt_s": 0.001,
+   "duration_s": 0.14,
+   "hold_window_s": [
+    0.02,
+    0.14
+   ],
+   "fit_window_s": [
+    0.05,
+    0.14
+   ],
+   "mu_set": [
+    0.3,
+    0.4
+   ],
+   "stick_ratios_tan_theta_over_mu": [
+    0.95
+   ],
+   "slip_ratios_tan_theta_over_mu": [
+    1.1,
+    1.2,
+    1.3
+   ],
+   "visco_stick_rows": [
+    {
+     "material": "material_prony_P2",
+     "mu": 0.4,
+     "ratio": 0.95
+    }
+   ],
+   "material": "material_elastic"
+  },
+  "STRIP": {
+   "what": "UNSEEN strip-on-table geometry: strip L 48 x W 16 x t mm with t = n_t x 1 mm (dx 1 mm, the P2-6 lattice), case free, corner at the origin, lying flat on the table plane z = 0 (normal +z); gravity 9.81 (sin theta, 0, -cos theta) (tilt along the strip length) ramped every substep as INC2; friction_table = mu",
+   "length_m": 0.048,
+   "width_m": 0.016,
+   "dx_m": 0.001,
+   "n_t_set": [
+    4,
+    5,
+    6
+   ],
+   "thickness_m_by_n_t": {
+    "4": 0.004,
+    "5": 0.005,
+    "6": 0.006
+   },
+   "ramp_s": 0.02,
+   "control_dt_s": 0.001,
+   "duration_s": 0.14,
+   "hold_window_s": [
+    0.02,
+    0.14
+   ],
+   "fit_window_s": [
+    0.05,
+    0.14
+   ],
+   "mu_set": [
+    0.3,
+    0.4
+   ],
+   "stick_ratios_tan_theta_over_mu": [
+    0.95
+   ],
+   "slip_ratios_tan_theta_over_mu": [
+    1.1,
+    1.2,
+    1.3
+   ],
+   "visco_stick_rows": [
+    {
+     "material": "material_prony_P2",
+     "mu": 0.4,
+     "ratio": 0.95
+    }
+   ],
+   "material": "material_elastic"
+  },
+  "SPIN": {
+   "what": "K2-1 (a) torsional spin-down: free block 16 x 16 x 4 mm (case free, corner at the origin) on the table plane z = 0, elastic material, gravity -z ramped over 20 ms with 1/2 (1 - cos) and held to 40 ms (control_dt 1 ms); then every particle velocity is set to its settled velocity plus omega0 e_z x (x - x_cm) (float64 positions, x_cm the centroid), omega0 = 10 rad/s, and the block runs 10 more control steps",
+   "size_m": [
+    0.016,
+    0.016,
+    0.004
+   ],
+   "n_t_set": [
+    4,
+    5,
+    6
+   ],
+   "mu_set": [
+    0.3,
+    0.4
+   ],
+   "omega0_rad_s": 10.0,
+   "settle_s": 0.04,
+   "ramp_s": 0.02,
+   "spin_s": 0.01,
+   "control_dt_s": 0.001,
+   "measurement": "omega_z(t) = sum m (r x v)_z / sum m (r_x^2 + r_y^2) about the centroid after every control step; table torque (plane wrench) reported",
+   "reference": "rigid flat Coulomb disc of the square: T_c = mu M g rbar, rbar = a (sqrt(2) + ln(1 + sqrt(2))) / 6 (mean distance from the centre of a square of side a = 16 mm, uniform pressure), I_z = M (a^2 + a^2) / 12, omega_ref(t) = omega0 - T_c t / I_z (no stop within 10 ms for mu <= 0.4)"
+  },
+  "DRAG": {
+   "what": "K2-1 (b) lateral strip drag (REPORTED, not scored: no independent converged reference exists yet): case-A strip 60 x 8 x 4 mm, n_t 4 (dx 1 mm), jaw 2 dx, on the table plane, mu 0.4, gravity ramped 20 ms and held to 40 ms, then the jaw (group 0) translated +y at 0.1 m/s for 80 ms (control_dt 1 ms); mean y of the mid (marker 4) and tip (marker 8) cross-sections and the jaw y reported every step",
+   "n_t": 4,
+   "mu": 0.4,
+   "speed_m_s": 0.1,
+   "drag_s": 0.08,
+   "settle_s": 0.04,
+   "ramp_s": 0.02,
+   "control_dt_s": 0.001
+  }
+ },
+ "jobs": "INC2 and STRIP: every n_t of n_t_set and mu of mu_set: elastic hold at 0.95 and slips at 1.1 / 1.2 / 1.3, plus the P2 hold at mu 0.4 (54 jobs); SPIN: every n_t and mu (6 jobs); DRAG: 1 job; 61 jobs",
+ "tests": {
+  "ENV-01": {
+   "name": "sliding friction (Coulomb acceleration and dissipation) per (scene, n_t, mu)",
+   "criteria": {
+    "b_slip": "every slip run: |a_fit - g (sin theta - mu cos theta)| <= slip_acc_rel * g cos theta (a_fit: quadratic fit of the centroid x over fit_window_s; RUBBER-CONT-01 b of rubber_contact_tests_v2 / v3)",
+    "d04_dissipation": "every slip run: |D_contact / (mu sum_k N_k dx_cm,k) - 1| <= dissipation_rel (RUBBER-CONT-04 a of v2 / v3; D_contact = -(W_n + W_t) over the run)",
+    "e_validity": "no invalid flag in the run"
+   },
+   "thresholds": {
+    "slip_acc_rel": 0.01,
+    "dissipation_rel": 0.05
+   }
+  },
+  "ENV-02": {
+   "name": "static friction (hold at tan theta = 0.95 mu) per (scene, n_t, mu), elastic and the P2 row at mu 0.8",
+   "criteria": {
+    "a_stick": "|x_cm(end) - x_cm(0.02 s)| <= stick_disp_rel * s and |a_fit| <= stick_acc_rel * g cos theta (RUBBER-CONT-01 a of v2 / v3; s = particle spacing)",
+    "f_ramp_slip": "|x_cm(T_ramp) - x_cm(0)| <= ramp_disp_rel * s (RUBBER-CONT-01 f of v3)",
+    "e_validity": "no invalid flag in the run"
+   },
+   "thresholds": {
+    "stick_disp_rel": 0.01,
+    "stick_acc_rel": 0.001,
+    "ramp_disp_rel": 0.01
+   }
+  },
+  "ENV-04": {
+   "name": "K2-1 (a) torsional spin-down per (n_t, mu)",
+   "criteria": {
+    "a_decel": "at t = 5 ms and t = 10 ms after the spin start: |(omega0 - omega(t)) / (omega0 - omega_ref(t)) - 1| <= spin_rel",
+    "b_no_reversal": "omega(t) > 0 after every control step of the spin window (friction never reverses the sliding direction)",
+    "c_validity": "no invalid flag"
+   },
+   "thresholds": {
+    "spin_rel": 0.05
+   },
+   "reported": "mean table torque over each ms vs T_c; normal force vs M g"
+  },
+  "ENV-05": {
+   "name": "K2-1 (b) lateral strip drag: REPORTED (tip / mid lag and swing); (c) two separated contact regions sliding at different rates: NOT_APPLICABLE to v2 (node-local law, no patch coupling; the review's concern is the v3 patch mean)"
+  },
+  "ENV-03": {
+   "name": "reported, not scored",
+   "what": "per (scene, n_t, mu): onset mu_eff from the linear fit of a / (g cos theta) against tan theta over the three slip runs (|mu_eff / mu - 1| vs the v3 onset_rel 0.02, reported); books max |B| / S of every run (the RUBBER-CONT-01 d quantity; the \u00a722.10 stick-run residual is known); dissipation split; max penetration / s; particles, dt, substeps, wall time"
+  }
+ },
+ "decision_rule": {
+  "row_pass": "a (scene, n_t, mu) sliding level passes iff its three slip runs pass ENV-01 b, d04 and e AND the SPIN run at (n_t, mu) passes ENV-04 a, b, c; a static level passes iff its hold run (and, at mu 0.4, the P2 hold) passes ENV-02 a, f and e",
+  "sliding_mu_max(n_t)": "the largest mu of mu_set such that the sliding level passes at that mu and at mu 0.3, in every scene with this n_t; none -> NOT_ESTABLISHED",
+  "static_mu_max(n_t)": "the same rule over the static levels",
+  "envelope_output": "configs/rubber/contact_envelope_v3.json, written from this run's summary after the run: the v2 rows at n_t 4 / 5 / 6 from the decision rule; the v3 rows keep their limits and gain scope = translational_sliding_only (K2-1; label contact_slip_rate_equalised), which excludes them from rotation / in-plane bending / multi-region slip such as P2-6; every other row copied unchanged; SHA-pinned when committed",
+  "verdict": "PASS iff sliding_mu_max = static_mu_max = 0.4 at n_t 4, 5 and 6; else FAIL and the envelope takes the largest passing values (mu 0.3 alone gives a [0.3, 0.3] range; nothing passing -> the P2-6 friction axis is BLOCKED)",
+  "p2_6_consequence": "P2-6 v2 friction_table ~ U[0.3, min over n_t 4 / 5 / 6 of the v2 sliding_mu_max]; a labelled limitation (real rubber friction 0.6-1.0+)"
+ },
+ "expectation_declared_before_the_run": "X2 DIAGNOSTIC (seen, v2): INC mu 0.4 sliding 0.04 -> 0.18 % of g cos theta from n_t 3 to 6, holds at 0.95 mu <= 0.6 at n_t 4; K2 spin probe (seen, v2): n_t 3 mu 0.05 / 0.5 and n_t 4 mu 0.8 follow the rigid Coulomb decay within ~1 % over the first 10 ms. Unseen: every INC2 / STRIP row at n_t 4-6 under v2 at mu 0.3 / 0.4, every SPIN row at n_t 4-6 with mu 0.3 / 0.4. Expected PASS",
+ "provenance": {
+  "rule": "thresholds are the rubber_contact_tests_v2 / v3 values verbatim plus ENV-04 declared here before any run; never loosened after a result; a change is v3 of this protocol; failures are preserved"
+ }
+}
