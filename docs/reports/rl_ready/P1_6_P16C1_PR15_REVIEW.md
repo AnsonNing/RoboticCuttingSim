@@ -22,7 +22,7 @@ The review answers the follow-ups to findings 1, 3 and 4 of `P1_6_P16C1_PR14_REV
 
 ## 1. Verdict
 
-**PASS. Merge GO once GitHub CI on `27554d21` is green (§6; still running when this was written).**
+**PASS. Merge GO: GitHub CI on `27554d21` is green in both runs (§6).**
 
 - **No BLOCKER, MAJOR or MEDIUM finding.** Findings 1 and 2 are LOW, findings 3 to 6 INFO (§7).
 - **The counter is correct, race-free and deterministic.**
@@ -68,7 +68,7 @@ The review answers the follow-ups to findings 1, 3 and 4 of `P1_6_P16C1_PR14_REV
 | Freeze: `acceptance_v2` files, thresholds, records, harness | **PASS** | §5 |
 | Receipt change against frozen comparisons | **PASS** | §5. The receipt is recorded (`run_perf_acceptance.py:276`), never compared. |
 | Tests run here (CPU) | **PASS** | §8: 28 passed; 127 passed + 1 skipped; 130 passed + 5 skipped; torch venv 186 passed + 1 skipped. Every skip is torch or CUDA absence (NOT_RUN there), the same as the PR. |
-| GitHub CI on `27554d21` | **PENDING** | §6 |
+| GitHub CI on `27554d21` | **PASS** | §6. Push run 2453 passed, pull_request run 2483 passed, 0 failed in both. |
 | PR body and report | **PASS** | §6. Accurate; no host paths in the body. Report notes: finding 5. |
 
 ## 3. Kernel and test correctness
@@ -284,9 +284,13 @@ The reset state has 0 particle contacts.
 
 **CI** (`gh api repos/AnsonNing/RoboticCuttingSim/actions/runs?head_sha=27554d21…`):
 - push run 43120401944 and pull_request run 43120447021, workflow "CPU tests".
-- Both were `in_progress` at 23:46 UTC.
-- Steps 1–7 succeeded, including "Install media test tools"; step 8 (`pytest -q -rsx`) was running.
-- PR #14's runs took about 6450 s. **PENDING**; see the merge condition in §9.
+- Both were `in_progress` at 23:46 UTC. Both succeeded, every step included ("Install media test tools" too);
+  checked 01:23 UTC.
+- push run 43120401944, job 130859105028: **2453 passed, 88 skipped, 6 xfailed, 0 failed**, 6600.18 s.
+- pull_request run 43120447021, job 130859250630: **2483 passed, 58 skipped, 6 xfailed, 0 failed**, 6256.11 s.
+- PR #14 had 2481 and 2451 passed. Each pass count is exactly 2 higher, the two new tests. As in PR #14, one run
+  skips 30 more tests than the other; neither run has a failure.
+- The summary lines come from `gh api repos/AnsonNing/RoboticCuttingSim/actions/jobs/<id>/logs`.
 
 **PR body:**
 - No host paths (regex check for `/home/`, `/mnt/`, `~/` and the user name: none).
@@ -392,8 +396,8 @@ Logs in `/mnt/data/ningan/RoboticCuttingSim_artifacts/rl_ready/p1_6_p16c1_pr15_r
 
 ## 9. Conditions and recommendations
 
-1. **Merge condition:** GitHub CI "CPU tests" on `27554d21` green in both runs. If the head changes, this review
-   covers `27554d21` only.
+1. **Merge condition (met):** GitHub CI "CPU tests" on `27554d21` is green in both runs (§6). If the head changes,
+   this review covers `27554d21` only.
 2. **Follow-ups, none blocking:**
    - finding 1, the receipt scope or a denominator;
    - finding 2, a contiguity comment;
