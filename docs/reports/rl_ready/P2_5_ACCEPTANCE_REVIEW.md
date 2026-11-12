@@ -480,3 +480,144 @@ because both fits score 21 / 31.
 **Rubber-line CI debt, for the Phase 2 PR (§5):**
 - the `rl_lab_*` runner dependencies;
 - the CPU-dependent `test_batched_pose_interp.py`.
+
+## Addendum A — re-review at `07cdb01` (2026-11-12)
+
+**Verdict: GO** for merging `claude/rl-rubber-p25` @ **07cdb01** into `claude/rl-rubber`.
+- C1–C4 are met as additive errata.
+- F3 and the cheap fixes are correct and tested.
+- The v3 decision is recorded honestly.
+- The test suite passes at the new head.
+- Nothing frozen changed.
+- Three small follow-ups (R1–R3) are tracked. None blocks the merge.
+
+**Scope.** Commits `837abdb` (errata), `0b9a8d8` (F3, F6–F8, F10), `b79d377` (v3 estimate), `e868a58` / `340a385`
+(v3 code) and `07cdb01` (v3 decision).
+
+**How the re-review was done.**
+- **Read-only, fresh worktree.** Detached `RoboticCuttingSim-rl-p25accept2` at 07cdb01, symlinked as before and removed
+  afterwards.
+- **No GPU** was used.
+- **Probes.** Two CPU probes were run in scratch temporary directories.
+
+### A.1 C1–C4: met, additive
+
+**Nothing frozen changed.** `git diff bc08564 07cdb01` is empty for:
+- `configs/` (protocols v1 / v2, thresholds, both datasets);
+- the evidence `p2_5_calib_synthetic_001.json` and both fit receipts;
+- `tests/test_rubber_p2_5_protocol.py`, `run_fit.py`, `run_fit_v2.py`, `run_pilot.py` and `_common.py`;
+- the experiments and synthetic modules;
+- `rubber_calibration.py` and `rubber_material.py`.
+
+**Branch shape.** Against the merge base the branch is still additions plus one ADR append (63 A, 1 M).
+
+**How each condition was met:**
+- **C1:** report §12.1 and the inline E1 markers state the measured facts; the "basin" wording is withdrawn; the pilot's
+  "≈ 10 %" is marked UNMEASURED.
+- **C2:** report §12.2 adds the nine points.
+- **C3:** §4–§9 are marked as the pre-v2 snapshot, with the stale sentences superseded inline.
+- **C4:** E4 qualifies the CAL-07 headline.
+- **ADR §23.6** carries the same errata.
+
+**Cosmetic.**
+- Some erratum blockquotes sit in the middle of a sentence: §9.4, the §10 headline and "This explains the miss …".
+- The `## 11.` heading and §11.1 come after §12, while §11.2 comes before it.
+
+These affect readability only.
+
+### A.2 F3 and the cheap fixes: correct and tested
+
+**One-shot registry (F3).**
+- `evaluate_heldout` exclusively creates `<registry>/<freeze>.claim` before it evaluates anything. Afterwards it writes
+  `<freeze>.json` with the ledger path and SHA-256, and it refuses a freeze that already has a ledger, a claim or an
+  entry.
+- Every test passes a temporary `registry_dir`. The shared registry under `artifacts/rl_ready/` hashed identically
+  before and after the full suite.
+
+**REAL gate v2 (F3).**
+- It refuses a dict. It checks the schema, `ONE_SHOT`, no audit, PASS, the freeze, `validation_kind` and the thresholds
+  SHA.
+- It checks that the registry entry names this exact ledger (path and SHA).
+- It checks that each fit receipt is committed at HEAD with the recorded SHA.
+- A positive control and each refusal are tested, in a temporary git repo.
+
+**Retroactive registration of the formal_001 ledger: honest.**
+- The registry entry's `ledger_sha256` `1dd37498…3c60` equals the ledger file's.
+- The ledger is unchanged: its mtime is still the original write, 09:47:19 JST.
+- The claim and the entry are labelled "registered retroactively after the P5.7 review F3 fix" and
+  "retroactively (F3 fix)".
+- The registration is disclosed in the `0b9a8d8` commit message, but **not in the report or the ADR** (R2).
+
+**F6.**
+- `converged_xtol` now means SciPy status 3 or 4, and a new `converged` field means status 1–4.
+- `termination()` flags a capped stage that is still falling by more than 1 % per evaluation as `NON_CONVERGED`.
+- No recorded receipt is affected: every final-stage status recorded so far (0 or `BUDGET_EXHAUSTED`) maps to False
+  under both the old and the new mapping.
+
+**F7.**
+- The writer now computes CAL-09 and requires exactly one sealed read, after the held-out.
+- The committed evidence was correctly not regenerated.
+
+**F8.** `reveal.py` pins the v1 SHA and refuses a dirty tree.
+
+**F10.**
+- Column units are now bound to the column-name suffixes.
+- Both frozen manifests still validate, with unchanged freeze hashes, and the gate-directory audit is clean.
+
+**R1 (medium for real data; not merge-blocking): an audit re-run can come before the one-shot.**
+- `audit_rerun` skips the registry entirely, so an `AUDIT_RERUN` can run before any one-shot and leave no trace.
+- A later ONE_SHOT is then claimed and registered, and would pass the gate.
+- A CPU probe in temporary directories showed it: an audit first (PASS), then a ONE_SHOT, registered.
+- **Failure scenario with real data:** peek at the held-out through an "audit", adjust, then run the "one-shot".
+- The behaviour already existed at bc08564; the F3 fix did not close it.
+- **Fix before the first real data:**
+  - refuse `audit_rerun` unless the registry entry for that freeze exists; or
+  - record audits in the registry and make the gate refuse a one-shot that an audit preceded.
+
+### A.3 The v3 decision: recorded honestly
+
+**Ordering.** The cost estimate (`b79d377`, 10:26:37 JST) was committed before the v3 code (`e868a58`, 10:27:57) and
+before the first development run, which started at 01:28:03 UTC at `e868a58` with a clean tree.
+
+**What does not exist:**
+- `configs/rubber/rubber_calib_tests_v3.json`. `PROTOCOL_V3_SHA` is `None`, so the `formal` and `negative_control`
+  kinds and `gen_synthetic --v3` refuse to run.
+- A new dataset directory or a new sealed truth.
+- Any registry entry other than formal_001's.
+- Any new read of the formal truth: `read_log.txt` still has one line, and the atime is unchanged.
+
+**Development runs.**
+- They are labelled "DEVELOPMENT (revealed formal_001; never scored)", with both P2-5 labels and no recipe promoted.
+- Report §11.2 reports them as development only, and the recovery against the revealed θ* is labelled as development.
+- The revised estimate matches the development receipts: 3,803 s of hold time, about 1.3 GPU-h in total.
+
+**R3 (low).** `run_fit_v3.py` labels the `dev2_formal001_stageA` kind "FORMAL" in its run metadata; only
+`dev_formal001` gets the DEVELOPMENT label. That run was interrupted before it wrote any receipt, so no artifact is
+mislabelled. Fix it before any reuse.
+
+**`fit_staged` defaults are unchanged.**
+- The signature, the defaults and `V2_STAGES` are unchanged.
+- The new `current_plus_lhs` start design applies only when a stage declares it.
+- `ModuliParameterSpace` is a separate class.
+- **Probe.** The toy staged fit (`TOY_STAGES`, which includes a two-start Latin-hypercube stage) was run with the
+  bc08564 code and with the 07cdb01 code. Both give an identical SHA-256 digest (`d704c3f1…`) over θ̂, every
+  evaluation's cost, the starts and the statuses, and the same χ²_red 0.95634478.
+
+### A.4 Tests and CI
+
+| Run | Command | Result |
+|---|---|---|
+| p25 head 07cdb01, fresh worktree | `CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py tests/test_batched_*.py tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_repo_naming.py tests/test_wp12_phase5_frozen.py` | **616 passed**, 2 warnings (scipy IntegrationWarning), 802 s, exit 0. That is the 612 from bc08564 plus 4 new tests (termination flags, the current-plus-LHS start design, the moduli space, the unit binding). The shared registry hashed identically before and after. |
+
+**GitHub CI.**
+- **bc08564** (run 43131450332) and **0b9a8d8** (run 43134454559) conclude failure with only the pre-existing 18 failed
+  + 6 errors in `tests/test_rl_lab_{ik,kernels,rigid_isolation}.py`. No rubber or P2-5 test fails.
+- **07cdb01** (run 43142119241) is in progress at the time of writing.
+
+### A.5 Remaining follow-ups (tracked, not merge-blocking)
+
+- **R1:** close the audit-before-one-shot path before any real-data use.
+- **R2:** add one line to report §12.5 / ADR §23.6 recording the retroactive registry entry (path, ledger SHA, label).
+- **R3:** the label of the `dev2` kind in `run_fit_v3.py`.
+- **Cosmetic:** the section order and the mid-sentence errata markers.
+- **Earlier CI debt (§5):** unchanged.
