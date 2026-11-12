@@ -176,6 +176,8 @@ Every fitted θ is `RESOLUTION_SPECIFIC` to `rubber_ref_v1` (n_t 4): n_t 4 carri
 
 ## 4. Formal dataset (P5.5) — `formal_gen_001` (GPU0, SHARED_GPU)
 
+> **[Erratum E3, P5.7 review C3]** Sections 4–9 are the **pre-v2 snapshot** (written before the formal v2 run). The current state is section 10 and the errata in section 12.
+
 `gen_synthetic.py --kind formal` at `44dcc9c` (clean, after the thresholds commit), 2026-11-11 14:14:55–15:19:09 UTC,
 3,854 s; every truth env valid; translational-scope check of F1 / F2: lateral centroid drift ≤ 2.9e-10 m, change of
 the markers' y spread ≤ 6.7e-9 m (≤ 1e-4 m declared). Manifest `configs/rubber/calibration_synthetic/p2_5_formal_001/
@@ -183,8 +185,11 @@ manifest.json`, **`SYNTHETIC_FROZEN_FOR_HELDOUT`**, freeze sha256 `3d37a95070c07
 sealed truth sha256 `e5b5c7183199493223ea52089ee4c6688b71fd57b623ba462ae1de980fcd9899` (committed `a0250bb`). The
 sealed truth (`artifacts/rl_ready/p2_5/formal_gen_001/sealed/`, mode 0700 / 0400) has **never been read**
 (no `read_log.txt`); the one-shot held-out ledger has **not** been consumed. The dataset stays valid for a resumed fit.
+> **[Erratum E3]** Superseded: the sealed truth was read once, at the reveal on 2026-11-12T00:47:30Z, after the one-shot held-out (§10). The ledger is consumed. The dataset is **no longer valid for any blind fit**; a re-fit on it would be post-hoc.
 
 ## 5. Formal fit (P5.6) — stopped, no receipt
+
+> **[Erratum E3, P5.7 review C3]** Sections 4–9 are the **pre-v2 snapshot** (written before the formal v2 run). The current state is section 10 and the errata in section 12.
 
 `run_fit.py` at `a0250bb` (clean), `--kind formal` on GPU0 and `--kind negative_control` on GPU1, both TRF with the 3
 declared Latin-hypercube starts in lockstep (population 21; 18 envs per non-contact experiment after the dedup).
@@ -218,6 +223,8 @@ thresholds and the data stay frozen. Under v2 the order audit must record that t
 
 ## 6. CAL status
 
+> **[Erratum E3, P5.7 review C3]** Sections 4–9 are the **pre-v2 snapshot** (written before the formal v2 run). The current state is section 10 and the errata in section 12.
+
 | Test | Status | Evidence |
 |---|---|---|
 | CAL-01 interface and refusals | **PASS** (CPU, `CUDA_VISIBLE_DEVICES=''`); `=0` run NOT_RUN | `tests/test_rubber_calibration_v2.py` (40), `tests/test_rubber_calibration_fit.py` (13), `tests/test_rubber_p2_5_protocol.py` (7) |
@@ -236,6 +243,8 @@ log `artifacts/rl_ready/p2_5/cpu_tests_001/cuda_none.log`. The `=0` repetition i
 
 ## 7. GPU use (SHARED_GPU throughout; co-tenant PID 642659 present and untouched)
 
+> **[Erratum E3, P5.7 review C3]** Sections 4–9 are the **pre-v2 snapshot** (written before the formal v2 run). The current state is section 10 and the errata in section 12.
+
 Design probes ≈ 0.4 h (GPU0 / GPU1), pilot generation 1.07 h, pilot evaluation 0.16 h, formal generation 1.07 h, formal
 fit 3.3 h (GPU0, stopped), negative control 2.3 h (GPU1, stopped): ≈ 8.3 GPU-h, above the plan's ≈ 5 h for P5.4–P5.6.
 Measured forward costs (fit model, GPU, M = 2, F8 + F9 + F10, 1 ms control step): P = 7, 23,040 particles per env,
@@ -243,6 +252,8 @@ Measured forward costs (fit model, GPU, M = 2, F8 + F9 + F10, 1 ms control step)
 particles: 513 ms (1.4e8); truth single env 77,760 particles, 784 substeps: 412 ms.
 
 ## 8. What P2-5 does and does not show
+
+> **[Erratum E3, P5.7 review C3]** Sections 4–9 are the **pre-v2 snapshot** (written before the formal v2 run). The current state is section 10 and the errata in section 12.
 
 It delivers a tested calibration interface: manifest v2 with data origin, a closed REAL gate, population-batched
 forward models that are byte-identical to the single references on CPU, TRF / CMA-ES / ask-tell fit API, one-shot
@@ -252,6 +263,8 @@ same-family synthetic truth says nothing about model-form error against real rub
 `rubber_calib_tests_real_v1` remains declared NOT_RUN. Material status: SIMULATOR_ONLY_UNCALIBRATED.
 
 ## 9. v2 method development (orchestrator decision option (b), 2026-11-12; PILOT data only)
+
+> **[Erratum E3, P5.7 review C3]** Sections 4–9 are the **pre-v2 snapshot** (written before the formal v2 run). The current state is section 10 and the errata in section 12.
 
 `fit_001` is recorded as **"v1 formal fit aborted for compute, no receipt"**; logs and abort records preserved, nothing
 deleted. Per the decision, `rubber_calib_tests_v2` may change only the fit method and add a compute budget, and is
@@ -309,12 +322,14 @@ GPU noise in T / R / C / G is negligible.
   - Because χ²(θ̂) < χ²(θ_pilot), the fit-model (n_t 4) optimum is itself ≈ 10 % away from the n_t 6 truth in the
     Prony parameters. This is resolution bias absorbed by the viscous parameters (the Q1w condition-4 effect, but in
     g / τ), not a convergence failure; more polishing lowers χ² further and does not move toward θ_pilot.
+> **[Erratum E1, P5.7 review C1]** "Not a convergence failure" and "more polishing … does not move toward θ_pilot" are **UNMEASURED**. The pilot S4 ran 1 evaluation, and its S2 stopped at the 15-evaluation cap with two starts still falling 10–15 % per evaluation. That a resolution bias exists is supported (χ²(θ̂) 1.170 < χ²(θ_pilot) 1.273). Its size ("≈ 10 %") comes from an **unconverged** fit and is unmeasured.
 - **Held-out diagnostic on the pilot's own data** (circular: the thresholds come from this pilot), at θ̂:
   - 27 / 31 PASS.
   - FAIL: T4 M2 0.104 > 0.076 and T4 M9 0.072 > 0.02 (20 /s rate extrapolation); C2 M9 0.0201 and C3 M9 0.0231 > 0.02
     (dissipated energy).
 
 **9.4 Status.** The staged optimiser is validated as an optimiser: χ² below the truth's in 73 min. The coordinator's
+> **[Erratum E3]** Superseded: the staged procedure is **not validated**. Its formal v2 run FAILed CAL-04 (§10). The pilot run reached χ² below the truth's only in its truncated form (S4 had 1 evaluation).
 validation condition ("recovers pilot θ within the v1 recovery criteria") is **not met**, for a reason no fit method
 can remove under the frozen CAL definitions. `rubber_calib_tests_v2` was therefore **not declared**; a draft is
 kept at `artifacts/rl_ready/p2_5/drafts/rubber_calib_tests_v2.json`. No formal v2 fit ran; the formal one-shot ledger and the seal are intact.
@@ -331,10 +346,12 @@ Decision needed:
 **Headline: the pipeline ran end-to-end as pre-registered, but the formal fit did not reach the fit model's optimum
 within the declared method and budget (CAL-04 FAIL, χ²_red 2.484 > 1.910). Held-out prediction FAILs (21 / 31) and
 θ recovery FAILs for g1, g2 and τ2. The negative control has power (CAL-07 PASS).** A supplementary diagnostic, run
+> **[Erratum E4, P5.7 review C4]** "The negative control has power" is too strong: CAL-07 PASSes on **one** viscous row (T5 M2). Discrimination between an adequate and a deficient fit is **not shown** in this run, because both fits score 21 / 31.
 after the reveal and never scored, shows that on the formal data the fit model at θ* has χ²_red 1.416 and passes all
 31 held-out tolerances. The formal failure is therefore an **optimisation shortfall** (the staged fit stopped in a
 worse valley of the Prony parameters), not the resolution bias the pilot showed and the declaration predicted. The
 pilot result (§9: the n_t 4 optimum lies ≈ 10 % from the n_t 6 truth in the Prony parameters) still stands. Every
+> **[Erratum E1, P5.7 review C1]** The mechanism words in this section ("worse valley", "wrong / different basin", "did not leave that basin", "the S2 data choice and starts") are **withdrawn**. The measured facts are in §12.1. The pilot's "≈ 10 %" is unmeasured (from an unconverged fit).
 fitted θ is resolution-specific. Labels unchanged: SIMULATOR_ONLY_UNCALIBRATED, NUMERICAL_VALIDATION_SYNTHETIC.
 
 - **Declaration.** `rubber_calib_tests_v2` was committed alone in `4218dd6` (sha256 `1606457f…01ff`) and pinned in
@@ -447,6 +464,7 @@ At θ* the fit model passes **31 / 31** held-out tolerances.
 - The negative control, which fitted T2 alone in S2, landed much closer.
 
 This explains the miss: the CAL-04 prediction was missed because of the S2 data choice and starts, not the GPU noise
+> **[Erratum E1]** Withdrawn. See §12.1: every stage after S1 ended on its `max_nfev` cap with the cost still falling, and whether a separate basin exists was not tested.
 or the budget (1 h of the 3 h was unused because S4's max_nfev ended the fit).
 
 **GPU** (all GPU0, SHARED_GPU, PID 642659 untouched, GPU1 not used):
@@ -462,6 +480,7 @@ CMA-ES comparison: NOT_RUN (optional in v2, not within the budget).
 - The interface works end-to-end with honest, pre-registered scoring: declaration → pilot → frozen data → fit →
   one-shot held-out → reveal.
 - The negative control has power.
+> **[Erratum E4]** CAL-07 PASS on one viscous row; discrimination is not shown (both fits score 21 / 31).
 - The formal outcome is a FAIL of the declared fit procedure on this dataset; the diagnostic locates it in the
   optimiser's staging, not in the forward model or in identifiability at the truth.
 - Recovery at n_t 4 against an n_t 6 truth remains biased for the Prony parameters (pilot).
@@ -469,3 +488,80 @@ CMA-ES comparison: NOT_RUN (optional in v2, not within the budget).
 Any further fit attempt on this dataset would be a new, separately declared protocol, and its result would be
 post-reveal (the truth is now known). It could not count as a blind validation. A blind re-test needs a new sealed
 formal dataset.
+
+## 12. Errata from the P5.7 review (2026-11-12; `docs/reports/rl_ready/P2_5_ACCEPTANCE_REVIEW.md`, GO_WITH_CONDITIONS)
+
+Additive. Nothing in the evidence, receipts, protocols, thresholds or datasets changes. The markers [Erratum E1–E4]
+above point here.
+
+### 12.1 E1 (C1): the measured facts of the v2 formal fit, replacing the "basin" mechanism
+
+Recomputed from `docs/evidence/rl_ready/p2_5/fit_receipt_formal.json`:
+- **Caps, not convergence.** Every stage after S1 ended on its `max_nfev` cap (scipy status 0) with the cost still
+  falling:
+  - S2, all 3 starts at 15 evaluations: −7.1 %, −2.5 % and −1.6 % in the last evaluation;
+  - S3 at 8 evaluations: −6.8 %;
+  - S4 at 6 evaluations: −5.4 %.
+- **Bound-active S2.** All three S2 starts ended at g1's lower bound (0.0800–0.0840 vs the bound 0.08) while g2 rose
+  and τ2 fell. μ_eq was frozen at S1's T1-only value (+1.2 % off).
+- **S4 still moving.** g1 rose at every evaluation: 0.0840 → 0.0846 → 0.0855 → 0.0875 → 0.0900 → 0.0942, toward θ*
+  0.193. τ1 had reached the truth (14.3 ms) before the cap ended the stage.
+- **Budget unused.** 3,063 s (0.85 h) of the 3 h budget was left when S4 stopped on its cap.
+- **No basin test.** Whether θ̂ lies in a separate local minimum was **not tested**.
+
+The supported statement is: **non-convergence under the declared per-stage evaluation caps, after a bound-active S2;
+whether a distinct basin exists is untested.** The post-reveal diagnostic (χ²_red 1.416 at θ* < 2.484 at θ̂, 31 / 31
+held-out within tolerance at θ*) is consistent with this. The pilot (§9.3) has the same truncation: the existence of
+a resolution bias is supported, but its size (≈ 10 %) and "more polishing does not move toward θ_pilot" are
+**UNMEASURED**.
+
+### 12.2 E2 (C2): what a user with real data should do differently
+
+1. **Stop stages on convergence or on the time budget, not on small fixed `max_nfev` caps.**
+   - Run the joint polish until xtol / ftol or the budget, and report every stage's termination status.
+   - Treat a stage that hits its cap while the cost still falls by more than about 1 % per evaluation as
+     **non-converged**: flag it, never score it silently.
+2. **Do not freeze μ_eq from one slow tensile test before the viscous stage.**
+   - Fit μ_eq together with the Prony parameters, or take it from the relaxation plateau.
+   - Flag any parameter that is bound-active at the end of a stage.
+3. **Add a global stage on the joint problem:** several starts, or a short CMA-ES / BO through `run_ask_tell`.
+4. **Validate the exact declared procedure end-to-end on a pilot** (same caps and budget) before predicting CAL-04.
+   The v2 pilot ran S4 for one evaluation only.
+5. **Take bounds from prior knowledge, not from a generating prior,** and report parameters that sit at a bound.
+   - In v2 the bounds were the u-image of the prior box the truth was drawn from. That is optimistic for a synthetic
+     test, and it is wider than the θ prior for g2 (θ̂ g2 0.186 > 0.15).
+   - The v1 fit-split trajectories (not the held-out split or the truth) fed the v2 design.
+6. **Drive the forward model with the measured fixture or crosshead history** where it exists. The current forward
+   models use the declared nominal schedule.
+7. **Set tolerances from measured repeatability (a) and a pilot *fit* (b)**, as `rubber_calib_tests_real_v1` states.
+   Declare the real protocol, including its extra short-τ Prony term, before any data exists.
+8. **θ̂ is RESOLUTION_SPECIFIC** to `rubber_ref_v1` (n_t 4). Never carry it to another resolution without the bias
+   shift.
+9. **Until F3 is fixed,** use one canonical ledger directory per freeze, and commit the ledger before the reveal. F3 is
+   fixed from commit `F3_COMMIT` onward: global one-shot registry, and the gate loads and checks the ledger itself
+   (§12.5).
+
+### 12.3 E3 (C3): pre-v2 snapshot
+
+Sections 4–9 are marked as the pre-v2 snapshot. The stale sentences are corrected inline:
+- "never been read" / "valid for a resumed fit" (§4);
+- "validated as an optimiser" (§9.4).
+
+In the CAL table of §6, CAL-04..07 NOT_RUN is superseded by §10. §8's "does not yet deliver the formal fit" is
+superseded by §10.
+
+### 12.4 E4 (C4): the CAL-07 headline
+
+CAL-07 PASSes on one viscous row (T5 M2 0.0516 > 0.0269). Otherwise the T2 + C1 control passed T4 M2 and every
+cantilever M6 row that the primary fit failed, and it scored the same 21 / 31. Held-out discrimination between an
+adequate and a deficient fit is therefore not shown by this run; only the unscored post-reveal θ* evaluation (31 / 31)
+shows it.
+
+### 12.5 Smaller corrections
+
+- `test_rubber_calibration_v2.py` has 38 tests, not 40.
+- The REAL-gate negative tests are 24 parametrised cases × 2 gates, not 48 cases.
+- C2 M4 PASSed; the CAL-05 failures are T4 M2 / M9, C2 M6 / M9, C3 M4 / M6 / M9 and C4 M4 / M6 / M9.
+- The reveal ran on a tree dirty only by the then uncommitted supplementary script, and the diagnostic ran on a tree
+  dirty only by `write_evidence.py` edits (F8). `reveal.py` now refuses a dirty tree and pins the protocol.
+

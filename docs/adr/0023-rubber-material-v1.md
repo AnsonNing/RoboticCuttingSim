@@ -2291,6 +2291,11 @@ protocols). Material status `SIMULATOR_ONLY_UNCALIBRATED`; self-contact physics 
 
 ### 23.6 Results: P2-5 calibration interface and synthetic numerical validation (amendment, 2026-11-12, rcs-impl)
 
+> **[Erratum, P5.7 review C3]** The bullets below up to "Formal run under `rubber_calib_tests_v2`" are the **pre-v2 snapshot**.
+> Superseded: "sealed truth … (never read)" — it was read once, at the reveal (2026-11-12T00:47:30Z); "a resumed fit
+> … can still complete P5.6" — the dataset is revealed, so any re-fit on it is post-hoc. Report section 12 has the
+> errata and the real-data guidance (C2).
+
 Branch `claude/rl-rubber-p25` (from `77f5a99`). Report `docs/reports/rl_ready/P2_5_RUBBER_CALIBRATION.md`. Material
 status `SIMULATOR_ONLY_UNCALIBRATED`; every output `NUMERICAL_VALIDATION_SYNTHETIC`; never a calibration; no recipe
 promoted. Nothing frozen changed (`rubber_calibration.py` v1 and the `REAL_CALIBRATED` block of
@@ -2350,13 +2355,20 @@ promoted. Nothing frozen changed (`rubber_calibration.py` v1 and the `REAL_CALIB
     - CAL-01 / -02 / -03 / -08 / -09 PASS.
     - **CAL-04 FAIL**: χ²_red 2.484 > 1.910; S4 ended at max_nfev; 7,737 s of the 10,800 s GPU0-hold budget.
     - **CAL-05 FAIL**: 21 / 31 held-out rows (T4 M2 / M9, C2–C4 M4 / M6 / M9).
+      **[Erratum]** Exact list: T4 M2 / M9, C2 M6 / M9, C3 M4 / M6 / M9, C4 M4 / M6 / M9 (C2 M4 PASS).
     - **CAL-06 FAIL**: g1 −51 %, g2 +39 %, τ2 −41 %; μ_eq +1.8 %, τ1 −0.5 % and μ_table +0.7 % PASS.
     - **CAL-07 PASS**: the T2 + C1 control fails T5 M2.
+      **[Erratum C4]** This rests on one viscous row; discrimination is not shown (both fits score 21 / 31).
   - **Supplementary diagnostic** (post-reveal, unscored): the fit model at θ* has χ²_red 1.416 on the formal fit
     split and passes 31 / 31 held-out tolerances. The formal failure is an optimisation shortfall of the staged
     procedure (a wrong Prony basin after S1 / S2), not resolution bias. The pilot's resolution bias in the Prony
     parameters (≈ 10 %) stands separately.
+    **[Erratum, P5.7 review C1]** The "wrong Prony basin" mechanism is withdrawn. Measured: S2, S3 and S4 ended on their
+    `max_nfev` caps with the cost still falling (1.6–7.1 % per evaluation); all S2 starts were bound-active at g1 = 0.08;
+    g1 rose at every S4 evaluation; 0.85 h of budget was unused; no separate basin was tested. The pilot's "≈ 10 %" bias
+    size is UNMEASURED (from an unconverged fit).
   - **Headline:** pipeline and protocol validated end-to-end (pre-registered, one-shot, negative control with power);
+    **[Erratum C4]** read "negative control PASS on one viscous row; discrimination not shown";
     the declared fit procedure FAILED to recover θ on the formal synthetic dataset; fitted θ is resolution-specific.
   - The dataset's truth is now revealed, so any re-fit on it is post-hoc. A blind re-test needs a new sealed dataset.
   - Material status `SIMULATOR_ONLY_UNCALIBRATED`; `NUMERICAL_VALIDATION_SYNTHETIC`; no recipe promoted.
