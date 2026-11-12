@@ -30,6 +30,7 @@ def main():
     ap.add_argument("--ledger", required=True)
     ap.add_argument("--gpu-index", type=int, required=True)
     ap.add_argument("--audit-rerun", default=None)
+    ap.add_argument("--dataset-id", default=None, help="formal dataset id (default: the v1 protocol's formal_001)")
     args = ap.parse_args()
     protocol, psha = C.load_protocol(PROTOCOL_SHA)
     import hashlib
@@ -51,7 +52,7 @@ def main():
     from robotic_cutting_sim import rubber_calibration_experiments as rce
     from robotic_cutting_sim import rubber_calibration_fit as rcf
     from robotic_cutting_sim import rubber_calibration_v2 as rc2
-    mpath = C.SYNTHETIC_DIR/protocol["formal"]["dataset_id"]/"manifest.json"
+    mpath = C.SYNTHETIC_DIR/(args.dataset_id or protocol["formal"]["dataset_id"])/"manifest.json"
     manifest = rc2.load_manifest(mpath)
     specimens = {s["specimen_id"]: s for s in manifest["specimens"]}
     m_exps = {e["experiment_id"]: e for e in manifest["experiments"]}
@@ -73,7 +74,7 @@ def main():
     t_start = time.perf_counter()
     res = rcf.evaluate_heldout(mpath, args.fit_receipts, args.ledger, predict=predict,
                                thresholds=thresholds["tolerances"], metric_settings=protocol["metrics"]["settings"],
-                               audit_rerun=args.audit_rerun,
+                               audit_rerun=args.audit_rerun, thresholds_sha256=tsha,
                                provenance={"tree": tree, "protocol_sha256": psha, "thresholds_sha256": tsha,
                                            "utc": C.utc(), "env": C.environment(), "gpu_free_mib_at_start": free,
                                            "gpu_samples": [C.gpu_sample()], "module_sha256": C.module_shas()})

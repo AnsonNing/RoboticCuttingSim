@@ -456,3 +456,20 @@ def test_termination_flags_capped_stages():
     assert rcf.termination(0, [100.0, 94.6])["termination"] == "NON_CONVERGED"
     assert rcf.termination(0, [100.0, 99.95])["termination"] == "CAP_OR_BUDGET_FLAT"
     assert rcf.termination("BUDGET_EXHAUSTED", [100.0, 90.0])["termination"] == "NON_CONVERGED"
+
+
+def test_current_plus_lhs_start_design(tmp_path):
+    """v3: a multi-start stage may start from the current estimate plus a seeded LHS over a declared box."""
+    path = make_dataset(tmp_path)
+    sp = space()
+    stages = ({"name": "A", "params": ["mu_eq_pa", "g1", "tau1_s", "g2", "tau2_s"], "experiments": ["R1", "T1"],
+               "starts": 2, "max_nfev": 20, "start_design": "current_plus_lhs", "lhs_box": _box(sp)},
+              {"name": "C", "params": list(rcf.PARAMS), "experiments": None, "starts": 1, "max_nfev": 10})
+    res = rcf.fit_staged(lambda e: rcf.Objective(path, forward=ToyForward(), experiments=e), sp, None,
+                         stages=stages, start_theta=_centre(), budget_s=600, fd_step=1e-4)
+    a = res["stages"][0]["starts"]
+    assert np.allclose(a[0]["u0"], rcf.SubSpace(sp, stages[0]["params"], _centre()).to_u(_centre()))
+    lo, hi = _box(sp)
+    idx = [rcf.PARAMS.index(n) for n in stages[0]["params"]]
+    assert np.all(np.array(a[1]["u0"]) >= lo[idx]) and np.all(np.array(a[1]["u0"]) <= hi[idx])
+    assert all("termination" in st for s in res["stages"] for st in s["starts"])

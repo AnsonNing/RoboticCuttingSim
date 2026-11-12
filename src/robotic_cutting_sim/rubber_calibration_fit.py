@@ -917,8 +917,18 @@ def fit_staged(make_objective, space, box, *, stages=V2_STAGES, start_theta, bud
             out["budget_hit"] = True
             continue
         sub = SubSpace(space, st["params"], theta, box=box)
-        starts = ([sub.to_u(theta)] if st["starts"] == 1
-                  else list(sub.latin_hypercube(st["starts"], seed+k)))
+        if st["starts"] == 1:
+            starts = [sub.to_u(theta)]
+        elif st.get("start_design") == "current_plus_lhs":
+            # v3: the current estimate plus a seeded Latin hypercube over ``lhs_box`` (full u, e.g. the prior box)
+            lo, hi = (np.asarray(b, float)[sub.idx] for b in st["lhs_box"])
+            lhs = SubSpace(space, st["params"], theta, box=(np.asarray(st["lhs_box"][0], float),
+                                                          np.asarray(st["lhs_box"][1], float)))
+            starts = [sub.to_u(theta)]+[np.clip(u, sub.lb, sub.ub) for u in lhs.latin_hypercube(st["starts"]-1,
+                                                                                               seed+k)]
+            del lo, hi
+        else:
+            starts = list(sub.latin_hypercube(st["starts"], seed+k))
         obj = make_objective(st["experiments"])
         ts = time.monotonic()
         stage_deadline = deadline

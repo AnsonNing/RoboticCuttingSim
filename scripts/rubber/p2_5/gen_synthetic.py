@@ -35,6 +35,8 @@ def main():
     ap.add_argument("--gpu-index", type=int, required=True, help="physical GPU index (for the free-memory check)")
     ap.add_argument("--smoke", action="store_true", help="2 control steps per experiment, scratch outputs only")
     ap.add_argument("--device", default="cuda:0", help="cpu only with --smoke (pipeline check)")
+    ap.add_argument("--v3", action="store_true", help="generate the v3 formal dataset declared by the pinned "
+                                                      "rubber_calib_tests_v3 (new id, new secret seeds)")
     args = ap.parse_args()
     protocol, psha = C.load_protocol(None if args.smoke else PROTOCOL_SHA)
     run = Path(args.run_dir)
@@ -43,7 +45,18 @@ def main():
     tree = C.tree_state()
     if not args.smoke and not tree["clean"]:
         raise SystemExit("the tree must be clean at a committed state")
-    dataset_id = protocol[args.kind]["dataset_id"]+("_smoke" if args.smoke else "")
+    v3sha = None
+    if args.v3:
+        import hashlib
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from run_fit_v3 import PROTOCOL_V3, PROTOCOL_V3_SHA
+        raw = PROTOCOL_V3.read_bytes()
+        v3sha = hashlib.sha256(raw).hexdigest()
+        if PROTOCOL_V3_SHA is None or v3sha != PROTOCOL_V3_SHA or args.kind != "formal":
+            raise SystemExit("--v3 needs the pinned v3 protocol and --kind formal")
+        dataset_id = json.loads(raw)["fit"]["dataset_id"]
+    else:
+        dataset_id = protocol[args.kind]["dataset_id"]+("_smoke" if args.smoke else "")
     ds_dir = (run/"smoke_dataset") if args.smoke else (C.SYNTHETIC_DIR/dataset_id)
     if ds_dir.exists():
         raise SystemExit(f"{ds_dir} exists (no overwrite)")
@@ -58,6 +71,7 @@ def main():
     from robotic_cutting_sim import rubber_calibration_v2 as rc2
     t_start = time.perf_counter()
     meta = {"kind": args.kind, "smoke": args.smoke, "utc_start": C.utc(), "tree": tree, "protocol_sha256": psha,
+            "protocol_v3_sha256": v3sha,
             "env": C.environment(), "module_sha256": C.module_shas(), "gpu_free_mib_at_start": free,
             "gpu_samples": [C.gpu_sample()], **C.LABELS}
     truth_seed, noise_seed = rcs.secret_seed(), rcs.secret_seed()
