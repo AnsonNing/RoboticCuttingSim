@@ -1,0 +1,561 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_6_rubber_rl_004",
+ "phase": "P2-6 RL-12 host-memory growth over resets (rubber_rl_tests_v5 = v4 + RL-12; P6.7 review Z-a / F1)",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "protocol": {
+  "path": "configs/rubber/rubber_rl_tests_v5.json",
+  "sha256": "5200ed1be70e5eadae3e90a65f98f3a724c159516fb7e5da11522091c631f0eb",
+  "declared_at": "9af9164"
+ },
+ "task_config": {
+  "path": "configs/rubber/rl/rubber_strip_drag_v2.json",
+  "sha256": "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb"
+ },
+ "fix": {
+  "commit": "e5dd879",
+  "what": "BatchedRubberMaterial._proj_inv_cache bounded LRU, max(4, 2 N) entries; results byte-identical (tests/test_rubber_proj_inv_cache_bounded.py)"
+ },
+ "before_fix": {
+  "label": "DIAGNOSTIC (P6.7 review \u00a76, 145777d, GPU0, N 8, 48 resets)",
+  "rss_mib_per_reset": 2.19,
+  "cache_entries": "9 -> 57"
+ },
+ "run": {
+  "dir": "artifacts/rl_ready/p2_6/gpu_rl12_hostmem_001",
+  "meta": {
+   "commit": "eb8a524cedad0f613835e367b4fe6bfd374387fb",
+   "dirty_tree": false,
+   "command": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/.deps/isaacsim-venv/bin/python scripts/rubber/p2_6/run_rubber_rl12_hostmem.py --rows RL12 --out artifacts/rl_ready/p2_6/gpu_rl12_hostmem_001 --device cuda:0 --gpu-index 1",
+   "device": "cuda:0",
+   "physical_gpu": 1,
+   "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+   "warp": "1.17.0",
+   "torch": "2.11.0+cu128",
+   "python": "3.12.12",
+   "free_mb_at_start": 26389.0,
+   "started": "2026-11-12T10:49:15+0900",
+   "ended": "2026-11-12T11:08:53+0900",
+   "blas_threads_env": {
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+   }
+  }
+ },
+ "row": {
+  "iterations": 80,
+  "warmup_resets": 20,
+  "bound_mib": 32.0,
+  "cache_cap": 16,
+  "cache_max_entries": 16,
+  "rss_growth_scored_mib": 0.0,
+  "rss_slope_mib_per_reset": -8.406050831334259e-15,
+  "rss_first_scored_mib": 2297.98828125,
+  "rss_max_scored_mib": 2297.98828125,
+  "distinct_masses": 80,
+  "vram_samples": [
+   {
+    "reset": 10,
+    "own_mib": 1196.0
+   },
+   {
+    "reset": 20,
+    "own_mib": 1196.0
+   },
+   {
+    "reset": 30,
+    "own_mib": 1196.0
+   },
+   {
+    "reset": 40,
+    "own_mib": 1196.0
+   },
+   {
+    "reset": 50,
+    "own_mib": 1196.0
+   },
+   {
+    "reset": 60,
+    "own_mib": 1196.0
+   },
+   {
+    "reset": 70,
+    "own_mib": 1196.0
+   },
+   {
+    "reset": 80,
+    "own_mib": 1196.0
+   }
+  ],
+  "finite_bad_iterations": [],
+  "infrastructure_error": null,
+  "reset_median_s": 0.07716025447007269,
+  "reset_p95_s": 0.09289297557552345,
+  "wall_s": 1173.6881746989675,
+  "slots": [
+   "L150_t5",
+   "L125_t6",
+   "L125_t5",
+   "L100_t6",
+   "L100_t6",
+   "L100_t4",
+   "L100_t4",
+   "L100_t4"
+  ],
+  "verdict": "PASS",
+  "wall_s_row": 1178.218953716103,
+  "protocol_sha256": "5200ed1be70e5eadae3e90a65f98f3a724c159516fb7e5da11522091c631f0eb",
+  "commit": "eb8a524cedad0f613835e367b4fe6bfd374387fb",
+  "dirty_tree": false,
+  "driver_gpu": "NVIDIA GeForce RTX 5090, 570.211.01"
+ },
+ "rss_series_mib": [
+  [
+   0,
+   2184.9453125,
+   8
+  ],
+  [
+   1,
+   2297.984375,
+   9
+  ],
+  [
+   2,
+   2297.984375,
+   10
+  ],
+  [
+   3,
+   2297.98828125,
+   11
+  ],
+  [
+   4,
+   2297.98828125,
+   12
+  ],
+  [
+   5,
+   2297.98828125,
+   13
+  ],
+  [
+   6,
+   2297.98828125,
+   14
+  ],
+  [
+   7,
+   2297.98828125,
+   15
+  ],
+  [
+   8,
+   2297.98828125,
+   16
+  ],
+  [
+   9,
+   2297.98828125,
+   16
+  ],
+  [
+   10,
+   2297.98828125,
+   16
+  ],
+  [
+   11,
+   2297.98828125,
+   16
+  ],
+  [
+   12,
+   2297.98828125,
+   16
+  ],
+  [
+   13,
+   2297.98828125,
+   16
+  ],
+  [
+   14,
+   2297.98828125,
+   16
+  ],
+  [
+   15,
+   2297.98828125,
+   16
+  ],
+  [
+   16,
+   2297.98828125,
+   16
+  ],
+  [
+   17,
+   2297.98828125,
+   16
+  ],
+  [
+   18,
+   2297.98828125,
+   16
+  ],
+  [
+   19,
+   2297.98828125,
+   16
+  ],
+  [
+   20,
+   2297.98828125,
+   16
+  ],
+  [
+   21,
+   2297.98828125,
+   16
+  ],
+  [
+   22,
+   2297.98828125,
+   16
+  ],
+  [
+   23,
+   2297.98828125,
+   16
+  ],
+  [
+   24,
+   2297.98828125,
+   16
+  ],
+  [
+   25,
+   2297.98828125,
+   16
+  ],
+  [
+   26,
+   2297.98828125,
+   16
+  ],
+  [
+   27,
+   2297.98828125,
+   16
+  ],
+  [
+   28,
+   2297.98828125,
+   16
+  ],
+  [
+   29,
+   2297.98828125,
+   16
+  ],
+  [
+   30,
+   2297.98828125,
+   16
+  ],
+  [
+   31,
+   2297.98828125,
+   16
+  ],
+  [
+   32,
+   2297.98828125,
+   16
+  ],
+  [
+   33,
+   2297.98828125,
+   16
+  ],
+  [
+   34,
+   2297.98828125,
+   16
+  ],
+  [
+   35,
+   2297.98828125,
+   16
+  ],
+  [
+   36,
+   2297.98828125,
+   16
+  ],
+  [
+   37,
+   2297.98828125,
+   16
+  ],
+  [
+   38,
+   2297.98828125,
+   16
+  ],
+  [
+   39,
+   2297.98828125,
+   16
+  ],
+  [
+   40,
+   2297.98828125,
+   16
+  ],
+  [
+   41,
+   2297.98828125,
+   16
+  ],
+  [
+   42,
+   2297.98828125,
+   16
+  ],
+  [
+   43,
+   2297.98828125,
+   16
+  ],
+  [
+   44,
+   2297.98828125,
+   16
+  ],
+  [
+   45,
+   2297.98828125,
+   16
+  ],
+  [
+   46,
+   2297.98828125,
+   16
+  ],
+  [
+   47,
+   2297.98828125,
+   16
+  ],
+  [
+   48,
+   2297.98828125,
+   16
+  ],
+  [
+   49,
+   2297.98828125,
+   16
+  ],
+  [
+   50,
+   2297.98828125,
+   16
+  ],
+  [
+   51,
+   2297.98828125,
+   16
+  ],
+  [
+   52,
+   2297.98828125,
+   16
+  ],
+  [
+   53,
+   2297.98828125,
+   16
+  ],
+  [
+   54,
+   2297.98828125,
+   16
+  ],
+  [
+   55,
+   2297.98828125,
+   16
+  ],
+  [
+   56,
+   2297.98828125,
+   16
+  ],
+  [
+   57,
+   2297.98828125,
+   16
+  ],
+  [
+   58,
+   2297.98828125,
+   16
+  ],
+  [
+   59,
+   2297.98828125,
+   16
+  ],
+  [
+   60,
+   2297.98828125,
+   16
+  ],
+  [
+   61,
+   2297.98828125,
+   16
+  ],
+  [
+   62,
+   2297.98828125,
+   16
+  ],
+  [
+   63,
+   2297.98828125,
+   16
+  ],
+  [
+   64,
+   2297.98828125,
+   16
+  ],
+  [
+   65,
+   2297.98828125,
+   16
+  ],
+  [
+   66,
+   2297.98828125,
+   16
+  ],
+  [
+   67,
+   2297.98828125,
+   16
+  ],
+  [
+   68,
+   2297.98828125,
+   16
+  ],
+  [
+   69,
+   2297.98828125,
+   16
+  ],
+  [
+   70,
+   2297.98828125,
+   16
+  ],
+  [
+   71,
+   2297.98828125,
+   16
+  ],
+  [
+   72,
+   2297.98828125,
+   16
+  ],
+  [
+   73,
+   2297.98828125,
+   16
+  ],
+  [
+   74,
+   2297.98828125,
+   16
+  ],
+  [
+   75,
+   2297.98828125,
+   16
+  ],
+  [
+   76,
+   2297.98828125,
+   16
+  ],
+  [
+   77,
+   2297.98828125,
+   16
+  ],
+  [
+   78,
+   2297.98828125,
+   16
+  ],
+  [
+   79,
+   2297.98828125,
+   16
+  ],
+  [
+   80,
+   2297.98828125,
+   16
+  ]
+ ],
+ "gpu_sharing": {
+  "label": "SHARED_GPU",
+  "co_tenant_pids": [
+   2969079,
+   3014498
+  ],
+  "samples": [
+   {
+    "t": "2026-11-12T10:49:15+0900",
+    "tag": "RL12:start",
+    "gpu": "5732 MiB, 32607 MiB, 91 %",
+    "apps": [
+     {
+      "pid": 2969079,
+      "used_mib": 4554.0
+     },
+     {
+      "pid": 3014498,
+      "used_mib": 1094.0
+     }
+    ]
+   },
+   {
+    "t": "2026-11-12T11:08:53+0900",
+    "tag": "RL12:end",
+    "gpu": "5834 MiB, 32607 MiB, 90 %",
+    "apps": [
+     {
+      "pid": 2969079,
+      "used_mib": 4554.0
+     },
+     {
+      "pid": 3016991,
+      "used_mib": 1196.0
+     }
+    ]
+   }
+  ]
+ },
+ "verdict": "PASS",
+ "reading": "After the fix the F8 inverse cache fills to its cap (16 at N 8) by reset 10 and stays there; host RSS is flat at 2,298.0 MiB from reset 10 to reset 80 (growth over the scored window 0.0 MiB, bound 32 MiB; slope 0.0 MiB / reset) across 80 distinct resampled densities. Before the fix the same workload grew +2.19 MiB per reset. Reset median 0.077 s, p95 0.093 s (OPENBLAS_NUM_THREADS=1). RL-12: PASS"
+}

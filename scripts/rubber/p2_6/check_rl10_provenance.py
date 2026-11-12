@@ -81,6 +81,8 @@ def main():
     ap.add_argument("--out", required=True)
     ap.add_argument("--v4-run", default=None)
     ap.add_argument("--v4-declaration", default=None, help="commit of the rubber_rl_tests_v4 declaration")
+    ap.add_argument("--extra", action="append", default=[],
+                    help="PROTOCOL_PATH=DECLARATION_COMMIT=RUN_DIR (e.g. the rubber_rl_tests_v5 RL-12 run); repeatable")
     a = ap.parse_args()
     out = Path(a.out)
     if out.exists():
@@ -92,6 +94,10 @@ def main():
         DECL["configs/rubber/rubber_rl_tests_v4.json"] = a.v4_declaration
         runs.append((Path(a.v4_run) if Path(a.v4_run).is_absolute() else ROOT/a.v4_run,
                      "configs/rubber/rubber_rl_tests_v4.json"))
+    for spec in a.extra:
+        ppath, decl, rdir = spec.split("=", 2)
+        DECL[ppath] = decl
+        runs.append((Path(rdir) if Path(rdir).is_absolute() else ROOT/rdir, ppath))
     res = {"schema": "rcs_rl10_provenance_v1", "head": git("rev-parse", "HEAD"),
            "declarations": {p: {"commit": c, "committed": git("show", "-s", "--format=%cI", c),
                                 "sha256": blob_sha(c, p)} for p, c in DECL.items()},
