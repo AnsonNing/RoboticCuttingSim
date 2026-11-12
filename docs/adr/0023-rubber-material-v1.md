@@ -2348,3 +2348,57 @@ protocols). Material status `SIMULATOR_ONLY_UNCALIBRATED`; self-contact physics 
   - P2-6 mapping of bit 8 to `TERM_MATERIAL_INVALID` (task P6.1).
   - The blind-interval rate is reported, not bounded.
   - The detector does not resolve self-contact.
+
+### 23.6 P2-6 results: RL-ready rubber environment (amendment, 2026-11-12, rcs-impl)
+
+Branch `claude/rl-rubber-p26` (Native work merged from `claude/rl-rubber-p26n`, `origin/main` merged for RL-11). Report
+`docs/reports/rl_ready/P2_6_RUBBER_RL.md`; evidence `docs/evidence/rl_ready/p2_6_*.json`. Material status everywhere
+`SIMULATOR_ONLY_UNCALIBRATED`. For review at P6.7.
+
+- **Contact law and friction (ENV1 / ENV2, K2-1).**
+  - `contact_envelope_v1` holds formally scored rows only.
+  - ENV2 for law v3 PASSED (μ ≤ 0.8 at n_t 4–6). K2-1 then limited v3 to translational sliding, so the P2-6 law is v2.
+  - ENV2 for law v2 FAILED at the 0.4 target (strip, n_t 4 and 6). Spin-down passed.
+  - `contact_envelope_v3` records v2 sliding 0.3 / 0.4 / 0.3 at n_t 4 / 5 / 6.
+  - **P2-6 friction is fixed at 0.3**: a declared limitation, with refusal code `UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE`
+    outside the range.
+  - The v1 P2-6 pair (law v3, μ up to 0.8) was superseded before any formal run.
+- **Declarations of record.** Each was committed alone and SHA-pinned before its run:
+  - `rubber_strip_drag_v2` `7395e610…addb` and `rubber_rl_tests_v2` `6db54681…9548` (`400f5c5`);
+  - `rubber_rl_tests_v3` `7dc07763…6e2f` (`ba41461`, RL-05 only);
+  - `rubber_rl_tests_v4` `ce8dcc1a…acc0b` (`386cfbc`, RL-05 only, the last scripted attempt).
+- **Code.**
+  - `rl/rubber_family.py`, `rl/rubber_env.py`, `rl/rubber_contract.py`, `rl/rubber_scripted.py`,
+    `rubber_contact_envelope.py`.
+  - Opt-in `advance_device` and `projection_assembly_v2` in `batched/rubber_material_batch.py`, byte-identical to the
+    host path.
+  - One dispatch branch in `rl/vector_env.py` (13 lines vs `main`).
+  - Nothing frozen changed; the P2-6 modules are pinned in `tests/test_rubber_p2_6_frozen_sources.py`.
+- **Verdicts.**
+  - PASS: RL-01; RL-02 a / b / c (L0 byte-wise; L2; L3 0 / 90 outside, max M/U 0.774); RL-03; RL-04 a / b (worst d /
+    limit 0.469); RL-05 CPU; RL-06 (53 resets, VRAM growth 0); RL-07 (N 8 / N 1 gain 1.46, 1,228 MiB at N 8); RL-08 (dt
+    ΔO1 / L 8.8e-6); RL-09 Native; RL-10 (provenance of all six formal runs); RL-11 (full suites both CUDA modes, both venvs; workload A contract N 2 on GPU; frozen paths equal `main`).
+  - RL-08 b is REPORTED: the Q1w bias at L/t 37.5 is +0.71 %, so the 1 % fallback trigger is not met.
+  - RL-05 GPU sanity:
+    - v2 FAIL (4 / 8 better, 0 successes);
+    - v3 FAIL (8 / 8, 0 successes);
+    - v4 PASS (7 / 8, 5 successes; `rubber_scripted_pivot_hold_v1`, fresh seeds 8000 + e).
+
+    Every FAIL is preserved.
+- **Throughput.** This is not a speedup claim. On an RTX 5090 at 50 Hz with 5,226 substeps (dt 3.827 µs), no cameras
+  and no recording:
+  - full slot set: 0.66 env-steps/s at N 1 and 0.96 at N 8;
+  - L125_t4: 1.16 at N 8;
+  - the reduced-fidelity `rubber_rl_v1` variant (n_t 3): 3.3 at N 8.
+
+  The reset p95 was 5.0 s with the default OpenBLAS pool and 0.093 s with `OPENBLAS_NUM_THREADS=1`. The user-facing
+  note is in report §8: `threadpoolctl` is absent from both venvs, and the inverse's bits depend on the BLAS thread
+  count.
+- **Phase 2 Done boxes 2 / 3** (limitations):
+  - friction fixed at 0.3;
+  - Q1w bias +0.62 % / +0.71 %;
+  - self-contact detected but not resolved;
+  - no robot wrench feedback;
+  - RL-05 passed only with the third declared controller;
+  - ≈ 1 env-step/s.
+- **Open.** P6.7 xhigh review; Z1–Z3 merge and the external pin.
