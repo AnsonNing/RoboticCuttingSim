@@ -33,8 +33,8 @@ def load(p):
 def main():
     ap = argparse.ArgumentParser()
     for k in ("pilot-gen", "pilot-eval", "formal-gen", "fit-formal", "fit-negative", "cmaes", "heldout", "reveal",
-              "cpu-tests", "out"):
-        ap.add_argument(f"--{k}", required=k not in ("cmaes", "cpu-tests"))
+              "cpu-tests", "out", "supplementary"):
+        ap.add_argument(f"--{k}", required=k not in ("cmaes", "cpu-tests", "supplementary"))
     a = ap.parse_args()
     protocol, psha = C.load_protocol()
     thr = load(C.THRESHOLDS)
@@ -112,7 +112,8 @@ def main():
                                                                        "candidates_evaluated", "chi2_reduced_best")}},
           "heldout": {"ledger": ledger, "summary": hsum},
           "reveal": rv,
-          "verdicts": {"CAL-01": "see cpu_tests", "CAL-02": "see cpu_tests",
+          "verdicts": {"CAL-01": (load(a.cpu_tests).get("CAL-01") if a.cpu_tests else "see cpu_tests"),
+                       "CAL-02": (load(a.cpu_tests).get("CAL-02") if a.cpu_tests else "see cpu_tests"),
                        "CAL-03": "PASS" if fg.get("verdict_truth_valid") == "PASS" and pg.get(
                            "verdict_truth_valid") == "PASS" else "FAIL",
                        "CAL-04": "PASS" if cal04 else "FAIL",
@@ -126,6 +127,9 @@ def main():
           "cal05_rows": formal_rows, "cal07_rows": neg_rows, "cal08_order": [
               {"event": e, "commit": c, "utc": t} for e, c, t in order],
           "cpu_tests": load(a.cpu_tests) if a.cpu_tests else None,
+          "supplementary_diagnostic_not_scored": load(Path(a.supplementary)/"supplementary_bias.json")
+          if a.supplementary else None,
+          "cmaes_comparison": "NOT_RUN (optional in v2; not within the GPU budget)" if cm is None else "see fits.cmaes",
           "writer": "scripts/rubber/p2_5/write_evidence.py", "written_utc": C.utc(), "tree": C.tree_state()}
     C.write_new(a.out, ev)
     print(json.dumps(ev["verdicts"], indent=1))
