@@ -1,0 +1,42 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_6_rubber_rl_p67_001",
+ "phase": "P2-6 after the P6.7 review fixes: RL-11 rerun at the final code",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "head": "b2cc6c3",
+ "src_identical_to": "e5dd879",
+ "suites": {
+  "venv_full_cuda_none.log": [
+   "2932 passed, 41 skipped, 6 xfailed, 605 warnings in 2995.22s (0:49:55)",
+   "exit=0 wall_s=3000 head=b2cc6c3"
+  ],
+  "venv_full_cuda_gpu1.log": [
+   "2932 passed, 41 skipped, 6 xfailed, 605 warnings in 2995.36s (0:49:55)",
+   "exit=0 wall_s=3000 head=b2cc6c3"
+  ],
+  "torch_cuda_none.log": [
+   "414 passed, 3 skipped, 1 warning in 793.52s (0:13:13)",
+   "exit=0 wall_s=795 head=b2cc6c3"
+  ],
+  "torch_cuda_gpu1.log": [
+   "416 passed, 2 skipped, 1 warning in 775.54s (0:12:55)",
+   "exit=0 wall_s=777 head=b2cc6c3"
+  ]
+ },
+ "scripts": [
+  "artifacts/rl_ready/p2_6/rl11_cpu_003/run_cpu.sh",
+  "artifacts/rl_ready/p2_6/rl11_cpu_003/run_gpu_chain.sh"
+ ],
+ "fix_bytewise_selection": {
+  "log": "artifacts/rl_ready/p2_6/review_fixes_cpu_001/torch_selection.log",
+  "result": "107 passed"
+ },
+ "frozen_paths_vs_origin_main_62caecc": "empty diff (rl_benchmark configs, scripts/rl_ready, Phase 1 batched frozen modules, rl/termination.py, rl/vector_contract.py); rl/vector_env.py +13 lines (dispatch)",
+ "rl10": {
+  "file": "artifacts/rl_ready/p2_6/rl10_provenance_002.json",
+  "verdict": "PASS",
+  "runs": 7
+ },
+ "deviation": "GPU-visible suites with CUDA_VISIBLE_DEVICES=1 (GPU1 lock), GPU0 held by P2-5",
+ "verdict": "PASS"
+}

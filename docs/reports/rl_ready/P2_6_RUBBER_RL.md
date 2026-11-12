@@ -37,7 +37,8 @@ feedback; `robot_feedback_coupling: NOT_IMPLEMENTED_PHASE2`), perception `ideal_
 | RL-08 b Q1w bias at L/t 37.5 | REPORTED: +0.71 % (the 1 % trigger is not met) | `gpu_rl_b_001` |
 | RL-09 Native | **PASS** | §9, `p2_6_native_rubber_001.json` |
 | RL-10 provenance | **PASS** | `artifacts/rl_ready/p2_6/rl10_provenance_001.json` |
-| RL-11 Phase 1 non-regression | **PASS** | §10 |
+| RL-11 Phase 1 non-regression | **PASS** | §10 (rerun after the P6.7 fixes: §12) |
+| RL-12 host-memory growth over resets (`rubber_rl_tests_v5`, added after P6.7) | **PASS** (RSS growth 0.0 MiB over resets 20–80, bound 32; cache at its cap 16) | `gpu_rl12_hostmem_001`, §12 |
 
 Evidence files (`docs/evidence/rl_ready/`):
 
@@ -202,7 +203,7 @@ env code are identical.
 | v3 | `rubber_scripted_pivot_v1`: grip yaw toward the goal bearing plus radial move along the grip axis; developed on a coarse CPU stand-in, seeds 5000–5011 | 7000 + e | 8 / 8 | 0 | FAIL (preserved) |
 | v4 (last attempt) | `rubber_scripted_pivot_hold_v1`: the v3 approach plus a latched hold phase (hysteresis r_in 8 mm / r_out 30 mm, no yaw while holding, PD on the tip error with the observed tip velocity, deadband 3 mm); developed on the full-resolution GPU model, seeds 5000–5007, ≈ 1.0 GPU-h | 8000 + e | 7 / 8 | 5 | **PASS** |
 
-- **v3 failure.** The tip reached 0.7–6.5 mm of the goal by step 20 in 6 envs, then swung 10–35 mm. The controller
+- **v3 failure.** The tip reached 0.7–6.5 mm of the goal by step 20 in 5 envs (erratum F9: first written as 6; note `p2_6_rubber_rl_002_note_001.json`), then swung 10–35 mm. The controller
   switched its yaw loop on and off at a single radius, and the coarse stand-in had damped that swing.
 - **v4 run** `gpu_rl05_v4_001`:
   - Scripted returns −14.2 / −0.7 / −5.1 / −7.0 / −4.0 / −6.0 / −16.5 / −30.3; zero-action returns −44.3 / −1.7 /
@@ -240,6 +241,13 @@ env code are identical.
   depends on the goal direction (§5).
 - Throughput is ≈ 1 env-step/s aggregate at N 8–16 (5,226 substeps per 20 ms). The labelled `rubber_rl_v1` variant is
   ≈ 3× faster.
+- *Additive (P6.7 review, C2), details in §12:*
+  - **F1, fixed.** Host memory used to grow by about 2.2 MB per reset. RL-06 and RL-10 did not sample host RSS.
+  - **F5, documented.** Length and thickness are fixed per env for its lifetime, and `reset(seeds=None)` repeats the
+    episode.
+  - **F2–F4, fixed.** These were contract divergences from Phase 1.
+  - **Z-c.** RL-07 stays SHARED_GPU with limited co-tenant sampling.
+  - **F8.** The P2-6 env tests are NOT_RUN in GitHub CI, which has no Torch.
 
 ## 8. User-facing note: BLAS threads and reset cost
 
@@ -254,6 +262,11 @@ env code are identical.
 - **Bit reproducibility.** The inverse's bits depend on the BLAS thread count.
   - Single and batched solvers in one process always agree (L0).
   - Bits are not comparable across processes with different settings.
+- *Additive (P6.7 review, F1):* host memory per reset.
+  - Until `e5dd879`, the F8 inverse cache kept one entry (1.6–3.1 MB) per density-resampling reset and never evicted.
+  - The review measured +2.19 MB of host RSS per reset at N 8 (DIAGNOSTIC).
+  - The cache is now a bounded LRU of max(4, 2 N) entries, with byte-identical results.
+  - RL-12 shows flat RSS (§12).
 - Measured (§10): RL-06 with `OPENBLAS_NUM_THREADS=1` has a reset median of 0.081 s and a p95 of 0.093 s, against 0.401 / 5.004 s with the default pool (same 53 resets).
 
 ## 9. RL-09 Full Native verification (P6.4 / P6.5; merged from `claude/rl-rubber-p26n`)
@@ -515,3 +528,109 @@ Every evidence writer refuses to overwrite. The re-measure run above has the sam
 - Friction above 0.3 needs a law and an envelope that pass at μ 0.4 or more. Law v3 stays translational-only (K2-1).
 - Throughput: ≈ 1 env-step/s at N 8–16 at full resolution. No early-out or substep reduction is claimed.
 - `threadpoolctl` is not in either venv. The OpenBLAS limit is a documented user setting (§8), not enforced in code.
+
+## 12. P6.7 review follow-ups (additive correction note, 2026-11-12; no existing row re-scored)
+
+The review is `docs/reports/rl_ready/P2_6_ACCEPTANCE_REVIEW.md` on `claude/rl-ready-rubber-physics`, verdict
+GO_WITH_CONDITIONS. Everything below is additive: earlier rows, verdicts and artifacts are unchanged.
+
+**Byte-identity.** The fixes change neither the physics nor the 78-dim policy observation, and every declared row
+stays valid. Evidence at `e5dd879`, CPU, Torch venv:
+
+- RL-02 a L0 byte-wise parity at N 1 and N 3 with a partial reset;
+- RL-04 a isolation and masked reset equal to a fresh env;
+- the rubber batched suite and the projection-assembly bytewise tests;
+- the Native tests.
+
+That is 107 passed (log `artifacts/rl_ready/p2_6/review_fixes_cpu_001/torch_selection.log`).
+
+| Finding | Change (commit) | Test |
+| --- | --- | --- |
+| Z-d | merged `origin/main` `62caecc` (PR #14 / #15, the opt-in `alias_free_v2` contact variant) in `5692726`. No P2-6 file overlaps it; the frozen paths still equal `main` | RL-11 rerun below |
+| F1 (MEDIUM) | `BatchedRubberMaterial._proj_inv_cache` is a bounded LRU with `max(PROJ_INV_CACHE_MIN = 4, 2 N)` entries (`e5dd879`). It only memoises a deterministic function of (scene, float32 mass), so the cap cannot change a result | `tests/test_rubber_proj_inv_cache_bounded.py` (CPU, no Torch): after 3 × cap resets the staged inverses are bytewise equal to the frozen `tlmpm_rubber_v1.projection_blocks`; the cache stops growing at the cap; eviction followed by recompute is bytewise |
+| F1 measured | `rubber_rl_tests_v5` (`5200ed1b…f0eb`, committed alone at `9af9164`) = v4 + row RL-12 and nothing else. Run `gpu_rl12_hostmem_001` | **RL-12 PASS**, details below |
+| F7 | `batched/rubber_material_batch.py` added to `tests/test_rubber_p2_6_frozen_sources.py`. The pins of `rl/rubber_env.py`, `rl/rubber_contract.py` and `native_rubber_host.py` were updated, each with its declared reason | pin test |
+| F2 | `env.metadata["privileged_info_keys"]` and `env_metadata` list `invalid_reason`, `termination_reason` and `invalid_penalty_applied`. The contract `rubber_vector_contract_v1` gains one additive labelling clause. `observation_metadata()["info_privileged"]` is unchanged | `tests/test_rubber_rl_contract_f2_f4.py`; `tests/test_rubber_rl_f3_classification.py` checks that the Phase 1 key list copy is current |
+| F3 | `InvalidRubberEnvs` subclasses the Phase 1 `InvalidBatchEnvs` (still a `FloatingPointError`), and its message carries the `InvalidBatchEnvs` signature. Results: `classify_exception` → `("task", "MATERIAL_INVALID")`; `classify_process_exit` → `task` / `STRICT_INVALID_ENV`. No Phase 1 file changed | both test files (strict env raise; traceback classification) |
+| F4 | Phase 1 options on the rubber backend raise `UNSUPPORTED_OPTION`, not `TypeError`: `evaluation_stream`, `terminal_capture`, `input_guard`, `tool_mount`, `grip_contact_profile` and any unknown key | `tests/test_rubber_rl_contract_f2_f4.py` |
+| F5 | Documented below, and tested: `rebuild()` to new slots equals a fresh env and passes the contract; `reset(seeds=None)` repeats the draws | `tests/test_rubber_rl_contract_f2_f4.py` |
+| F9 | (a) §5 now says 5 envs, not 6 (with note `p2_6_rubber_rl_002_note_001.json`). (b) The `native_rubber_host.py` docstring and the `EPISODE["task_config"]` default now name v2; the runners always set the family id. (c) The v4 runner docstring is fixed. (d) The vacuous `or True` in `test_quaternion_helpers` is removed, and the test passes without it. (e) The note `rl11_cpu_001/commit_note_001.json` gives the head of each log there. (f) The frozen v2 config's stale `resolution_variants` note ("v3 envelope row n_t 3: 0.8") is listed here as an erratum; the frozen config is not edited | — |
+
+### F5: limits of the randomisation (user-facing)
+
+- **Friction** is fixed at 0.3 (§1).
+- **Geometry.** Length and thickness are drawn per env at construction (`slot_seed`) and stay fixed for that env's
+  lifetime. A slot change on a partial reset is refused (`UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET`); `rebuild()`
+  with a new `RubberStripTaskFamily` is the only route, and it rebuilds the batch and graphs. Geometry therefore varies
+  across envs, not across episodes of one env.
+- **Seeds.** `reset(seeds=None)` reuses each env's current seed, so the next episode repeats the identical draws
+  (material, traction, preload, goal). Pass new seeds per episode to get new draws.
+
+### RL-12: host-memory growth over resets (`gpu_rl12_hostmem_001`)
+
+**Run setup.**
+
+- Protocol `rubber_rl_tests_v5`; commit `eb8a524`, clean.
+- GPU1 (RTX 5090, driver 570.211.01), 10:49–11:09 KST. SHARED_GPU: PIDs 2969079 and 3014498 belonged to other
+  projects' processes.
+- `OPENBLAS_NUM_THREADS=1`.
+- N 8, slot_seed 0. 80 iterations, each a zero-action step followed by a partial reset with a fresh seed (12100 + i).
+  Every reset drew a new density (80 distinct).
+
+**Results.**
+
+| Quantity | Value |
+| --- | --- |
+| F8 cache entries | 8 after the full reset → 16 (the cap) by reset 10 → 16 at reset 80 |
+| Host RSS (VmRSS after `gc.collect()`) | 2,184.9 MiB at reset 0; 2,298.0 MiB from reset 10 to reset 80 |
+| RSS growth over resets 20–80 | **0.0 MiB** (bound 32 MiB); slope 0.0 MiB per reset |
+| Before the fix (review DIAGNOSTIC, same N) | +2.19 MiB per reset, linear |
+| Reset median / p95 | 0.077 / 0.093 s |
+| Finite outputs / infrastructure errors | all finite / none |
+
+**Verdict: PASS.** Evidence `docs/evidence/rl_ready/p2_6_rubber_rl_004.json`. RL-10 was re-checked with this run
+included (`artifacts/rl_ready/p2_6/rl10_provenance_002.json`): all 7 formal runs PASS.
+
+### Z-c: RL-07 stays SHARED_GPU
+
+- RL-07 was not rerun. The GPUs on this host always carry other projects' processes, so an EXCLUSIVE window cannot be
+  guaranteed.
+- The RL-07 row keeps its SHARED_GPU label. Its co-tenant sampling is limited to nvidia-smi samples at the start and
+  end of the 12-minute row, with no continuous sampler.
+- Its throughput figures are therefore SHARED-window measurements, not acceptance-grade EXCLUSIVE numbers. The same
+  holds for every other SHARED row in §4.
+
+### F8: CI coverage
+
+GitHub CI has no Torch, so every P2-6 env, dispatch, scripted-controller and Torch-gated review-fix test is NOT_RUN
+there. They are evidenced by the local Torch-venv runs (§10 and below), which act as the merge gate.
+
+CI does run the Torch-free P2-6 tests:
+
+- the declarations and pins;
+- the bounded-cache test;
+- the F3 classification;
+- the envelope loader;
+- the projection assembly.
+
+### RL-11 rerun after the fixes (final code)
+
+All suites ran at `b2cc6c3`. `src/` is identical to `e5dd879`; later commits change only the RL-12 runner, the
+RL-10 checker, the declaration, evidence and docs. Logs are in `artifacts/rl_ready/p2_6/rl11_cpu_003/`.
+
+| Check | Result |
+| --- | --- |
+| `.venv` full suite, `CUDA_VISIBLE_DEVICES=''` | 2,932 passed, 41 skipped, 6 xfailed, 0 failed (3,000 s) |
+| `.venv` full suite, `CUDA_VISIBLE_DEVICES=1` (GPU1 lock) | 2,932 passed, 41 skipped, 6 xfailed, 0 failed (3,000 s) |
+| Torch selection, `CUDA_VISIBLE_DEVICES=''` | 414 passed, 3 skipped (795 s) |
+| Torch selection, `CUDA_VISIBLE_DEVICES=1` (GPU1 lock) | 416 passed, 2 skipped (777 s) |
+| Frozen paths vs `origin/main` `62caecc` | empty diff: `configs/rl_benchmark`, `scripts/rl_ready`, the Phase 1 `batched/{constitutive,errors,material_batch,particle_contacts}.py`, `rl/termination.py` and `rl/vector_contract.py`. `rl/vector_env.py` differs by +13 lines, the dispatch branch only |
+
+- The Torch selection is the §10 selection plus `test_rubber_proj_inv_cache_bounded.py`, the new review-fix tests and
+  main's `test_batched_particle_contacts_v2.py`.
+- The skips are NOT_RUN: Isaac Lab venv-gated workload B, artifact-gated tests, and the GPU stream test when CUDA is
+  hidden.
+- The GPU-visible suites ran on GPU1 because P2-5 held GPU0 when they were queued. GPU1 was SHARED with other
+  projects' processes.
+
+**RL-11: PASS.**

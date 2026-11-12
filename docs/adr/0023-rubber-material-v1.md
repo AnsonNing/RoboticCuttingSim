@@ -2402,3 +2402,22 @@ Branch `claude/rl-rubber-p26` (Native work merged from `claude/rl-rubber-p26n`, 
   - RL-05 passed only with the third declared controller;
   - ≈ 1 env-step/s.
 - **Open.** P6.7 xhigh review; Z1–Z3 merge and the external pin.
+- **Additive note (P6.7 xhigh review, GO_WITH_CONDITIONS; C2 and Z-a…Z-d, 2026-11-12).** No existing row was
+  re-scored. Details are in report §12.
+  - **F1 (MEDIUM), fixed.** The F8 inverse cache of `BatchedRubberMaterial` grew by one entry (1.6–3.1 MB) per
+    density-resampling reset, measured at +2.19 MB host RSS per reset. RL-06 / RL-10 did not sample host RSS.
+    - The cache is now a bounded LRU of max(4, 2 N) entries, with byte-identical results (`e5dd879`).
+    - `rubber_rl_tests_v5` (`5200ed1b…f0eb`, committed alone at `9af9164`) adds only RL-12: **PASS**. RSS was flat at
+      2,298 MiB over 80 resets (growth 0.0 ≤ 32 MiB) and the cache stayed at its cap of 16.
+  - **F2–F4, fixed by additive API changes.** Physics and the policy observation are byte-identical.
+    - F2: `privileged_info_keys` metadata.
+    - F3: a strict-mode invalid rubber env is a task outcome (`InvalidRubberEnvs` ⊂ `InvalidBatchEnvs`).
+    - F4: Phase 1 options raise `UNSUPPORTED_OPTION`.
+  - **F5, documented and tested.** Geometry is per env, not per episode; `rebuild()` is now tested; `reset(seeds=None)`
+    repeats the draws.
+  - **F7.** `rubber_material_batch.py` is pinned.
+  - **F9.** Text errata, including RL-05 v3 "6 envs" → 5.
+  - **Z-c.** RL-07 is not rerun and keeps the SHARED_GPU label, with only start / end co-tenant samples.
+  - **F8.** P2-6 env tests are NOT_RUN in CI (no Torch); the local Torch-venv runs are the merge gate.
+  - **Z-d.** `origin/main` `62caecc` was merged (`5692726`).
+  - **C3 (open).** The §23.6 numbering collision with P2-5 is resolved when P2-5 lands.
