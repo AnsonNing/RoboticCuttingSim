@@ -22,15 +22,21 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 - **Z1 Phase 2 xhigh acceptance review: GO_WITH_CONDITIONS**
   ([PHASE2_ACCEPTANCE_REVIEW.md](reports/rl_ready/PHASE2_ACCEPTANCE_REVIEW.md)): integration PASS; full `.venv` suite
   3,011 passed / 0 failed; Isaac Lab Torch selection 521 passed / 0 failed; findings LOW/INFO.
-  - **In progress:**
-    - doc conditions D1–D3: final-report fixes, the calibration→RL handoff note, the batching-gain and RL-05 5/8
-      errata, README contract wording;
-    - D4 (this rewrite);
-    - a supplementary exclusive-GPU RL-07 row on the idle GPU1 (M2).
-- **Next:**
-  - Z2: the Phase 2 PR to `main` (CI green, review linked, Done table and known limitations in the body).
-  - Z3: a new pin in the external agentic optimizer repository at the merge commit → SYNCED.
-  - Fill in FINAL_REPORT §(i), then create DONE.
+  - Conditions done: D1–D4 (final-report fixes, the calibration→RL handoff note, errata, README, this file) and
+    M2 (a supplementary EXCLUSIVE_GPU RL-07 row, within ~2 % of the shared formal row).
+  - Re-check at 9ea50a6: **GO** (Addendum A).
+- **Phase 2 merged into `main`: PR #16, merge `7347c9a`, 2026-11-12.**
+  - CI green: push run 2,951 passed and pull_request run 2,981 passed, 0 failed.
+  - Box 6 of the Phase 2 Done list then waited only for the external pin (done below).
+- **Z3 done: SYNCED.** The external agentic optimizer repository pinned `rcs_rl_vector_v3` and
+  `rcs_rubber_strip_v1` at `7347c9a`.
+  - Smoke PASS: CPU, host and GPU contracts at N=2 with a partial reset, EXCLUSIVE_GPU.
+  - External repository PR #5 merged, with a pointer to the final report.
+  - Both receipt chains verify, so Phase 2 Done box 6 is PASS.
+- **In progress:**
+  - follow-up docs PR: FINAL_REPORT finalised (§9 filled in), README, the Z1 Addendum A, and this file;
+  - an xhigh check, CI, and the merge;
+  - then create DONE.
 - Earlier 進行中 entries (Phase 1 merges, SYNCED records, p16c1 narrative, Phase 2 step narrative) moved
   unchanged to [Status log](#status-log-moved-from-進行中-2026-11-12) below.
 
@@ -41,7 +47,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 - P1-6 defaults in force until the user decides otherwise (none blocks work):
   U1 optimizer-written candidate code runs on GPU1 only (not GPU0);
   U2 speed gate (first optimizer acceptance uses `acceptance_v2`, D-14; `acceptance_v1` is frozen and not used):
-  v2 times the cutting phase (window being finalised to start at tool contact), N ∈ {1, 16}, 3 ABBA pairs, N=16
+  v2 times the cutting phase (G9 window steps 229–400, frozen at `bfe6d5e`, D-14), N ∈ {1, 16}, 3 ABBA pairs, N=16
   paired median ≥ 1.05 with all 3 pairs faster, every N ≥ 0.97 (v1 was: N=16 median ≥ 1.05 with ≥ 4/5 pairs
   faster); both: VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms (shared GPU: WARN up
   to + 10 ms);
@@ -73,7 +79,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 
 Parity matrix ([P1_PARITY_MATRIX.md](reports/rl_ready/P1_PARITY_MATRIX.md)): **9 PASS / 6 PARTIAL / 1 UNSUPPORTED**
 (cameras in the batched path). CUT stays PARTIAL, so "whole-RCS RL-ready" is PARTIAL for CUT. Checkbox 7
-(external optimizer sync) is PENDING. Throughput rows: the formal `EXCLUSIVE_GPU` table on GPU1
+(external optimizer sync) is PASS: SYNCED at `bfe6d5e` (p16c0) and `9ee1e9d` (p16c1). Throughput rows: the formal `EXCLUSIVE_GPU` table on GPU1
 ([P1_PERFORMANCE_TABLE.md](reports/rl_ready/P1_PERFORMANCE_TABLE.md), 20 of 23 runs exclusive, code `691b571`);
 P1-4 and every partial-reset latency are `SHARED_GPU`.
 
@@ -131,7 +137,7 @@ P1-4 and every partial-reset latency are `SHARED_GPU`.
   amended in place four times before any baseline (two loosened a gate after the data had been seen); it freezes at
   the Phase 1 merge (D-11). Its G9 window is pre-contact at N=8/16, so a P1-6 acceptance needs `acceptance_v2`. The
   optimizer-side design and adapter live in the external agentic optimizer repository (CPU rehearsal PASS; live GPU
-  rehearsal and first pin NOT_RUN until the merge). P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks.
+  rehearsal and first pin NOT_RUN at the time; the first pin ran later as p16c0). P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks.
 - **Consolidation merged (3674780)**: `grip_contact_profile` passthrough (`UNSUPPORTED_GRIP_CONTACT_PROFILE`),
   `FAIL_INTEGRITY` in `evaluate()`, one `material_termination_bits` mapping, configured-scene `tasks=`, parity
   matrix, README section. Tests at 53b915e: full CPU 2443 passed / 1 failed / 28 skipped / 6 xfailed; Torch 343 /
