@@ -79,7 +79,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 
 Parity matrix ([P1_PARITY_MATRIX.md](reports/rl_ready/P1_PARITY_MATRIX.md)): **9 PASS / 6 PARTIAL / 1 UNSUPPORTED**
 (cameras in the batched path). CUT stays PARTIAL, so "whole-RCS RL-ready" is PARTIAL for CUT. Checkbox 7
-(external optimizer sync) is PENDING. Throughput rows: the formal `EXCLUSIVE_GPU` table on GPU1
+(external optimizer sync) is PASS: SYNCED at `bfe6d5e` (p16c0) and `9ee1e9d` (p16c1). Throughput rows: the formal `EXCLUSIVE_GPU` table on GPU1
 ([P1_PERFORMANCE_TABLE.md](reports/rl_ready/P1_PERFORMANCE_TABLE.md), 20 of 23 runs exclusive, code `691b571`);
 P1-4 and every partial-reset latency are `SHARED_GPU`.
 
@@ -137,7 +137,7 @@ P1-4 and every partial-reset latency are `SHARED_GPU`.
   amended in place four times before any baseline (two loosened a gate after the data had been seen); it freezes at
   the Phase 1 merge (D-11). Its G9 window is pre-contact at N=8/16, so a P1-6 acceptance needs `acceptance_v2`. The
   optimizer-side design and adapter live in the external agentic optimizer repository (CPU rehearsal PASS; live GPU
-  rehearsal and first pin NOT_RUN until the merge). P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks.
+  rehearsal and first pin NOT_RUN at the time; the first pin ran later as p16c0). P1-6 GPU jobs use the `rcs_rl_runner/gpu<N>.lock` locks.
 - **Consolidation merged (3674780)**: `grip_contact_profile` passthrough (`UNSUPPORTED_GRIP_CONTACT_PROFILE`),
   `FAIL_INTEGRITY` in `evaluate()`, one `material_termination_bits` mapping, configured-scene `tasks=`, parity
   matrix, README section. Tests at 53b915e: full CPU 2443 passed / 1 failed / 28 skipped / 6 xfailed; Torch 343 /
