@@ -244,7 +244,7 @@ contacts and impulses on the same state):
   - O(N·C) bucket memory (about 4.3 MiB/env measured) and an int32 cap of N ≤ 2495 for the TRIM workpiece;
   - a diagnostic per-env counter `shrink_engaged_substeps` (PR #15, receipt only).
 
-**All backends share one contract (`rl.vector_contract`):**
+**Both cutting backends share one contract (`rl.vector_contract`):**
 
 - `reset(seeds=, env_ids=)` (masked partial reset); `step(actions[N,A])` returns Torch device tensors;
 - `info["termination_reason"]` (`rl.termination`: material, rigid, grasp lost, IK, truncation, input guard,
@@ -252,6 +252,10 @@ contacts and impulses on the same state):
 - `evaluate(env_ids)` through the **frozen** `goals.evaluate_goal`. A non-finite env gets a structured
   `FAIL_INTEGRITY` entry;
 - `receipt()` with computed fidelity.
+
+The rubber backend `kinematic_grip_batched` has its own contract (`rl.rubber_contract`, `rubber_vector_contract_v1`,
+actions `[N, 6]`) and its own evaluator (`rubber_tracking_eval_v1`, not `goals.evaluate_goal`). It shares only the
+`reset` / `step` / `termination_reason` / `privileged_info_keys` conventions.
 
 **Around the env:**
 
@@ -352,7 +356,8 @@ summary and every recorded FAIL: [final report](docs/reports/rl_ready/FINAL_REPO
     variables are per env and are cleared by a partial reset.
 
   Recipes: `configs/materials/rubber_generic_{soft,visco}_v1.json`.
-- **Contact laws `grid_node_penalty_coulomb_v1/v2/v3`.** v1 is the default. v2 is the law of the RL task. v3
+- **Contact laws `grid_node_penalty_coulomb_v1/v2/v3`.** v1 is the code default and has the worst formal record
+  (see the limitations below). v2 is the law of the RL task. v3
   (patch slip-rate equalisation) is valid for straight translational sliding only: review finding K2-1 showed an
   unbounded patch torque under rotation or sideways drag.
 - **S1 self-penetration detector** (`surface_grid_v1`): detection only. It sets the sticky invalid bit
@@ -380,8 +385,13 @@ summary and every recorded FAIL: [final report](docs/reports/rl_ready/FINAL_REPO
     ledger.
 
   The real-data manifest `configs/rubber/calibration/none_v1.json` is `NO_REAL_DATA`, and the real-data protocol
-  `rubber_calib_tests_real_v1` is NOT_RUN. Read the guidance for real data in
+  `rubber_calib_tests_real_v1` exists only as an outline (no thresholds; NOT_RUN). Read the guidance for real data in
   [P2_5_RUBBER_CALIBRATION.md](docs/reports/rl_ready/P2_5_RUBBER_CALIBRATION.md) §12.2 first.
+
+  Calibration results do not plug directly into the RL task. P2-5 fits friction with contact law v3, while the RL
+  task uses law v2 at μ 0.3. Fitted θ are specific to n_t 4, while the RL slots run at n_t 4 / 5 / 6. The RL task
+  draws its material from the ranges of `rubber_strip_drag_v2`, not from a recipe. A real-data user needs a new task
+  config, a law-v2 friction fit and the resolution bias shift (final report §5).
 
 ```python
 import torch
@@ -417,6 +427,12 @@ inverses on the host, and with OpenBLAS's default all-core pool on a loaded host
   sealing and one-shot machinery work. The declared staged fit stopped on its per-stage evaluation caps and failed fit
   quality, held-out prediction and parameter recovery. A final blind re-test was estimated at 7.1–10.2 GPU-h and was
   not run.
+- The near-incompressibility treatment (reduced bulk ratio κ = 20 μ) is a model-form error: volume ratio J − 1 =
+  +5.4 % and nominal stress −4.2 % at stretch 2.0, and bending stiffness −1.6 % (ADR 0023 §6). Do not read volume
+  change or confined responses as rubber physics.
+- The code default contact law is v1, which failed RUBBER-CONT-01 / 03 / 04 / 05. The friction envelope is checked only
+  in the RL task family. Both recipes carry a nominal table friction of 0.8, so a material built directly from a
+  recipe without an explicit law runs v1 at μ 0.8 with no refusal.
 - A fitted θ is **resolution-specific** (`rubber_ref_v1`, n_t 4). Do not carry it to another resolution without the
   bias shift.
 - No cameras, sensors or recorders in the batched rubber env (`UNSUPPORTED_*`). The P2-6 env tests need Torch, so
@@ -431,7 +447,8 @@ CUDA_VISIBLE_DEVICES='' OPENBLAS_NUM_THREADS=1 PYTHONPATH=/home/ningan/rcs_rl_da
   .deps/isaacsim-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_rl_*.py \
   tests/test_rubber_device_staging.py tests/test_rubber_scripted.py tests/test_native_rubber_*.py
 # GPU rows (P2-6 runner) under the blocking per-GPU flock; sets OPENBLAS_NUM_THREADS=1
-scripts/rubber/p2_6/queue_gpu_rows.sh <gpu index> <rows, e.g. RL-01> artifacts/rl_ready/<new_run>
+# Row names: RL01 RL02b RL02c RL03 RL04b RL05 RL06 RL07 RL08 RL08b
+scripts/rubber/p2_6/queue_gpu_rows.sh <gpu index> <rows, e.g. RL01,RL02b> artifacts/rl_ready/<new_run>
 ```
 
 Reports in `docs/reports/rl_ready/`:
