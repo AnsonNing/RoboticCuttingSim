@@ -4,9 +4,15 @@
 (``EnvMajorGrid``: key ``env*C + cell``, no per-cell group binary search) and, by default, a per-env query shrink
 to ``2r + 2 dt V`` while every particle of the env is slower than ``V = shrink_speed_m_s``. Every scene compares
 with the frozen single solver after every substep (``np.array_equal`` on every array, as the v1 tests do) and
-asserts non-vacuity: contacts are non-zero, some particle receives >= 2 non-zero contributions, the shrink is
-active, and its speed check is necessary (disabling the check while keeping the shrunken reach changes the
-result of the fast env).
+asserts non-vacuity: contacts are non-zero, some particle receives >= 2 non-zero contributions, and the speed
+check is necessary (disabling the check while keeping the shrunken reach changes the result of the fast env).
+
+Where the shrink is engaged is read from the solver's own per-env counter (``shrink_engaged_substeps``, written by
+the contact kernel when it selects the shrunken reach). In the compressed block scenes it is engaged only in the
+first substep (later substeps are faster than V) and the TRIM scenes have no particle-particle contacts (PR #14
+review finding 1); ``test_shrink_engaged_under_slow_contacts_with_fast_slow_transitions`` is the scene where
+the shrink is engaged under real particle-particle contacts for many substeps, including a fast -> slow
+transition of one env.
 """
 from dataclasses import replace
 from types import SimpleNamespace
@@ -16,8 +22,9 @@ import pytest
 import warp as wp
 
 import test_batched_particle_contacts as T1
-from batched_fixtures import (SEQUENCE, advance_single, batch_material, compare_env, compare_snapshots, drive_solver,
-                              env_state, host_inputs, start_pose, step_material, trim_material)
+import test_batched_paths_parity as PP
+from batched_fixtures import (SEQUENCE, advance_single, batch_material, block_bed, compare_env, compare_snapshots,
+                              drive_solver, env_state, host_inputs, start_pose, step_material, trim_material)
 from robotic_cutting_sim.batched import layout
 from robotic_cutting_sim.batched import material_batch as MB
 from robotic_cutting_sim.batched import particle_contacts as PC
@@ -121,7 +128,10 @@ def test_env_major_grid_reproduces_warp_grouped_query_sequence(dims):
 @pytest.mark.parametrize("reference_dims", [PC.FROZEN_HASH_DIMS, T1.HEAVY], ids=["frozen_dims", "heavy_alias_5x5x5"])
 def test_block_scenes_v2_bitwise(reference_dims):
     """Compressed heterogeneous blocks with conflicting codes: v2 (shrink on/off) bitwise equal to the frozen
-    single after every substep; the shrink is active (all envs slow) and contacts are non-zero."""
+    single after every substep, with non-zero contacts. These scenes test the env-major regrouping; the shrink is
+    engaged only while every particle of an env is slower than V, here only in the first substep (the compressed
+    lattices and the table plane accelerate particles to metres per second), so the shrink under contact is
+    covered by ``test_shrink_engaged_under_slow_contacts_with_fast_slow_transitions``."""
     configs = [_config(o, reference_dims) for o in VARIANTS.values()]
     singles, batches = T1._block_scene(configs, reference_dims=None if reference_dims == PC.FROZEN_HASH_DIMS
                                        else reference_dims)
@@ -137,7 +147,9 @@ def test_block_scenes_v2_bitwise(reference_dims):
     assert r["particle_contact_mode"] == V2 and r["query_reach_slow_m"] < r["query_reach_frozen_m"]
     assert r["guard_violation_substeps"] == [0, 0, 0]
     assert plain.particle_contact_receipt()["query_reach_slow_m"] is None
-    assert shrink.particle_contact.fast_flag.numpy().tolist() == [0, 0, 0]
+    engaged = r["shrink_engaged_substeps"]
+    assert 1 <= sum(engaged) < 3*PP.SUBSTEPS, engaged     # engaged, but not in every substep (see the docstring)
+    assert plain.particle_contact_receipt()["shrink_engaged_substeps"] == [0, 0, 0]
 
 
 @pytest.mark.cpu_sim
@@ -156,7 +168,166 @@ def test_shrink_speed_check_is_necessary_and_exact():
     assert any(row[1][1] != [] for row in mismatches), "the shrink without its speed check must differ"
     for batch in batches:
         assert batch.contact_guard_violations.numpy().tolist() == [0, 0, 0]
-        assert batch.particle_contact.fast_flag.numpy().tolist() == [0, 0, 0]
+    # The checked batch never queries env 1 with the shrunken reach; the unchecked one always does.
+    checked, unchecked_engaged = (b.particle_contact.shrink_engaged.numpy().tolist() for b in batches)
+    assert checked[1] == 0 and unchecked_engaged[1] == 12, (checked, unchecked_engaged)
+
+
+# ----------------------------------------------------------------------------- shrink under slow contacts
+
+# Small, very soft lattice blocks (Pa), lifted 6 mm above the table plane and the fixture, the tool parked 0.3 m
+# away: nothing but the blocks' own stress, gravity and the particle contacts moves them, so every particle stays
+# far below V = 0.25 m/s. The lattice is compressed to 0.88 (spacing 1.76 mm < 2r = 1.8 mm) and the codes
+# alternate per x layer (1, 2, 1, ...), so every x-neighbour pair is a conflicting contact pair; an inward
+# velocity field keeps the layers pressed together for the whole scene.
+SLOW_BLOCKS = (((.016, .012, .010), dict(young=200.)),
+               ((.014, .014, .008), dict(young=300., contact_friction=.45, particle_contact_stiffness=.08)),
+               ((.018, .010, .010), dict(young=140.)))
+SLOW_SUBSTEPS = 24
+BOOST_SUBSTEPS = (6, 9)     # env 1 is boosted before substep 6 and restored to its pre-boost x, v before substep 9
+
+
+def _slow_contact_scene(contact_configs):
+    T = SLOW_SUBSTEPS+1
+    singles, beds = [], [[] for _ in contact_configs]
+    for size, config in SLOW_BLOCKS:
+        for out in [singles]+beds:
+            bed = block_bed(size, PP.OBSTACLES, **config)
+            bed.set_trajectory(*PP._trajectory((.3, .3), 0., T), np.full(T, -1, np.int32))
+            out.append(bed)
+    batches = [BatchedTLMPMv7_2(layout.pack_from_beds(b), "cpu", particle_contact=cfg)
+               for b, cfg in zip(beds, contact_configs)]
+    rng = np.random.default_rng(1)
+    states = []
+    for single in singles:
+        reference = single.reference.numpy()
+        center = reference.mean(0)
+        xe = (center+.88*(reference-center)+np.array([0., 0., .006])).astype(np.float32)
+        ve = (rng.normal(scale=.005, size=reference.shape)-3.*(reference-center)).astype(np.float32)
+        layer = np.round((reference[:, 0]-reference[:, 0].min())/.002).astype(int)
+        ce = (1+layer % 2).astype(np.int32)
+        states.append((xe, ve, ce))
+        single.x.assign(xe)
+        single.v.assign(ve)
+        single.code.assign(ce)
+        for array in (single.index, single.reaction, single.box_reactions, single.stats):
+            array.zero_()
+    for batch in batches:
+        for name, k in (("x", 0), ("v", 1), ("code", 2)):
+            getattr(batch, name).assign(np.concatenate([s[k] for s in states]))
+        for name in ("poses", "twists", "cuts"):
+            getattr(batch, name).assign(np.concatenate([getattr(s, name).numpy() for s in singles]))
+        batch.zero_control_step_accumulators()
+    return singles, batches
+
+
+def _env_rows(batch, e):
+    offsets = batch.packed.particle_offset
+    return slice(int(offsets[e]), int(offsets[e+1]))
+
+
+def _edit_env(obj, rows, x=None, v=None):
+    """Write x / v of one env (``rows`` of a batch, None for a single) identically on every side."""
+    for name, value in (("x", x), ("v", v)):
+        if value is not None:
+            array = getattr(obj, name)
+            host = array.numpy()
+            host[slice(None) if rows is None else rows] = value
+            array.assign(host)
+
+
+@pytest.mark.cpu_sim
+def test_shrink_engaged_under_slow_contacts_with_fast_slow_transitions():
+    """The query shrink is engaged under real particle-particle contacts for many substeps and stays bitwise.
+
+    Envs 0 and 2 are slow (|v| < V) with non-zero contacts in every substep: the contact kernel must select the
+    shrunken reach for them in every substep (its own counter ``shrink_engaged``, read after every substep).
+    Env 1 is slow, then 30 of its particles are boosted to 20 m/s for three substeps (fast: the frozen reach),
+    then its x and v are restored to the pre-boost values (a teleport; the same edit on the single and on every
+    batch), after which it is slow again and must be queried with the shrunken reach again. Every env stays
+    bitwise equal to its frozen single after every substep. A control batch whose speed check never fires (the
+    shrunken reach kept for env 1 while it is fast) must differ in env 1, so the scene detects a fast-flag
+    lookup that reads the wrong entry, a shrink that is skipped after the first substep, or a flag that is not
+    cleared after a fast substep."""
+    base = _config({}, PC.FROZEN_HASH_DIMS)
+    singles, batches = _slow_contact_scene([base, base])
+    checked, unchecked = batches
+    unchecked.particle_contact.config = replace(unchecked.particle_contact.config, shrink_speed_m_s=1.0e3)
+    rows = _env_rows(checked, 1)
+    rng = np.random.default_rng(2)
+    boosted = rng.choice(rows.stop-rows.start, 30, replace=False)
+    direction = rng.normal(size=(30, 3))
+    boost = (20.*direction/np.linalg.norm(direction, axis=1, keepdims=True)).astype(np.float32)
+    saved = None
+    engaged, contacts, speeds, mismatches = [], [], [], []
+    previous_engaged = np.zeros((2, 3), np.int64)
+    previous_contacts = np.zeros(3)
+    for substep in range(SLOW_SUBSTEPS):
+        if substep == BOOST_SUBSTEPS[0]:
+            saved = singles[1].x.numpy().copy(), singles[1].v.numpy().copy()
+            v_boost = saved[1].copy()
+            v_boost[boosted] = boost
+            for obj, r in ((singles[1], None), (checked, rows), (unchecked, rows)):
+                _edit_env(obj, r, v=v_boost)
+        elif substep == BOOST_SUBSTEPS[1]:
+            for obj, r in ((singles[1], None), (checked, rows), (unchecked, rows)):
+                _edit_env(obj, r, x=saved[0], v=saved[1])
+        speeds.append([float(np.linalg.norm(s.v.numpy(), axis=1).max()) for s in singles])
+        for single in singles:
+            single.step()
+        for batch in batches:
+            batch.step()
+        mismatches.append([[compare_env(batch, e, single) for e, single in enumerate(singles)] for batch in batches])
+        now = np.array([b.particle_contact.shrink_engaged.numpy() for b in batches], np.int64)
+        engaged.append((now-previous_engaged).tolist())
+        previous_engaged = now
+        total = checked.stats_sum.numpy().reshape(3, -1)[:, 4]
+        contacts.append((total-previous_contacts).tolist())
+        previous_contacts = total.copy()
+    engaged, contacts, speeds = np.array(engaged), np.array(contacts), np.array(speeds)
+    fast = np.zeros(SLOW_SUBSTEPS, bool)
+    fast[BOOST_SUBSTEPS[0]:BOOST_SUBSTEPS[1]] = True
+    # Bitwise: every env of the checked batch after every substep.
+    assert all(row[0] == [[], [], []] for row in mismatches), [(i, row[0]) for i, row in enumerate(mismatches)]
+    # The scene is what it claims: envs 0, 2 always slower than V, env 1 slower than V outside the boost.
+    V = PC.DEFAULT_SHRINK_SPEED_M_S
+    assert speeds[:, [0, 2]].max() < V and speeds[~fast, 1].max() < V and speeds[fast, 1].min() > V, speeds
+    # Envs 0 and 2: shrunken reach in every substep, with non-zero contacts in every substep.
+    assert (engaged[:, 0, [0, 2]] == 1).all(), engaged[:, 0]
+    assert (contacts[:, [0, 2]] > 0).all(), contacts
+    # Env 1: shrunken reach before and after the boost (fast -> slow transition), frozen reach while fast;
+    # contacts while it is queried with the shrunken reach after the transition.
+    assert engaged[:, 0, 1].tolist() == (~fast).astype(int).tolist(), engaged[:, 0, 1]
+    assert (contacts[BOOST_SUBSTEPS[1]:, 1] > 0).sum() >= 5, contacts[:, 1]
+    assert (contacts[:BOOST_SUBSTEPS[0], 1] > 0).all(), contacts[:, 1]
+    # Control: without the speed check env 1 keeps the shrunken reach while fast, and the result differs there
+    # (the boosted substeps miss contacts), while the slow envs 0 and 2 stay bitwise.
+    assert (engaged[:, 1, 1] == 1).all()
+    assert all(row[1][0] == [] and row[1][2] == [] for row in mismatches)
+    assert not any(row[1][1] for row in mismatches[:BOOST_SUBSTEPS[0]])
+    assert any(row[1][1] for row in mismatches[BOOST_SUBSTEPS[0]:BOOST_SUBSTEPS[1]]), "control must differ"
+    receipt = checked.particle_contact_receipt()
+    assert receipt["shrink_engaged_substeps"] == engaged[:, 0].sum(0).tolist()
+    assert receipt["guard_violation_substeps"] == [0, 0, 0]
+
+
+def test_v2_launch_refuses_radius_or_dt_other_than_construction():
+    """``reach_slow`` is derived from the construction radius and dt; a launch with other values (a caller that
+    sub-cycles with a larger dt, or a different radius) is refused before anything runs, not silently unsafe."""
+    singles, batches = _slow_contact_scene([_config({}, PC.FROZEN_HASH_DIMS)])
+    solver = batches[0]
+    contacts = solver.particle_contact
+    assert (contacts.construction_radius, contacts.construction_dt) == (solver.radius, solver.dt)
+    impulse = solver.impulse.numpy().copy()
+    for r, dt in ((solver.radius, 2*solver.dt), (1.5*solver.radius, solver.dt), (solver.radius, .5*solver.dt)):
+        with pytest.raises(UnsupportedBatchConfiguration) as info:
+            contacts.launch(solver, r, dt)
+        assert info.value.code == "UNSUPPORTED_PARTICLE_CONTACT_MODE"
+        assert "differs from the construction" in str(info.value)
+    assert np.array_equal(solver.impulse.numpy(), impulse)
+    assert contacts.shrink_engaged.numpy().tolist() == [0, 0, 0]
+    contacts.launch(solver, solver.radius, solver.dt)     # the construction values (every current caller)
+    assert contacts.shrink_engaged.numpy().tolist() == [1, 1, 1]
 
 
 # ----------------------------------------------------------------------------- TRIM scenes
