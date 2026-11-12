@@ -587,9 +587,12 @@ decides otherwise. None blocks work.
 | U-P2-5 | Prony identifiability at n_t 4 | Keep fitted θ labelled resolution-specific; the bias size is unmeasured | Fit with an n_t 6 forward model (several-fold GPU cost) |
 | U-P2-6 | P2-5 synthetic recovery FAIL | The v2 FAIL is this round's result | Fund a v3 (about 9–10 GPU-h: branch-modulus parametrisation, joint stage from the start, Broyden Jacobian updates, new sealed dataset) |
 
-Two further items need the user, per the Phase 2 review (§4.4): whether `threadpoolctl` (or an in-code guard) may be
-added to enforce `OPENBLAS_NUM_THREADS` (default in force: a documented user setting), and whether GitHub CI gets a
-Torch job (default in force: the local Torch-venv runs are the gate for the P2-6 tests).
+Two further items were added after the Phase 2 review (§4.4) as U-P2-7 and U-P2-8:
+
+| Id | Question | Default in force | Alternative |
+| --- | --- | --- | --- |
+| U-P2-7 | BLAS threads for the rubber reset | `OPENBLAS_NUM_THREADS=1` is a documented user setting (README, P2-6 report §8), not enforced; reset bits are comparable only across processes with the same setting | Install `threadpoolctl` in the venvs, or add an in-code guard |
+| U-P2-8 | Torch in GitHub CI | Keep CI as is; every Torch-gated test (all P2-6 env tests, the Phase 1 vector-env tests) is NOT_RUN there and runs locally before merges | A CPU Torch CI job (CI already takes about 2 h) |
 
 ## 7. Resource use
 
