@@ -489,6 +489,46 @@ Any further fit attempt on this dataset would be a new, separately declared prot
 post-reveal (the truth is now known). It could not count as a blind validation. A blind re-test needs a new sealed
 formal dataset.
 
+### 11.2 Development evidence and revised estimate: v3 NOT RUN (exceeds 8 GPU-h)
+
+Development used the revealed formal_001 fit split only, labelled development and never scored. Code: `e868a58`,
+`340a385`.
+
+- **`dev_formal001_001`** (GPU0, 3,803 s hold): stage A = μ_eq + the four Prony parameters on R1 + T2, two starts.
+  - **Start 0** went from cost 54,302 to 247.4 in 20 evaluations and was still falling 2.3 % per evaluation at the
+    development budget: **NON_CONVERGED**. It drifted along a g1 ↔ g2 / τ valley and ended at g1 0.140, τ1 9.4 ms,
+    g2 0.176, τ2 64 ms, against θ* 0.193 / 14.3 ms / 0.134 / 123 ms.
+  - At that point the R1 + T2 cost (247) is already **below** θ*'s cost on the same data (≈ 403, from the post-reveal
+    diagnostic). R1 and T2 alone do not separate the two Prony branches at n_t 4. The separation has to come from the
+    expensive joint stage (T1 / C1 / G1, ≈ 700 s per joint population).
+  - **Start 1** ended bound-active (g1 0.020, τ1 30 ms, g2 0.31, τ2 0.48 s).
+- **`dev2_formal001_stageA_001`** tested the branch-moduli parametrisation (`ModuliParameterSpace`: u = log μ_eq,
+  log a_i = g_i μ0, log τ_i). It was stopped after one evaluation because GPU1 was shared with another workload, and is
+  not informative. The parametrisation is implemented and CPU-tested but unproven on the simulator.
+
+**Revised estimate** (`docs/evidence/rl_ready/p2_5/v3_cost_estimate_revised.json`; the committed estimate of §11.1 is
+kept unchanged):
+
+| Item | GPU-h |
+|---|---|
+| new formal dataset | 1.07 |
+| fit to convergence | stage A 1.5–1.9, stage B 0.1, stage C 1.9–3.9 (≥ 10–20 joint evaluations; no evidence of convergence) = 3.5–5.9 |
+| negative control | 1.0–1.7 |
+| held-out + reveal | 0.25 |
+| development already used | 1.3 |
+| **total** | **7.1–10.2, central ≈ 8.6 > 8** |
+
+**Decision: v3 is NOT run** (orchestrator rule: above 8 GPU-h, write the estimate and stop).
+- No v3 protocol was declared, no formal_002 dataset was generated and no new θ* was drawn.
+- A v3 fitted inside 8 GPU-h with a hard budget would very likely end budget-limited and non-converged. It would repeat
+  the v2 failure mode rather than test a converged fit.
+- The P2-5 synthetic outcome therefore remains the v2 formal result: CAL-04 / -05 / -06 FAIL.
+- What remains open for a future round with more GPU time:
+  - the branch-moduli parametrisation;
+  - a joint stage from the start (T1 / C1 / G1 included);
+  - Broyden-type Jacobian updates between full finite-difference populations, which would cut the cost per evaluation
+    about 7×.
+
 ## 12. Errata from the P5.7 review (2026-11-12; `docs/reports/rl_ready/P2_5_ACCEPTANCE_REVIEW.md`, GO_WITH_CONDITIONS)
 
 Additive. Nothing in the evidence, receipts, protocols, thresholds or datasets changes. The markers [Erratum E1–E4]

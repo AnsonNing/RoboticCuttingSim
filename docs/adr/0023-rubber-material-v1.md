@@ -2372,4 +2372,17 @@ promoted. Nothing frozen changed (`rubber_calibration.py` v1 and the `REAL_CALIB
     the declared fit procedure FAILED to recover θ on the formal synthetic dataset; fitted θ is resolution-specific.
   - The dataset's truth is now revealed, so any re-fit on it is post-hoc. A blind re-test needs a new sealed dataset.
   - Material status `SIMULATOR_ONLY_UNCALIBRATED`; `NUMERICAL_VALIDATION_SYNTHETIC`; no recipe promoted.
+- **P5.7 review (GO_WITH_CONDITIONS) follow-up (2026-11-12).**
+  - Errata C1–C4: report section 12; the inline markers above.
+  - F3 fixed in `0b9a8d8`: global one-shot registry; the REAL gate v2 checks the ledger file itself. F6–F8 and F10
+    fixed as well.
+  - The conditional final blind re-test `rubber_calib_tests_v3` was **not run**.
+    - The committed pre-work estimate (`b79d377`, 7.3 GPU-h upper) was revised with development evidence on the
+      revealed formal_001: stage A (μ_eq + Prony on R1 + T2) stayed NON_CONVERGED after 20 evaluations, sliding along
+      a g1 ↔ g2 / τ valley whose cost is below θ*'s on that data. The branch separation needs the joint stage at
+      ≈ 700 s per population.
+    - The revised total is 7.1–10.2 GPU-h (central ≈ 8.6), above the 8 GPU-h rule.
+    - No v3 declaration, no new dataset, no new truth.
+    - The P2-5 synthetic result stays the v2 formal FAIL (CAL-04 / -05 / -06).
+  - Report section 11.
 
