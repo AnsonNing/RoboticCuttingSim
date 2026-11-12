@@ -489,6 +489,31 @@ Any further fit attempt on this dataset would be a new, separately declared prot
 post-reveal (the truth is now known). It could not count as a blind validation. A blind re-test needs a new sealed
 formal dataset.
 
+## 11. `rubber_calib_tests_v3`: final blind re-test (orchestrator decision after the P5.7 review)
+
+### 11.1 Cost estimate (committed before any v3 declaration, development or run)
+
+From the v2 receipts: per evaluation, S4 (P 7, all six experiments) ≈ 640–700 s, R1 + T2 at P 15 ≈ 184 s, T1 at P 2
+≈ 230 s, F1 ≈ 36 s. The FD columns are already one batched population. Truth generation took 3,854 s and the held-out
+predictions ≈ 725 s.
+
+Assumed v3 design:
+- Stage A: μ_eq with the four Prony parameters on R1 + T2, two lockstep starts.
+- Stage B: μ_table on F1.
+- Stage C: the joint polish run to convergence.
+- Bounds: the v1 fit box.
+
+| Item | GPU-h |
+|---|---|
+| new sealed formal dataset | 1.07 |
+| fit | stage A 1.0–1.5 + stage B 0.1 + stage C 1.1–2.7 = 2.2–4.3; declared budget **3.5** |
+| negative control | 0.7–1.7; declared budget **1.5** |
+| held-out + reveal | 0.25 |
+| development (≤ 1.5 allowed) | ≤ 1.0 |
+| **total** | central ≈ 6.0; **upper bound with the declared budgets 7.3 ≤ 8 → PROCEED** |
+
+Details: `docs/evidence/rl_ready/p2_5/v3_cost_estimate.json`.
+
 ### 11.2 Development evidence and revised estimate: v3 NOT RUN (exceeds 8 GPU-h)
 
 Development used the revealed formal_001 fit split only, labelled development and never scored. Code: `e868a58`,
@@ -604,29 +629,15 @@ shows it.
 - C2 M4 PASSed; the CAL-05 failures are T4 M2 / M9, C2 M6 / M9, C3 M4 / M6 / M9 and C4 M4 / M6 / M9.
 - The reveal ran on a tree dirty only by the then uncommitted supplementary script, and the diagnostic ran on a tree
   dirty only by `write_evidence.py` edits (F8). `reveal.py` now refuses a dirty tree and pins the protocol.
-
-## 11. `rubber_calib_tests_v3`: final blind re-test (orchestrator decision after the P5.7 review)
-
-### 11.1 Cost estimate (committed before any v3 declaration, development or run)
-
-From the v2 receipts: per evaluation, S4 (P 7, all six experiments) ≈ 640–700 s, R1 + T2 at P 15 ≈ 184 s, T1 at P 2
-≈ 230 s, F1 ≈ 36 s. The FD columns are already one batched population. Truth generation took 3,854 s and the held-out
-predictions ≈ 725 s.
-
-Assumed v3 design:
-- Stage A: μ_eq with the four Prony parameters on R1 + T2, two lockstep starts.
-- Stage B: μ_table on F1.
-- Stage C: the joint polish run to convergence.
-- Bounds: the v1 fit box.
-
-| Item | GPU-h |
-|---|---|
-| new sealed formal dataset | 1.07 |
-| fit | stage A 1.0–1.5 + stage B 0.1 + stage C 1.1–2.7 = 2.2–4.3; declared budget **3.5** |
-| negative control | 0.7–1.7; declared budget **1.5** |
-| held-out + reveal | 0.25 |
-| development (≤ 1.5 allowed) | ≤ 1.0 |
-| **total** | central ≈ 6.0; **upper bound with the declared budgets 7.3 ≤ 8 → PROCEED** |
-
-Details: `docs/evidence/rl_ready/p2_5/v3_cost_estimate.json`.
+- **Retroactive registration (re-review R2).** The formal_001 one-shot ledger
+  (`artifacts/rl_ready/p2_5/fit_v2_001/heldout/heldout_3d37a950….json`) was registered **retroactively** in the global
+  one-shot registry after the F3 fix. Ledger SHA-256: `1dd374981af4740d8730866d62d95ca5749a0801251ff26e3d783989c5363c60`
+  (`1dd37498…`). Its evaluation ran on 2026-11-12 at 00:35:14Z, before the registry existed.
+- **Audit re-runs (re-review R1).** An audit re-run is now refused (`AUDIT_BEFORE_ONE_SHOT`) until the global one-shot
+  registry entry for the freeze exists. An audit can therefore never precede the official one-shot evaluation unseen.
+  A test reproduces the reviewer's scenario.
+- **Development labels (re-review R3).** `run_fit_v3.py` now labels every run "DEVELOPMENT (never scored)" unless a
+  pinned v3 protocol exists. No v3 protocol was declared. The metadata of `dev2_formal001_stageA_001` says "FORMAL"
+  because that run predates this rule. It was a development run on the revealed formal_001, stopped after one
+  evaluation and before any receipt.
 

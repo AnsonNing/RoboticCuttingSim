@@ -2385,4 +2385,12 @@ promoted. Nothing frozen changed (`rubber_calibration.py` v1 and the `REAL_CALIB
     - No v3 declaration, no new dataset, no new truth.
     - The P2-5 synthetic result stays the v2 formal FAIL (CAL-04 / -05 / -06).
   - Report section 11.
+- **Re-review (GO, Addendum A) follow-ups.**
+  - **R1:** an audit re-run is refused until the global one-shot registry entry exists (`AUDIT_BEFORE_ONE_SHOT`), so an
+    audit can never precede the official one-shot evaluation unseen. Tested.
+  - **R2:** the formal_001 one-shot ledger was registered **retroactively** in the global registry after the F3 fix.
+    Ledger SHA-256: `1dd374981af4740d8730866d62d95ca5749a0801251ff26e3d783989c5363c60`.
+  - **R3:** `run_fit_v3.py` labels every run DEVELOPMENT unless a pinned v3 protocol exists.
+    `dev2_formal001_stageA_001`'s metadata says FORMAL, but it was a development run on the revealed formal_001,
+    stopped before any receipt.
 

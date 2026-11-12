@@ -495,3 +495,19 @@ def test_moduli_space_roundtrip_step_rule_and_fit(tmp_path):
     _, sigma, _ = rcf.covariance(msp, res["u"], res["jac"], res["residuals"])
     for i, k in enumerate(rcf.PARAMS):
         assert abs(res["theta"][k]-TRUTH[k]) <= max(4*sigma[i], 0.02*TRUTH[k]), (k, res["theta"][k])
+
+
+def test_audit_before_the_one_shot_is_refused(tmp_path):
+    """Re-review R1: the reviewer's scenario (an audit re-run before the official one-shot, then a one-shot that
+    registers and passes) is closed: the audit is refused, leaves no ledger, and the one-shot still runs once."""
+    path = make_dataset(tmp_path)
+    fit, _, _ = _fit_receipt(tmp_path, path)
+    thr = {"T3": {"M1": 1.0, "M2": 1.0, "M8": 1.0, "M9": 1.0}}
+    reg, ledger = tmp_path/"registry", tmp_path/"ledger"
+    kw = dict(predict=_predict, thresholds=thr, metric_settings=SETTINGS, registry_dir=reg)
+    with pytest.raises(rcf.CalibrationFitError, match="AUDIT_BEFORE_ONE_SHOT"):
+        rcf.evaluate_heldout(path, [fit], tmp_path/"audit_dir", audit_rerun="early_peek", **kw)
+    assert not (tmp_path/"audit_dir").exists() and not reg.exists()
+    out = rcf.evaluate_heldout(path, [fit], ledger, **kw)
+    assert out["label"] == "ONE_SHOT"
+    assert rcf.evaluate_heldout(path, [fit], ledger, audit_rerun="after", **kw)["label"].startswith("AUDIT_RERUN")

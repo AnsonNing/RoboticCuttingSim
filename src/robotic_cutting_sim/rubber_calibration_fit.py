@@ -722,6 +722,11 @@ def evaluate_heldout(manifest_path, fit_receipt_paths, ledger_dir, *, predict, t
     if (ledger.exists() or claim.exists() or (registry/f"{freeze}.json").exists()) and not audit_rerun:
         raise CalibrationFitError("HELDOUT_ALREADY_EVALUATED", f"freeze {freeze[:12]}… was evaluated or claimed "
                                   f"({ledger}, registry {registry})")
+    if audit_rerun and not (registry/f"{freeze}.json").exists():
+        # re-review R1: an audit re-run before the official one-shot would leave no trace and let a later one-shot
+        # pass the gate; audits are therefore refused until the global one-shot registry entry exists
+        raise CalibrationFitError("AUDIT_BEFORE_ONE_SHOT", f"freeze {freeze[:12]}… has no one-shot registry entry in "
+                                  f"{registry}; an audit re-run is only allowed after the one-shot evaluation")
     fit_split, held = set(manifest["splits"]["fit"]), list(manifest["splits"]["heldout"])
     receipts = []
     for p in fit_receipt_paths:

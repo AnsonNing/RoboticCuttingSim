@@ -153,7 +153,8 @@ def main():
         return C.LockedObjective(o, lock) if lock is not None else o
     meta = {"kind": args.kind, "utc_start": C.utc(), "tree": tree, "protocol_v1_sha256": psha,
             "protocol_v3_sha256": v3sha, "settings": settings, "manifest": str(mpath),
-            "label": "DEVELOPMENT (revealed formal_001; never scored)" if args.kind == "dev_formal001" else "FORMAL",
+            "label": ("FORMAL" if (not args.kind.startswith("dev") and PROTOCOL_V3_SHA is not None
+                                   and v3sha == PROTOCOL_V3_SHA) else "DEVELOPMENT (never scored)"),
             "manifest_freeze_sha256": manifest["splits"]["sha256"], "env": C.environment(),
             "module_sha256": C.module_shas(), "gpu_free_mib_at_start": free, "gpu_samples": [C.gpu_sample()],
             "stages": [{k: v for k, v in st.items() if k != "lhs_box"} for st in stages],
