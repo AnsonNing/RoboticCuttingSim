@@ -1,5 +1,9 @@
 name: CPU tests
 on: [push, pull_request]
+# Many small pushes from parallel agents saturate the runner queue: a newer push to the same ref cancels the older run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 jobs:
   cpu:
     runs-on: ubuntu-latest

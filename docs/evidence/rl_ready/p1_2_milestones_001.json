@@ -11652,5 +11652,137 @@
    }
   },
   "scope": "same venv, same GPU, separate processes, SHARED_GPU (co-tenant load varies between runs)"
+ },
+ "corrections_review_fix1": {
+  "date": "2026-11-10",
+  "source": "docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md section 7",
+  "milestone_status": {
+   "M0_L3_position_band": {
+    "previous": "3/4 inside; pre-fix m0_s15_001 outside ...; post-fix s15 inside",
+    "status": "SUPERSEDED",
+    "band_v1_strict_tally": "1/4 inside",
+    "band_v1_per_run": {
+     "p1_2/m0_s512_001": "inside",
+     "p1_2/m0_s15_001": "above",
+     "p1_2/m0_s512_postfix_001": "above",
+     "p1_2/m0_s15_postfix_001": "below"
+    },
+    "band_v2_per_run": {
+     "p1_2/m0_s512_001": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_2/m0_s15_001": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_2/m0_s512_postfix_001": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     },
+     "p1_2/m0_s15_postfix_001": {
+      "max_position_diff_m_over_time": "WITHIN",
+      "final_max_position_diff_m": "WITHIN"
+     }
+    },
+    "band_v2_aggregate": {
+     "max_position_diff_m_over_time": {
+      "verdict": "MET",
+      "scored": 4,
+      "outside": 0,
+      "critical_count": 0,
+      "not_scored": {
+       "NOT_APPLICABLE": 1
+      }
+     },
+     "final_max_position_diff_m": {
+      "verdict": "MET",
+      "scored": 4,
+      "outside": 0,
+      "critical_count": 0,
+      "not_scored": {
+       "NOT_APPLICABLE": 1
+      }
+     }
+    }
+   },
+   "M1_env_independence": "PASS (CPU bitwise L1; GPU outcome-level only; L4 BLOCKED) - review F8",
+   "M2_throughput_gain_over_N1": {
+    "previous": "1.45x (N=8), 1.42x (N=16): unequal windows (N=1 steps 0-300, N=8 0-150, N=16 0-100)",
+    "corrected": "1.40x (N=8, steps 0-150), 1.37x (N=16, steps 0-100) over batched N=1, round 1",
+    "vs_frozen_single": {
+     "frozen_single_env_steps_per_s": 5.6295317624864945,
+     "batched_n1_env_steps_per_s": 5.090914269739705,
+     "batched_n1_over_single": 0.904322861035091,
+     "scope": "full s512 episodes, separate processes, co-tenant SM mean 24 % in both (p1_2_single_ref_s512_001, m2_n1_001)",
+     "inferred_gain_over_frozen_single": [
+      1.2388733668265608,
+      1.262255588769619
+     ],
+     "status": "INFERRED_NOT_MEASURED (no single_env_headless row inside the alternation round)",
+     "adr_0021_estimate": "1.3-3x over sequential single envs: the inferred gain is below the lower estimate (ADR 0021 section 14 risk 6)"
+    }
+   }
+  },
+  "rows_particles_per_env": {
+   "0": 102732,
+   "1": 103898,
+   "2": 102732,
+   "3": 103898,
+   "4": 103315,
+   "5": 103315
+  },
+  "rows_particles_per_env_note": "rows 0-5 (M0 x4, M1 x2) had null; per-env counts 102,732 (s512) / 103,898 (s15), mean 103,315 for the mixed N=4 batch",
+  "throughput_alternation_matched_windows": {
+   "r1": {
+    "n1_windows": {
+     "[0:100]": 3.46907987729313,
+     "[0:150]": 3.474660547670158,
+     "[100:200]": 3.481422891322461,
+     "[200:300]": 3.129799083178605,
+     "[0:300]": 3.3519213061163717
+    },
+    "n8_0_150": 4.84993787545505,
+    "n16_0_100": 4.75245164371184,
+    "ratio_n8_over_n1_0_150": 1.395801923358254,
+    "ratio_n16_over_n1_0_100": 1.3699458680150385,
+    "reported_before": {
+     "n8": 1.4457016763753847,
+     "n16": 1.4166372167529087
+    },
+    "co_tenant": "matched (SM mean 46-47 %)"
+   },
+   "r2": {
+    "n1_windows": {
+     "[0:100]": 3.4685651560661026,
+     "[0:150]": 3.4730276207197948,
+     "[100:200]": 3.4823308605656993,
+     "[200:300]": 3.1262974575352223,
+     "[0:300]": 3.350701770472383
+    },
+    "n8_0_150": 6.199349549589031,
+    "n16_0_100": 7.038063853854894,
+    "ratio_n8_over_n1_0_150": 1.7849986313394761,
+    "ratio_n16_over_n1_0_100": 2.0290995086386565,
+    "reported_before": {
+     "n8": 1.8497606024665385,
+     "n16": 2.100133569024508
+    },
+    "co_tenant": "confounded (22-35 % vs 45 %), not claimed"
+   },
+   "f4_vs_frozen_single": {
+    "frozen_single_env_steps_per_s": 5.6295317624864945,
+    "batched_n1_env_steps_per_s": 5.090914269739705,
+    "batched_n1_over_single": 0.904322861035091,
+    "scope": "full s512 episodes, separate processes, co-tenant SM mean 24 % in both (p1_2_single_ref_s512_001, m2_n1_001)",
+    "inferred_gain_over_frozen_single": [
+     1.2388733668265608,
+     1.262255588769619
+    ],
+    "status": "INFERRED_NOT_MEASURED (no single_env_headless row inside the alternation round)",
+    "adr_0021_estimate": "1.3-3x over sequential single envs: the inferred gain is below the lower estimate (ADR 0021 section 14 risk 6)"
+   }
+  },
+  "multi_hashgrid_audit_addendum": "default-path refresh + step-time census added (review fix F1); the construction-time guard alone did not cover a grid built after the batch"
  }
 }

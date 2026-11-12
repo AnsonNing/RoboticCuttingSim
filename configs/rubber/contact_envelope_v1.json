@@ -1,0 +1,128 @@
+{
+ "schema": "rcs_rubber_contact_envelope_v1",
+ "id": "contact_envelope_v1",
+ "task": "ENV1 (ADR 0023 §23.2 decision 4; docs/reports/rl_ready/P2_REMAINING_PLAN.md §2.4)",
+ "declared": "2026-11-11, from the formal contact records only (contact_v2_001, contact_v3_001); SHA-pinned in tests/test_rubber_contact_envelope.py; a change is contact_envelope_v2, never an edit",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (friction coefficients are declared numerical values of the contact law, not measured rubber friction)",
+ "rules": {
+  "what_counts": "a (law, n_t) row is ESTABLISHED only by formally scored PASS rows of a declared, SHA-pinned contact protocol run on a clean tree; sliding_mu_max = the largest scored mu whose slip rows (RUBBER-CONT-01 b, -04 a) and every lower scored mu pass; static_mu_max = the largest scored mu whose holds at tan(theta) = 0.95 mu (RUBBER-CONT-01 a) pass",
+  "diagnostic_rows": "DIAGNOSTIC evidence may only NARROW an established row, never widen it or establish a row",
+  "not_established": "a row with status NOT_ESTABLISHED has no envelope: every friction value is refused for it",
+  "unlisted": "a (law, n_t) pair without a row is refused (in particular grid_node_penalty_coulomb_v1, superseded, and every n_t outside the listed set)",
+  "absolute_limit": "mu >= 1.0 is refused for every row (label contact_coulomb_ill_posed, ADR 0023 §22.9-§22.11)",
+  "refusal_code": "UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE",
+  "p2_6_range": "friction_table ~ U[0.3, min over the slot set's n_t of sliding_mu_max(law, n_t)] (0.3 = the recipe's lower bound); BLOCKED if any slot's row is not established; friction_pad and friction_self fixed at the recipe values and declared unused (no pads, no self-contact physics)"
+ },
+ "rows": [
+  {
+   "law": "grid_node_penalty_coulomb_v2",
+   "n_t": 3,
+   "status": "ESTABLISHED",
+   "sliding_mu_max": 0.6,
+   "static_mu_max": 0.8,
+   "scored": {
+    "sliding_mu": [0.4, 0.6],
+    "sliding_fail_mu": [0.8],
+    "static_mu": [0.6, 0.8],
+    "scenes": "INC (16 x 8 x 4 mm) and INC2 (24 x 12 x 6 mm, unseen in v2), n_t 3",
+    "tests": "RUBBER-CONT-01 a (stick, elastic + P2 at 0.95 mu), b (slip, ratios 1.1-1.3), c (onset), e (validity); RUBBER-CONT-04 a (dissipation)"
+   },
+   "run_id": "contact_v2_001",
+   "run_commit": "ffb099f",
+   "protocol": "configs/rubber/rubber_contact_tests_v2.json",
+   "protocol_sha256": "89bc7680bb9c2ed6322279b198899cef0faf31c4751b6bd849b22ecd24a339d0",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x1_001.json (formal_run_v2, mu_envelope); ADR 0023 §22.9",
+   "known_limitations": ["RUBBER-CONT-01 b / -04 FAIL at mu 0.8 (sliding outside the row, declared expected)", "RUBBER-CONT-01 d stick-run books FAIL (§22.10 static-jitter residual)", "RUBBER-CONT-05 pinch slip ratio FAIL at mu_pad 0.5"],
+   "diagnostic_narrowing": "none at n_t 3 (X2, §22.10: the v2 envelope holds at n_t 3 on INC / INC2)"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v2",
+   "n_t": 4,
+   "status": "NOT_ESTABLISHED",
+   "sliding_mu_max": null,
+   "static_mu_max": null,
+   "reason": "no formally scored v2 row at n_t 4; DIAGNOSTIC only (X2, §22.10): mu 0.8 hold at 0.95 slides 3.9 mm, mu 0.6 sliding +1.19 / +1.72 % on INC2 (sliding <= 0.4, static <= 0.6 diagnostically)",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x2_001.json (DIAGNOSTIC)"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v2",
+   "n_t": 5,
+   "status": "NOT_ESTABLISHED",
+   "sliding_mu_max": null,
+   "static_mu_max": null,
+   "reason": "no formally scored v2 row at n_t 5 (X2 DIAGNOSTIC: mu 0.8 sliding +1.7 %)",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x2_001.json (DIAGNOSTIC)"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v2",
+   "n_t": 6,
+   "status": "NOT_ESTABLISHED",
+   "sliding_mu_max": null,
+   "static_mu_max": null,
+   "reason": "no formally scored v2 row at n_t 6 (X2 DIAGNOSTIC: mu 0.4 sliding 0.18 %, mu 0.6 +1.06 % with D04 0.946 on INC)",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x2_001.json (DIAGNOSTIC)"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v3",
+   "n_t": 3,
+   "status": "ESTABLISHED",
+   "law_status": "EXPERIMENTAL_NOT_ACCEPTED until the K2 review (ADR 0023 §22.11)",
+   "sliding_mu_max": 0.8,
+   "static_mu_max": 0.8,
+   "scored": {
+    "sliding_mu": [0.2, 0.4, 0.6, 0.8],
+    "sliding_fail_mu": [],
+    "static_mu": [0.2, 0.4, 0.6, 0.8],
+    "scenes": "INC (16 x 8 x 4 mm) and INC2 (24 x 12 x 6 mm), n_t 3; P2 holds at 0.95 mu for mu 0.6 / 0.8",
+    "tests": "RUBBER-CONT-01 a, b, c, e, f (load-ramp slip); RUBBER-CONT-04 a"
+   },
+   "run_id": "contact_v3_001",
+   "run_commit": "c631cca",
+   "protocol": "configs/rubber/rubber_contact_tests_v3.json",
+   "protocol_sha256": "36d70beaf63a0ef73195dcc47c62e522596779bb95b423a5544e5f7dc9e6a856",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x3_001.json; ADR 0023 §22.11",
+   "known_limitations": ["RUBBER-CONT-01 d stick-run books FAIL (declared expected; §22.10 residual, until X5)", "mu 1.0 rows reported only (contact_coulomb_ill_posed)", "v3 declared limitations (i)-(v) of §22.11: slip rate equalised over a patch; one patch per obstacle face"],
+   "diagnostic_narrowing": "none"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v3",
+   "n_t": 4,
+   "status": "ESTABLISHED",
+   "law_status": "EXPERIMENTAL_NOT_ACCEPTED until the K2 review (ADR 0023 §22.11)",
+   "sliding_mu_max": 0.8,
+   "static_mu_max": 0.8,
+   "scored": {
+    "sliding_mu": [0.2, 0.4, 0.6, 0.8],
+    "sliding_fail_mu": [],
+    "static_mu": [0.2, 0.4, 0.6, 0.8],
+    "scenes": "INC (16 x 8 x 4 mm) and INC2 (24 x 12 x 6 mm), n_t 4; P2 holds at 0.95 mu for mu 0.6 / 0.8",
+    "tests": "RUBBER-CONT-01 a, b, c, e, f (load-ramp slip); RUBBER-CONT-04 a"
+   },
+   "run_id": "contact_v3_001",
+   "run_commit": "c631cca",
+   "protocol": "configs/rubber/rubber_contact_tests_v3.json",
+   "protocol_sha256": "36d70beaf63a0ef73195dcc47c62e522596779bb95b423a5544e5f7dc9e6a856",
+   "evidence": "docs/evidence/rl_ready/p2_4_contact_x3_001.json; ADR 0023 §22.11",
+   "known_limitations": ["RUBBER-CONT-01 d stick-run books FAIL (declared expected; §22.10 residual, until X5)", "mu 1.0 rows reported only (n_t 4: +2.4 % INC, +0.68 % INC2; contact_coulomb_ill_posed)", "v3 declared limitations (i)-(v) of §22.11"],
+   "diagnostic_narrowing": "none"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v3",
+   "n_t": 5,
+   "status": "NOT_ESTABLISHED",
+   "sliding_mu_max": null,
+   "static_mu_max": null,
+   "reason": "not scored by rubber_contact_tests_v3 (n_t 3 / 4 only); X2 DIAGNOSTIC of the dev law (mode 13) is not a formal row; to be established by ENV2 (protocol rubber_contact_envelope_v1), recorded in contact_envelope_v2",
+   "pending": "ENV2"
+  },
+  {
+   "law": "grid_node_penalty_coulomb_v3",
+   "n_t": 6,
+   "status": "NOT_ESTABLISHED",
+   "sliding_mu_max": null,
+   "static_mu_max": null,
+   "reason": "not scored by rubber_contact_tests_v3 (n_t 3 / 4 only); X2 DIAGNOSTIC of the dev law (mode 13: mu 0.8 exact at n_t 6, mu 1.0 +4.2 %) is not a formal row; to be established by ENV2 (protocol rubber_contact_envelope_v1), recorded in contact_envelope_v2",
+   "pending": "ENV2"
+  }
+ ]
+}

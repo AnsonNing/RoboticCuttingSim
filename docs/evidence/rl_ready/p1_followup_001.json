@@ -1,0 +1,434 @@
+{
+ "acceptance_v2": {
+  "acceptance_v1_sha256": "3592d9408f314c3d2825171361b8ec640534c60577bb6216a10c4f2b22897bf4",
+  "g9": {
+   "num_envs": [
+    1,
+    16
+   ],
+   "order": "BCCBBC",
+   "pairs": 3,
+   "primary": 16,
+   "seeds": [
+    512
+   ],
+   "steps": 80,
+   "timed_steps": [
+    321,
+    400
+   ],
+   "warmup_steps": 320
+  },
+  "path": "configs/rl_benchmark/acceptance_v2.json",
+  "sha256": "a008dd3811da917190972a67a15fea713e17969fd442172cd68efe4730da5af4",
+  "window_check": {
+   "min_contact_steps": 40,
+   "min_new_labels": 10000,
+   "plans": [
+    "G6_replay",
+    "G7_batched"
+   ]
+  }
+ },
+ "base": "c5e96b2 (code = reviewed f03fbff)",
+ "branch": "claude/rl-p1-followup",
+ "decision": "D-14",
+ "gpu_window_check": {
+  "build_wall_s": 22.393919907975942,
+  "cameras": "none",
+  "co_tenant": {
+   "baseline_total_util_pct_max": null,
+   "foreign_compute_pids": [
+    642659,
+    2681013,
+    2681055,
+    2681580
+   ],
+   "foreign_graphics_pids": [
+    5151
+   ],
+   "foreign_memory_mib_max": 5395.0,
+   "foreign_memory_mib_mean": 5192.204379562044,
+   "foreign_processes_max": 5,
+   "foreign_sm_pct_max": 71.0,
+   "foreign_sm_pct_mean": 31.532846715328468,
+   "samples": 137,
+   "sharing_reasons": [
+    "foreign_compute_process",
+    "foreign_graphics_process",
+    "foreign_sm_utilisation"
+   ],
+   "total_util_pct_max": 100.0,
+   "total_util_pct_mean": 84.2992700729927
+  },
+  "command": [
+   "scripts/rl_ready/run_perf_acceptance.py",
+   "--variant-json",
+   "artifacts/rl_ready/p1_followup/variants/alias_free_v1.json",
+   "--mode",
+   "episode",
+   "--num-envs",
+   "2",
+   "--seeds",
+   "512",
+   "--warmup-steps",
+   "320",
+   "--steps",
+   "100",
+   "--device",
+   "cuda:0",
+   "--gpu-index",
+   "0",
+   "--config",
+   "configs/rl_benchmark/acceptance_v2.json",
+   "--out",
+   "artifacts/rl_ready/p1_followup/gpu_window_check_001"
+  ],
+  "commit": "cf04c1a067dfa4d8d8f68647d7c5e98d99b8b932",
+  "control_hz": 50.0,
+  "dirty": false,
+  "envs": [
+   {
+    "contact_steps": 49,
+    "contact_steps_first_last": [
+     315,
+     364
+    ],
+    "contacts_total": 152493,
+    "dump_sha256": "1f58dd7c6be6d35fa78f8f78accfca9a37850cbead0b5873f37fdb82ab555d74",
+    "env": 0,
+    "invalid_reason": 0,
+    "seed": 512,
+    "window_321_400": {
+     "contact_steps": 44,
+     "contacts": 143063,
+     "labelled_320": 21371,
+     "labelled_400": 37958,
+     "new_labels": 16587
+    }
+   },
+   {
+    "contact_steps": 49,
+    "contact_steps_first_last": [
+     315,
+     364
+    ],
+    "contacts_total": 152541,
+    "dump_sha256": "c79d1e83cb4dc5a47f8e7ff91d9848a96b9714034529ff357d3a259b77095498",
+    "env": 1,
+    "invalid_reason": 0,
+    "seed": 512,
+    "window_321_400": {
+     "contact_steps": 44,
+     "contacts": 143110,
+     "labelled_320": 21370,
+     "labelled_400": 37958,
+     "new_labels": 16588
+    }
+   }
+  ],
+  "gpu": {
+   "cuda_ordinal": 0,
+   "gpu_driver": "570.211.01",
+   "gpu_index": 0,
+   "gpu_name": "NVIDIA GeForce RTX 5090",
+   "gpu_uuid": "GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+   "memory_total_mib": 32607.0,
+   "name": "NVIDIA GeForce RTX 5090",
+   "nvidia_smi_index": 0,
+   "total_mib": 32111.0625,
+   "uuid": null
+  },
+  "in_process_window_env_steps_per_s": 7.507806662302104,
+  "label": "SHARED_GPU",
+  "material_dt_s": 0.0001,
+  "mean_step_wall_1_400_over_approach": 1.0609788400114952,
+  "mode": "episode",
+  "note": "in-process step walls are candidate-reported; SHARED_GPU (foreign compute processes on GPU0)",
+  "num_envs": 2,
+  "particles_per_env": 102732,
+  "phase_median_step_wall_s": {
+   "approach": 0.2446338,
+   "contact_onset_untimed": 0.27434345,
+   "cutting_before_contact": 0.2456932,
+   "timed_after_contact": 0.21143815,
+   "timed_contact": 0.3261123,
+   "timed_window": 0.29528455
+  },
+  "recording": "none",
+  "status": "PASS",
+  "substeps": 200,
+  "variant": {
+   "particle_contact_mode": "alias_free_v1"
+  },
+  "versions": {
+   "numpy": "2.3.1",
+   "torch": "2.11.0+cu128",
+   "warp": "1.17.0"
+  },
+  "vram_peak_mib": 1014.0,
+  "vram_source": "nvidia_smi_process",
+  "wall_s": 138.48410500399768,
+  "warm": "warm"
+ },
+ "schema": "rcs_rl_evidence_v1",
+ "task": "P1 follow-up: acceptance_v2 (review findings 1, 2) and findings 3, 4, 10, 12",
+ "tests": {
+  "ci_sim_full_002": {
+   "log_tail": [
+    "SKIPPED [1] tests/test_wp12_phase5_native_success.py:187: Phase 2b records artifacts/wp12/workcell_live_001-007 not present",
+    "2465 passed, 58 skipped, 6 xfailed, 9 warnings in 2939.25s (0:48:59)",
+    "rc=0"
+   ],
+   "summary": {
+    "errors": 0,
+    "failed": 0,
+    "failed_ids": [],
+    "passed": 2465,
+    "skipped": 64,
+    "skipped_ids": [
+     "::tests.test_rl_actions",
+     "::tests.test_rl_configured_family",
+     "::tests.test_rl_lab_env",
+     "::tests.test_rl_lab_ik",
+     "::tests.test_rl_lab_rigid_isolation",
+     "::tests.test_rl_smoke",
+     "::tests.test_vector_env_api",
+     "::tests.test_vector_env_consolidation",
+     "::tests.test_vector_env_contract",
+     "::tests.test_vector_env_gpu_stream",
+     "::tests.test_vector_env_p12b",
+     "tests.test_blademaster_demo_runner::test_final_v1_dry_run_matches_the_recorded_final_runs",
+     "tests.test_cutting_law_v4::test_law4_raked_skim_detaches_the_bump_by_stencil_graph[25.0]",
+     "tests.test_cutting_law_v4::test_law4_raked_skim_detaches_the_bump_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v5::test_law5_raked_skim_detaches_the_bump_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v6::test_law6_raked_skim_bump_separation_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v7::test_law7_raked_skim_bump_separation_by_stencil_graph[35.0]",
+     "tests.test_perf_acceptance::test_harness_cpu_one_step_end_to_end",
+     "tests.test_rl_lab_grip_profile::test_lab_mjwarp_grip_v1_holds_the_reorientation_and_point_profile_collapses",
+     "tests.test_rl_lab_grip_profile::test_open_vector_env_passes_mjwarp_grip_v1_to_the_lab_env",
+     "tests.test_rl_lab_kernels::test_edge_kernel_matches_frozen_numpy_compose[physical_grasp_v1]",
+     "tests.test_rl_lab_kernels::test_edge_kernel_matches_frozen_numpy_compose[rigid_mount_v1]",
+     "tests.test_rl_lab_kernels::test_grasp_monitor_kernel_matches_host_monitor",
+     "tests.test_rl_lab_kernels::test_index_tables_resolve_per_world[physical_grasp_v1]",
+     "tests.test_rl_lab_kernels::test_index_tables_resolve_per_world[rigid_mount_v1]",
+     "tests.test_rl_lab_kernels::test_masked_reset_of_wrench_buffers_touches_only_masked_rows",
+     "tests.test_rl_lab_kernels::test_pad_box_kernel_matches_pad_boxes_edge[physical_grasp_v1]",
+     "tests.test_rl_lab_kernels::test_pad_box_kernel_matches_pad_boxes_edge[rigid_mount_v1]",
+     "tests.test_rl_lab_kernels::test_rigid_validity_flags_only_the_bad_world",
+     "tests.test_rl_lab_kernels::test_wrench_kernel_isolated_per_world_and_lever_arm[physical_grasp_v1]",
+     "tests.test_rl_lab_kernels::test_wrench_kernel_isolated_per_world_and_lever_arm[rigid_mount_v1]",
+     "tests.test_rl_lab_scene_usd::test_no_rigid_body_under_shared_paths_and_per_world_bodies[physical_grasp_v1]",
+     "tests.test_rl_lab_scene_usd::test_no_rigid_body_under_shared_paths_and_per_world_bodies[rigid_mount_v1]",
+     "tests.test_rl_lab_scene_usd::test_rigid_mount_fixed_joint_structure",
+     "tests.test_rl_observations::test_privileged_profile_appends_critic_and_keeps_policy_identical",
+     "tests.test_rl_observations::test_state_values_dtype_and_no_critic",
+     "tests.test_rl_policies_batched::test_policy_and_driver_gather_by_step_count",
+     "tests.test_rl_policies_batched::test_recorded_commands_are_reconstructed_by_the_frozen_and_the_torch_path[15]",
+     "tests.test_rl_policies_batched::test_recorded_commands_are_reconstructed_by_the_frozen_and_the_torch_path[512]",
+     "tests.test_rl_policies_batched::test_selector_maps_back_to_the_digit",
+     "tests.test_rl_reference_policy::test_device_policy_gathers_by_step_count",
+     "tests.test_rl_reference_policy::test_torch_action_path_reproduces_the_reconstruction",
+     "tests.test_rl_replay::test_real_wp17_attempt_shapes[15]",
+     "tests.test_rl_replay::test_real_wp17_attempt_shapes[512]",
+     "tests.test_rl_replay_wp12::test_demo1_extraction_first_20_steps",
+     "tests.test_rl_replay_wp12::test_demo1_reference_arrays_match_the_rebuilt_frozen_v5_material",
+     "tests.test_rl_reward_packed::test_real_trim_seed_torch_matches_numpy",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[15]",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[1]",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[2]",
+     "tests.test_rl_reward_packed::test_torch_device_path_matches_numpy_reference_with_partial_reset",
+     "tests.test_rl_reward_sever::test_torch_reducer_matches_the_numpy_reference_over_two_envs",
+     "tests.test_tlmpm_v7::test_cut_event_provenance_and_disarmed_recontact_do_not_weld",
+     "tests.test_wp11_default_preflight_staged::test_test_c_live_task_passes_the_default_preflight_with_staged_geometry",
+     "tests.test_wp11_path_v3a::test_c5b_live_replay_path_v3_bitwise_and_path_v3a_would_differ",
+     "tests.test_wp11_phase_d::test_declared_home_hand_pose_matches_newton_fk_and_plan_preflight_passes",
+     "tests.test_wp12_flat_board_workcell::test_c2_preflight_model_uses_the_declared_table_and_board",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/CUT_s050_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/CUT_s075_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/MULTI2_s050_g4s_dt0050]"
+    ],
+    "tests": 2529,
+    "time_s": 2939.138
+   }
+  },
+  "full_cpu_cuda0_001": {
+   "log_tail": [
+    "SKIPPED [1] tests/test_wp12_phase5_native_success.py:187: Phase 2b records artifacts/wp12/workcell_live_001-007 not present",
+    "2494 passed, 37 skipped, 6 xfailed, 603 warnings in 3016.54s (0:50:16)",
+    "rc=0"
+   ],
+   "summary": {
+    "errors": 0,
+    "failed": 0,
+    "failed_ids": [],
+    "passed": 2494,
+    "skipped": 43,
+    "skipped_ids": [
+     "::tests.test_rl_actions",
+     "::tests.test_rl_configured_family",
+     "::tests.test_rl_lab_env",
+     "::tests.test_rl_smoke",
+     "::tests.test_vector_env_api",
+     "::tests.test_vector_env_consolidation",
+     "::tests.test_vector_env_contract",
+     "::tests.test_vector_env_gpu_stream",
+     "::tests.test_vector_env_p12b",
+     "tests.test_blademaster_demo_runner::test_final_v1_dry_run_matches_the_recorded_final_runs",
+     "tests.test_cutting_law_v4::test_law4_raked_skim_detaches_the_bump_by_stencil_graph[25.0]",
+     "tests.test_cutting_law_v4::test_law4_raked_skim_detaches_the_bump_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v5::test_law5_raked_skim_detaches_the_bump_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v6::test_law6_raked_skim_bump_separation_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v7::test_law7_raked_skim_bump_separation_by_stencil_graph[35.0]",
+     "tests.test_perf_acceptance::test_harness_cpu_one_step_end_to_end",
+     "tests.test_rl_lab_grip_profile::test_lab_mjwarp_grip_v1_holds_the_reorientation_and_point_profile_collapses",
+     "tests.test_rl_lab_grip_profile::test_open_vector_env_passes_mjwarp_grip_v1_to_the_lab_env",
+     "tests.test_rl_observations::test_privileged_profile_appends_critic_and_keeps_policy_identical",
+     "tests.test_rl_observations::test_state_values_dtype_and_no_critic",
+     "tests.test_rl_policies_batched::test_policy_and_driver_gather_by_step_count",
+     "tests.test_rl_policies_batched::test_recorded_commands_are_reconstructed_by_the_frozen_and_the_torch_path[15]",
+     "tests.test_rl_policies_batched::test_recorded_commands_are_reconstructed_by_the_frozen_and_the_torch_path[512]",
+     "tests.test_rl_policies_batched::test_selector_maps_back_to_the_digit",
+     "tests.test_rl_reference_policy::test_device_policy_gathers_by_step_count",
+     "tests.test_rl_reference_policy::test_torch_action_path_reproduces_the_reconstruction",
+     "tests.test_rl_replay_wp12::test_demo1_extraction_first_20_steps",
+     "tests.test_rl_replay_wp12::test_demo1_reference_arrays_match_the_rebuilt_frozen_v5_material",
+     "tests.test_rl_reward_packed::test_real_trim_seed_torch_matches_numpy",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[15]",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[1]",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[2]",
+     "tests.test_rl_reward_packed::test_torch_device_path_matches_numpy_reference_with_partial_reset",
+     "tests.test_rl_reward_sever::test_torch_reducer_matches_the_numpy_reference_over_two_envs",
+     "tests.test_tlmpm_v7::test_cut_event_provenance_and_disarmed_recontact_do_not_weld",
+     "tests.test_wp11_path_v3a::test_c5b_live_replay_path_v3_bitwise_and_path_v3a_would_differ",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/CUT_s050_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/CUT_s075_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/MULTI2_s050_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/MULTI2_s075_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/TRIM_s050_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/TRIM_s075_g4s_dt0050]",
+     "tests.test_wp12_phase5_native_success::test_reproduces_phase2b_records"
+    ],
+    "tests": 2537,
+    "time_s": 3016.518
+   }
+  },
+  "full_cpu_cudanone_001": {
+   "log_tail": [
+    "SKIPPED [1] tests/test_wp12_phase5_native_success.py:187: Phase 2b records artifacts/wp12/workcell_live_001-007 not present",
+    "2494 passed, 37 skipped, 6 xfailed, 603 warnings in 3182.08s (0:53:02)",
+    "rc=0"
+   ],
+   "summary": {
+    "errors": 0,
+    "failed": 0,
+    "failed_ids": [],
+    "passed": 2494,
+    "skipped": 43,
+    "skipped_ids": [
+     "::tests.test_rl_actions",
+     "::tests.test_rl_configured_family",
+     "::tests.test_rl_lab_env",
+     "::tests.test_rl_smoke",
+     "::tests.test_vector_env_api",
+     "::tests.test_vector_env_consolidation",
+     "::tests.test_vector_env_contract",
+     "::tests.test_vector_env_gpu_stream",
+     "::tests.test_vector_env_p12b",
+     "tests.test_blademaster_demo_runner::test_final_v1_dry_run_matches_the_recorded_final_runs",
+     "tests.test_cutting_law_v4::test_law4_raked_skim_detaches_the_bump_by_stencil_graph[25.0]",
+     "tests.test_cutting_law_v4::test_law4_raked_skim_detaches_the_bump_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v5::test_law5_raked_skim_detaches_the_bump_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v6::test_law6_raked_skim_bump_separation_by_stencil_graph[35.0]",
+     "tests.test_cutting_law_v7::test_law7_raked_skim_bump_separation_by_stencil_graph[35.0]",
+     "tests.test_perf_acceptance::test_harness_cpu_one_step_end_to_end",
+     "tests.test_rl_lab_grip_profile::test_lab_mjwarp_grip_v1_holds_the_reorientation_and_point_profile_collapses",
+     "tests.test_rl_lab_grip_profile::test_open_vector_env_passes_mjwarp_grip_v1_to_the_lab_env",
+     "tests.test_rl_observations::test_privileged_profile_appends_critic_and_keeps_policy_identical",
+     "tests.test_rl_observations::test_state_values_dtype_and_no_critic",
+     "tests.test_rl_policies_batched::test_policy_and_driver_gather_by_step_count",
+     "tests.test_rl_policies_batched::test_recorded_commands_are_reconstructed_by_the_frozen_and_the_torch_path[15]",
+     "tests.test_rl_policies_batched::test_recorded_commands_are_reconstructed_by_the_frozen_and_the_torch_path[512]",
+     "tests.test_rl_policies_batched::test_selector_maps_back_to_the_digit",
+     "tests.test_rl_reference_policy::test_device_policy_gathers_by_step_count",
+     "tests.test_rl_reference_policy::test_torch_action_path_reproduces_the_reconstruction",
+     "tests.test_rl_replay_wp12::test_demo1_extraction_first_20_steps",
+     "tests.test_rl_replay_wp12::test_demo1_reference_arrays_match_the_rebuilt_frozen_v5_material",
+     "tests.test_rl_reward_packed::test_real_trim_seed_torch_matches_numpy",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[15]",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[1]",
+     "tests.test_rl_reward_packed::test_torch_conflict_port_matches_the_frozen_warp_function[2]",
+     "tests.test_rl_reward_packed::test_torch_device_path_matches_numpy_reference_with_partial_reset",
+     "tests.test_rl_reward_sever::test_torch_reducer_matches_the_numpy_reference_over_two_envs",
+     "tests.test_tlmpm_v7::test_cut_event_provenance_and_disarmed_recontact_do_not_weld",
+     "tests.test_wp11_path_v3a::test_c5b_live_replay_path_v3_bitwise_and_path_v3a_would_differ",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/CUT_s050_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/CUT_s075_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/MULTI2_s050_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/MULTI2_s075_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/TRIM_s050_g4s_dt0050]",
+     "tests.test_wp12_gridpos_protocol::test_genuine_local_standin_matches_retained_metadata[artifacts/wp12/resolution_002/TRIM_s075_g4s_dt0050]",
+     "tests.test_wp12_phase5_native_success::test_reproduces_phase2b_records"
+    ],
+    "tests": 2537,
+    "time_s": 3182.047
+   }
+  },
+  "lab_suite_001": {
+   "log_tail": [
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "70 passed, 378 warnings in 500.06s (0:08:20)",
+    "rc=0"
+   ],
+   "summary": {
+    "errors": 0,
+    "failed": 0,
+    "failed_ids": [],
+    "passed": 70,
+    "skipped": 0,
+    "skipped_ids": [],
+    "tests": 70,
+    "time_s": 499.994
+   }
+  },
+  "lab_tests_findings_3_4_001": {
+   "log_tail": [
+    "..                                                                       [100%]",
+    "2 passed in 28.59s",
+    "rc=0"
+   ],
+   "summary": {}
+  },
+  "torch_suite_001": {
+   "log_tail": [
+    "SKIPPED [2] tests/test_rl_replay_wp12.py:152: WP-12 Demo 1 recording not present (NOT_RUN)",
+    "392 passed, 13 skipped, 1 warning in 808.07s (0:13:28)",
+    "rc=0"
+   ],
+   "summary": {
+    "errors": 0,
+    "failed": 0,
+    "failed_ids": [],
+    "passed": 392,
+    "skipped": 13,
+    "skipped_ids": [
+     "::tests.test_rl_lab_env",
+     "::tests.test_rl_lab_ik",
+     "::tests.test_rl_lab_kernels",
+     "::tests.test_rl_lab_rigid_isolation",
+     "::tests.test_rl_lab_scene_usd",
+     "::tests.test_vector_env_gpu_stream",
+     "tests.test_rl_configured_family::test_measured_replay_drive_with_pads_on_the_cut_family",
+     "tests.test_rl_lab_grip_profile::test_lab_mjwarp_grip_v1_holds_the_reorientation_and_point_profile_collapses",
+     "tests.test_rl_lab_grip_profile::test_open_vector_env_passes_mjwarp_grip_v1_to_the_lab_env",
+     "tests.test_rl_replay_wp12::test_demo1_extraction_first_20_steps",
+     "tests.test_rl_replay_wp12::test_demo1_reference_arrays_match_the_rebuilt_frozen_v5_material",
+     "tests.test_vector_env_contract::test_both_backends_report_the_same_contract",
+     "tests.test_vector_env_contract::test_contract_on_cpu[isaac_lab_newton]"
+    ],
+    "tests": 405,
+    "time_s": 808.045
+   }
+  }
+ }
+}

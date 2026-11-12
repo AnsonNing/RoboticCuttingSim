@@ -1,0 +1,223 @@
+{
+ "schema": "rcs_rubber_contact_envelope_check_v1",
+ "id": "rubber_contact_envelope_v1",
+ "version": 1,
+ "task": "ENV2 (ADR 0023 \u00a723.2 decision 4; docs/reports/rl_ready/P2_REMAINING_PLAN.md \u00a72.4): formal envelope check of law grid_node_penalty_coulomb_v3 at n_t 5 and 6 (the P2-6 slot set has n_t 4-6), plus the unseen strip-on-table geometry at n_t 4, 5 and 6",
+ "status": "DECLARED_BEFORE_ANY_RUN",
+ "declared": "2026-11-11, committed alone and SHA-pinned (tests/test_rubber_contact_envelope_check.py) before any run of it (smoke or formal)",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED (friction coefficients, contact stiffness and dashpot ratios are declared numerical values, not measured)",
+ "prerequisites": {
+  "contact_envelope_v1": {
+   "path": "configs/rubber/contact_envelope_v1.json",
+   "sha256": "08f68f704a8052213be4448f964f1b0fc31da867470d7cc0274f93c71ba1a77a"
+  },
+  "rubber_contact_tests_v3": {
+   "sha256": "36d70beaf63a0ef73195dcc47c62e522596779bb95b423a5544e5f7dc9e6a856",
+   "formal_run": "contact_v3_001 (n_t 3 / 4 rows of contact_envelope_v1)"
+  },
+  "law_commit": "b668bdc"
+ },
+ "common": {
+  "contact_law": "grid_node_penalty_coulomb_v3",
+  "law_definition": "rubber_contact_tests_v3 common.law_definition, unchanged",
+  "law_parameters": {
+   "normal_stiffness_kappa_n": 0.25,
+   "tangential_stiffness_kappa_t": 0.25,
+   "normal_damping_ratio_zeta_n": 0.5,
+   "tangential_damping_ratio_zeta_t": 0.5,
+   "slip_rate_damping_ratio_zeta_d": 1.0
+  },
+  "contact_work": "kick_average_v1: W_n, W_t = sum J . (g_n + g_{n+1}) / 2 with g_n = old after the P2G grid update and g_{n+1} = old after the final MUSL grid update; obstacle power P = sum J . v_obs; D_contact = (P_n - W_n) + (P_t - W_t)",
+  "books_layer_N": "B(t) = E_kin + Psi_eq + E_grav + W_b - W_ext - (W_n + W_t), all from the reset state (E_kin particle KE, Psi_eq the equilibrium free energy = the frozen elastic energy for elastic materials, W_b the kick-paired Prony branch work with visco_energy = branch_work_kick_average_v2, W_ext the traction and Dirichlet work with traction_work = grid_displacement_v1 and constraint_work = kick_average_v1)",
+  "options": {
+   "dirichlet": "consistent_mass_projection_v1",
+   "constraint_work": "kick_average_v1",
+   "traction_work": "grid_displacement_v1",
+   "state_precision": "f64_shadow_v1",
+   "stable_step_guard": 1.0,
+   "deformation_reserve": 1.0,
+   "visco_energy_with_prony": "branch_work_kick_average_v2"
+  },
+  "material_elastic": {
+   "model": "neo_hookean_jbar_v1",
+   "mu0_pa": 400000.0,
+   "bulk_ratio_beta": 20.0,
+   "density_kg_m3": 1150.0
+  },
+  "material_prony_P2": {
+   "model": "neo_hookean_jbar_prony_v1",
+   "mu0_pa": 400000.0,
+   "terms": [
+    {
+     "g": 0.2,
+     "tau_s": 0.005
+    },
+    {
+     "g": 0.15,
+     "tau_s": 0.05
+    }
+   ],
+   "g_inf": 0.65,
+   "bulk_ratio_beta": 20.0,
+   "density_kg_m3": 1150.0
+  },
+  "pic": 0.0,
+  "cfl": 0.5,
+  "particles_per_cell_axis": 2,
+  "step_rule": "dt = control_dt / ceil(control_dt / (cfl dx / c_p)), c_p with mu0 (instantaneous modulus)",
+  "loading": "gravity and tractions ramped with 1/2 (1 - cos(pi t / T_ramp)) and updated every SUBSTEP on the CPU (quasi-static: a step load on an undamped elastic body overshoots by 2 and unloads its contacts periodically)",
+  "artificial_damping": "none in the material; the contact law's declared dashpots act only on contact nodes and their dissipation is booked as contact dissipation (never as material or viscoelastic damping)",
+  "device": "CPU (Warp), CUDA_VISIBLE_DEVICES='', single env per job (LiveRubberMaterial, the rubber_contact_tests_v3 job code of scripts/rubber/p2_4/run_contact_v3.py with the scene and n_t as parameters)",
+  "self_contact": "NOT_IMPLEMENTED_V1 (not exercised: a free block / strip on the table)",
+  "run_meta": "commit, dirty-tree flag (must be clean), this file's sha256, Warp / Python / numpy versions, command, wall times; output: a new directory under artifacts/rl_ready/p2_6/ (refuses to overwrite)"
+ },
+ "scenes": {
+  "INC2": {
+   "what": "block 24 x 12 x 6 mm (strip-local), case free, corner at the origin; table plane z = 0 (normal +z); gravity 9.81 (sin theta, 0, -cos theta) ramped every substep with 1/2 (1 - cos(pi t / T_ramp)); friction_table = mu (the rubber_contact_tests_v3 INC2 scene)",
+   "size_m": [
+    0.024,
+    0.012,
+    0.006
+   ],
+   "n_t_set": [
+    5,
+    6
+   ],
+   "ramp_s": 0.02,
+   "control_dt_s": 0.001,
+   "duration_s": 0.14,
+   "hold_window_s": [
+    0.02,
+    0.14
+   ],
+   "fit_window_s": [
+    0.05,
+    0.14
+   ],
+   "mu_set": [
+    0.3,
+    0.4,
+    0.6,
+    0.8
+   ],
+   "stick_ratios_tan_theta_over_mu": [
+    0.95
+   ],
+   "slip_ratios_tan_theta_over_mu": [
+    1.1,
+    1.2,
+    1.3
+   ],
+   "visco_stick_rows": [
+    {
+     "material": "material_prony_P2",
+     "mu": 0.8,
+     "ratio": 0.95
+    }
+   ],
+   "material": "material_elastic"
+  },
+  "STRIP": {
+   "what": "UNSEEN strip-on-table geometry: strip L 48 x W 16 x t mm with t = n_t x 1 mm (dx 1 mm, the P2-6 lattice), case free, corner at the origin, lying flat on the table plane z = 0 (normal +z); gravity 9.81 (sin theta, 0, -cos theta) (tilt along the strip length) ramped every substep as INC2; friction_table = mu",
+   "length_m": 0.048,
+   "width_m": 0.016,
+   "dx_m": 0.001,
+   "n_t_set": [
+    4,
+    5,
+    6
+   ],
+   "thickness_m_by_n_t": {
+    "4": 0.004,
+    "5": 0.005,
+    "6": 0.006
+   },
+   "ramp_s": 0.02,
+   "control_dt_s": 0.001,
+   "duration_s": 0.14,
+   "hold_window_s": [
+    0.02,
+    0.14
+   ],
+   "fit_window_s": [
+    0.05,
+    0.14
+   ],
+   "mu_set": [
+    0.3,
+    0.4,
+    0.6,
+    0.8
+   ],
+   "stick_ratios_tan_theta_over_mu": [
+    0.95
+   ],
+   "slip_ratios_tan_theta_over_mu": [
+    1.1,
+    1.2,
+    1.3
+   ],
+   "visco_stick_rows": [
+    {
+     "material": "material_prony_P2",
+     "mu": 0.8,
+     "ratio": 0.95
+    }
+   ],
+   "material": "material_elastic"
+  }
+ },
+ "jobs": "for every scene and n_t of its n_t_set and every mu of mu_set: one elastic hold at ratio 0.95 and three elastic slip runs at ratios 1.1 / 1.2 / 1.3 (tan theta = ratio x mu); plus the P2 hold (mu 0.8, ratio 0.95) per (scene, n_t): 85 jobs",
+ "tests": {
+  "ENV-01": {
+   "name": "sliding friction (Coulomb acceleration and dissipation) per (scene, n_t, mu)",
+   "criteria": {
+    "b_slip": "every slip run: |a_fit - g (sin theta - mu cos theta)| <= slip_acc_rel * g cos theta (a_fit: quadratic fit of the centroid x over fit_window_s; RUBBER-CONT-01 b of rubber_contact_tests_v2 / v3)",
+    "d04_dissipation": "every slip run: |D_contact / (mu sum_k N_k dx_cm,k) - 1| <= dissipation_rel (RUBBER-CONT-04 a of v2 / v3; D_contact = -(W_n + W_t) over the run)",
+    "e_validity": "no invalid flag in the run"
+   },
+   "thresholds": {
+    "slip_acc_rel": 0.01,
+    "dissipation_rel": 0.05
+   }
+  },
+  "ENV-02": {
+   "name": "static friction (hold at tan theta = 0.95 mu) per (scene, n_t, mu), elastic and the P2 row at mu 0.8",
+   "criteria": {
+    "a_stick": "|x_cm(end) - x_cm(0.02 s)| <= stick_disp_rel * s and |a_fit| <= stick_acc_rel * g cos theta (RUBBER-CONT-01 a of v2 / v3; s = particle spacing)",
+    "f_ramp_slip": "|x_cm(T_ramp) - x_cm(0)| <= ramp_disp_rel * s (RUBBER-CONT-01 f of v3)",
+    "e_validity": "no invalid flag in the run"
+   },
+   "thresholds": {
+    "stick_disp_rel": 0.01,
+    "stick_acc_rel": 0.001,
+    "ramp_disp_rel": 0.01
+   }
+  },
+  "ENV-03": {
+   "name": "reported, not scored",
+   "what": "per (scene, n_t, mu): onset mu_eff from the linear fit of a / (g cos theta) against tan theta over the three slip runs (|mu_eff / mu - 1| vs the v3 onset_rel 0.02, reported); books max |B| / S of every run (the RUBBER-CONT-01 d quantity; the \u00a722.10 stick-run residual is known); dissipation split; max penetration / s; particles, dt, substeps, wall time"
+  }
+ },
+ "decision_rule": {
+  "row_pass": "a (scene, n_t, mu) sliding level passes iff its three slip runs pass ENV-01 b, d04 and e; a static level passes iff its hold run (and, at mu 0.8, the P2 hold) passes ENV-02 a, f and e",
+  "sliding_mu_max(n_t)": "the largest mu of mu_set such that the sliding level passes at that mu and at every lower mu of mu_set, in every scene with this n_t; for n_t 4 the result is min(contact_envelope_v1 v3 n_t 4 row 0.8, the STRIP result); none passing (mu 0.3 fails) -> NOT_ESTABLISHED",
+  "static_mu_max(n_t)": "the same rule over the static levels",
+  "envelope_output": "configs/rubber/contact_envelope_v2.json, written from this run's summary (scored values only) after the run: the v3 rows at n_t 5 and 6 ESTABLISHED with these limits (or NOT_ESTABLISHED), the v3 n_t 4 row narrowed if the STRIP rows narrow it, every other row of contact_envelope_v1 copied unchanged; SHA-pinned when committed; contact_envelope_v1 stays unchanged",
+  "verdict": "PASS iff sliding_mu_max = static_mu_max = 0.8 (the declared target, ADR 0023 \u00a723.2 decision 4) at n_t 5 and 6 and the STRIP rows at n_t 4 pass every level; else FAIL, and the envelope takes the largest passing values (plan \u00a72.4 contingency: P2-6 then uses the narrowed range; nothing passing -> the P2-6 friction axis is BLOCKED)",
+  "p2_6_consequence": "P2-6 friction_table ~ U[0.3, min over n_t 4 / 5 / 6 of sliding_mu_max]"
+ },
+ "expectation_declared_before_the_run": "X2 DIAGNOSTIC (dev mode 13, seen): INC mu 0.8 sliding exact at n_t 6 (cfl 0.5), INC2 mu 0.6 at n_t 4; INC2 at n_t 5 / 6 and every STRIP row are unseen. Expected: PASS at mu 0.3-0.8 (the v3 equalisation removes the slip-rate flutter the v2 rows show at n_t >= 4). Declared risk: on the long STRIP one patch (the whole table) spans the full contact area, limitation (ii) of ADR 0023 \u00a722.11; a FAIL is recorded and narrows the envelope, the protocol is not iterated",
+ "provenance": {
+  "seen_before_declaration": [
+   "every rubber_contact_tests_v3 row (contact_v3_001: INC / INC2 at n_t 3 / 4, mu 0.2-1.0)",
+   "X2 DIAGNOSTIC x2_diag_001 (dev mode 13 = the v3 law: INC mu 0.6-1.5 at n_t 3, mu 0.8 / 1.0 at n_t 4 / 6, cfl 0.25, INC2 mu 0.8 / 1.0 at n_t 3, INC2 mu 0.6 at n_t 4)"
+  ],
+  "unseen_before_declaration": [
+   "INC2 at n_t 5 and 6 under v3",
+   "every STRIP row (n_t 4, 5, 6)",
+   "mu 0.3 rows under v3"
+  ],
+  "rule": "thresholds are the rubber_contact_tests_v2 / v3 values verbatim and are never loosened after a result; a change is rubber_contact_envelope_v2 declared before its run; failures are preserved"
+ }
+}

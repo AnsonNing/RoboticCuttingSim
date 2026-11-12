@@ -44,6 +44,7 @@ detector state of the reset envs. ``off_v1`` (default): no detector, no array, n
 """
 import hashlib
 import time
+from collections import OrderedDict
 from pathlib import Path
 
 import numpy as np
@@ -56,7 +57,11 @@ from .. import rubber_visco_constitutive as rvc
 from . import constitutive_rubber as cr
 from . import rubber_layout
 from .errors import UnsupportedBatchConfiguration
+from .material_batch import InvalidBatchEnvs
 from .rubber_batch import BatchedTLMPMRubber
+
+#: F1: the F8 inverse cache (``_proj_inv_cache``) holds at most max(PROJ_INV_CACHE_MIN, 2 N) entries (LRU).
+PROJ_INV_CACHE_MIN = 4
 
 wp.set_module_options({"enable_backward": False})
 
@@ -110,10 +115,16 @@ VISCO_DIAGNOSTICS_SCRATCH = ("vpp", "visco_summary")       # in ``visco_diagnost
 PRONY_RANGE_KEYS = ("prony_g_scale", "prony_tau_scale")
 
 
-class InvalidRubberEnvs(FloatingPointError):
+class InvalidRubberEnvs(InvalidBatchEnvs):
+    """Strict mode: some rubber envs became invalid in the last control step (ids and rubber reason names attached).
+
+    F3 (P6.7 review): a subclass of the Phase 1 ``InvalidBatchEnvs`` (still a ``FloatingPointError``), so
+    ``rl.termination.classify_exception`` returns ``("task", "MATERIAL_INVALID")``; the message carries the Phase 1
+    signature "InvalidBatchEnvs" that ``classify_process_exit`` maps to ``task`` / ``STRICT_INVALID_ENV``."""
+
     def __init__(self, env_ids, reasons):
         self.env_ids, self.reasons = list(env_ids), dict(reasons)
-        super().__init__(f"Invalid rubber envs {self.env_ids}: {self.reasons}")
+        FloatingPointError.__init__(self, f"Invalid batched envs (rubber, InvalidBatchEnvs) {self.env_ids}: {self.reasons}")
 
 
 def decode_reason(value):
@@ -332,6 +343,23 @@ def _reset_visco_env_r(mask: wp.array(dtype=int), branch: wp.array(dtype=wp.floa
         d_negative[e] = 0
 
 
+@wp.kernel
+def _stage_group_motion_b(q_in: wp.array(dtype=wp.quatd), b_in: wp.array(dtype=wp.vec3d),
+                          group_q1: wp.array(dtype=wp.quatd), group_b1: wp.array(dtype=wp.vec3d)):
+    """P2-6 device staging (``set_group_motions_device``): the END quaternion of row r, hemisphere-aligned with the
+    current end (the host path's ``q[dot(prev, q) < 0] *= -1``; a product by -1 flips the sign of zeros as NumPy's
+    in-place multiply does), and the END translation."""
+    r = wp.tid()
+    q = q_in[r]
+    prev = group_q1[r]
+    d = prev[0]*q[0]+prev[1]*q[1]+prev[2]*q[2]+prev[3]*q[3]
+    if d < wp.float64(0.0):
+        m = wp.float64(-1.0)
+        q = wp.quatd(q[0]*m, q[1]*m, q[2]*m, q[3]*m)
+    group_q1[r] = q
+    group_b1[r] = b_in[r]
+
+
 # ----------------------------------------------------------------------------- material
 
 class BatchedRubberMaterial:
@@ -447,15 +475,30 @@ class BatchedRubberMaterial:
         self._proj_scenes = [live.scene for live in lives] if s.projection else None
         self._proj_inv_initial = s.proj_inv.numpy().copy() if s.projection else None
         self._proj_inv_host = self._proj_inv_initial.copy() if s.projection else None
-        self._proj_inv_cache = {}
+        # F1 (P6.7 review): the inverse cache is a bounded LRU (``projection_inverse_cache_lru_v1``). It only memoises a
+        # deterministic function of (scene, float32 mass), so the cap never changes a result; before, every reset with a
+        # resampled density added one entry (1.6-3.1 MB) and nothing was evicted.
+        self._proj_inv_cache = OrderedDict()
+        self.proj_inv_cache_max = PROJ_INV_CACHE_MIN if not lives else max(PROJ_INV_CACHE_MIN, 2*len(lives))
+        self._proj_structure = {}
 
     def _projection_inverse(self, e, mass):
-        """Concatenated float64 inverses of env e's blocks for particle mass ``mass`` (float32), in row order."""
+        """Concatenated float64 inverses of env e's blocks for particle mass ``mass`` (float32), in row order.
+        ``projection_assembly_v2`` (P2-6 reset cost): the mass-independent block structure is cached per scene and the
+        blocks are accumulated with ``np.add.at`` in the exact order of the single solver's
+        ``tlmpm_rubber_v1.projection_blocks`` loop (same products, same sequence of float64 additions), so the
+        inverses are byte-identical to it (tests/test_rubber_projection_assembly.py)."""
         key = (e, np.float32(mass).tobytes())
-        if key not in self._proj_inv_cache:
-            blocks = T.projection_blocks(self._proj_scenes[e], np.float32(mass))
-            self._proj_inv_cache[key] = np.concatenate([b["inv"].reshape(-1) for b in blocks])
-        return self._proj_inv_cache[key]
+        cache = self._proj_inv_cache
+        if key in cache:
+            cache.move_to_end(key)
+            return cache[key]
+        blocks = projection_blocks_v2(self._proj_scenes[e], np.float32(mass), self._proj_structure, e)
+        inv = np.concatenate([b["inv"].reshape(-1) for b in blocks])
+        cache[key] = inv
+        while len(cache) > self.proj_inv_cache_max:
+            cache.popitem(last=False)
+        return inv
 
     def _check_ranges(self, ranges, lives):
         if not ranges:
@@ -557,13 +600,52 @@ class BatchedRubberMaterial:
         """One control step of every env; returns nothing (read ``wrench``, ``invalid_reason`` on the device; with
         contact also ``plane_wrench``, ``box_wrench``, ``pad_wrench``, ``pending_wrench``). ``frame_*``: contact
         frame END poses [N, F, ...] (contact batches only)."""
-        s = self.solver
         self._begin_control_step()          # set_group_motions refreshes the motion table (same launches as before R1)
         self.set_group_motions(rotation=rotation, translation=translation, affine=affine, active=active)
         if frame_rotation is not None or frame_translation is not None or frame_active is not None:
             self.set_frame_motions(rotation=frame_rotation, translation=frame_translation, active=frame_active)
         if traction is not None:
             self.set_traction(traction)
+        self._run_control_step()
+
+    def set_group_motions_device(self, q1, b1):
+        """P2-6 opt-in device staging (ADR 0023 §23.2 decision 7, plan §4.2): END quaternions ``q1`` (wp.quatd
+        [N*G], XYZW) and translations ``b1`` (wp.vec3d [N*G]) already on the device, written by a kernel with the host
+        path's hemisphere alignment, then the motion table. Byte-identical to ``set_group_motions(rotation=R,
+        translation=b)`` when ``q1`` holds the quaternions the host path computes from R (tested); no host read."""
+        s, n = self.solver, self.num_envs*self.G
+        if self.G == 0:
+            raise ValueError("no groups")
+        if q1.shape != (n,) or b1.shape != (n,) or q1.dtype != wp.quatd or b1.dtype != wp.vec3d:
+            raise ValueError(f"q1 / b1 must be wp.quatd / wp.vec3d arrays of length N*G = {n}")
+        wp.launch(_stage_group_motion_b, n, [q1, b1, s.group_q1, s.group_b1], device=self.device)
+        s.prepare_motion_table()
+
+    def set_traction_device(self, forces):
+        """P2-6 opt-in device staging: traction forces (wp.vec3 float32 [N*Gt]) copied on the device (the host path
+        ``set_traction`` assigns the same float32 values)."""
+        s = self.solver
+        if forces.shape != s.traction_force.shape or forces.dtype != wp.vec3:
+            raise ValueError(f"forces must be a wp.vec3 array of shape {s.traction_force.shape}")
+        wp.copy(s.traction_force, forces)
+
+    def advance_device(self, q1=None, b1=None, traction=None):
+        """One control step with device-staged inputs (P2-6; no host staging, no host read except strict mode's
+        validity count): every group holds, then ``q1`` / ``b1`` (``set_group_motions_device``) and ``traction``
+        (``set_traction_device``) are written, then the control step runs exactly as ``advance``."""
+        self._begin_control_step()
+        if (q1 is None) != (b1 is None):
+            raise ValueError("q1 and b1 are staged together")
+        if q1 is not None:
+            self.set_group_motions_device(q1, b1)
+        else:
+            self.solver.prepare_motion_table()
+        if traction is not None:
+            self.set_traction_device(traction)
+        self._run_control_step()
+
+    def _run_control_step(self):
+        s = self.solver
         with wp.ScopedDevice(self.device):
             if self.graphs is not None:
                 main, repeats, rest = self.graphs
@@ -876,6 +958,61 @@ def resolution_summary(env_receipts):
             labels[res["resolution_profile"]] = {k: full[k] for k in ("label", "measured_bias", "known_limitation")}
     return {"per_env": per_env, "cells_through_thickness": [r["scene"]["resolution"]["cells_through_thickness"]
                                                             for r in env_receipts], "profiles": labels}
+
+
+def projection_structure(scene):
+    """Mass-independent structure of the F8 blocks of ``tlmpm_rubber_v1.projection_blocks``: per block (group,
+    component) the constrained nodes and the flattened (a, b, w_a, w_b) entries of its accumulation loop in loop order
+    (particles ``touching`` ascending, stencil corners a then b in corner order, constrained corners only)."""
+    nodes, weights = scene.nodes, scene.weights.astype(np.float64)
+    out = []
+    for g in range(len(scene.groups)):
+        for k in range(3):
+            sel = np.flatnonzero((scene.node_group == g) & ((scene.node_mask >> k) & 1 == 1))
+            if sel.size == 0:
+                continue
+            if sel.size > T.PROJECTION_MAX_BLOCK:
+                raise ValueError(f"consistent_mass_projection_v1: block of {sel.size} constrained nodes > "
+                                 f"{T.PROJECTION_MAX_BLOCK} (dense inverse limit)")
+            local = np.full(int(nodes.max())+1, -1, np.int64)
+            local[sel] = np.arange(sel.size)
+            touching = np.flatnonzero(np.isin(nodes, sel).any(1))
+            loc = local[nodes[touching]]                         # [P, 8], -1 = not constrained
+            w = weights[touching]                                # [P, 8]
+            mask = loc >= 0
+            # per particle: the constrained corners in corner order; all ordered pairs (a, b) of them
+            P = len(touching)
+            A_idx = np.repeat(loc[:, :, None], 8, 2)              # [P, 8(a), 8(b)]
+            B_idx = np.repeat(loc[:, None, :], 8, 1)
+            WA = np.repeat(w[:, :, None], 8, 2)
+            WB = np.repeat(w[:, None, :], 8, 1)
+            ok = mask[:, :, None] & mask[:, None, :]
+            ia, ib, wa, wb = A_idx[ok], B_idx[ok], WA[ok], WB[ok]   # C order: p, then a, then b
+            out.append({"group": g, "comp": k, "nodes": sel, "size": sel.size, "flat": ia*sel.size+ib,
+                        "wa": wa, "wb": wb, "particles": P})
+    return out
+
+
+def projection_blocks_v2(scene, mass_value, cache=None, key=None):
+    """``tlmpm_rubber_v1.projection_blocks`` with a vectorised, order-preserving accumulation (see
+    ``BatchedRubberMaterial._projection_inverse``); returns the same block dicts (group, comp, nodes, inv, cond)."""
+    if cache is not None and key in cache:
+        structure = cache[key]
+    else:
+        structure = projection_structure(scene)
+        if cache is not None:
+            cache[key] = structure
+    blocks = []
+    m = float(mass_value)
+    for st in structure:
+        n = st["size"]
+        A = np.zeros(n*n)
+        np.add.at(A, st["flat"], (m*st["wa"])*st["wb"])      # sequential float64 additions in loop order
+        A = A.reshape(n, n)
+        np.linalg.cholesky(A)
+        blocks.append({"group": st["group"], "comp": st["comp"], "nodes": st["nodes"], "inv": np.linalg.inv(A),
+                       "cond": float(np.linalg.cond(A))})
+    return blocks
 
 
 def prony_scales(initial, prony):

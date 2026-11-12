@@ -1,0 +1,498 @@
+{
+ "schema": "rcs_rubber_rl_task_v1",
+ "id": "rubber_strip_drag_v1",
+ "task": "P6.0 (ADR 0023 \u00a723.2 decision 7; docs/reports/rl_ready/P2_REMAINING_PLAN.md \u00a74.1-\u00a74.4)",
+ "declared": "2026-11-11, with configs/rubber/rubber_rl_tests_v1.json, committed alone and SHA-pinned (tests/test_rubber_rl_p6_0_declarations.py) before any P2-6 protocol run; a change is rubber_strip_drag_v2, never an edit",
+ "task_family": "RubberStripTaskFamily (src/robotic_cutting_sim/rl/rubber_family.py)",
+ "backend": "kinematic_grip_batched",
+ "runtime": "rl_gpu_headless",
+ "env_version": "rl_rubber_vector_env_v1",
+ "contract": "rubber_vector_contract_v1",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "labels": {
+  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+  "coupling": "kinematic_grip_ideal_tracking (no wrench feedback)",
+  "robot_feedback_coupling": "NOT_IMPLEMENTED_PHASE2",
+  "perception": "ideal_marker_tracking",
+  "self_contact": "NOT_IMPLEMENTED_V1 (detector surface_grid_v1)",
+  "resolution_measured_bias": "rubber_ref_v1 (n_t 4) vs the n_t 4 / 6 / 8 extrapolation: Q1 +0.39 %, Q1w +0.62 %, Q2 -0.39 %, Q4 -0.05 % (refinement_v5_001; known_limitation rubber_phys_11_v5_q1w_gci_2.16pct, pending the K2 decision on ADR 0023 \u00a723.2 decision 5)",
+  "reward": "PROVISIONAL_SHAPING_NOT_SUCCESS"
+ },
+ "recipe": {
+  "path": "configs/materials/rubber_generic_visco_v1.json",
+  "sha256": "c9ea0c21417d60c52765f3ecc2fce46536e4bcef44344d21c32910e8eebd744b",
+  "build_material": "recipe nominal (mu0 0.4 MPa, rho 1150, Prony (0.15, 10 ms), (0.10, 100 ms)) with friction_table = the midpoint of the friction range; every episode resamples (randomisation)"
+ },
+ "profile": {
+  "id": "rubber_rl_env_v1",
+  "dirichlet": "consistent_mass_projection_v1",
+  "constraint_work": "kick_average_v1",
+  "traction_work": "grid_displacement_v1",
+  "state_precision": "f64_shadow_v1",
+  "stable_step_guard": 1.0,
+  "deformation_reserve": 1.0,
+  "visco_energy": "off_v1",
+  "cfl": 0.5,
+  "self_penetration_check": "surface_grid_v1",
+  "self_penetration_check_substeps": 256,
+  "graph_chunk": 500,
+  "bc_launch": "motion_table_v1 (batch default)",
+  "step_staging": "device (BatchedRubberMaterial.advance_device: set_group_motions_device + set_traction_device); resets host-staged"
+ },
+ "contact": {
+  "law": "grid_node_penalty_coulomb_v3",
+  "law_parameters": {
+   "normal_stiffness_kappa_n": 0.25,
+   "tangential_stiffness_kappa_t": 0.25,
+   "normal_damping_ratio_zeta_n": 0.5,
+   "tangential_damping_ratio_zeta_t": 0.5,
+   "slip_rate_damping_ratio_zeta_d": 1.0
+  },
+  "planes": [
+   [
+    0.0,
+    0.0,
+    1.0,
+    0.0
+   ]
+  ],
+  "frames": [],
+  "envelope": {
+   "path": "configs/rubber/contact_envelope_v2.json",
+   "sha256": "46f74efa880cf7121e50070a0cf5fb2358e87d7e390f67cd7b608802f9f03b78"
+  },
+  "friction_pad_and_self": "fixed at the recipe values (1.0 / 0.9) and unused: no pad frame, no self-contact physics"
+ },
+ "scene": {
+  "family": "rubber_strip_v1",
+  "case": "A",
+  "width_m": 0.016,
+  "dx_m": 0.001,
+  "jaw_length_m": 0.002,
+  "particles_per_cell_axis": 2,
+  "resolution_profile": "rubber_ref_v1",
+  "traction_region": {
+   "name": "tip",
+   "x_from_tip_m": 0.002,
+   "rule": "particles with x in [L - 0.002, L] (every y, z)"
+  },
+  "gravity_m_s2": [
+   0.0,
+   0.0,
+   -9.81
+  ],
+  "table_plane": "z = 0 (normal +z), the strip's bottom face lies on it at reset",
+  "strip_pose": "identity: strip-local = world",
+  "grip": "group 0 = the jaw nodes (reference x <= 0), Dirichlet, F8 projection, kick-average work; grip origin o = (0, W/2, t/2); a grip pose (p, q) maps the jaw by x = R(q) X + p - R(q) o"
+ },
+ "slots": [
+  {
+   "id": "L100_t4",
+   "length_m": 0.1,
+   "thickness_m": 0.004,
+   "n_t": 4
+  },
+  {
+   "id": "L100_t5",
+   "length_m": 0.1,
+   "thickness_m": 0.005,
+   "n_t": 5
+  },
+  {
+   "id": "L100_t6",
+   "length_m": 0.1,
+   "thickness_m": 0.006,
+   "n_t": 6
+  },
+  {
+   "id": "L125_t4",
+   "length_m": 0.125,
+   "thickness_m": 0.004,
+   "n_t": 4
+  },
+  {
+   "id": "L125_t5",
+   "length_m": 0.125,
+   "thickness_m": 0.005,
+   "n_t": 5
+  },
+  {
+   "id": "L125_t6",
+   "length_m": 0.125,
+   "thickness_m": 0.006,
+   "n_t": 6
+  },
+  {
+   "id": "L150_t4",
+   "length_m": 0.15,
+   "thickness_m": 0.004,
+   "n_t": 4
+  },
+  {
+   "id": "L150_t5",
+   "length_m": 0.15,
+   "thickness_m": 0.005,
+   "n_t": 5
+  },
+  {
+   "id": "L150_t6",
+   "length_m": 0.15,
+   "thickness_m": 0.006,
+   "n_t": 6
+  }
+ ],
+ "slot_selection": "per env at build: explicit slot ids, or seeded: np.random.default_rng(slot_seed).integers(0, 9, N) indexes this list; a partial reset never changes a slot (UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET); rebuild() reselects",
+ "control_dt_s": 0.02,
+ "step_material": {
+  "mu0_pa": 800000.0,
+  "bulk_ratio_beta": 20.0,
+  "density_kg_m3": 1000.0,
+  "note": "the randomisation maxima of c_p: dt 3.827 us, 5,226 substeps per 20 ms at dx 1 mm, CFL 0.5"
+ },
+ "randomisation": {
+  "rng": "per reset env: np.random.default_rng(seed) with the env's int64 reset seed; draws in this order, each a single uniform(lo, hi) float64",
+  "order": [
+   "mu0_pa",
+   "density_kg_m3",
+   "prony_g_scale",
+   "prony_tau_scale",
+   "friction_table",
+   "traction_horizontal_fraction",
+   "traction_direction_rad",
+   "traction_vertical_fraction",
+   "preload_sweep_y_m",
+   "preload_yaw_rad",
+   "goal_radius_m",
+   "goal_angle_rad"
+  ],
+  "ranges": {
+   "mu0_pa": [
+    300000.0,
+    800000.0
+   ],
+   "density_kg_m3": [
+    1000.0,
+    1300.0
+   ],
+   "prony_g_scale": [
+    0.5,
+    1.5
+   ],
+   "prony_tau_scale": [
+    0.5,
+    2.0
+   ],
+   "friction_table": [
+    0.3,
+    0.8
+   ],
+   "traction_horizontal_fraction": [
+    0.0,
+    0.5
+   ],
+   "traction_direction_rad": [
+    0.0,
+    6.283185307179586
+   ],
+   "traction_vertical_fraction": [
+    -0.25,
+    0.25
+   ],
+   "preload_sweep_y_m": [
+    -0.03,
+    0.03
+   ],
+   "preload_yaw_rad": [
+    -0.4,
+    0.4
+   ],
+   "goal_radius_m": [
+    0.03,
+    0.06
+   ],
+   "goal_angle_rad": [
+    0.0,
+    6.283185307179586
+   ]
+  },
+  "material": "mu0 = the INSTANTANEOUS shear modulus; kappa = 20 mu0; Prony terms = the recipe terms with every g_i x prony_g_scale and every tau_i x prony_tau_scale; friction_pad / friction_self = recipe values",
+  "friction_rule": "friction_table ~ U[0.3, min over the slot set's n_t of sliding_mu_max(v3, n_t)] of the envelope (ADR 0023 \u00a723.2 decision 4); values above it or >= 1.0 are refused (UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE)",
+  "traction": "constant tip traction for the whole episode (preload included): F = W_slot (h cos(phi), h sin(phi), v) with h, phi, v the traction draws and W_slot = rho n s^3 g (sampled density, n particles of the slot incl. the jaw, s = dx / 2, g = 9.81)",
+  "friction_source": "ENV1 / ENV2: contact_envelope_v2 (sha256 46f74efa) rows of law grid_node_penalty_coulomb_v3 at n_t 4 / 5 / 6 (contact_v3_001 for n_t 4; contact_envelope_v1_001 PASS for n_t 5 / 6 and the STRIP check at n_t 4): sliding_mu_max 0.8 each, so the range is [0.3, 0.8]"
+ },
+ "preload": {
+  "steps": 10,
+  "rule": "the first `steps` control steps of every episode follow a seeded smootherstep grip path; actions are ignored (info drive = PRELOAD, action_status 3), the reward is 0, the evaluator window excludes them",
+  "path": "after step k (1 <= k <= steps): tau = k / steps, s = 6 tau^5 - 15 tau^4 + 10 tau^3; p = o + (0, sweep_y s, lift s); q = rotation about +z by yaw s",
+  "lift_m": 0.003
+ },
+ "goal": {
+  "rule": "tip goal on the table: (L + r cos(a), W/2 + r sin(a), t/2) with r = goal_radius_m, a = goal_angle_rad (the tip marker's reference is (L, W/2, t/2), so the initial tip distance is r >= 30 mm)"
+ },
+ "action": {
+  "spec": "grip_delta_v1",
+  "dim": 6,
+  "components": [
+   "dx",
+   "dy",
+   "dz",
+   "rx",
+   "ry",
+   "rz"
+  ],
+  "scale": "a clipped to [-1, 1] (action_out_of_box if any |a_i| > 1); translation delta = 0.005 m x a[0:3]; rotation delta = axis-angle 0.05 rad x a[3:6] about the grip origin, world axes: q_new = exp(delta) q",
+  "max_translation_m_per_step": 0.005,
+  "max_rotation_rad_per_step": 0.05,
+  "workspace": {
+   "grip_origin_offset_box_m": [
+    [
+     -0.15,
+     -0.15,
+     -0.002
+    ],
+    [
+     0.15,
+     0.15,
+     0.08
+    ]
+   ],
+   "jaw_min_clearance_m": 0.001,
+   "tilt_max_rad": 0.8,
+   "rule": "a policy step whose new pose leaves the box (offset p - o), lowers the jaw's lowest node (the jaw node bounding box under the new pose) below 1 mm above the table, or tilts the grip z axis by more than 0.8 rad from +z is held (pose unchanged, action_status 2, action_clamped True); it never terminates the episode. Preload poses are not clamped (they start at clearance 0 and end at lift_m)"
+  },
+  "tracking": "ideal: the grip's END pose of the control step = the commanded pose, interpolated inside the step by the motion table (motion_table_v1)",
+  "status_codes": {
+   "0": "applied",
+   "1": "applied after clipping (out-of-box action)",
+   "2": "held by the workspace clamp",
+   "3": "ignored (preload)"
+  }
+ },
+ "observation": {
+  "policy": {
+   "dim": 78,
+   "dtype": "float32",
+   "deployable": true,
+   "terms": [
+    [
+     "grip_position_m",
+     3
+    ],
+    [
+     "grip_quaternion_xyzw",
+     4
+    ],
+    [
+     "grip_twist_commanded",
+     6
+    ],
+    [
+     "time_remaining_fraction",
+     1
+    ],
+    [
+     "previous_action",
+     6
+    ],
+    [
+     "marker_positions_m",
+     27
+    ],
+    [
+     "marker_velocities_m_s",
+     27
+    ],
+    [
+     "goal_m",
+     3
+    ],
+    [
+     "preload_flag",
+     1
+    ]
+   ],
+   "notes": "markers: the 9 cross-section markers of rubber_strip_v1 (labelled ideal_marker_tracking); twist = the applied pose delta / control_dt (0 when held or before the first step); time_remaining = (max_episode_steps - step_count) / max_episode_steps; preload_flag = 1 while the next step is a preload step; no force, wrench, stress, J, energy, contact or material parameter"
+  },
+  "critic": {
+   "opt_in": "observation_profile = privileged_state",
+   "dim": 106,
+   "terms": [
+    [
+     "policy",
+     78
+    ],
+    [
+     "mu0_mpa",
+     1
+    ],
+    [
+     "density_t_m3",
+     1
+    ],
+    [
+     "friction_table",
+     1
+    ],
+    [
+     "prony_g_scale",
+     1
+    ],
+    [
+     "prony_tau_scale",
+     1
+    ],
+    [
+     "tip_traction_n",
+     3
+    ],
+    [
+     "grip_wrench",
+     6
+    ],
+    [
+     "plane_wrench",
+     6
+    ],
+    [
+     "psi_eq_j",
+     1
+    ],
+    [
+     "kinetic_j",
+     1
+    ],
+    [
+     "gravity_energy_j",
+     1
+    ],
+    [
+     "jbar_min",
+     1
+    ],
+    [
+     "jbar_max",
+     1
+    ],
+    [
+     "cfl_eff_max",
+     1
+    ],
+    [
+     "contact_impulse_events",
+     1
+    ],
+    [
+     "max_penetration_m",
+     1
+    ]
+   ]
+  },
+  "info_privileged": [
+   "invalid_reason"
+  ],
+  "non_finite": "observation entries that are not finite (only after NONFINITE_STATE, with the terminal bit set) are returned as 0 (torch.nan_to_num(nan=0, posinf=0, neginf=0)); the state itself is not modified"
+ },
+ "reward": {
+  "id": "rubber_tip_tracking_v1",
+  "status": "PROVISIONAL_SHAPING_NOT_SUCCESS",
+  "formula": "r = -d / L - 0.01 ||a_clipped||^2 - 1.0 [termination_reason has an invalid-state bit], d = ||x_tip - x_goal||; a non-finite d (only after NONFINITE_STATE) contributes -1 (d / L := 1); r = 0 for preload steps; float64 on the device, returned as float32",
+  "tip": "marker 8 (x = L)"
+ },
+ "done": {
+  "terminated": "(termination_reason & rl.termination.TERMINAL_BITS) != 0; every rubber invalid bit (NONFINITE 1, J_DOMAIN 2, CFL 4, SELF_CONTACT_UNRESOLVED 8) sets TERM_MATERIAL_INVALID (sticky); the detail is info['invalid_reason'] (privileged)",
+  "truncated": "step_count >= max_episode_steps",
+  "max_episode_steps": 250,
+  "autoreset": "False only (same_step: UNSUPPORTED_OPTION)",
+  "infrastructure": "rl.termination: TERM_INFRASTRUCTURE / VectorEnvInfrastructureError as Phase 1"
+ },
+ "evaluator": {
+  "id": "rubber_tracking_eval_v1",
+  "success": "step_count >= preload steps + 25, no terminal bit, and the tip within 0.010 m (3-D distance) of the goal after each of the last 25 control steps",
+  "window_steps": 25,
+  "tolerance_m": 0.01,
+  "source": "host evaluate() from device counters; success never comes from the reward"
+ },
+ "refused": {
+  "cameras_or_sensors": "UNSUPPORTED_SENSOR",
+  "autoreset_same_step": "UNSUPPORTED_OPTION",
+  "geometry_change_on_partial_reset": "UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET",
+  "friction_out_of_envelope": "UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE"
+ },
+ "test_configurations": {
+  "cpu_parity_v1": {
+   "use": "CPU parity / isolation / semantics tests only (RL-01 CPU, RL-02 a, RL-03 states, RL-04 L1, RL-05 CPU); every receipt carries test_configuration = cpu_parity_v1, never a formal throughput or physics row",
+   "slots": [
+    {
+     "id": "P16_t4",
+     "length_m": 0.016,
+     "thickness_m": 0.004,
+     "n_t": 4
+    },
+    {
+     "id": "P20_t5",
+     "length_m": 0.02,
+     "thickness_m": 0.005,
+     "n_t": 5
+    },
+    {
+     "id": "P12_t6",
+     "length_m": 0.012,
+     "thickness_m": 0.006,
+     "n_t": 6
+    }
+   ],
+   "width_m": 0.006,
+   "control_dt_s": 0.002,
+   "max_episode_steps": 8,
+   "preload": {
+    "steps": 2,
+    "lift_m": 0.0012
+   },
+   "randomisation_overrides": {
+    "preload_sweep_y_m": [
+     -0.002,
+     0.002
+    ],
+    "preload_yaw_rad": [
+     -0.05,
+     0.05
+    ],
+    "goal_radius_m": [
+     0.011,
+     0.014
+    ]
+   },
+   "action_overrides": {
+    "max_translation_m_per_step": 0.0005,
+    "max_rotation_rad_per_step": 0.005,
+    "grip_origin_offset_box_m": [
+     [
+      -0.02,
+      -0.02,
+      -0.002
+     ],
+     [
+      0.02,
+      0.02,
+      0.02
+     ]
+    ]
+   },
+   "evaluator_overrides": {
+    "window_steps": 2
+   }
+  }
+ },
+ "resolution_variants": {
+  "rubber_rl_v1": {
+   "use": "labelled reduced-fidelity throughput rows of RL-07 only (plan \u00a74.4): reduced_fidelity = thickness_resolution_n_t3 with the rubber_rl_v1 measured bias (rubber_material.RESOLUTION_PROFILES)",
+   "slots": [
+    "L100_t4",
+    "L150_t4"
+   ],
+   "n_t": 3,
+   "dx_m": "t / 3 = 4/3 mm (jaw 2 dx)",
+   "note": "L 125 mm is not on the 2/3 mm particle lattice, so the variant uses the 100 / 150 mm slots; the friction range is unchanged (v3 envelope row n_t 3: 0.8)"
+  }
+ }
+}

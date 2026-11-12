@@ -14,6 +14,16 @@ import numpy as np
 import pytest
 import warp as wp
 
+pytest.importorskip("pxr", reason="needs OpenUSD (pxr): .venv or Lab venv; NOT_RUN in the Torch venv")
+
+# NOT_RUN where the robot-batching inputs are absent (e.g. CI): the official Franka USD asset cache and Newton's USD
+# importer (newton[importers]) are local-only; the tests run in .venv and the Lab venv on the workstation.
+from pathlib import Path as _Path  # noqa: E402
+from robotic_cutting_sim.workcell import ASSETS as _ASSETS  # noqa: E402
+if not (_Path(__file__).resolve().parents[1]/"artifacts/workcell_asset_cache"/_ASSETS["franka"]).exists():
+    pytest.skip("NOT_RUN: Franka USD asset cache (artifacts/workcell_asset_cache) not present", allow_module_level=True)
+pytest.importorskip("newton_usd_schemas", reason="NOT_RUN: Newton USD importer (newton[importers]) not installed")
+
 from robotic_cutting_sim.batched import lab_scene
 from robotic_cutting_sim.batched import robot_kernels as rk
 

@@ -60,6 +60,11 @@ INFRA_CLASSES = {
     "INFRA_UNKNOWN_EXIT": "UNKNOWN",
 }
 TASK_STRICT_INVALID_ENV = "TASK_STRICT_INVALID_ENV"   # split termination_reason_v1: uncaught strict invalid env
+# split termination_reason_v1, an infra_error record whose env category is "caller" (a harness or programming error,
+# rl.termination.classify_exception): INFRA_PYTHON_EXCEPTION unless its text names one of these more specific
+# infrastructure classes. Never a task class (review finding 10; no new class: the declared configs fix the set).
+CALLER_INFRA_REFINEMENTS = ("INFRA_OOM_HOST", "INFRA_OOM_DEVICE", "INFRA_DISK", "INFRA_CUDA_ERROR",
+                            "INFRA_CONTACT_POOL_OVERFLOW")
 SPLITS = ("p1_4_v1", "termination_reason_v1")
 INFRA_FAMILIES = tuple(dict.fromkeys(INFRA_CLASSES.values()))
 
@@ -79,17 +84,20 @@ SUCCESS_DENOMINATOR_CLASSES = (TASK_SUCCESS, TASK_FAILURE)                  # in
 
 # termination_reason bits: the env's own module (torch- and Warp-free), termination_reason_v1
 from .termination import (TERM_INFRASTRUCTURE, TERM_MATERIAL_INVALID, TERM_TRUNCATED, TERMINAL_BITS,  # noqa: E402
-                          TERMINATION_REASONS, TERMINATION_VERSION, classify_process_exit)
-# material invalid_reason bits (batched.material_batch.INVALID_REASONS; copied, the module imports Warp)
-INVALID_REASONS = {1: "NONFINITE_STATE", 2: "SLOT_OVERFLOW", 4: "INVALID_MEASURED_POSE", 8: "INVALID_CUT_DIGIT",
-                   16: "NONFINITE_WRENCH", 32: "INVALID_OBSTACLE_BOXES", 64: "CONTACT_SPEED_GUARD"}
+                          TERMINATION_REASONS, TERMINATION_VERSION, classify_process_exit, material_termination_bits)
+# material invalid_reason bits: rl.termination's Warp-free copy of batched.material_batch.INVALID_REASONS (equality
+# tested; until the P1 consolidation this module kept its own copy without 128 / 256)
+from .termination import MATERIAL_INVALID_REASONS as INVALID_REASONS  # noqa: E402
 DEFAULT_NUMERICAL_INVALID = ("NONFINITE_STATE", "SLOT_OVERFLOW", "NONFINITE_WRENCH")
 # optional explicit per-env infrastructure keys (none in termination_reason_v1, where bit 64 carries it); read when
 # present so a later info revision is not silently ignored
 INFRA_INFO_KEYS = ("infra_error", "infrastructure_error", "infra_reason", "infrastructure_failure")
 VECTOR_ENV_INFRA_KINDS = {"OOM": "INFRA_OOM_DEVICE", "CUDA_ERROR": "INFRA_CUDA_ERROR", "WARP_ERROR": "INFRA_CUDA_ERROR",
                           "CONTACT_POOL_OVERFLOW": "INFRA_CONTACT_POOL_OVERFLOW",
-                          "INFRASTRUCTURE_OTHER": "INFRA_CUDA_ERROR"}
+                          "INFRASTRUCTURE_OTHER": "INFRA_CUDA_ERROR",
+                          # a second live CUDA HashGrid in the process: a harness/process misuse (no new class, the
+                          # declared long_rollout configs fix the class set)
+                          "FOREIGN_DEVICE_HASHGRID": "INFRA_PYTHON_EXCEPTION"}
 
 
 def decode_bits(value, table):
@@ -339,6 +347,9 @@ def classify_process_end(returncode, *, records=(), stderr_tail="", supervisor_r
             return done(cls, **detail)
         if split == "termination_reason_v1" and last.get("env_category") == "task":
             return done(TASK_STRICT_INVALID_ENV, **detail)
+        if split == "termination_reason_v1" and last.get("env_category") == "caller":
+            hint = classify_error_text(last.get("exc_type"), last.get("message"))
+            return done(hint if hint in CALLER_INFRA_REFINEMENTS else "INFRA_PYTHON_EXCEPTION", **detail)
         cls = classify_error_text(last.get("exc_type"), last.get("message")) or "INFRA_PYTHON_EXCEPTION"
         return done(cls, **detail)
     hint = classify_error_text(None, stderr_tail)
@@ -394,11 +405,12 @@ def step_status(info, terminated=None, truncated=None, *, num_envs):
         reason = _host(info["termination_reason"]).astype(np.int64).reshape(N)
     else:
         source = "legacy_invalid_reason"
-        reason = np.where(invalid != 0, TERM_MATERIAL_INVALID, 0).astype(np.int64)
+        reason = material_termination_bits(invalid).astype(np.int64)
     infra_key = next((k for k in INFRA_INFO_KEYS if k in info), None)
     infra = zeros.copy() if infra_key is None else _host(info[infra_key]).astype(np.int64).reshape(N)
-    if source == "termination_reason":
-        infra = np.where((reason & TERM_INFRASTRUCTURE) != 0, 1, infra)   # the env's own infrastructure bit
+    # the env's own infrastructure bit; on the legacy path it is derived from the material bits (FOREIGN_DEVICE_HASHGRID
+    # sets it), so a bit-256 env is an env-level infrastructure end on both paths (review finding 10)
+    infra = np.where((reason & TERM_INFRASTRUCTURE) != 0, 1, infra)
     term = _host(terminated)
     term = ((reason & TERMINAL_BITS) != 0) | (infra != 0) if term is None else term.astype(bool).reshape(N)
     trunc = _host(truncated)

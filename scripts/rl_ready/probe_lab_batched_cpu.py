@@ -15,6 +15,10 @@ Modes:
                across runs: --perturb-env k scales env k's action, --reset-env k --reset-step s masked reset)
   coupling     T3: synthetic test coupling (NOT material) over --steps; material input vs edge-kernel output and
                the wrench applied in every substep of interval k+1 vs the coupling output of step k
+  grasp_latch  review finding 4: B2 non-strict with an unmeetable settle gate (translation tolerance 1e-9 m) so every
+               world FAILs its real settle gates; then the caller's first reset(), one step, a masked reset of one
+               world. World 0's snapshot flag is overridden to "passed" after the settle (test-only injection) so the
+               per-world masking of the latch is visible.
 No GPU is used; the script refuses to run if CUDA is visible.
 """
 import argparse
@@ -79,8 +83,12 @@ def _launch(cfg):
 
 def _options(args):
     from robotic_cutting_sim.batched.lab_scene import BatchedLabOptions
+    extra = {}
+    if getattr(args, "unmeetable_settle_gate", False):
+        from robotic_cutting_sim.physical_tool import ToolGraspConfig
+        extra.update(grasp=ToolGraspConfig(translation_tolerance_m=1e-9), strict=False)
     return BatchedLabOptions(num_envs=args.num_envs, tool_mount=args.tool_mount, device="cpu", cpu_test_mode=True,
-                             seed=42, material=getattr(args, "material", None))
+                             seed=42, material=getattr(args, "material", None), **extra)
 
 
 def mode_single(args, out):
@@ -340,6 +348,43 @@ def mode_grasp(args, out):
                             body_world=env.model.body_world.numpy(), coord_start=env.coord_start.numpy())
 
 
+def mode_grasp_latch(args, out):
+    """Finding 4: a failed pregrasp settle stays latched (rigid_reason bit 16, TERM_RIGID_INVALID) across resets."""
+    import torch
+    import warp as wp
+    args.tool_mount = "physical_grasp_v1"
+    args.unmeetable_settle_gate = True
+    cfg, options, task, Env = _build(args)
+    rows = {}
+
+    def state(env, tag):
+        rows[tag] = dict(rigid_reason=wp.to_torch(env.rigid_reason).cpu().tolist(),
+                         termination_reason=env.termination_reason.cpu().tolist())
+
+    with _launch(cfg):
+        env = Env(cfg, options, task)
+        env.reset()                                   # build-time settle + snapshot (as LabVectorCuttingEnv.__init__)
+        state(env, "after_settle")
+        init = env.grasp_initialization
+        passed_after_settle = env.snapshot.passed.cpu().tolist()
+        env.snapshot.passed[0] = True                 # TEST-ONLY injection: world 0 "passed" (per-world masking)
+        env.reset()                                   # the caller's first reset(): restores the snapshot
+        state(env, "after_first_reset")
+        _, _, terminated, truncated, _ = env.step(scripted_actions(args.num_envs, 0) * .3)
+        state(env, "after_step")
+        rows["after_step"].update(terminated=terminated.cpu().tolist(), truncated=truncated.cpu().tolist())
+        mask = torch.zeros(args.num_envs, dtype=torch.bool)
+        mask[args.num_envs - 1] = True
+        env.reset_envs(mask)                          # masked reset of the last (failed) world
+        state(env, "after_masked_reset")
+        receipt = env.receipt()
+        (out/"grasp_latch.json").write_text(json.dumps(dict(
+            grasp_initialization_status=init["status"], failed=init["failed"],
+            passed_after_settle=passed_after_settle, rows=rows, receipt_latch=receipt["grasp_settle_latch"],
+            receipt_status=(receipt["grasp_initialization"] or {}).get("status"),
+            rigid_reasons=receipt["rigid_reasons"]), default=str))
+
+
 def unreachable_pose(task):
     """HOME edge rotated 150 deg about its local x: kinematically unreachable from HOME (C2 scan: 0.79 m error)."""
     from scipy.spatial.transform import Rotation
@@ -384,7 +429,7 @@ def mode_ik_hold(args, out):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--mode", required=True, choices=("receipt", "single", "mask_audit", "rollout", "coupling",
-                                                               "grasp", "ik_hold"))
+                                                               "grasp", "ik_hold", "grasp_latch"))
     parser.add_argument("--num-envs", type=int, default=3)
     parser.add_argument("--tool-mount", default="rigid_mount_v1")
     parser.add_argument("--scene-seed", type=int, default=512)
@@ -401,7 +446,8 @@ def main():
     out.mkdir(parents=True, exist_ok=False)
     start = time.perf_counter()
     {"receipt": mode_receipt, "single": mode_single, "mask_audit": mode_mask_audit, "rollout": mode_rollout,
-     "coupling": mode_coupling, "grasp": mode_grasp, "ik_hold": mode_ik_hold}[args.mode](args, out)
+     "coupling": mode_coupling, "grasp": mode_grasp, "ik_hold": mode_ik_hold,
+     "grasp_latch": mode_grasp_latch}[args.mode](args, out)
     (out/"done.json").write_text(json.dumps({"mode": args.mode, "wall_s": time.perf_counter()-start,
                                              "num_envs": args.num_envs, "tool_mount": args.tool_mount}))
 

@@ -1,0 +1,166 @@
+{
+ "schema": "rcs_rubber_rl_tests_v1",
+ "id": "rubber_rl_tests_v2",
+ "version": 2,
+ "task": "P6.0 (ADR 0023 \u00a723.2 decision 7; docs/reports/rl_ready/P2_REMAINING_PLAN.md \u00a74.8): acceptance protocol of the P2-6 RL-ready rubber env",
+ "status": "DECLARED_BEFORE_ANY_RUN",
+ "declared": "2026-11-11, with the task config, committed alone and SHA-pinned (tests/test_rubber_rl_p6_0_declarations.py) before any P2-6 protocol run (CPU or GPU); supersedes rubber_rl_tests_v1 (kept pinned and unedited, never run formally); a change is rubber_rl_tests_v3 declared before its run; thresholds are never loosened after a result; failures are preserved",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "prerequisites": {
+  "task_config": {
+   "path": "configs/rubber/rl/rubber_strip_drag_v2.json",
+   "sha256": "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb"
+  },
+  "contact_envelope": {
+   "path": "configs/rubber/contact_envelope_v3.json",
+   "sha256": "036008efd2a0c39526c54ec5a8f992da71b2df8f874b7ceaeaf9aa7631643763",
+   "source": "rubber_contact_envelope_v2 formal run contact_envelope_v2_001 (law v2, n_t 4-6, spin-down scored)"
+  },
+  "s1_detector": "rubber_self_penetration surface_grid_v1 (ADR 0023 \u00a723.5; gpu_selfpen_001 PASS)"
+ },
+ "common": {
+  "profile": "rubber_rl_env_v2 (task config profile block: contact law grid_node_penalty_coulomb_v2)",
+  "task_config": "rubber_strip_drag_v2",
+  "env": "open_vector_env(num_envs, task=RubberStripTaskFamily(...), backend='kinematic_grip_batched'), RubberVectorEnv",
+  "gpu": "RTX 5090, GPU0 or GPU1 under a blocking flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu<N>.lock, >= 4 GB left free at start (else BLOCKED, not run), one RCS job per GPU; rows labelled SHARED_GPU (another compute process in an nvidia-smi sample before / during / after the row, with the samples) or EXCLUSIVE_AT_SAMPLES",
+  "cpu": "CPU tests run twice (CUDA_VISIBLE_DEVICES='' and =0); Torch tests in the Torch venv (.deps/isaacsim-venv with the pytest overlay); CPU parity uses the task config's test configuration cpu_parity_v1 (labelled; never a formal physics or throughput row)",
+  "run_meta": "commit, dirty-tree flag (formal rows need a clean tree), this file's and the task config's sha256, sha256 of every rubber module (RubberVectorEnv.receipt versions.sources_sha256), Warp / Torch / Python versions, driver, GPU name / index, nvidia-smi sharing samples, command, wall times",
+  "output": "new directories under artifacts/rl_ready/p2_6/ (never overwritten); evidence docs/evidence/rl_ready/p2_6_rubber_rl_001.json (read-only writer)",
+  "scripted_policies": {
+   "rubber_scripted_drag_v1": "closed loop: a[0:2] = clip((goal - tip)[0:2] / max_translation_m_per_step, -1, 1), a[2:6] = 0 (tip = marker 8 of the observation)",
+   "rubber_open_loop_v1": "open loop, deterministic: a_k = (0.5, 0.3 (k even) / -0.3 (k odd), 0, 0, 0, 0.2) (rl.rubber_contract.contract_actions)",
+   "zero": "a = 0"
+  },
+  "seeds": {
+   "RL-01": "reset seeds 100 + e; partial reset of env 1 with seed 8",
+   "RL-02a": "N 1: seed 11; N 3: seeds 21, 22, 23; partial reset of env 1 after control step 4 with seed 31",
+   "RL-02b": "slot_seed 0, reset seeds 1000 + e",
+   "RL-02c": "reset seeds 1100 + e",
+   "RL-03": "parameter samples: seeds 0 ... 1999 per slot set; states: seeds 41, 42, 43 twice; partial resample seed 51",
+   "RL-04": "L1: seeds 61, 62, 63 (A) and env 1 seed 64 (B); masked reset of env 1 in A after step 4 with seed 65 vs a fresh env reset with seeds 61, 65, 63; GPU -09: seeds 1200 + e (A), env 1 seed 1300 (B)",
+   "RL-05": "GPU sanity: slot_seed 0, seeds 2000 + e",
+   "RL-06": "slot_seed 0, seeds 3000 + e then splitmix-free sequence 3000 + 100 * reset_count + e; action noise torch.Generator seed 3",
+   "RL-07": "seeds 4000 + e",
+   "RL-08": "no randomisation (nominal material, friction at the range midpoint, zero traction)"
+  },
+  "friction_range": "[0.3, 0.3]: friction_table fixed at 0.3, NOT randomised (contact_envelope_v3, law v2: ENV2 run contact_envelope_v2_001 failed the 0.4 target at n_t 4 and 6); a labelled limitation (contact_friction_envelope_v2_fixed_0.3); real rubber friction 0.6-1.0+ is outside"
+ },
+ "tests": {
+  "RL-01": {
+   "name": "contract rubber_vector_contract_v1",
+   "procedure": "rl.rubber_contract.check_rubber_vector_env_contract (preload + 2 policy steps, partial reset of env 1 after the last preload step, evaluate) at N 1 and N 8 on the GPU (the declared task: N 1 slot L125_t4, N 8 slot_seed 0) for the state and privileged_state profiles, and at N 1 / N 3 on the CPU (cpu_parity_v1); the receipt's envelope rows are law grid_node_penalty_coulomb_v2 and the resolution block carries the Q1w label (or PENDING_K2-2)",
+   "pass": "every clause holds in every configuration"
+  },
+  "RL-02": {
+   "name": "parity",
+   "a_cpu_L0": "cpu_parity_v1, N 1 (P16_t4) and N 3 (P16_t4, P20_t5, P12_t6; heterogeneous slots, materials, frictions, tractions, preloads): the env's batch vs single LiveRubberMaterial references (family.build_life(slot, sampled material)) driven by rubber_env.drive_single_reference with the env's commanded grip quaternion / translation and tip traction, rubber_open_loop_v1 actions, 8 control steps (2 preload) and, for N 3, a partial reset of env 1 after step 4 (its single reference rebuilt fresh with the new sample); after every control step every state array (solver snapshot incl. option, visco, contact and patch arrays), the S1 detector arrays and summary, the diagnostics summary, markers / marker velocities (the observation sources), group wrench, contact outputs and the invalid bits are byte-identical",
+   "b_gpu_L2": "N 8 (slot_seed 0), rubber_scripted_drag_v1, 60 control steps: after every step every observation and reward finite, particle mass constant between resets, BatchedRubberMaterial.audits() and the contact ownership audit 0, invalid bits 0",
+   "c_gpu_L3": "rule rubber_l3_band_v4 (rubber_l3.evaluate, alpha_family 0.05): an N 8 batch with slots (L100_t4, L100_t6, L125_t4, L125_t5, L125_t6, L150_t4, L150_t5, L150_t6) driven by rubber_open_loop_v1 for 50 control steps; envs 0 and 1 compared with 20 single GPU repeats (family.build_life(slot, sampled material, device cuda) driven by drive_single_reference with the batch's recorded commanded poses and tractions; reset between repeats); statistics per env: 27 marker coordinates, grip wrench 6, plane wrench 6, Psi_eq, KE, E_grav, Jbar min / max, CFL_eff max (45 per env, 90 in total); 10 further single repeats per env evaluated as held-out candidates (reported)",
+   "pass": "a byte-wise; b every step; c M <= U for every statistic of the batched run (held-out: reported)"
+  },
+  "RL-03": {
+   "name": "randomisation",
+   "procedure": "(i) CPU: two cpu_parity_v1 envs with identical seeds: byte-identical material parameters (params, mass, params64, traction, goal, preload) and states after the reset and after 2 control steps; (ii) every sampled value inside its declared range, mu0 / rho inside the batch step rule (CFL <= 0.5 at the batch dt) and friction inside the envelope; (iii) a partial reset of env 1 with a new seed changes only env 1's rows; (iv) 2,000 host samples per parameter (family.sample, seeds 0 ... 1999, the declared task) vs the declared uniform distributions: scipy.stats.kstest p >= 0.001 for each of the 11 non-degenerate draws; friction_table (degenerate range [0.3, 0.3]) equals 0.3 in every sample; (v) seeded slot selection reproducible and covering the 9 slots for N 64 / slot_seed 0; (vi) a slot change on reset refused (UNSUPPORTED_GEOMETRY_CHANGE_ON_PARTIAL_RESET), friction above the envelope refused (UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE); GPU: (vii) the declared task N 8: two resets with the same seeds give identical device parameter rows (params, mass, params64, traction, goal) and every value in range",
+   "pass": "all hold"
+  },
+  "RL-04": {
+   "name": "isolation",
+   "a_cpu_L1": "cpu_parity_v1 N 3, two envs A and B with the same seeds except env 1 (B: seed 64 -> different material, friction, traction, preload, goal) and env 1's actions (B: -a); envs 0 / 2 byte-identical between A and B after every control step (every state array, detector, outputs); a masked reset of env 1 after step 4 (seed 65) equals env 1 of a fresh env reset with seeds 61, 65, 63 (every array incl. visco, contact, S1 and preload / goal / traction state) and evolves like it for 2 more steps",
+   "b_gpu_09": "N 4 on the GPU (slots L100_t4, L100_t5, L125_t4, L100_t6), episodes of 15 control steps from a full reset, k 5 A / 5 B interleaved A, B, A, B, ... in one env / process; B changes env 1's seed (1300) and actions (-a of rubber_open_loop_v1); for every control step, every env e in {0, 2, 3}, every observable (9 markers, 9 marker velocities, grip wrench, plane wrench, the diagnostics summary) and component: d = max_{i,j} |A_i - B_j|, s = max(range A, range B); PASS iff d <= lam s + eps_rel max_i |A_i| (eps_rel times the largest |component| of the observable vector) with lam 4, eps_rel 1e-6 (the rubber_contact_tests_v2 -09 rule, unchanged)",
+   "thresholds": {
+    "k_per_side": 5,
+    "lam": 4.0,
+    "eps_rel": 1e-06
+   },
+   "pass": "a byte-wise; b the rule holds for every scalar"
+  },
+  "RL-05": {
+   "name": "episode semantics",
+   "procedure": "CPU (cpu_parity_v1): every rubber invalid bit (1, 2, 4, 8) written into the batch's sticky invalid table maps to TERM_MATERIAL_INVALID with info invalid_reason carrying the bit, terminated True, the invalid penalty applied; a physical NONFINITE_STATE (a NaN particle velocity in one env) gives bit 1 for that env only, finite observations (nan_to_num) and a finite reward; truncation exactly at max_episode_steps; the reward equals a host float64 recomputation from host copies (tip, goal, L, clipped action, preload flag, invalid bits) every step (|diff| <= 1e-12 relative, float32 cast identical); evaluator unit tests (window, tolerance, terminal bits, preload exclusion); the S1 tests (a)-(f) of tests/test_rubber_self_penetration.py pass in the same suites. GPU sanity: N 8 (slot_seed 0, seeds 2000 + e), 80-step episodes (10 preload), one episode with rubber_scripted_drag_v1 and one with the zero action from the same seeds",
+   "pass": "every CPU clause holds; GPU: scripted mean return > zero-action mean return in >= 7 of 8 envs and >= 1 evaluator success (rubber_tracking_eval_v1) in the scripted episode"
+  },
+  "RL-06": {
+   "name": "long rollout",
+   "procedure": "N 8 GPU (slot_seed 0), >= 400 batch steps, max_episode_steps 60 (10 preload); env e first reset at batch step 7 e (staggered), then whenever its episode truncates or terminates (partial resets, >= 40 in total); envs 0-3 rubber_scripted_drag_v1, envs 4-7 uniform random actions in [-1, 1]",
+   "pass": "every observation and reward finite (non-finite entries only in a terminated env, then returned as 0); no infrastructure error; VRAM peak growth after warm-up (batch step 20) <= 64 MiB (nvidia-smi used memory of the process); reset p95, the invalid-termination rate and the termination reasons reported"
+  },
+  "RL-07": {
+   "name": "throughput / VRAM",
+   "procedure": "N 1 / 4 / 8 / 16 for (i) the full slot set (env e -> slot e mod 9 in the declared order) and (ii) a uniform n_t 4 set (all L125_t4); (iii) labelled rubber_rl_v1 rows (resolution variant: L100_t4 / L150_t4 alternating, n_t 3) at N 1 / 8; per row 1 cold + 5 warm control steps with rubber_open_loop_v1 after a full reset, synchronised wall per step; Phase 1 workload A N 1 / N 8 re-measured in the same GPU session with the frozen harness (scripts/rl_ready/run_perf_acceptance.py --variant-json {} --mode throughput --seeds 512 --warmup-steps 5 --steps 20; run, not modified); S1 cost and plane-only contact cost: N 8 uniform n_t 4 BatchedRubberMaterial arms (profile; S1 off; contact off) 1 cold + 5 warm steps interleaved",
+   "columns": [
+    "N",
+    "particles/env (mean)",
+    "control Hz",
+    "material dt",
+    "substeps",
+    "n_t",
+    "beta",
+    "M",
+    "contact law",
+    "cameras",
+    "recording",
+    "env-steps/s",
+    "aggregate sim-time/wall",
+    "VRAM peak (process, nvidia-smi)",
+    "reset p95",
+    "S1 cost",
+    "plane-only contact cost",
+    "physics verdict",
+    "SHARED / EXCLUSIVE + samples"
+   ],
+   "pass": "scored: N 8 env-steps/s > N 1 env-steps/s (measured gain, full slot set) and VRAM peak <= 4 GB (4096 MiB) at N 8 (full slot set); everything else reported (never a single speedup claim)"
+  },
+  "RL-08": {
+   "name": "dt / spacing on the RL scene",
+   "procedure": "single env GPU (LiveRubberMaterial via family.build_life), slot L125_t4, nominal recipe material with friction_table at the range midpoint, no traction; declared scripted grip path: steps 1-10 lift 10 mm (smootherstep), 11-30 hold, 31-60 drag +x 30 mm (smootherstep); O1 = tip marker position after step 30, O2 = peak |grip force| over the run, O3 = tip x displacement over steps 31-60 (slip on the table); dt: CFL 0.5 vs 0.25 at n_t 4; spacing: t 4 mm at n_t 4 / 6 / 8 (dx t / n_t, CFL 0.5)",
+   "pass": "dt scored: |dO1| / L <= 1e-3 and |dO3| / O3 <= 1 %; spacing reported with the RUBBER-PHYS-11 rule block (rubber_gci: observed order, GCI with its declared Fs rule, the Phase 1 comparison text) unchanged; the material's scored spacing test remains RUBBER-PHYS-11; b: the bias and the trigger outcome reported (the trigger is a decision, not a PASS / FAIL)",
+   "b_q1w_bias_on_the_rl_geometry": "K2 Q1w condition 3: the RUBBER-PHYS-11 Q1 static sag (rubber_refinement.case_q1: clamped strip, gravity from alpha 0.05, mu0 0.4 MPa, beta 20, CFL 0.5, static_stop_v3, profile options of the task) on the P2-6 geometry L/t 37.5, W/t 4, t 4 mm (the L150_t4 slot, the largest L/t of the slot set), single env on the GPU at n_t 4 / 6 / 8; bias(n_t 4) = phi(4) / phi_ext - 1 with phi_ext the extrapolation of n_t 6 / 8 at p_eff = clip(p_obs(4, 6, 8), 1, 2) (the -11 rule block, rubber_gci.study); GCI reported",
+   "fallback_trigger": "declared now (K2 Q1w condition 3): if |bias(n_t 4)| > 1.0 % at L/t 37.5, the t 4 mm slot class (n_t 4) moves to option (a): n_t 6 production for that class, declared as rubber_rl_tests_v3 with a (6, 8, 12) verification before any further P2-6 run of those slots; rows of those slots already run carry the label q1w_bias_exceeds_1pct. Otherwise the measured bias is added to the receipts' label"
+  },
+  "RL-09": {
+   "name": "Native (P6.4 / P6.5, separate task)",
+   "pass": "as plan \u00a74.8: (a) receipts identical to the headless reference except device / timing; (b) material inputs = recorded measured clamp poses, bitwise float64; (c) every statistic inside rubber_l3_band_v4 from 20 replays, alpha_family 0.05; (d) invalid bits 0; (e) bridge integrity <= 1e-6 m; camera consistency reported"
+  },
+  "RL-10": {
+   "name": "provenance",
+   "pass": "protocol and task config SHA-pinned before any run; every run meta carries the common.run_meta fields; evidence writers are read-only and never overwrite"
+  },
+  "RL-11": {
+   "name": "Phase 1 non-regression (P6.6, final head)",
+   "pass": "Phase 1 CPU and Torch suites without new failures vs main; frozen-source pins pass; git diff main -- configs/rl_benchmark scripts/rl_ready empty; open_vector_env default-backend workload A contract GPU N 2 PASS; acceptance_v2 judge self-test (CPU) PASS"
+  }
+ },
+ "assignment": {
+  "P6.1 / P6.2 (CPU, pytest)": [
+   "RL-01 CPU",
+   "RL-02 a",
+   "RL-03 (i)-(vi)",
+   "RL-04 a",
+   "RL-05 CPU",
+   "dispatch / refusal tests"
+  ],
+  "P6.3 (GPU)": [
+   "RL-01 GPU",
+   "RL-02 b / c",
+   "RL-03 (vii)",
+   "RL-04 b",
+   "RL-05 GPU sanity",
+   "RL-06",
+   "RL-07",
+   "RL-08"
+  ],
+  "P6.4 / P6.5": [
+   "RL-09"
+  ],
+  "P6.6": [
+   "RL-10",
+   "RL-11"
+  ]
+ },
+ "supersedes": {
+  "rubber_rl_tests_v1": {
+   "sha256": "8e4b2593e968532e10808d4828f093df964747c18c8b98d260d1eae68535fd4c",
+   "reason": "K2 combined review (docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md, claude/rl-rubber @60e9119), finding K2-1 (MAJOR): the v3 patch slip-rate equalisation exerts an unbounded, mu-independent torque and removes rotation and in-plane bending in slip (spin reversed within 1 ms, torque 9-150x Coulomb; a sideways-dragged strip translates rigidly); v3 is accepted for translational sliding only. P2-6 has yaw actions, a +-0.4 rad / +-30 mm preload and the Native lift + yaw, so v3 is not the P2-6 law; the review's fallback is law v2 with mu <= 0.4"
+  }
+ }
+}
