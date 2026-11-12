@@ -505,3 +505,176 @@ Documentation only, additive, no re-scoring.
   - The P2-6 Torch tests are NOT_RUN in GitHub CI; the local Torch run is the gate.
   - The Native visual smoke of `measured_pose_v1` is NOT_RUN.
 - **Inherited from Phase 1.** The batching gain is 1.37–1.40× in matched windows (F5).
+
+## Addendum A — re-check for PR #16 at head `9ea50a6` (2026-11-12)
+
+**Verdict: GO.** Merge #16 once CI (M1) is green on the PR head. Three small text items remain (A1–A3). None of them
+blocks the merge.
+
+**Scope.** PR #16 (https://github.com/AnsonNing/RoboticCuttingSim/pull/16), head `9ea50a6`, base `main` `62caecc`.
+The commits since the review head `92e671a` are:
+
+| Commit | Content |
+| --- | --- |
+| 03e62d3 | one progress line |
+| 8b45de7 | this review |
+| ee17077 | D4 |
+| 756120f | D1/D2 |
+| 3a47191 | D3 |
+| 79a5e28 | U-P2-7/8 in the final report |
+| 016a193 / 9919a6e / fc7dff5 | M2 evidence |
+| 9ea50a6 | M2 row in the final report |
+
+**How it was checked.**
+- Read-only. Nothing was committed or pushed and no GitHub comment was posted.
+- `git diff 92e671a 9ea50a6` was read in full for every document.
+- The M2 sampler and raw rows were recomputed from `artifacts/rl_ready/p2_6/` of the p26 worktree.
+- The PR body was read with `gh api repos/AnsonNing/RoboticCuttingSim/pulls/16 --jq .body`.
+
+### A.1 No code changed after 92e671a: confirmed
+
+- **Code paths.** `git diff 92e671a 9ea50a6 --stat -- src configs scripts tests` is empty.
+- **Whole diff.** 9 files, +1,439 / −34, all under `README.md` and `docs/`.
+- **Files added:** this review, `p2_6_rubber_rl07_exclusive_001.json` and its `_note.md`.
+- **Existing files changed:** `README.md`, `RL_READY_PROGRESS.md`, `FINAL_REPORT.md`, `P2_6_RUBBER_RL.md`, ADR 0023,
+  and `P1_PERFORMANCE_TABLE.md` (the first change to that file in this PR).
+- **Consequence.** The test results of §3 (`.venv` 3,011 passed / 0 failed; Torch 521 passed / 0 failed) and the GPU
+  smoke still apply to the PR head, so D5 needs no rerun.
+- **Naming.** The acronym search over every tracked file and path at `9ea50a6`, the 10 commit messages in `92e671a..9ea50a6` and
+  the PR body finds nothing.
+
+### A.2 D1–D4: met
+
+**D1 (`FINAL_REPORT.md`).**
+- **Box 2** now records:
+  - the post-hoc hysteresis pass;
+  - the κ = 20 μ model-form error, with the correct citation ADR 0023 **§6**;
+  - that this review grades the box PARTIAL.
+- **Box 3** names the N=8 rows, records GPU isolation (RL-04 b) at N=4, and notes that RL-02 c scores 2 envs of an N=8
+  batch. The protocol text confirms that RL-02 c runs N=8.
+- **§4.2** says the real-data protocol is an outline: no thresholds, NOT_RUN, to be declared before any held-out run.
+- **Stale passages:** the header and the U-P2-3 note are replaced.
+- **Reproduction:** the §8 row names are now `RL01,RL02b`, with the full list.
+- **RL-05 v2** reads 5/8 with the erratum noted, in both §4.1 and §4.4.
+- **Batching gain:** §2.3 and §4.4 now give 1.40× / 1.37× and state the 4–5 % window bias.
+- **New limitations in §5:**
+  - the κ model-form error;
+  - the v1 default law;
+  - the envelope enforced only in the RL task, with recipe μ 0.8;
+  - the calibration-to-RL handoff paragraph (friction law, resolution, material source).
+- **§6** adds U-P2-7 and U-P2-8.
+
+**D2 (errata).** All three are additive and keep the old values struck through:
+- `P1_PERFORMANCE_TABLE.md`: strikes 1.45× / 1.42× → 1.40× / 1.37× in §5.1 and §5.2, and adds §5.5 erratum E-1 with
+  the window-bias numbers of this review §4.2;
+- `P2_6_RUBBER_RL.md`: §0 / §5 strike-throughs plus a new §13;
+- ADR §23.7: a strike-through plus a closing erratum note.
+
+No frozen evidence JSON was edited.
+
+**D3 (`README.md`).**
+- "Both cutting backends share one contract".
+- A paragraph naming `rl.rubber_contract`, `rubber_vector_contract_v1`, actions `[N, 6]` and `rubber_tracking_eval_v1`.
+- v1 is marked as the default law with the worst record.
+- The real-data protocol is described as an outline.
+- The handoff paragraph.
+- The κ and v1 / envelope limitations.
+- Row names `RL01,RL02b`.
+
+**D4 (`RL_READY_PROGRESS.md`).**
+- 「進行中」 is rewritten as the current status.
+- The old entries, including "U[0.3, 0.4]", moved unchanged to a "Status log" section.
+- U-P2-7 (BLAS threads) and U-P2-8 (Torch in CI) are added to 「待使用者決定」 with defaults and alternatives.
+
+**Residual (A1).** Two stale bits remain, both non-blocking:
+- the U2 line still says "window being finalised to start at tool contact";
+- the new 「進行中」 lists D1–D3 and M2 as "In progress", although 756120f…9ea50a6 completed them.
+
+Correct both in the post-merge docs PR.
+
+### A.3 M2 (supplementary EXCLUSIVE RL-07 row): honest and correctly transcribed
+
+**Provenance.**
+- Run `artifacts/rl_ready/p2_6/gpu_rl07_exclusive_001` at commit `c21ae8d`, clean tree. That commit has the same code
+  tree as 92e671a / 9ea50a6.
+- The declared runner `run_rubber_rl_gpu.py --rows RL07`, with `rubber_rl_tests_v2` pinned.
+- RTX 5090 GPU1 (F1:00.0), driver 570.211.01, `OPENBLAS_NUM_THREADS=1`.
+- Blocking `rcs_rl_runner/gpu1.lock`, 31,937 MB free at start.
+- Window 15:17:38–15:26:45 KST.
+
+**Sharing label: EXCLUSIVE_GPU is justified.** I recomputed the sampler data from
+`rl07_exclusive_samples_001.jsonl`:
+- 275 samples; maximum gap 2.000 s; span 548 s, which covers the run window.
+- 0 foreign entries.
+- Only three PIDs appear: the runner 3345701 and its two Phase 1 workload-A children 3350159 / 3350354. The sampler
+  script `rl07_exclusive_sampler_001.py` classifies them as the run's own processes by ancestry.
+
+The evidence also records two weaker in-run labels, which is honest:
+- the runner's own two-sample label `EXCLUSIVE_AT_SAMPLES` (`runner_label`);
+- the children's self-label SHARED, explained by the parent holding GPU memory.
+
+The sampler sees compute processes only, not utilisation. A foreign job shorter than 2 s could be missed; this does
+not change the label.
+
+**Transcription.** All 10 raw rows (`rows/RL07.json`) were recomputed as N / median of the 5 warm walls. They match
+the evidence JSON, the note, FR §4.1 and the PR body:
+
+| Set | N | env-steps/s | VRAM (MiB) |
+| --- | --- | --- | --- |
+| full slot set | 1 / 4 / 8 / 16 | 0.648 / 1.002 / 0.942 / 0.996 | 812 / 972 / 1,228 / 1,676 |
+| uniform | 1 / 8 / 16 | 0.624 / 1.144 / 1.209 | 876 / 1,196 / 1,548 |
+| `rubber_rl_v1` | 1 / 8 | 1.195 / 3.236 | 908 / 1,004 |
+
+- The FR omits the uniform N=4 row (1.029). It is in the JSON, and that is fine.
+- **N8/N1 ratios (median):** 1.454 / 1.835 / 2.709 for the three sets.
+- **"Within about 2 %"** holds: the largest difference is +2.2 %. The shared figures are slightly *higher* than the
+  exclusive ones, so this is run-to-run spread, not a co-tenant penalty.
+- **Formal row unchanged.** The formal SHARED row `gpu_rl_b_001` stays the row of record with its PASS, as all three
+  documents say.
+
+### A.4 M3 (PR body): met, with one wording fix (A2)
+
+**What the body contains.**
+- It cites this review by path (`docs/reports/rl_ready/PHASE2_ACCEPTANCE_REVIEW.md`, GO_WITH_CONDITIONS) and states
+  D1–D4 done and M1–M3 open.
+- It carries the Done table: boxes 1 / 4 / 5 PASS, box 2 PARTIAL, box 3 PASS_WITH_LIMITATIONS, box 6 PENDING. Its
+  verdicts match §1 of this review.
+- It carries the full §8.3 limitation list, including:
+  - the P2-5 FAIL with its numbers, and that the fit is not validated;
+  - the outline status and the handoff;
+  - κ, the bending bias, post-hoc hysteresis, -01 d, self-contact, the v1 default and envelope scope, and v3 scope;
+  - μ 0.3, geometry per env, the kinematic grip, RL-05 v4 and isolation at N=4;
+  - the performance labels, BLAS, CI Torch, the visual smoke and the Phase 1 erratum.
+- It lists the user decisions U-P2-1..8.
+- It has no host paths and no calibration or training claim.
+
+**A2 (non-blocking; editing the PR body does not trigger CI).**
+- "Against `main`, only 4 existing files change" is now **5**: `P1_PERFORMANCE_TABLE.md` gained the additive erratum
+  E-1 in this PR.
+- "Every formal Phase 2 row is SHARED_GPU" should read "every formal Phase 2 **throughput** row (RL-06, RL-07, Native)
+  is SHARED_GPU". RL-01, RL-02 b, RL-03 and RL-04 b were labelled `EXCLUSIVE_AT_SAMPLES`.
+
+### A.5 Erratum to this review (A3)
+
+- §1 (box 2, item g) and F6 cite the κ = 20 μ model-form error as "ADR 0023 §3". It is **ADR 0023 §6** (D3 —
+  near-incompressibility; the table and model-form numbers are at the ADR's lines ≈ 318–345). The final report and
+  README already cite §6. The numbers are unaffected.
+
+### A.6 CI (M1)
+
+CI on 9ea50a6 was still running at the re-check:
+- push run 43168433241;
+- `pull_request` run 43168462836.
+
+Merge once the PR check is green. If "Install media test tools" is the only failure, it is an apt-mirror outage:
+rerun. The code tree equals c21ae8d, whose CI was green (2,951 passed, 0 failed), so a code failure would be
+unexpected. Any failure outside that step needs a look before merging.
+
+### A.7 Remaining items (none blocking)
+
+| ID | Item | When |
+| --- | --- | --- |
+| A1 | `RL_READY_PROGRESS.md` U2 "window being finalised"; 「進行中」 still says D1–D3 / M2 are in progress | post-merge docs PR (FINAL_REPORT §9 fill-in) |
+| A2 | PR body: "4 existing files" → 5; "every formal Phase 2 row" → "every formal throughput row" | PR body edit now, or record in the follow-up |
+| A3 | This review's "ADR 0023 §3" → §6 | this addendum |
+| — | F8 (`acceptance_v3`: rubber Torch tests in `torch_tests`, G1 timeout) and F9 (CI cost, U-P2-8) | as recorded |

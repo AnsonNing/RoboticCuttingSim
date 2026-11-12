@@ -22,15 +22,18 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 - **Z1 Phase 2 xhigh acceptance review: GO_WITH_CONDITIONS**
   ([PHASE2_ACCEPTANCE_REVIEW.md](reports/rl_ready/PHASE2_ACCEPTANCE_REVIEW.md)): integration PASS; full `.venv` suite
   3,011 passed / 0 failed; Isaac Lab Torch selection 521 passed / 0 failed; findings LOW/INFO.
-  - **In progress:**
-    - doc conditions D1–D3: final-report fixes, the calibration→RL handoff note, the batching-gain and RL-05 5/8
-      errata, README contract wording;
-    - D4 (this rewrite);
-    - a supplementary exclusive-GPU RL-07 row on the idle GPU1 (M2).
+  - Conditions done: D1–D4 (final-report fixes, the calibration→RL handoff note, errata, README, this file) and
+    M2 (a supplementary EXCLUSIVE_GPU RL-07 row, within ~2 % of the shared formal row).
+  - Re-check at 9ea50a6: **GO** (Addendum A).
+- **Phase 2 merged into `main`: PR #16, merge `7347c9a`, 2026-11-12.**
+  - CI green: push run 2,951 passed and pull_request run 2,981 passed, 0 failed.
+  - Box 6 of the Phase 2 Done list waits only for the external pin.
+- **In progress:** Z3, a new pin in the external agentic optimizer repository at `7347c9a`: `rcs_rl_vector_v3`, a
+  rubber descriptor, smoke, its PR, SYNCED, and a pointer to the final report.
 - **Next:**
-  - Z2: the Phase 2 PR to `main` (CI green, review linked, Done table and known limitations in the body).
-  - Z3: a new pin in the external agentic optimizer repository at the merge commit → SYNCED.
-  - Fill in FINAL_REPORT §(i), then create DONE.
+  - fill in FINAL_REPORT §9;
+  - follow-up docs PR (this file, the review addendum, the final report) with an xhigh check and CI;
+  - create DONE.
 - Earlier 進行中 entries (Phase 1 merges, SYNCED records, p16c1 narrative, Phase 2 step narrative) moved
   unchanged to [Status log](#status-log-moved-from-進行中-2026-11-12) below.
 
@@ -41,7 +44,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 - P1-6 defaults in force until the user decides otherwise (none blocks work):
   U1 optimizer-written candidate code runs on GPU1 only (not GPU0);
   U2 speed gate (first optimizer acceptance uses `acceptance_v2`, D-14; `acceptance_v1` is frozen and not used):
-  v2 times the cutting phase (window being finalised to start at tool contact), N ∈ {1, 16}, 3 ABBA pairs, N=16
+  v2 times the cutting phase (G9 window steps 229–400, frozen at `bfe6d5e`, D-14), N ∈ {1, 16}, 3 ABBA pairs, N=16
   paired median ≥ 1.05 with all 3 pairs faster, every N ≥ 0.97 (v1 was: N=16 median ≥ 1.05 with ≥ 4/5 pairs
   faster); both: VRAM peak ≤ 1.10 × baseline + 256 MiB, reset p95 ≤ 1.25 × baseline + 2 ms (shared GPU: WARN up
   to + 10 ms);
