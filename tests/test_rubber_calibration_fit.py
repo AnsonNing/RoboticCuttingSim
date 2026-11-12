@@ -473,3 +473,25 @@ def test_current_plus_lhs_start_design(tmp_path):
     idx = [rcf.PARAMS.index(n) for n in stages[0]["params"]]
     assert np.all(np.array(a[1]["u0"]) >= lo[idx]) and np.all(np.array(a[1]["u0"]) <= hi[idx])
     assert all("termination" in st for s in res["stages"] for st in s["starts"])
+
+
+def test_moduli_space_roundtrip_step_rule_and_fit(tmp_path):
+    """v3 parametrisation: branch moduli a_i = g_i mu0; roundtrip, step rule for the whole box, toy recovery."""
+    msp = rcf.ModuliParameterSpace({"mu_eq_pa": (1.5e5, 4e5), "a1_pa": (5e3, 2e5), "tau1_s": (2e-3, 3e-2),
+                                    "a2_pa": (5e3, 2e5), "tau2_s": (3e-2, 0.5), "mu_table": (0.3, 0.8)}, 8e5)
+    back = msp.from_u(msp.to_u(TRUTH))
+    assert all(math.isclose(back[k], TRUTH[k], rel_tol=1e-12) for k in rcf.PARAMS)
+    worst = rce.material_from_theta(msp.from_u(msp.ub), 1000.0)
+    assert worst.mu0 <= 8e5*(1+1e-12)
+    with pytest.raises(ValueError, match="mu0_max"):
+        rcf.ModuliParameterSpace({"mu_eq_pa": (1.5e5, 5e5), "a1_pa": (5e3, 2e5), "tau1_s": (2e-3, 3e-2),
+                                  "a2_pa": (5e3, 2e5), "tau2_s": (3e-2, 0.5), "mu_table": (0.3, 0.8)}, 8e5)
+    path = make_dataset(tmp_path)
+    stages = ({"name": "A", "params": ["mu_eq_pa", "g1", "tau1_s", "g2", "tau2_s"], "experiments": ["R1", "T1"],
+               "starts": 1, "max_nfev": 30},
+              {"name": "C", "params": list(rcf.PARAMS), "experiments": None, "starts": 1, "max_nfev": 20})
+    res = rcf.fit_staged(lambda e: rcf.Objective(path, forward=ToyForward(), experiments=e), msp, None,
+                         stages=stages, start_theta=_centre(), budget_s=600, fd_step=1e-4, ftol=1e-10, xtol=1e-10)
+    _, sigma, _ = rcf.covariance(msp, res["u"], res["jac"], res["residuals"])
+    for i, k in enumerate(rcf.PARAMS):
+        assert abs(res["theta"][k]-TRUTH[k]) <= max(4*sigma[i], 0.02*TRUTH[k]), (k, res["theta"][k])

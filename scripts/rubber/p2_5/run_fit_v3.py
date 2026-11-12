@@ -29,6 +29,14 @@ import _common as C  # noqa: E402
 
 PROTOCOL_V3 = C.ROOT/"configs"/"rubber"/"rubber_calib_tests_v3.json"
 PROTOCOL_V3_SHA = None      # set by the commit that pins rubber_calib_tests_v3
+MODULI_BOUNDS = {"mu_eq_pa": [150000.0, 400000.0], "a1_pa": [5000.0, 200000.0], "tau1_s": [0.002, 0.03],
+                 "a2_pa": [5000.0, 200000.0], "tau2_s": [0.03, 0.5], "mu_table": [0.3, 0.8]}
+DEV2_SETTINGS = {"deterministic": "default", "fd_step_u": 1e-2, "xtol": 1e-4, "ftol": 1e-3, "gtol": 1e-8,
+                 "budget_s": {"dev2_formal001_stageA": 1980}, "dataset_id": "p2_5_formal_001", "lhs_seed": 2601,
+                 "parametrisation": "moduli_v3", "bounds_moduli": MODULI_BOUNDS,
+                 "stages_formal": [
+                     {"name": "A_elastic_visco", "params": ["mu_eq_pa", "g1", "tau1_s", "g2", "tau2_s"],
+                      "experiments": ["R1", "T2"], "starts": 2, "start_design": "current_plus_lhs", "max_nfev": 60}]}
 DEV_SETTINGS = {"deterministic": "default", "fd_step_u": 1e-2, "xtol": 1e-4, "ftol": 1e-3, "gtol": 1e-8,
                 "budget_s": {"dev_formal001": 3240}, "dataset_id": "p2_5_formal_001", "lhs_seed": 2601,
                 "stages_formal": [
@@ -53,6 +61,20 @@ def prior_box_u(prior, space):
     return np.array([lo[k] for k in PARAMS]), np.array([hi[k] for k in PARAMS])
 
 
+def moduli_prior_box_u(prior):
+    """u-image (moduli parametrisation) of the prior box: a_i = g_i mu_eq / (1 - g1 - g2) at the box corners."""
+    lo_g1, hi_g1 = prior["g1"]
+    lo_g2, hi_g2 = prior["g2"]
+    lo_mu, hi_mu = prior["mu_eq_pa"]
+    a1 = (lo_g1*lo_mu/(1-lo_g1-lo_g2), hi_g1*hi_mu/(1-hi_g1-hi_g2))
+    a2 = (lo_g2*lo_mu/(1-lo_g1-lo_g2), hi_g2*hi_mu/(1-hi_g1-hi_g2))
+    lo = [math.log(lo_mu), math.log(a1[0]), math.log(prior["tau1_s"][0]), math.log(a2[0]),
+          math.log(prior["tau2_s"][0]), prior["mu_table"][0]]
+    hi = [math.log(hi_mu), math.log(a1[1]), math.log(prior["tau1_s"][1]), math.log(a2[1]),
+          math.log(prior["tau2_s"][1]), prior["mu_table"][1]]
+    return np.array(lo), np.array(hi)
+
+
 def centre(prior):
     g = lambda k: math.sqrt(prior[k][0]*prior[k][1])     # noqa: E731
     a = lambda k: 0.5*(prior[k][0]+prior[k][1])           # noqa: E731
@@ -62,7 +84,8 @@ def centre(prior):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--kind", choices=("formal", "negative_control", "dev_formal001"), required=True)
+    ap.add_argument("--kind", choices=("formal", "negative_control", "dev_formal001", "dev2_formal001_stageA"),
+                    required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--gpu-index", type=int, required=True)
     args = ap.parse_args()
@@ -74,8 +97,8 @@ def main():
         raise SystemExit("the tree must be clean")
     protocol, psha = C.load_protocol("1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b")
     import hashlib
-    if args.kind == "dev_formal001":
-        settings, v3sha = DEV_SETTINGS, None
+    if args.kind.startswith("dev"):
+        settings, v3sha = (DEV_SETTINGS if args.kind == "dev_formal001" else DEV2_SETTINGS), None
     else:
         raw = PROTOCOL_V3.read_bytes()
         v3sha = hashlib.sha256(raw).hexdigest()
@@ -97,11 +120,15 @@ def main():
     manifest = rc2.load_manifest(mpath)
     if manifest["status"] != "SYNTHETIC_FROZEN_FOR_HELDOUT":
         raise SystemExit("the fit needs a frozen formal manifest")
-    if args.kind == "dev_formal001" and manifest["dataset_id"] != "p2_5_formal_001":
+    if args.kind.startswith("dev") and manifest["dataset_id"] != "p2_5_formal_001":
         raise SystemExit("development runs use the revealed formal_001 only")
     cfg = rce.model_config(protocol["common"], "fit")
-    space = rcf.space_from_protocol(protocol)
-    prior_u = prior_box_u(protocol["prior_box"], space)
+    if settings.get("parametrisation") == "moduli_v3":
+        space = rcf.ModuliParameterSpace(settings["bounds_moduli"], protocol["common"]["step_material"]["mu0_max_pa"])
+        prior_u = moduli_prior_box_u(protocol["prior_box"])
+    else:
+        space = rcf.space_from_protocol(protocol)
+        prior_u = prior_box_u(protocol["prior_box"], space)
     box = None                      # v3: the v1 parameter-space box, wider than the prior box
     key = "stages_negative_control" if args.kind == "negative_control" else "stages_formal"
     stages = []

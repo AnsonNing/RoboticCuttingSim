@@ -169,6 +169,52 @@ class ParameterSpace:
                                "beta": "numerical bulk ratio 20"}}
 
 
+class ModuliParameterSpace(ParameterSpace):
+    """v3 fit parametrisation (development finding of 2026-11-12): u = (log mu_eq, log a1, log tau1, log a2, log tau2,
+    mu_table) with the Prony branch moduli a_i = g_i mu0, so that mu0 = mu_eq + a1 + a2 and g_i = a_i / mu0. The
+    small-strain stress is linear in (mu_eq, a1, a2) for fixed tau, which removes the curved g1 / g2 valley of the
+    stick-breaking logit. Theta keeps the same names (g1, g2 derived). The step rule holds for every box point when
+    mu_eq_max + a1_max + a2_max <= mu0_max (checked)."""
+
+    def __init__(self, bounds, mu0_max):
+        self.bounds = {k: (float(v[0]), float(v[1])) for k, v in bounds.items()}
+        need = {"mu_eq_pa", "a1_pa", "tau1_s", "a2_pa", "tau2_s", "mu_table"}
+        if set(self.bounds) != need:
+            raise ValueError(f"bounds must give {sorted(need)}")
+        if self.bounds["mu_eq_pa"][1]+self.bounds["a1_pa"][1]+self.bounds["a2_pa"][1] > float(mu0_max)*(1+1e-12):
+            raise ValueError("mu_eq_max + a1_max + a2_max exceeds the step material's mu0_max")
+        self.G = None
+        self._mu0_max = float(mu0_max)
+        order = ("mu_eq_pa", "a1_pa", "tau1_s", "a2_pa", "tau2_s", "mu_table")
+        self.lb = np.array([math.log(self.bounds[k][0]) if k != "mu_table" else self.bounds[k][0] for k in order])
+        self.ub = np.array([math.log(self.bounds[k][1]) if k != "mu_table" else self.bounds[k][1] for k in order])
+        self.p = len(PARAMS)
+
+    def to_u(self, theta):
+        g1, g2 = float(theta["g1"]), float(theta["g2"])
+        mu0 = float(theta["mu_eq_pa"])/(1.0-g1-g2)
+        return np.array([math.log(theta["mu_eq_pa"]), math.log(g1*mu0), math.log(theta["tau1_s"]), math.log(g2*mu0),
+                         math.log(theta["tau2_s"]), float(theta["mu_table"])])
+
+    def from_u(self, u):
+        u = np.asarray(u, float)
+        mu_eq, a1, a2 = math.exp(u[0]), math.exp(u[1]), math.exp(u[3])
+        mu0 = mu_eq+a1+a2
+        return {"mu_eq_pa": mu_eq, "g1": a1/mu0, "tau1_s": math.exp(u[2]), "g2": a2/mu0, "tau2_s": math.exp(u[4]),
+                "mu_table": float(u[5])}
+
+    def mu0_max(self):
+        return self._mu0_max
+
+    def receipt(self):
+        return {"params": list(PARAMS), "parametrisation": "moduli_v3: u = (log mu_eq, log a1, log tau1, log a2, "
+                                                            "log tau2, mu_table), a_i = g_i mu0",
+                "bounds": {k: list(v) for k, v in self.bounds.items()}, "u_lower": self.lb.tolist(),
+                "u_upper": self.ub.tolist(), "mu0_max_pa": self._mu0_max,
+                "not_fitted": {"density": "measured (specimen mass / measured volume)",
+                               "beta": "numerical bulk ratio 20"}}
+
+
 def space_from_protocol(protocol):
     ps = protocol["parameter_space"]
     return ParameterSpace({k: tuple(v) for k, v in ps["bounds_theta"].items()},
