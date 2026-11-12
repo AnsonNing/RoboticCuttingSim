@@ -1,0 +1,697 @@
+{
+ "schema": "rcs_rl_ready_evidence_v1",
+ "id": "p2_6_rubber_rl07_exclusive_001",
+ "label": "SUPPLEMENTARY measurement (Phase 2 acceptance review Z1 / M2); not a protocol row, nothing re-scored; the formal RL-07 row (gpu_rl_b_001, SHARED_GPU, PASS) stays the row of record",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "protocol": {
+  "path": "configs/rubber/rubber_rl_tests_v2.json",
+  "sha256": "6db5468172e0cf7c507c51b97757550442715ef80221cf818f6fb69cdd189548",
+  "note": "the RL-07 runner and settings as declared (v2 RL-07 text is byte-equal in v3 / v4 / v5)"
+ },
+ "run": {
+  "dir": "artifacts/rl_ready/p2_6/gpu_rl07_exclusive_001",
+  "commit": "c21ae8de089b9427fb03ce291b2846de5d3aa358",
+  "dirty_tree": false,
+  "command": "/home/ningan/RoboticCuttingSim-rl-rubber-p26/.deps/isaacsim-venv/bin/python scripts/rubber/p2_6/run_rubber_rl_gpu.py --rows RL07 --out artifacts/rl_ready/p2_6/gpu_rl07_exclusive_001 --device cuda:0 --gpu-index 1",
+  "started": "2026-11-12T15:17:38+0900",
+  "ended": "2026-11-12T15:26:45+0900",
+  "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+  "physical_gpu": 1,
+  "bus_id": "00000000:F1:00.0",
+  "warp": "1.17.0",
+  "torch": "2.11.0+cu128",
+  "blas_threads_env": {
+   "OPENBLAS_NUM_THREADS": "1",
+   "OMP_NUM_THREADS": null,
+   "MKL_NUM_THREADS": null
+  },
+  "free_mb_at_start": 31937.0,
+  "lock": "blocking flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu1.lock (scripts/rubber/p2_6/queue_gpu_rows.sh 1 RL07)"
+ },
+ "sharing": {
+  "label": "EXCLUSIVE_GPU",
+  "precheck": "GPU1: no compute process (pre-check 2026-11-12T15:17:37+09:00)",
+  "continuous_sampler": {
+   "script": "artifacts/rl_ready/p2_6/rl07_exclusive_sampler_001.py",
+   "samples_file": "artifacts/rl_ready/p2_6/rl07_exclusive_samples_001.jsonl",
+   "period_s": 2.0,
+   "samples": 275,
+   "max_gap_s": 2.0001747608184814,
+   "window": [
+    1794464257.6157434,
+    1794464805.6413846
+   ],
+   "foreign_process_samples": 0,
+   "own_pids": [
+    3345701,
+    3350159,
+    3350354
+   ],
+   "own_pid_note": "the runner and its two Phase 1 workload A child processes (descendants of the flock root); classified by process ancestry"
+  },
+  "runner_label": "EXCLUSIVE_AT_SAMPLES",
+  "runner_samples": 2,
+  "workload_a_self_label_note": "the Phase 1 workload A children label themselves SHARED_GPU because their parent (the rubber process) holds GPU memory; no foreign process was present"
+ },
+ "rows_exclusive": {
+  "full_slot_set/N1": {
+   "N": 1,
+   "warm_walls_s": [
+    1.55989862291608,
+    1.5515262499684468,
+    1.5430733290268108,
+    1.5440586128970608,
+    1.5423896519932896
+   ],
+   "median_step_s": 1.5440586128970608,
+   "mean_step_s": 1.5481892933603376,
+   "env_steps_per_s_median": 0.6476438081089011,
+   "env_steps_per_s_mean": 0.6459158478156793,
+   "particles_per_env_mean": 52224.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 812.0,
+   "cold_s": 1.661261152010411,
+   "reset_s": 0.08753681206144392,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "full_slot_set/N4": {
+   "N": 4,
+   "warm_walls_s": [
+    4.031687221024185,
+    4.006489511928521,
+    3.992786887101829,
+    3.9826612600591034,
+    3.9777251289924607
+   ],
+   "median_step_s": 3.992786887101829,
+   "mean_step_s": 3.99827000182122,
+   "env_steps_per_s_median": 1.0018065359114137,
+   "env_steps_per_s_mean": 1.0004326866814879,
+   "particles_per_env_mean": 65216.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4,
+    5,
+    6
+   ],
+   "vram_peak_process_mib": 972.0,
+   "cold_s": 4.151331135071814,
+   "reset_s": 0.11711564904544502,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "full_slot_set/N8": {
+   "N": 8,
+   "warm_walls_s": [
+    8.628978702006862,
+    8.543074615998194,
+    8.496557823964395,
+    8.45162856800016,
+    8.454987962031737
+   ],
+   "median_step_s": 8.496557823964395,
+   "mean_step_s": 8.515045534400269,
+   "env_steps_per_s_median": 0.9415577655972797,
+   "env_steps_per_s_mean": 0.9395134726738082,
+   "particles_per_env_mean": 76848.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4,
+    5,
+    6
+   ],
+   "vram_peak_process_mib": 1228.0,
+   "cold_s": 8.836309815989807,
+   "reset_s": 0.22657861502375454,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "full_slot_set/N16": {
+   "N": 16,
+   "warm_walls_s": [
+    16.270987999043427,
+    16.12524024595041,
+    16.06299307302106,
+    16.03475159802474,
+    15.907429048093036
+   ],
+   "median_step_s": 16.06299307302106,
+   "mean_step_s": 16.080280392826534,
+   "env_steps_per_s_median": 0.9960783726460753,
+   "env_steps_per_s_mean": 0.9950075253126589,
+   "particles_per_env_mean": 78064.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4,
+    5,
+    6
+   ],
+   "vram_peak_process_mib": 1676.0,
+   "cold_s": 16.690574511070736,
+   "reset_s": 0.4871577579760924,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "uniform_n_t4_L125_t4/N1": {
+   "N": 1,
+   "warm_walls_s": [
+    1.6329910829663277,
+    1.6096969100181013,
+    1.6007065440062433,
+    1.6037923329276964,
+    1.6006127760047093
+   ],
+   "median_step_s": 1.6037923329276964,
+   "mean_step_s": 1.6095599291846157,
+   "env_steps_per_s_median": 0.6235221228265361,
+   "env_steps_per_s_mean": 0.6212878326975922,
+   "particles_per_env_mean": 65024.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 876.0,
+   "cold_s": 1.685887400060892,
+   "reset_s": 0.031131114927120507,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "uniform_n_t4_L125_t4/N4": {
+   "N": 4,
+   "warm_walls_s": [
+    3.927903975942172,
+    3.9053139039315283,
+    3.88839013595134,
+    3.883451614063233,
+    3.8808720930246636
+   ],
+   "median_step_s": 3.88839013595134,
+   "mean_step_s": 3.8971863445825874,
+   "env_steps_per_s_median": 1.028703360554471,
+   "env_steps_per_s_mean": 1.0263815086903227,
+   "particles_per_env_mean": 65024.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 1004.0,
+   "cold_s": 4.070944641949609,
+   "reset_s": 0.09003893798217177,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "uniform_n_t4_L125_t4/N8": {
+   "N": 8,
+   "warm_walls_s": [
+    7.042381513980217,
+    7.021751769003458,
+    6.993772840010934,
+    6.974539663991891,
+    6.962621779064648
+   ],
+   "median_step_s": 6.993772840010934,
+   "mean_step_s": 6.99901351321023,
+   "env_steps_per_s_median": 1.1438747272763141,
+   "env_steps_per_s_mean": 1.14301822462558,
+   "particles_per_env_mean": 65024.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 1196.0,
+   "cold_s": 7.338824947015382,
+   "reset_s": 0.15049912501126528,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "uniform_n_t4_L125_t4/N16": {
+   "N": 16,
+   "warm_walls_s": [
+    13.409044191008434,
+    13.253366534016095,
+    13.228959901956841,
+    13.21114840300288,
+    13.189363945974037
+   ],
+   "median_step_s": 13.228959901956841,
+   "mean_step_s": 13.258376595191658,
+   "env_steps_per_s_median": 1.2094677222230648,
+   "env_steps_per_s_mean": 1.2067842458029614,
+   "particles_per_env_mean": 65024.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 1548.0,
+   "cold_s": 13.815163202933036,
+   "reset_s": 0.2865086749661714,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "rubber_rl_v1_reduced_fidelity/N1": {
+   "N": 1,
+   "warm_walls_s": [
+    0.8467680630274117,
+    0.8409494580700994,
+    0.837156079011038,
+    0.8355175779433921,
+    0.8345943469321355
+   ],
+   "median_step_s": 0.837156079011038,
+   "mean_step_s": 0.8389971049968153,
+   "env_steps_per_s_median": 1.194520382843466,
+   "env_steps_per_s_mean": 1.1918992259261678,
+   "particles_per_env_mean": 22176.0,
+   "control_hz": 50.0,
+   "material_dt_s": 5.102040816326531e-06,
+   "substeps": 3920,
+   "n_t": [
+    3
+   ],
+   "vram_peak_process_mib": 908.0,
+   "cold_s": 0.8733584489673376,
+   "reset_s": 0.011803064029663801,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": "rubber_rl_v1",
+   "cameras": 0,
+   "recording": false
+  },
+  "rubber_rl_v1_reduced_fidelity/N8": {
+   "N": 8,
+   "warm_walls_s": [
+    2.5330521039431915,
+    2.4837714349851012,
+    2.4667407770175487,
+    2.472288165939972,
+    2.468779959017411
+   ],
+   "median_step_s": 2.472288165939972,
+   "mean_step_s": 2.484926488180645,
+   "env_steps_per_s_median": 3.2358687430590742,
+   "env_steps_per_s_mean": 3.2194111327040713,
+   "particles_per_env_mean": 27576.0,
+   "control_hz": 50.0,
+   "material_dt_s": 5.102040816326531e-06,
+   "substeps": 3920,
+   "n_t": [
+    3
+   ],
+   "vram_peak_process_mib": 1004.0,
+   "cold_s": 2.618716484052129,
+   "reset_s": 0.062281456077471375,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": "rubber_rl_v1",
+   "cameras": 0,
+   "recording": false
+  }
+ },
+ "ratios_exclusive": {
+  "full_slot_set": {
+   "n8_over_n1_median": 1.4538203775105916,
+   "n8_over_n1_mean": 1.4545446993613802
+  },
+  "uniform_n_t4_L125_t4": {
+   "n8_over_n1_median": 1.8345375174355123,
+   "n8_over_n1_mean": 1.8397563326850739
+  },
+  "rubber_rl_v1_reduced_fidelity": {
+   "n8_over_n1_median": 2.7089271891337106,
+   "n8_over_n1_mean": 2.701076620133234
+  }
+ },
+ "rows_shared_formal_gpu_rl_b_001": {
+  "full_slot_set/N1": {
+   "N": 1,
+   "warm_walls_s": [
+    1.5351580949500203,
+    1.5273232309846207,
+    1.5198207780485973,
+    1.5149338280316442,
+    1.5146092349896207
+   ],
+   "median_step_s": 1.5198207780485973,
+   "mean_step_s": 1.5223690334009006,
+   "env_steps_per_s_median": 0.6579723178176107,
+   "env_steps_per_s_mean": 0.6568709544531703,
+   "particles_per_env_mean": 52224.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 812.0,
+   "cold_s": 1.661250083008781,
+   "reset_s": 1.193626650958322,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "full_slot_set/N4": {
+   "N": 4,
+   "warm_walls_s": [
+    3.9639759950805455,
+    3.94061910698656,
+    3.926270490977913,
+    3.918994487961754,
+    3.9185148619581014
+   ],
+   "median_step_s": 3.926270490977913,
+   "mean_step_s": 3.933674988592975,
+   "env_steps_per_s_median": 1.0187785098330613,
+   "env_steps_per_s_mean": 1.0168608264788923,
+   "particles_per_env_mean": 65216.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4,
+    5,
+    6
+   ],
+   "vram_peak_process_mib": 972.0,
+   "cold_s": 4.089033031021245,
+   "reset_s": 4.068141759024002,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "full_slot_set/N8": {
+   "N": 8,
+   "warm_walls_s": [
+    8.461553239962086,
+    8.385991287068464,
+    8.33439155202359,
+    8.305934839998372,
+    8.295538965961896
+   ],
+   "median_step_s": 8.33439155202359,
+   "mean_step_s": 8.356681977002882,
+   "env_steps_per_s_median": 0.9598781086854026,
+   "env_steps_per_s_mean": 0.9573177514730785,
+   "particles_per_env_mean": 76848.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4,
+    5,
+    6
+   ],
+   "vram_peak_process_mib": 1228.0,
+   "cold_s": 8.670902465004474,
+   "reset_s": 12.392052270006388,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "full_slot_set/N16": {
+   "N": 16,
+   "warm_walls_s": [
+    16.048522459925152,
+    15.90517856797669,
+    15.86447554291226,
+    15.84634892095346,
+    15.830135877011344
+   ],
+   "median_step_s": 15.86447554291226,
+   "mean_step_s": 15.898932273755781,
+   "env_steps_per_s_median": 1.0085426370837887,
+   "env_steps_per_s_mean": 1.006356887651572,
+   "particles_per_env_mean": 78064.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4,
+    5,
+    6
+   ],
+   "vram_peak_process_mib": 1676.0,
+   "cold_s": 16.46277373598423,
+   "reset_s": 22.120223596924916,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "uniform_n_t4_L125_t4/N1": {
+   "N": 1,
+   "warm_walls_s": [
+    1.636494532926008,
+    1.6172652740497142,
+    1.6035678040934727,
+    1.5911735189147294,
+    1.5890929900342599
+   ],
+   "median_step_s": 1.6035678040934727,
+   "mean_step_s": 1.6075188240036369,
+   "env_steps_per_s_median": 0.6236094273327712,
+   "env_steps_per_s_mean": 0.622076696750232,
+   "particles_per_env_mean": 65024.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 876.0,
+   "cold_s": 1.704440722009167,
+   "reset_s": 1.2778200299944729,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "uniform_n_t4_L125_t4/N4": {
+   "N": 4,
+   "warm_walls_s": [
+    3.8800511340377852,
+    3.84411897091195,
+    3.8301272010430694,
+    3.825388320023194,
+    3.8193115319591016
+   ],
+   "median_step_s": 3.8301272010430694,
+   "mean_step_s": 3.83979943159502,
+   "env_steps_per_s_median": 1.0443517382165972,
+   "env_steps_per_s_mean": 1.0417210771705423,
+   "particles_per_env_mean": 65024.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 1004.0,
+   "cold_s": 4.034740582108498,
+   "reset_s": 8.425495974021032,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "uniform_n_t4_L125_t4/N8": {
+   "N": 8,
+   "warm_walls_s": [
+    7.014947465038858,
+    6.931177112972364,
+    6.897203517961316,
+    6.883623184054159,
+    6.871829685987905
+   ],
+   "median_step_s": 6.897203517961316,
+   "mean_step_s": 6.91975619320292,
+   "env_steps_per_s_median": 1.159890378639233,
+   "env_steps_per_s_mean": 1.1561100964594928,
+   "particles_per_env_mean": 65024.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 1196.0,
+   "cold_s": 7.250282354070805,
+   "reset_s": 8.20452973106876,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "uniform_n_t4_L125_t4/N16": {
+   "N": 16,
+   "warm_walls_s": [
+    13.107037800946273,
+    12.981954122078605,
+    12.95812224294059,
+    12.93286739999894,
+    12.91772197803948
+   ],
+   "median_step_s": 12.95812224294059,
+   "mean_step_s": 12.979540708800778,
+   "env_steps_per_s_median": 1.2347468020466148,
+   "env_steps_per_s_mean": 1.2327092582830146,
+   "particles_per_env_mean": 65024.0,
+   "control_hz": 50.0,
+   "material_dt_s": 3.827018752391887e-06,
+   "substeps": 5226,
+   "n_t": [
+    4
+   ],
+   "vram_peak_process_mib": 1548.0,
+   "cold_s": 13.54938913602382,
+   "reset_s": 17.87389697902836,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": null,
+   "cameras": 0,
+   "recording": false
+  },
+  "rubber_rl_v1_reduced_fidelity/N1": {
+   "N": 1,
+   "warm_walls_s": [
+    0.8419716639909893,
+    0.8223966569639742,
+    0.8189494099933654,
+    0.8167249760590494,
+    0.8160644109593704
+   ],
+   "median_step_s": 0.8189494099933654,
+   "mean_step_s": 0.8232214235933497,
+   "env_steps_per_s_median": 1.2210766474672732,
+   "env_steps_per_s_mean": 1.2147400096015655,
+   "particles_per_env_mean": 22176.0,
+   "control_hz": 50.0,
+   "material_dt_s": 5.102040816326531e-06,
+   "substeps": 3920,
+   "n_t": [
+    3
+   ],
+   "vram_peak_process_mib": 908.0,
+   "cold_s": 0.880852633039467,
+   "reset_s": 0.3244755190098658,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": "rubber_rl_v1",
+   "cameras": 0,
+   "recording": false
+  },
+  "rubber_rl_v1_reduced_fidelity/N8": {
+   "N": 8,
+   "warm_walls_s": [
+    2.496274665929377,
+    2.458417408983223,
+    2.44097871996928,
+    2.4303968569729477,
+    2.4281978509388864
+   ],
+   "median_step_s": 2.44097871996928,
+   "mean_step_s": 2.450853100558743,
+   "env_steps_per_s_median": 3.277373921596777,
+   "env_steps_per_s_mean": 3.264169524552968,
+   "particles_per_env_mean": 27576.0,
+   "control_hz": 50.0,
+   "material_dt_s": 5.102040816326531e-06,
+   "substeps": 3920,
+   "n_t": [
+    3
+   ],
+   "vram_peak_process_mib": 1004.0,
+   "cold_s": 2.5888003290165216,
+   "reset_s": 3.3362556910142303,
+   "physics_verdict": "finite, invalid 0",
+   "reduced_fidelity": "rubber_rl_v1",
+   "cameras": 0,
+   "recording": false
+  }
+ },
+ "ratios_shared_formal": {
+  "full_slot_set": {
+   "n8_over_n1_median": 1.4588426939740646,
+   "n8_over_n1_mean": 1.4573908999675942
+  },
+  "uniform_n_t4_L125_t4": {
+   "n8_over_n1_median": 1.8599628674636612,
+   "n8_over_n1_mean": 1.858468742679295
+  },
+  "rubber_rl_v1_reduced_fidelity": {
+   "n8_over_n1_median": 2.684003439419323,
+   "n8_over_n1_mean": 2.6871342828525218
+  }
+ },
+ "ratio_method": "per-step walls over the same matched window at every N: 1 cold step (excluded) + 5 warm steps; ratio of N / median(warm step) (also N / mean); the formal RL-07 scored gain is the median form",
+ "scored_by_runner": {
+  "n8_over_n1_env_steps_gain": 1.4538203775105916,
+  "vram_peak_n8_mib": 1228.0,
+  "vram_limit_mib": 4096
+ },
+ "runner_verdict_supplementary": "PASS",
+ "cost_arms": {
+  "s1_cost_rel": -0.007418973061834699,
+  "plane_contact_cost_rel": 0.15299021642956134,
+  "arms": "profile: contact law grid_node_penalty_coulomb_v2 table plane + S1; s1_off: contact, no detector; contact_off: S1, no ContactSpec (the strip falls through the table: cost only, never physics)",
+  "contact_law": "grid_node_penalty_coulomb_v2"
+ },
+ "phase1_workload_a": {
+  "1": {
+   "num_envs": 1,
+   "env_steps_per_s": 7.055917093613751,
+   "aggregate_sim_time_per_wall": 0.14111834187227504,
+   "particles_per_env": 102732,
+   "control_hz": 50.0,
+   "material_dt_s": 0.0001,
+   "substeps": 200,
+   "vram_peak_mib": 864.0,
+   "reset_p95_ms": 132.63291735202074
+  },
+  "8": {
+   "num_envs": 8,
+   "env_steps_per_s": 10.004700534111038,
+   "aggregate_sim_time_per_wall": 0.20009401068222077,
+   "particles_per_env": 102732,
+   "control_hz": 50.0,
+   "material_dt_s": 0.0001,
+   "substeps": 200,
+   "vram_peak_mib": 1356.0,
+   "reset_p95_ms": 118.15447791013868
+  }
+ }
+}
