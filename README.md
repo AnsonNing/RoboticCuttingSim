@@ -213,7 +213,7 @@ unsupported configuration raises an `UNSUPPORTED_*` code. Plan and status are in
 [RL_READY_PLAN.md](docs/RL_READY_PLAN.md) and [RL_READY_PROGRESS.md](docs/RL_READY_PROGRESS.md). The final
 feature-parity matrix and Phase 1 checklist are in
 [P1_PARITY_MATRIX.md](docs/reports/rl_ready/P1_PARITY_MATRIX.md); the whole plan is summarised in the
-[final report](docs/reports/rl_ready/FINAL_REPORT.md) (draft). Phase 1 reached `main` in PRs #12–#15.
+[final report](docs/reports/rl_ready/FINAL_REPORT.md). Phase 1 reached `main` in PRs #12–#15.
 
 **Backends of `open_vector_env(num_envs, task=..., tasks=..., device="cuda", backend=...)`:**
 
@@ -341,8 +341,8 @@ Reports in `docs/reports/rl_ready/`:
 
 ## Rubber material (Phase 2)
 
-Phase 2 adds a rubber material to the same batched material layout and vector-env contract as Phase 1. It reaches
-`main` in its own PR. Material status everywhere: **`SIMULATOR_ONLY_UNCALIBRATED`**. No real rubber data exists, and
+Phase 2 adds a rubber material to the same batched material layout and vector-env contract as Phase 1. It reached
+`main` in PR #16 (`7347c9a`). Material status everywhere: **`SIMULATOR_ONLY_UNCALIBRATED`**. No real rubber data exists, and
 every modulus, Prony term and friction value is illustrative. Design: [ADR 0023](docs/adr/0023-rubber-material-v1.md);
 summary and every recorded FAIL: [final report](docs/reports/rl_ready/FINAL_REPORT.md).
 

@@ -1,9 +1,12 @@
-# RL-Ready Simulator & Rubber Physics — final report (DRAFT)
+# RL-Ready Simulator & Rubber Physics — final report
 
-**Status: DRAFT, 2026-11-12.** The Phase 2 merge into `main` and the new external descriptor pin are still
-pending (§9). Phase 2 (P2-5, P2-6 and the K2 follow-ups) is merged into `claude/rl-ready-rubber-physics` at
-`92e671a`, so every report cited here, including [P2_5_RUBBER_CALIBRATION.md](P2_5_RUBBER_CALIBRATION.md) and
-[P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md), is on this branch.
+**Status: FINAL, 2026-11-12.**
+- **Phase 1** is on `main`: PRs #12–#15.
+- **Phase 2** is on `main`: PR #16, merge `7347c9a`.
+- **External pins:** the external agentic optimizer repository pinned `rcs_rl_vector_v3` and `rcs_rubber_strip_v1`
+  at `7347c9a`. Both are **SYNCED** (§9).
+- **Reports:** every report cited here, including [P2_5_RUBBER_CALIBRATION.md](P2_5_RUBBER_CALIBRATION.md) and
+  [P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md), is on `main`.
 
 **Revision after the Phase 2 acceptance review (Z1).** The xhigh review
 [PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md) (at `92e671a`, verdict GO_WITH_CONDITIONS) checked 69
@@ -37,7 +40,7 @@ copy is [RL_READY_SPECIFICATION.md](../../RL_READY_SPECIFICATION.md). Work packa
 6. [User decisions pending](#6-user-decisions-pending)
 7. [Resource use](#7-resource-use)
 8. [Reproduction](#8-reproduction)
-9. [Phase 2 merge and pin (PENDING)](#9-phase-2-merge-and-pin-pending)
+9. [Phase 2 merge and pin](#9-phase-2-merge-and-pin)
 
 ## 1. Summary against the plan's Done criteria
 
@@ -73,7 +76,7 @@ calibration interface for real data. Every Phase 2 package records its FAILs. Th
 | 3 | The same rubber in multi-env RL headless and in Full Native; at least 8 envs with reliable results | **PASS** (with limitations) | P2-6 RL-01..RL-12 PASS (RL-05 only on its third declared controller). The N=8 GPU rows are RL-01, RL-02 b, RL-03, RL-05 v4, RL-06, RL-07 and RL-12; GPU isolation (RL-04 b) was tested at **N=4**, and the GPU L3 band (RL-02 c) runs an N=8 batch but scores 2 envs. Native RL-09 PASS. The P2-6 review grades box 3 PASS_WITH_LIMITATIONS: friction fixed at 0.3, geometry per env, kinematic grip, about 1 env-step/s ([P2_6_ACCEPTANCE_REVIEW.md](P2_6_ACCEPTANCE_REVIEW.md) §8; [P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md) §0) |
 | 4 | REAL_CALIBRATED only after an independent held-out pass on real data; otherwise SIM_ONLY | **PASS** (conditional box: no real data) | Status stays `SIMULATOR_ONLY_UNCALIBRATED`. The synthetic numerical test of the calibration pipeline (P2-5, `rubber_calib_tests_v2`) **FAILED** CAL-04 / CAL-05 / CAL-06 ([P2_5_RUBBER_CALIBRATION.md](P2_5_RUBBER_CALIBRATION.md) §10) |
 | 5 | Old CUT / TRIM / v5 / v7 baselines not broken | **PASS** | RL-11 on the P2-6 head: `.venv` 2,932 passed / 0 failed; Torch selection 414–416 passed; frozen Phase 1 paths equal to `main` except the 13-line dispatch branch ([P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md) §12) |
-| 6 | Models, tests, scene and docs merged into RCS; external pin updated | **PENDING** | Phase 2 PR, merge and new descriptor are NOT_RUN at the time of this draft (§9) |
+| 6 | Models, tests, scene and docs merged into RCS; external pin updated | **PASS** | Phase 2 PR #16 merged at `7347c9a` (CI green); `rcs_rl_vector_v3` and `rcs_rubber_strip_v1` pinned at `7347c9a`, smoke PASS, **SYNCED** (§9) |
 
 ### 1.3 Pull requests merged into `main`
 
@@ -565,7 +568,7 @@ frozen before any real held-out evaluation.
   would be a versioned decision.
 - **Native visual smoke:** the rendered-clamp visual fix (`measured_pose_v1`) has not run in Kit (visual smoke
   NOT_RUN).
-- **Merge and pin:** Phase 2 PR, merge and the new external descriptor are PENDING (§9).
+- **Merge and pin:** done. Phase 2 PR #16 is merged at `7347c9a`, and both new external descriptors are SYNCED (§9).
 
 **Calibration results do not plug directly into the RL task** (Phase 2 review F1). The calibration interface is
 ready for ingesting, gating and one-shot held-out bookkeeping of real data, not for handing a fit to the RL task:
@@ -682,17 +685,19 @@ The exact command of every formal row is in its report and in the run's `meta.js
 Protocols and declarations are SHA-pinned in `configs/rubber/` and `configs/rl_benchmark/` and checked by the
 `tests/test_*_protocol*.py` / `*_declarations.py` pin tests.
 
-## 9. Phase 2 merge and pin (PENDING)
+## 9. Phase 2 merge and pin
 
-**Status: PENDING.** The orchestrator fills this in after the merge.
+**Status: DONE (2026-11-12).**
 
 | Item | Value |
 | --- | --- |
-| P2-5 / P2-6 branches merged into `claude/rl-ready-rubber-physics` | PENDING — merge commit `<sha>` |
-| xhigh review of the Phase 2 PR | PENDING — verdict `<verdict>`, report `<path>` |
-| Phase 2 PR | PENDING — `#<number>` |
-| Merge into `main` | PENDING — merge commit `<sha>` |
-| GitHub CI on the merged head | PENDING — `<run id, counts>` |
-| New external descriptor | PENDING — `<descriptor id>` pinned at `<sha>`; smoke `<result>` |
-| Sync status | PENDING — `<RCS_PR_PENDING / MERGED_RCS_PENDING_OPTIMIZER_SYNC / SYNCED>` |
-| Phase 2 Done box 6 | PENDING until SYNCED |
+| P2-5 / P2-6 merged into `claude/rl-ready-rubber-physics` | P2-5 merged into `claude/rl-rubber` at `75aa34c`. P2-6 merged into `claude/rl-rubber` at `e13339b`, plus the evidence-only `9919a6e`. Merged into the integration branch at `92e671a`, plus `fc7dff5` |
+| xhigh review of the Phase 2 PR | Z1 [PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md): GO_WITH_CONDITIONS at `92e671a`. Conditions D1–D4, M2 and M3 met. Re-check at `9ea50a6`: **GO** (Addendum A) |
+| Phase 2 PR | #16 (head `9ea50a6`, base `62caecc`) |
+| Merge into `main` | `7347c9a` (merge commit) |
+| GitHub CI on the PR head | push run 43168433241: 2,951 passed, 93 skipped, 6 xfailed, 0 failed. pull_request run 43168462836: 2,981 passed, 63 skipped, 6 xfailed, 0 failed |
+| New external descriptors | `rcs_rl_vector_v3` (sha256 `57b88f17…7557`; supersedes v2; default contact mode `frozen_v1`, `alias_free_v2` opt-in only). `rcs_rubber_strip_v1` (sha256 `adf8faa0…f214`; backend `kinematic_grip_batched`, task `rubber_strip_drag_v2`, profile `rubber_rl_env_v2`, `SIMULATOR_ONLY_UNCALIBRATED`, `OPENBLAS_NUM_THREADS=1` in the env). Both pinned at `7347c9a`, sharing one frozen checkout from a local mirror. v1, v2 and the historical descriptors are unchanged |
+| Smoke | `rcs_rl_vector_v3`: CPU contract PASS; host contract PASS (266 passed / 0 failed / 40 skipped); GPU contract N=2 with partial reset PASS (EXCLUSIVE_GPU). `rcs_rubber_strip_v1`: CPU contract PASS; host contract PASS (13 passed / 0 failed / 3 skipped, Torch-only); GPU contract N=2 PASS, with 6 steps including a partial reset, `invalid_reason` 0 at every step and `OPENBLAS_NUM_THREADS=1` confirmed in the episode process (EXCLUSIVE_GPU) |
+| External repository PR | #5, merged. Its host test suite: 812 passed, 6 skipped, 0 failed. It adds a short pointer to this report |
+| Sync status | **SYNCED** for both descriptors (receipt chain MERGED_RCS_PENDING_OPTIMIZER_SYNC → SYNCED verifies) |
+| Phase 2 Done box 6 | **PASS** |

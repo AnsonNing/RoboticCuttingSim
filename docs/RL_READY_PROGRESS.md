@@ -28,12 +28,15 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
 - **Phase 2 merged into `main`: PR #16, merge `7347c9a`, 2026-11-12.**
   - CI green: push run 2,951 passed and pull_request run 2,981 passed, 0 failed.
   - Box 6 of the Phase 2 Done list waits only for the external pin.
-- **In progress:** Z3, a new pin in the external agentic optimizer repository at `7347c9a`: `rcs_rl_vector_v3`, a
-  rubber descriptor, smoke, its PR, SYNCED, and a pointer to the final report.
-- **Next:**
-  - fill in FINAL_REPORT §9;
-  - follow-up docs PR (this file, the review addendum, the final report) with an xhigh check and CI;
-  - create DONE.
+- **Z3 done: SYNCED.** The external agentic optimizer repository pinned `rcs_rl_vector_v3` and
+  `rcs_rubber_strip_v1` at `7347c9a`.
+  - Smoke PASS: CPU, host and GPU contracts at N=2 with a partial reset, EXCLUSIVE_GPU.
+  - External repository PR #5 merged, with a pointer to the final report.
+  - Both receipt chains verify, so Phase 2 Done box 6 is PASS.
+- **In progress:**
+  - follow-up docs PR: FINAL_REPORT finalised (§9 filled in), README, the Z1 Addendum A, and this file;
+  - an xhigh check, CI, and the merge;
+  - then create DONE.
 - Earlier 進行中 entries (Phase 1 merges, SYNCED records, p16c1 narrative, Phase 2 step narrative) moved
   unchanged to [Status log](#status-log-moved-from-進行中-2026-11-12) below.
 
