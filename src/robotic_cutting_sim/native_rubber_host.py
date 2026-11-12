@@ -1,8 +1,10 @@
 """Full Native host of the P2-6 rubber recipe (task P6.4; ADR 0023 §23.2 decision 8; plan
-``docs/reports/rl_ready/P2_REMAINING_PLAN.md`` §4.6, protocol ``rubber_rl_tests_v1`` RL-09).
+``docs/reports/rl_ready/P2_REMAINING_PLAN.md`` §4.6, protocol ``rubber_rl_tests_v2`` RL-09; F9 erratum: this text
+first named the superseded ``rubber_rl_tests_v1`` / ``rubber_rl_env_v1`` / law v3, while the runs always passed the v2
+task config).
 
 A Kit host that runs the SAME rubber material as the P2-6 env (``RubberStripTaskFamily.build_life``: recipe
-``rubber_generic_visco_v1``, slot, profile ``rubber_rl_env_v1``, contact law ``grid_node_penalty_coulomb_v3``) inside
+``rubber_generic_visco_v1``, slot, profile ``rubber_rl_env_v2``, contact law ``grid_node_penalty_coulomb_v2``) inside
 the Isaac Sim 6.2 process, fed each control step by the clamp pose that PhysX MEASURES. The loop keeps the shape of the
 TLMPM Native bridge (``isaac_sim_runner.LiveIsaacSimCutting.step``: command, PhysX step, measured pose, material
 advance, surface update), without touching ``isaac_sim_runner.py`` or the frozen ``live_material.py``:
@@ -37,7 +39,7 @@ RECORD_SCHEMA = "rcs_native_rubber_v1"
 EPISODE = {
     "id": "native_rubber_episode_v1",
     "source": "plan docs/reports/rl_ready/P2_REMAINING_PLAN.md section 4.6 (run native_rubber_001)",
-    "task_config": "rubber_strip_drag_v1",
+    "task_config": "rubber_strip_drag_v2",    # F9: was "rubber_strip_drag_v1"; the runners always set the family id
     "slot": "L125_t4",
     "material": "RubberStripTaskFamily.build_material(): recipe nominal, friction_table = midpoint of the range",
     "traction_n": [0.0, 0.0, 0.0],

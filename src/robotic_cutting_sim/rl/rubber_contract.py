@@ -22,6 +22,14 @@ RECEIPT_KEYS = ("version", "api_revision", "runtime", "backend", "num_envs", "te
                 "calibration_status", "success_source", "profile", "contact_law", "envelope", "labels", "material")
 EVALUATION_KEYS = ("env", "slot", "seed", "episode", "step_count", "evaluator", "success", "verdict",
                    "tip_distance_m", "within_streak", "termination_reason", "invalid_reason", "labels")
+# F2: step-info keys computed from oracle material validity (labelled in env.metadata["privileged_info_keys"])
+PRIVILEGED_STEP_INFO = ("invalid_reason", "termination_reason", "invalid_penalty_applied")
+# the Phase 1 list (rl.vector_contract.PRIVILEGED_INFO_KEYS; a Torch-free constant, copied to keep this module light;
+# tests/test_rubber_rl_contract_f2_f4.py asserts the copy equals the Phase 1 tuple)
+PHASE1_PRIVILEGED_INFO_KEYS = ("invalid_reason", "termination_reason", "progress_delta", "off_target_delta",
+                               "target_bond_progress_fraction", "off_target_bond_fraction", "severed_target_bonds",
+                               "severed_substrate_bonds", "invalid_penalty_applied", "input_guard_reason",
+                               "rigid_reason", "autoreset", "terminal_captured")
 # substrings that mark a privileged (non-deployable) quantity in a policy term name
 PRIVILEGED_MARKERS = ("force", "wrench", "stress", "strain", "jbar", "j_", "energy", "psi", "kinetic", "contact",
                       "penetration", "friction", "mu0", "density", "prony", "material", "invalid", "traction", "cfl")
@@ -109,6 +117,9 @@ def check_rubber_vector_env_contract(env, *, steps=None, reset_ids=(1,), reset_s
     _check(tuple(env.observation_space["policy"].shape) == (N, POLICY_DIM), "batched observation space")
     for key in ("autoreset_mode", "observation_profile", "max_episode_steps"):
         _check(key in env.metadata, f"metadata has {key!r}")
+    # F2 (P6.7 review, additive clause): oracle-derived info keys are labelled as on the Phase 1 backends
+    _check(set(PRIVILEGED_STEP_INFO) <= set(env.metadata.get("privileged_info_keys", ())),
+           "metadata['privileged_info_keys'] lists the oracle-derived info keys")
     report["clauses"].append("receipt/spaces/metadata")
     seeds = list(range(100, 100+N)) if seeds is None else list(seeds)
     obs, info = env.reset(seeds=seeds)
@@ -134,6 +145,8 @@ def check_rubber_vector_env_contract(env, *, steps=None, reset_ids=(1,), reset_s
         for key, dtype in STEP_INFO.items():
             _check(key in info, f"step info has {key!r}")
             _check_tensor(info[key], (N,), dtype, device, f"step info[{key!r}]")
+        _check(set(info) & set(PHASE1_PRIVILEGED_INFO_KEYS) <= set(env.metadata["privileged_info_keys"]),
+               "every Phase 1 privileged info key the step carries is labelled")
         reason = info["termination_reason"]
         _check(torch.equal(terminated, (reason & TERMINAL_BITS) != 0), "terminated == reason & TERMINAL_BITS")
         _check(torch.equal(truncated, (reason & TERM_TRUNCATED) != 0), "truncated == reason & TRUNCATED_HORIZON")

@@ -44,6 +44,7 @@ detector state of the reset envs. ``off_v1`` (default): no detector, no array, n
 """
 import hashlib
 import time
+from collections import OrderedDict
 from pathlib import Path
 
 import numpy as np
@@ -56,7 +57,11 @@ from .. import rubber_visco_constitutive as rvc
 from . import constitutive_rubber as cr
 from . import rubber_layout
 from .errors import UnsupportedBatchConfiguration
+from .material_batch import InvalidBatchEnvs
 from .rubber_batch import BatchedTLMPMRubber
+
+#: F1: the F8 inverse cache (``_proj_inv_cache``) holds at most max(PROJ_INV_CACHE_MIN, 2 N) entries (LRU).
+PROJ_INV_CACHE_MIN = 4
 
 wp.set_module_options({"enable_backward": False})
 
@@ -110,10 +115,16 @@ VISCO_DIAGNOSTICS_SCRATCH = ("vpp", "visco_summary")       # in ``visco_diagnost
 PRONY_RANGE_KEYS = ("prony_g_scale", "prony_tau_scale")
 
 
-class InvalidRubberEnvs(FloatingPointError):
+class InvalidRubberEnvs(InvalidBatchEnvs):
+    """Strict mode: some rubber envs became invalid in the last control step (ids and rubber reason names attached).
+
+    F3 (P6.7 review): a subclass of the Phase 1 ``InvalidBatchEnvs`` (still a ``FloatingPointError``), so
+    ``rl.termination.classify_exception`` returns ``("task", "MATERIAL_INVALID")``; the message carries the Phase 1
+    signature "InvalidBatchEnvs" that ``classify_process_exit`` maps to ``task`` / ``STRICT_INVALID_ENV``."""
+
     def __init__(self, env_ids, reasons):
         self.env_ids, self.reasons = list(env_ids), dict(reasons)
-        super().__init__(f"Invalid rubber envs {self.env_ids}: {self.reasons}")
+        FloatingPointError.__init__(self, f"Invalid batched envs (rubber, InvalidBatchEnvs) {self.env_ids}: {self.reasons}")
 
 
 def decode_reason(value):
@@ -464,7 +475,11 @@ class BatchedRubberMaterial:
         self._proj_scenes = [live.scene for live in lives] if s.projection else None
         self._proj_inv_initial = s.proj_inv.numpy().copy() if s.projection else None
         self._proj_inv_host = self._proj_inv_initial.copy() if s.projection else None
-        self._proj_inv_cache = {}
+        # F1 (P6.7 review): the inverse cache is a bounded LRU (``projection_inverse_cache_lru_v1``). It only memoises a
+        # deterministic function of (scene, float32 mass), so the cap never changes a result; before, every reset with a
+        # resampled density added one entry (1.6-3.1 MB) and nothing was evicted.
+        self._proj_inv_cache = OrderedDict()
+        self.proj_inv_cache_max = PROJ_INV_CACHE_MIN if not lives else max(PROJ_INV_CACHE_MIN, 2*len(lives))
         self._proj_structure = {}
 
     def _projection_inverse(self, e, mass):
@@ -474,10 +489,16 @@ class BatchedRubberMaterial:
         ``tlmpm_rubber_v1.projection_blocks`` loop (same products, same sequence of float64 additions), so the
         inverses are byte-identical to it (tests/test_rubber_projection_assembly.py)."""
         key = (e, np.float32(mass).tobytes())
-        if key not in self._proj_inv_cache:
-            blocks = projection_blocks_v2(self._proj_scenes[e], np.float32(mass), self._proj_structure, e)
-            self._proj_inv_cache[key] = np.concatenate([b["inv"].reshape(-1) for b in blocks])
-        return self._proj_inv_cache[key]
+        cache = self._proj_inv_cache
+        if key in cache:
+            cache.move_to_end(key)
+            return cache[key]
+        blocks = projection_blocks_v2(self._proj_scenes[e], np.float32(mass), self._proj_structure, e)
+        inv = np.concatenate([b["inv"].reshape(-1) for b in blocks])
+        cache[key] = inv
+        while len(cache) > self.proj_inv_cache_max:
+            cache.popitem(last=False)
+        return inv
 
     def _check_ranges(self, ranges, lives):
         if not ranges:

@@ -59,6 +59,10 @@ REWARD = "rubber_tip_tracking_v1"
 EVALUATOR = "rubber_tracking_eval_v1"
 MATERIAL = "task_declared"
 OBSERVATION_PROFILES = ("state", "privileged_state")
+# F2 (P6.7 review): step-info keys derived from oracle material state (validity bits and the termination / penalty
+# flags computed from them); a deployable policy must not consume them. Listed in env.metadata["privileged_info_keys"]
+# as on the Phase 1 backends (rl.vector_contract.PRIVILEGED_INFO_KEYS names the same three keys).
+PRIVILEGED_INFO_KEYS = ("invalid_reason", "termination_reason", "invalid_penalty_applied")
 DRIVE_ACTION, DRIVE_PRELOAD = 0, 2
 DRIVE_NAMES = {DRIVE_ACTION: "policy_action_grip_delta_v1", DRIVE_PRELOAD: "PRELOAD"}
 STATUS_APPLIED, STATUS_CLIPPED, STATUS_HELD, STATUS_PRELOAD = 0, 1, 2, 3
@@ -181,7 +185,8 @@ def _json_default(value):
 class RubberVectorEnv:
     """See the module docstring. Use ``open_vector_env(..., backend="kinematic_grip_batched")``."""
 
-    metadata = {"render_modes": [], "runtime": RUNTIME, "backend": BACKEND, "version": ENV_VERSION}
+    metadata = {"render_modes": [], "runtime": RUNTIME, "backend": BACKEND, "version": ENV_VERSION,
+                "privileged_info_keys": PRIVILEGED_INFO_KEYS}
 
     def __init__(self, num_envs, *, task, runtime=RUNTIME, observation_profile="state", device="cuda",
                  backend=BACKEND, action_spec=ACTION_SPEC, reward=REWARD, material=MATERIAL, autoreset=False,
@@ -331,7 +336,7 @@ class RubberVectorEnv:
     @property
     def env_metadata(self):
         return {"autoreset_mode": self.autoreset, "observation_profile": self.observation_profile,
-                "max_episode_steps": self.max_episode_steps}
+                "max_episode_steps": self.max_episode_steps, "privileged_info_keys": PRIVILEGED_INFO_KEYS}
 
     def observation_metadata(self):
         out = {"policy": {"dim": POLICY_DIM, "dtype": "float32", "deployable": True,
@@ -704,6 +709,10 @@ def open_rubber_vector_env(num_envs, *, task, backend=BACKEND, action_spec=None,
     if tasks is not None:
         raise UnsupportedRubberConfiguration("UNSUPPORTED_OPTION", "tasks= selects cutting scenes; pass the rubber "
                                              "slots to RubberStripTaskFamily")
+    unknown = sorted(set(kwargs) - _ENV_KWARGS)
+    if unknown:   # F4 (P6.7 review): Phase 1 options (evaluation_stream, terminal_capture, input_guard, tool_mount, ...)
+        raise UnsupportedRubberConfiguration("UNSUPPORTED_OPTION", f"options {unknown} are not supported by the rubber "
+                                             f"backend {BACKEND!r}")
     defaults = {"action_spec": ("edge_delta_v1", ACTION_SPEC), "reward": ("trim_bond_progress_packed_v1", REWARD),
                 "material": ("scene_declared", MATERIAL)}
     given = {"action_spec": action_spec, "reward": reward, "material": material}
@@ -714,6 +723,10 @@ def open_rubber_vector_env(num_envs, *, task, backend=BACKEND, action_spec=None,
     return RubberVectorEnv(num_envs, task=task, backend=backend, **mapped, **kwargs)
 
 
+_ENV_KWARGS = frozenset(n for n, p in __import__("inspect").signature(RubberVectorEnv.__init__).parameters.items()
+                        if p.kind == p.KEYWORD_ONLY)
+
+
 __all__ = ["RubberVectorEnv", "open_rubber_vector_env", "drive_single_reference", "ENV_VERSION", "BACKEND",
-           "POLICY_DIM", "CRITIC_DIM", "POLICY_TERMS", "CRITIC_TERMS", "TIP_MARKER", "source_sha256",
+           "POLICY_DIM", "CRITIC_DIM", "PRIVILEGED_INFO_KEYS", "POLICY_TERMS", "CRITIC_TERMS", "TIP_MARKER", "source_sha256",
            "qmul", "qexp", "qlog", "qrot", "qconj", "smootherstep"]

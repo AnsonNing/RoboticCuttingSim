@@ -345,7 +345,7 @@ def test_quaternion_helpers():
     x = torch.rand(64, 3, generator=g, dtype=torch.float64)
     assert np.allclose(qrot(q, x).numpy(), R.apply(x.numpy()), atol=1e-14)
     assert np.allclose(qmul(q, qexp(-v)).numpy()[:, 3], 1.0, atol=1e-14)
-    assert np.allclose(q.numpy(), R.as_quat()*np.sign(R.as_quat()[:, 3:]), atol=1e-14) or True
+    assert np.allclose(q.numpy(), R.as_quat()*np.sign(R.as_quat()[:, 3:]), atol=1e-14)
     assert math.isclose(float(qlog(qexp(torch.tensor([[0.0, 0.0, 1e-14]], dtype=torch.float64)))[0, 2]), 1e-14,
                         rel_tol=1e-9)
 

@@ -8,7 +8,7 @@ scripted mean return > zero-action mean return in >= 7 of 8 envs and >= 1 evalua
 
     scripts/rubber/p2_6/queue_gpu_rows.sh is for the P6.3 runner; for this one:
     flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock env CUDA_VISIBLE_DEVICES=0 OPENBLAS_NUM_THREADS=1 \
-      TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/rubber/p2_6/run_rubber_rl05_v3.py \
+      TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/rubber/p2_6/run_rubber_rl05_v4.py \
       --rows RL05v4 --out artifacts/rl_ready/p2_6/<dir> --device cuda:0 --gpu-index 0
 """
 import importlib.util
