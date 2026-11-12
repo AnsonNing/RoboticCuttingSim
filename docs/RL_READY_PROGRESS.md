@@ -33,10 +33,12 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   - Smoke PASS: CPU, host and GPU contracts at N=2 with a partial reset, EXCLUSIVE_GPU.
   - External repository PR #5 merged, with a pointer to the final report.
   - Both receipt chains verify, so Phase 2 Done box 6 is PASS.
-- **In progress:**
-  - follow-up docs PR: FINAL_REPORT finalised (§9 filled in), README, the Z1 Addendum A, and this file;
-  - an xhigh check, CI, and the merge;
-  - then create DONE.
+- **Plan complete (2026-11-12).**
+  - Final docs PR #17 merged into `main` at `e13919d` (xhigh check PASS at `c10fcd6`, CI green).
+  - The final report [FINAL_REPORT.md](reports/rl_ready/FINAL_REPORT.md) is on `main`.
+  - The external agentic optimizer repository's pointer to it was updated in its PR #6.
+  - `/mnt/data/ningan/lab_records/rcs_rl_runner/DONE` created.
+  - Open user decisions remain in 「待使用者決定」 below; their defaults are applied.
 - Earlier 進行中 entries (Phase 1 merges, SYNCED records, p16c1 narrative, Phase 2 step narrative) moved
   unchanged to [Status log](#status-log-moved-from-進行中-2026-11-12) below.
 
