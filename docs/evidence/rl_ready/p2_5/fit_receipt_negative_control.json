@@ -1,0 +1,1861 @@
+{
+ "best_start": 0,
+ "budget_hit": false,
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "chi2": 645.0305605082938,
+ "chi2_reduced": 1.31370786254235,
+ "covariance_theta": [
+  [
+   505282.76590612915,
+   -1.2335686468526588,
+   -0.08762836351963907,
+   0.2751168050591108,
+   -2.9679751507047043,
+   Infinity
+  ],
+  [
+   -1.233568646852659,
+   3.849281778162098e-05,
+   2.864001034043946e-06,
+   -3.693546605435309e-05,
+   4.9959195956361415e-05,
+   Infinity
+  ],
+  [
+   -0.0876283635196391,
+   2.864001034043946e-06,
+   3.191028482996058e-07,
+   -3.0575121153962932e-06,
+   3.8693839525725206e-06,
+   Infinity
+  ],
+  [
+   0.27511680505911085,
+   -3.693546605435308e-05,
+   -3.0575121153962932e-06,
+   3.8741482443865714e-05,
+   -4.676927693517217e-05,
+   Infinity
+  ],
+  [
+   -2.9679751507047043,
+   4.9959195956361415e-05,
+   3.8693839525725206e-06,
+   -4.676927693517217e-05,
+   7.757991161384387e-05,
+   Infinity
+  ],
+  [
+   Infinity,
+   Infinity,
+   Infinity,
+   Infinity,
+   Infinity,
+   Infinity
+  ]
+ ],
+ "formal_method": true,
+ "method": "staged scipy.optimize.least_squares trf (rubber_calib_tests_v2)",
+ "n_residuals": 497,
+ "objective": {
+  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+  "dataset_id": "p2_5_formal_001",
+  "densities_measured_kg_m3": {
+   "C1": 1110.786443910992,
+   "T2": 1130.9720560450517
+  },
+  "fit_experiments": [
+   "T2",
+   "C1"
+  ],
+  "manifest": "/home/ningan/RoboticCuttingSim-rl-rubber-p25/configs/rubber/calibration_synthetic/p2_5_formal_001/manifest.json",
+  "manifest_freeze_sha256": "3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9",
+  "residual_definition": "(prediction - data) / sqrt(sigma^2 + resolution^2 / 12) per sensor sample",
+  "rl_term": "none (refused)",
+  "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC"
+ },
+ "parameter_space": {
+  "bounds_theta": {
+   "g1": [
+    0.02,
+    0.4
+   ],
+   "mu_eq_pa": [
+    150000.0,
+    400000.0
+   ],
+   "mu_table": [
+    0.3,
+    0.8
+   ],
+   "tau1_s": [
+    0.002,
+    0.03
+   ],
+   "tau2_s": [
+    0.03,
+    0.5
+   ]
+  },
+  "g2_fraction_of_remaining_budget": [
+   0.02,
+   0.98
+  ],
+  "g_total_max": 0.5,
+  "mu0_max_pa": 800000.0,
+  "not_fitted": {
+   "beta": "numerical bulk ratio 20",
+   "density": "measured (specimen mass / measured dimensions)"
+  },
+  "params": [
+   "mu_eq_pa",
+   "g1",
+   "tau1_s",
+   "g2",
+   "tau2_s",
+   "mu_table"
+  ],
+  "transforms": {
+   "g1": "logit(g1 / G)",
+   "g2": "logit(g2 / (G - g1))",
+   "mu_eq_pa": "log",
+   "mu_table": "linear",
+   "tau1_s": "log",
+   "tau2_s": "log"
+  },
+  "u_lower": [
+   11.918390573078392,
+   -3.1780538303479453,
+   -6.214608098422191,
+   -3.8918202981106265,
+   -3.506557897319982,
+   0.3
+  ],
+  "u_upper": [
+   12.89921982609012,
+   1.3862943611198908,
+   -3.506557897319982,
+   3.8918202981106256,
+   -0.6931471805599453,
+   0.8
+  ]
+ },
+ "provenance": {
+  "kind": "negative_control",
+  "run": {
+   "box_u": [
+    [
+     12.206072645530174,
+     -1.6582280766035322,
+     -5.298317366548036,
+     -1.791759469228055,
+     -2.8134107167600364,
+     0.4
+    ],
+    [
+     12.765688433465597,
+     -0.4054651081081643,
+     -4.199705077879927,
+     0.0,
+     -1.6094379124341003,
+     0.6
+    ]
+   ],
+   "budget_clock": "GPU-lock hold time",
+   "budget_clock_used_s": 2284.5116874999367,
+   "budget_hit": false,
+   "budget_s": 5400,
+   "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+   "candidates_evaluated": 273,
+   "env": {
+    "argv": [
+     "scripts/rubber/p2_5/run_fit_v2.py",
+     "--kind",
+     "negative_control",
+     "--out",
+     "artifacts/rl_ready/p2_5/fit_v2_001/negative_control",
+     "--gpu-index",
+     "0"
+    ],
+    "cuda_visible_devices": "0",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "scipy": "1.18.1",
+    "warp": "1.17.0"
+   },
+   "forward_receipts": [
+    [
+     {
+      "device": "cuda:0",
+      "dt_s": 3.816793893129771e-06,
+      "dx_m": 0.001,
+      "experiment": "T2",
+      "particles_per_env": 23040,
+      "population": 2,
+      "steps": 113,
+      "substeps": 262
+     }
+    ],
+    [
+     {
+      "device": "cuda:0",
+      "dt_s": 3.816793893129771e-06,
+      "dx_m": 0.001,
+      "experiment": "T2",
+      "particles_per_env": 23040,
+      "population": 15,
+      "steps": 113,
+      "substeps": 262
+     }
+    ],
+    [
+     {
+      "device": "cuda:0",
+      "dt_s": 3.816793893129771e-06,
+      "dx_m": 0.001,
+      "experiment": "T2",
+      "particles_per_env": 23040,
+      "population": 6,
+      "steps": 113,
+      "substeps": 262
+     },
+     {
+      "device": "cuda:0",
+      "dt_s": 3.816793893129771e-06,
+      "dx_m": 0.001,
+      "experiment": "C1",
+      "particles_per_env": 21120,
+      "population": 6,
+      "steps": 800,
+      "substeps": 262
+     }
+    ]
+   ],
+   "gpu_free_mib_at_start": 31449.0,
+   "gpu_lock": {
+    "acquisitions": 30,
+    "held_s": 2284.6913265038747,
+    "lock": "/mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock",
+    "mode": "blocking flock per forward evaluation",
+    "samples": [
+     {
+      "compute_apps": [
+       "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1778327, 4438, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "1819804, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+      ],
+      "gpus": [
+       "0, NVIDIA GeForce RTX 5090, 1158, 32607, 0, 570.211.01",
+       "1, NVIDIA GeForce RTX 5090, 5720, 32607, 99, 570.211.01"
+      ],
+      "own_pid": 1943598,
+      "utc": "2026-11-11T23:56:48+00:00"
+     },
+     {
+      "compute_apps": [
+       "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1778327, 4438, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "1819804, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+      ],
+      "gpus": [
+       "0, NVIDIA GeForce RTX 5090, 1158, 32607, 0, 570.211.01",
+       "1, NVIDIA GeForce RTX 5090, 5720, 32607, 99, 570.211.01"
+      ],
+      "own_pid": 1943598,
+      "utc": "2026-11-11T23:56:49+00:00"
+     },
+     {
+      "compute_apps": [
+       "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1943598, 638, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1778327, 4438, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "1819804, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+      ],
+      "gpus": [
+       "0, NVIDIA GeForce RTX 5090, 1802, 32607, 100, 570.211.01",
+       "1, NVIDIA GeForce RTX 5090, 5720, 32607, 99, 570.211.01"
+      ],
+      "own_pid": 1943598,
+      "utc": "2026-11-11T23:57:01+00:00"
+     },
+     {
+      "compute_apps": [
+       "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1943598, 638, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1778327, 4438, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "1819804, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+      ],
+      "gpus": [
+       "0, NVIDIA GeForce RTX 5090, 1802, 32607, 100, 570.211.01",
+       "1, NVIDIA GeForce RTX 5090, 5720, 32607, 99, 570.211.01"
+      ],
+      "own_pid": 1943598,
+      "utc": "2026-11-11T23:58:24+00:00"
+     },
+     {
+      "compute_apps": [
+       "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1943598, 966, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1778327, 4438, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "1819804, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+      ],
+      "gpus": [
+       "0, NVIDIA GeForce RTX 5090, 2130, 32607, 100, 570.211.01",
+       "1, NVIDIA GeForce RTX 5090, 5720, 32607, 99, 570.211.01"
+      ],
+      "own_pid": 1943598,
+      "utc": "2026-11-12T00:06:24+00:00"
+     },
+     {
+      "compute_apps": [
+       "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "1943598, 1338, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "2903789, 1281, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2903788, 1281, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2903785, 1281, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2903790, 1281, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2903908, 886, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2903905, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2903909, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+      ],
+      "gpus": [
+       "0, NVIDIA GeForce RTX 5090, 2502, 32607, 76, 570.211.01",
+       "1, NVIDIA GeForce RTX 5090, 8840, 32607, 41, 570.211.01"
+      ],
+      "own_pid": 1943598,
+      "utc": "2026-11-12T00:30:49+00:00"
+     }
+    ],
+    "wait_s": 8.045195136219263e-05
+   },
+   "gpu_samples": [
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "1778327, 4438, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "1819804, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1158, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 5720, 32607, 99, 570.211.01"
+     ],
+     "own_pid": 1943598,
+     "utc": "2026-11-11T23:56:48+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "1943598, 1338, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "2911728, 886, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2911729, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2911725, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2914551, 712, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2914553, 712, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2914550, 712, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2914552, 712, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2502, 32607, 66, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 6524, 32607, 65, 570.211.01"
+     ],
+     "own_pid": 1943598,
+     "utc": "2026-11-12T00:34:53+00:00"
+    }
+   ],
+   "kind": "negative_control",
+   "manifest": "/home/ningan/RoboticCuttingSim-rl-rubber-p25/configs/rubber/calibration_synthetic/p2_5_formal_001/manifest.json",
+   "manifest_freeze_sha256": "3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9",
+   "module_sha256": {
+    "batched/rubber_batch.py": "0b5fae8cd1269341f0be2d658cd41c69186f9b222c7a0dfc9174d4c037e86bf5",
+    "batched/rubber_contact_batch.py": "a65ca1549b398d3ed8556ca745479db161576fca207df23cf0deb473d942518f",
+    "batched/rubber_material_batch.py": "9028f28c4be9a30f46edde333ead46b285df56bf085a10e72bf9f549c2eb5bdd",
+    "live_rubber_material.py": "3cfb91e6b3c4b06691b0f133a4dd399a11d28ad5b0d308bf21e8a08808898b43",
+    "rubber_calibration_experiments.py": "42db5383462f704abd044cb201d78bcc4985006fa4462a7b3651209ea1ed3ae5",
+    "rubber_calibration_fit.py": "9be7b4d1752f37dce70a021232cac5834db5273aa8cb22d73f4b956658e14535",
+    "rubber_calibration_synthetic.py": "68c79e45f44d09580726e4f0b08659535f32458616891b9feb9d3c77fc51aa41",
+    "rubber_calibration_v2.py": "410b2bef3043cc103b4394a3fd51b928a730fc05cbe929b8bc336e72033d94fd",
+    "rubber_contact.py": "0a5d4a59f1ca624dc1d151d4a5d683575d2a5e9c56063417cca0fcb58540245d",
+    "tlmpm_rubber_contact_v1.py": "f92a825ba075d33e231103b33918c1575b06d5d899d084a660f6f0b97909a07a",
+    "tlmpm_rubber_v1.py": "28fc5189e26170db9bb80aa2895143835ec55a0d9db66c77dfba5222defbc8d5",
+    "tlmpm_rubber_visco_v1.py": "bec7e8a1081cba54d801fcd4b13cd835900dcef6665bec152dd66fb529337438"
+   },
+   "objective_evaluations": 29,
+   "protocol_v1_sha256": "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b",
+   "protocol_v2_sha256": "1606457fbe3e569f495d33abc38221d51493cb09612e1981aa63edc9708c01ff",
+   "recipe_promoted": false,
+   "settings": {
+    "bounds": "the u-image of the v1 prior box (mu_eq log [2e5, 3.5e5] Pa, g1 logit(g1 / 0.5) [0.08, 0.2], g2 logit(g2 / (0.5 - g1)) [0.06 / 0.42, 0.15 / 0.30], tau1 log [5, 15] ms, tau2 log [60, 200] ms, mu_table [0.4, 0.6]); the hidden truth lies inside it by construction",
+    "budget_rule": "Budget per fit counted on the run's OWN GPU-lock hold time (run_fit_v2.py takes the blocking flock on rcs_rl_runner/gpu0.lock per forward evaluation and releases it in between so that queued jobs interleave; waiting time is not counted). A new forward population is not started when elapsed + the duration of the previous population would exceed the budget; the remaining stages are then skipped, except that the final stage always runs at least one population (the full residual and Jacobian at the current estimate). When the budget is exhausted the best iterate so far of the final stage IS the fit result and is scored normally against the frozen thresholds: CAL-04..CAL-07 then get PASS or FAIL, never NOT_RUN for budget reasons. The duration of the previous population is carried across stages; the budget can therefore be exceeded by at most the guaranteed final-stage population.",
+    "budget_s": {
+     "formal": 10800,
+     "negative_control": 5400
+    },
+    "cmaes": "OPTIONAL comparison, reported only, run only if it fits the remaining GPU budget; otherwise reported as NOT_RUN (budget).",
+    "deterministic": "default",
+    "deterministic_rule": "Warp 1.17 DeterministicMode.RUN_TO_RUN was tried and is refused at compile time by the frozen Phase 1 kernel tlmpm_v5._particle_contacts (mixed add / max atomics on one array); no cheap deterministic mode exists without editing frozen code, so the default (non-deterministic float atomics) GPU mode is used and the FD step is chosen against the measured noise",
+    "device": "GPU0 only, blocking flock per forward evaluation (not for the whole fit), >= 4 GB free checked after every acquisition; the process keeps its CUDA context and batch memory between evaluations; GPU1 is not used; PID 642659 untouched",
+    "fd_rule": "Measured on the pilot at theta_pilot (v2_repeatability.py, 3 identical envs x 2 runs per fit experiment): rms spread of the weighted residuals 1.8e-7...5.3e-6 for T1 / T2 / R1 / C1 / G1 and 3.9e-4 for F1 (contact); rms FD signal at h = 1e-3: weakest relevant 1.3e-4 (G1 g1 / tau1), F1 tau1 7.4e-4 / tau2 8.2e-4. Rule: h = 1e-2 in u, so that for every (experiment, parameter that affects it) the rms FD residual change is >= 10x the rms GPU spread (F1 tau columns ~19x, every other pair >= 100x).",
+    "fd_step_u": 0.01,
+    "method": "staged bounded TRF: rubber_calibration_fit.fit_staged (code commits 015af80, 96ec658), script scripts/rubber/p2_5/run_fit_v2.py",
+    "stage_rule": "each stage fits its parameters with the others fixed at the current estimate, on its experiments only; the stage result is its best evaluated point; S2 uses visco information from relaxation and the fast tensile test (the cantilever enters in the joint polish, where the estimate is already close; trajectory matching of a ~4-period oscillation from a far start is the suspected cause of the v1 stall); the theta_hat is the best evaluated point of S4 on the whole fit split, its Jacobian (from the same population) gives the covariance",
+    "stages_formal": [
+     {
+      "experiments": [
+       "T1"
+      ],
+      "max_nfev": 8,
+      "name": "S1_elastic",
+      "params": [
+       "mu_eq_pa"
+      ],
+      "starts": 1
+     },
+     {
+      "experiments": [
+       "R1",
+       "T2"
+      ],
+      "max_nfev": 15,
+      "name": "S2_visco",
+      "params": [
+       "g1",
+       "tau1_s",
+       "g2",
+       "tau2_s"
+      ],
+      "start_design": "Latin hypercube over the stage box, numpy default_rng(2513 + stage index 1), lockstep",
+      "starts": 3
+     },
+     {
+      "experiments": [
+       "F1"
+      ],
+      "max_nfev": 8,
+      "name": "S3_friction",
+      "params": [
+       "mu_table"
+      ],
+      "starts": 1
+     },
+     {
+      "experiments": "the whole fit split (T1, T2, R1, C1, G1, F1)",
+      "max_nfev": 6,
+      "name": "S4_joint_polish",
+      "params": [
+       "mu_eq_pa",
+       "g1",
+       "tau1_s",
+       "g2",
+       "tau2_s",
+       "mu_table"
+      ],
+      "starts": 1
+     }
+    ],
+    "stages_negative_control": [
+     {
+      "experiments": [
+       "T2"
+      ],
+      "max_nfev": 8,
+      "name": "S1_elastic",
+      "params": [
+       "mu_eq_pa"
+      ],
+      "starts": 1
+     },
+     {
+      "experiments": [
+       "T2"
+      ],
+      "max_nfev": 15,
+      "name": "S2_visco",
+      "params": [
+       "g1",
+       "tau1_s",
+       "g2",
+       "tau2_s"
+      ],
+      "start_design": "as formal",
+      "starts": 3
+     },
+     {
+      "experiments": [
+       "T2",
+       "C1"
+      ],
+      "max_nfev": 6,
+      "name": "S4_joint_polish",
+      "params": [
+       "mu_eq_pa",
+       "g1",
+       "tau1_s",
+       "g2",
+       "tau2_s",
+       "mu_table"
+      ],
+      "starts": 1
+     }
+    ],
+    "start": "the prior-box centre (geometric mean for mu_eq, tau1, tau2; arithmetic mean for g1, g2, mu_table)",
+    "starts_justification": "S2 is the only stage with several nonlinear parameters before the cantilever enters; 3 starts there (lockstep, cheap tensile / relaxation records). S1 and S3 are one-dimensional and monotone in their data; S4 starts at the staged estimate.",
+    "tolerances": {
+     "ftol": 1e-08,
+     "gtol": 1e-08,
+     "xtol": 0.0001
+    },
+    "x_scale": "jac"
+   },
+   "stages": [
+    {
+     "experiments": [
+      "T2"
+     ],
+     "max_nfev": 8,
+     "name": "S1_elastic",
+     "params": [
+      "mu_eq_pa"
+     ],
+     "starts": 1
+    },
+    {
+     "experiments": [
+      "T2"
+     ],
+     "max_nfev": 15,
+     "name": "S2_visco",
+     "params": [
+      "g1",
+      "tau1_s",
+      "g2",
+      "tau2_s"
+     ],
+     "starts": 3
+    },
+    {
+     "experiments": [
+      "T2",
+      "C1"
+     ],
+     "max_nfev": 6,
+     "name": "S4_joint_polish",
+     "params": [
+      "mu_eq_pa",
+      "g1",
+      "tau1_s",
+      "g2",
+      "tau2_s",
+      "mu_table"
+     ],
+     "starts": 1
+    }
+   ],
+   "start_theta": {
+    "g1": 0.14,
+    "g2": 0.105,
+    "mu_eq_pa": 264575.13110645907,
+    "mu_table": 0.5,
+    "tau1_s": 0.008660254037844387,
+    "tau2_s": 0.10954451150103323
+   },
+   "tree": {
+    "branch": "claude/rl-rubber-p25",
+    "clean": true,
+    "commit": "ab4faf7799ff567a2c4a1d0b8ae83778ac7cbfea"
+   },
+   "utc_end": "2026-11-12T00:34:53+00:00",
+   "utc_start": "2026-11-11T23:56:48+00:00",
+   "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+   "wall_s": 2284.7196535869734,
+   "warp_deterministic": "0"
+  }
+ },
+ "recipe_promoted": false,
+ "resolution": {
+  "cfl": 0.5,
+  "label": "RESOLUTION_SPECIFIC",
+  "n_t": 4,
+  "resolution_profile": "rubber_ref_v1",
+  "statement": "theta_hat is specific to this fit-model resolution; rubber_ref_v1 (n_t 4) carries the measured wide-strip sag bias Q1w +0.62 % (+0.50 ... +0.78 %; known_limitation rubber_phys_11_v5_q1w_gci_2.16pct); never carry theta_hat to n_t 3 or 6 without the bias shift (K2 review, Q1w condition 4)"
+ },
+ "s2_reduced_chi2": 1.31370786254235,
+ "schema": "rcs_rubber_fit_receipt_v1",
+ "settings": {
+  "bounds": "prior box (u)",
+  "budget_hit": false,
+  "budget_s": 5400.0,
+  "stages": [
+   {
+    "experiments": [
+     "T2"
+    ],
+    "name": "S1_elastic",
+    "params": [
+     "mu_eq_pa"
+    ]
+   },
+   {
+    "experiments": [
+     "T2"
+    ],
+    "name": "S2_visco",
+    "params": [
+     "g1",
+     "tau1_s",
+     "g2",
+     "tau2_s"
+    ]
+   },
+   {
+    "experiments": [
+     "T2",
+     "C1"
+    ],
+    "name": "S4_joint_polish",
+    "params": [
+     "mu_eq_pa",
+     "g1",
+     "tau1_s",
+     "g2",
+     "tau2_s",
+     "mu_table"
+    ]
+   }
+  ],
+  "x_scale": "jac"
+ },
+ "sigma_hat": {
+  "g1": 0.006204258036350599,
+  "g2": 0.006224265614822822,
+  "mu_eq_pa": 710.8324457325574,
+  "mu_table": Infinity,
+  "tau1_s": 0.0005648918908070869,
+  "tau2_s": 0.008807945936133117
+ },
+ "stages": [
+  {
+   "best_cost": 775.3018729351235,
+   "best_start": 0,
+   "budget_clock_end_s": 95.95790303498507,
+   "budget_hit": false,
+   "experiments": [
+    "T2"
+   ],
+   "n_residuals": 113,
+   "name": "S1_elastic",
+   "params": [
+    "mu_eq_pa"
+   ],
+   "starts": [
+    {
+     "history": [
+      {
+       "chi2_reduced": 324.52625095450514,
+       "cost": 18173.47005345229,
+       "theta": {
+        "g1": 0.14000000000000004,
+        "g2": 0.10500000000000002,
+        "mu_eq_pa": 264575.1311064589,
+        "mu_table": 0.5,
+        "tau1_s": 0.008660254037844387,
+        "tau2_s": 0.10954451150103321
+       },
+       "u": [
+        12.485880539497884
+       ]
+      },
+      {
+       "chi2_reduced": 106.54995165539883,
+       "cost": 5966.797292702335,
+       "theta": {
+        "g1": 0.14000000000000004,
+        "g2": 0.10500000000000002,
+        "mu_eq_pa": 298618.98490120185,
+        "mu_table": 0.5,
+        "tau1_s": 0.008660254037844387,
+        "tau2_s": 0.10954451150103321
+       },
+       "u": [
+        12.60692374177544
+       ]
+      },
+      {
+       "chi2_reduced": 46.47939051222032,
+       "cost": 2602.845868684338,
+       "theta": {
+        "g1": 0.14000000000000004,
+        "g2": 0.10500000000000002,
+        "mu_eq_pa": 316462.4731340195,
+        "mu_table": 0.5,
+        "tau1_s": 0.008660254037844387,
+        "tau2_s": 0.10954451150103321
+       },
+       "u": [
+        12.664959945239655
+       ]
+      },
+      {
+       "chi2_reduced": 30.64188808460648,
+       "cost": 1715.945732737963,
+       "theta": {
+        "g1": 0.14000000000000004,
+        "g2": 0.10500000000000002,
+        "mu_eq_pa": 324987.5756056012,
+        "mu_table": 0.5,
+        "tau1_s": 0.008660254037844387,
+        "tau2_s": 0.10954451150103321
+       },
+       "u": [
+        12.691542231675289
+       ]
+      },
+      {
+       "chi2_reduced": 19.973672202003247,
+       "cost": 1118.5256433121817,
+       "theta": {
+        "g1": 0.14000000000000004,
+        "g2": 0.10500000000000002,
+        "mu_eq_pa": 331503.3030756356,
+        "mu_table": 0.5,
+        "tau1_s": 0.008660254037844387,
+        "tau2_s": 0.10954451150103321
+       },
+       "u": [
+        12.71139305258748
+       ]
+      },
+      {
+       "chi2_reduced": 15.209295976240975,
+       "cost": 851.7205746694946,
+       "theta": {
+        "g1": 0.14000000000000004,
+        "g2": 0.10500000000000002,
+        "mu_eq_pa": 336363.4016120723,
+        "mu_table": 0.5,
+        "tau1_s": 0.008660254037844387,
+        "tau2_s": 0.10954451150103321
+       },
+       "u": [
+        12.725947406905783
+       ]
+      },
+      {
+       "chi2_reduced": 13.997870940095016,
+       "cost": 783.8807726453209,
+       "theta": {
+        "g1": 0.14000000000000004,
+        "g2": 0.10500000000000002,
+        "mu_eq_pa": 339234.98871250416,
+        "mu_table": 0.5,
+        "tau1_s": 0.008660254037844387,
+        "tau2_s": 0.10954451150103321
+       },
+       "u": [
+        12.734448328265668
+       ]
+      },
+      {
+       "chi2_reduced": 13.84467630241292,
+       "cost": 775.3018729351235,
+       "theta": {
+        "g1": 0.14000000000000004,
+        "g2": 0.10500000000000002,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.008660254037844387,
+        "tau2_s": 0.10954451150103321
+       },
+       "u": [
+        12.738059580812044
+       ]
+      }
+     ],
+     "message": "The maximum number of function evaluations is exceeded.",
+     "nfev": 8,
+     "start": 0,
+     "status": 0,
+     "u0": [
+      12.485880539497884
+     ]
+    }
+   ],
+   "theta": {
+    "g1": 0.14000000000000004,
+    "g2": 0.10500000000000002,
+    "mu_eq_pa": 340462.2666007528,
+    "mu_table": 0.5,
+    "tau1_s": 0.008660254037844387,
+    "tau2_s": 0.10954451150103321
+   },
+   "wall_s": 95.93012220703531
+  },
+  {
+   "best_cost": 48.6277029614235,
+   "best_start": 0,
+   "budget_clock_end_s": 815.2628444610164,
+   "budget_hit": false,
+   "experiments": [
+    "T2"
+   ],
+   "n_residuals": 113,
+   "name": "S2_visco",
+   "params": [
+    "g1",
+    "tau1_s",
+    "g2",
+    "tau2_s"
+   ],
+   "starts": [
+    {
+     "history": [
+      {
+       "chi2_reduced": 31.902288977876452,
+       "cost": 1738.6747492942666,
+       "theta": {
+        "g1": 0.11830828482342494,
+        "g2": 0.08942858192781332,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.0051392509947912595,
+        "tau2_s": 0.09224315226911699
+       },
+       "u": [
+        -1.171319453598396,
+        -5.270847930991111,
+        -1.184214198298696,
+        -2.3833272289617673
+       ]
+      },
+      {
+       "chi2_reduced": 18.596629402237983,
+       "cost": 1013.5163024219702,
+       "theta": {
+        "g1": 0.10977094131618771,
+        "g2": 0.11443379614266327,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.006891929758017334,
+        "tau2_s": 0.06124054192759056
+       },
+       "u": [
+        -1.268338053658827,
+        -4.977404152182475,
+        -0.8796623319134449,
+        -2.792945858989637
+       ]
+      },
+      {
+       "chi2_reduced": 11.182399202888204,
+       "cost": 609.4407565574071,
+       "theta": {
+        "g1": 0.11799374308563589,
+        "g2": 0.1224120071022041,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.007577840897131188,
+        "tau2_s": 0.061299637188165716
+       },
+       "u": [
+        -1.174805389467604,
+        -4.882526961970189,
+        -0.7517273718930969,
+        -2.791981354684473
+       ]
+      },
+      {
+       "chi2_reduced": 6.287191380581527,
+       "cost": 342.6519302416932,
+       "theta": {
+        "g1": 0.12217247841010855,
+        "g2": 0.12947642189268466,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01019607888002273,
+        "tau2_s": 0.060849167325947105
+       },
+       "u": [
+        -1.1290039956174551,
+        -4.5857520561287615,
+        -0.6513446753212546,
+        -2.7993571436858256
+       ]
+      },
+      {
+       "chi2_reduced": 3.706337873241566,
+       "cost": 201.99541409166537,
+       "theta": {
+        "g1": 0.13611232152395472,
+        "g2": 0.12598724782566698,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.012176411371766113,
+        "tau2_s": 0.06000735881043973
+       },
+       "u": [
+        -0.9833648059701068,
+        -4.4082546929731,
+        -0.6356715334264114,
+        -2.813288077439883
+       ]
+      },
+      {
+       "chi2_reduced": 2.468928378842831,
+       "cost": 134.55659664693428,
+       "theta": {
+        "g1": 0.15052240378347345,
+        "g2": 0.11862727151897991,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01322549036837714,
+        "tau2_s": 0.060001086522552455
+       },
+       "u": [
+        -0.8423275217757684,
+        -4.325609223030877,
+        -0.6657831499982187,
+        -2.8133926082147895
+       ]
+      },
+      {
+       "chi2_reduced": 1.541295592812694,
+       "cost": 84.00060980829181,
+       "theta": {
+        "g1": 0.16546148726844503,
+        "g2": 0.1111970662813282,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.013455703365164186,
+        "tau2_s": 0.06000026135466198
+       },
+       "u": [
+        -0.7040135457517067,
+        -4.308352220795056,
+        -0.6973977513398489,
+        -2.8134063608584903
+       ]
+      },
+      {
+       "chi2_reduced": 1.1076150411510353,
+       "cost": 60.36501974273142,
+       "theta": {
+        "g1": 0.17622858220929036,
+        "g2": 0.10599511545992694,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.013362502196336602,
+        "tau2_s": 0.06000007071623297
+       },
+       "u": [
+        -0.608255851235292,
+        -4.315302838265292,
+        -0.7200753873700826,
+        -2.813409538156848
+       ]
+      },
+      {
+       "chi2_reduced": 0.9506657650190689,
+       "cost": 51.81128419353925,
+       "theta": {
+        "g1": 0.1865069378077189,
+        "g2": 0.09660577586949844,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014478638589787181,
+        "tau2_s": 0.06000003931930524
+       },
+       "u": [
+        -0.5193087912265832,
+        -4.23508091648705,
+        -0.8087392696881681,
+        -2.813410061438497
+       ]
+      },
+      {
+       "chi2_reduced": 0.9102213324821792,
+       "cost": 49.60706262027877,
+       "theta": {
+        "g1": 0.19003765189970268,
+        "g2": 0.09441726544472735,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014388960909043664,
+        "tau2_s": 0.060000014693445194
+       },
+       "u": [
+        -0.4892286119406319,
+        -4.241293969929568,
+        -0.8254461348341978,
+        -2.813410471869313
+       ]
+      },
+      {
+       "chi2_reduced": 0.8934851113905578,
+       "cost": 48.694938570785396,
+       "theta": {
+        "g1": 0.1941945803240237,
+        "g2": 0.09024027119750913,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01486630043674305,
+        "tau2_s": 0.06000000988396395
+       },
+       "u": [
+        -0.4540883685164142,
+        -4.2086583432274525,
+        -0.8707873839447561,
+        -2.8134105520273174
+       ]
+      },
+      {
+       "chi2_reduced": 0.8922959149163537,
+       "cost": 48.63012736294128,
+       "theta": {
+        "g1": 0.19541507162261973,
+        "g2": 0.08895891561603811,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01498902657294974,
+        "tau2_s": 0.060000005734983056
+       },
+       "u": [
+        -0.4438240904021276,
+        -4.200436907405192,
+        -0.8853708437787278,
+        -2.81341062117699
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923026634298465,
+       "cost": 48.630495156926635,
+       "theta": {
+        "g1": 0.195317891647152,
+        "g2": 0.08906398485071194,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014975697783375862,
+        "tau2_s": 0.060000000483627754
+       },
+       "u": [
+        -0.44464052059002734,
+        -4.201326539513564,
+        -0.8841538539405218,
+        -2.813410708699574
+       ]
+      },
+      {
+       "chi2_reduced": 0.8922514304848349,
+       "cost": 48.6277029614235,
+       "theta": {
+        "g1": 0.19539249267733183,
+        "g2": 0.08899136204860573,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014983505831121423,
+        "tau2_s": 0.06000000499114685
+       },
+       "u": [
+        -0.4440137680624688,
+        -4.200805294154521,
+        -0.8849604121584718,
+        -2.813410633574259
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923108343410392,
+       "cost": 48.630940471586634,
+       "theta": {
+        "g1": 0.19535479981658488,
+        "g2": 0.08902170465636601,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014980867121156979,
+        "tau2_s": 0.06000000013393803
+       },
+       "u": [
+        -0.4443304298444714,
+        -4.200981417310875,
+        -0.8846535979519206,
+        -2.813410714527736
+       ]
+      }
+     ],
+     "message": "`xtol` termination condition is satisfied.",
+     "nfev": 15,
+     "start": 0,
+     "status": 3,
+     "u0": [
+      -1.171319453598396,
+      -5.270847930991111,
+      -1.184214198298696,
+      -2.3833272289617673
+     ]
+    },
+    {
+     "history": [
+      {
+       "chi2_reduced": 27.31626562352954,
+       "cost": 1488.7364764823599,
+       "theta": {
+        "g1": 0.1586171755142902,
+        "g2": 0.056314977045264156,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.011369350610516266,
+        "tau2_s": 0.1496853786463658
+       },
+       "u": [
+        -0.7665109021523945,
+        -4.4768340871413415,
+        -1.6217666912447233,
+        -1.899219663359641
+       ]
+      },
+      {
+       "chi2_reduced": 15.194378425256845,
+       "cost": 828.0936241764981,
+       "theta": {
+        "g1": 0.16028033553263432,
+        "g2": 0.06923736675274912,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.013427963575717084,
+        "tau2_s": 0.08122332670945723
+       },
+       "u": [
+        -0.7511963820560129,
+        -4.310415912430056,
+        -1.3626659544535857,
+        -2.510552798322984
+       ]
+      },
+      {
+       "chi2_reduced": 8.218913195360964,
+       "cost": 447.93076914717255,
+       "theta": {
+        "g1": 0.16240292644015236,
+        "g2": 0.0805174617133214,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014300824412436885,
+        "tau2_s": 0.07589034952001568
+       },
+       "u": [
+        -0.7317726468019539,
+        -4.2474380921586805,
+        -1.1609117340519952,
+        -2.578465749963327
+       ]
+      },
+      {
+       "chi2_reduced": 4.763718793943627,
+       "cost": 259.6226742699277,
+       "theta": {
+        "g1": 0.1636904935620407,
+        "g2": 0.09002498386280902,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014745878353790045,
+        "tau2_s": 0.06219663131448245
+       },
+       "u": [
+        -0.7200544757019054,
+        -4.216791668886516,
+        -1.0064002331420367,
+        -2.7774544396348015
+       ]
+      },
+      {
+       "chi2_reduced": 2.841042265485981,
+       "cost": 154.83680346898598,
+       "theta": {
+        "g1": 0.16542680070127957,
+        "g2": 0.09768321931467577,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01485512581035838,
+        "tau2_s": 0.06269324800997934
+       },
+       "u": [
+        -0.7043268824702088,
+        -4.209410300877016,
+        -0.8858660268490022,
+        -2.769501524383108
+       ]
+      },
+      {
+       "chi2_reduced": 1.8660107971222268,
+       "cost": 101.69758844316137,
+       "theta": {
+        "g1": 0.17043742913065524,
+        "g2": 0.09976609750714724,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01490948711300886,
+        "tau2_s": 0.060073675051141515
+       },
+       "u": [
+        -0.6593979875340299,
+        -4.205757549656376,
+        -0.8343655974766032,
+        -2.812183552515152
+       ]
+      },
+      {
+       "chi2_reduced": 1.2559030191560465,
+       "cost": 68.44671454400454,
+       "theta": {
+        "g1": 0.1776895167814093,
+        "g2": 0.09931980028954573,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014885893119432508,
+        "tau2_s": 0.06001478429077531
+       },
+       "u": [
+        -0.5954775750619293,
+        -4.207341285008894,
+        -0.8087850401399309,
+        -2.8131643422664694
+       ]
+      },
+      {
+       "chi2_reduced": 0.9897868169685728,
+       "cost": 53.94338152478722,
+       "theta": {
+        "g1": 0.18312612539850825,
+        "g2": 0.0997670142799046,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.013883275072458321,
+        "tau2_s": 0.060003001900081857
+       },
+       "u": [
+        -0.5483286975123509,
+        -4.277070395507786,
+        -0.7775520657612478,
+        -2.8133606863435476
+       ]
+      },
+      {
+       "chi2_reduced": 0.9249796844516033,
+       "cost": 50.411392802612376,
+       "theta": {
+        "g1": 0.18807817598501902,
+        "g2": 0.09627119698104733,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014192939297991194,
+        "tau2_s": 0.0600009282914728
+       },
+       "u": [
+        -0.5058948862542323,
+        -4.255010670571845,
+        -0.8064904534402645,
+        -2.8133952453551725
+       ]
+      },
+      {
+       "chi2_reduced": 0.896929932750159,
+       "cost": 48.882681334883664,
+       "theta": {
+        "g1": 0.19283932690456806,
+        "g2": 0.09160101493420665,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01472816456567122,
+        "tau2_s": 0.06000054661949132
+       },
+       "u": [
+        -0.46551363671452584,
+        -4.2179936614533275,
+        -0.8557953555602908,
+        -2.81340160647668
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923396567560861,
+       "cost": 48.63251129320669,
+       "theta": {
+        "g1": 0.19515920480905002,
+        "g2": 0.08923724118485354,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014961204183161497,
+        "tau2_s": 0.06000036701570253
+       },
+       "u": [
+        -0.4459739969661218,
+        -4.202294816148398,
+        -0.8821428686287376,
+        -2.813404599850369
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923276532401836,
+       "cost": 48.63185710159001,
+       "theta": {
+        "g1": 0.19537756777134344,
+        "g2": 0.08899425673933162,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014984268604753171,
+        "tau2_s": 0.06000007287293901
+       },
+       "u": [
+        -0.44413915118466685,
+        -4.200754387896297,
+        -0.8849836779530206,
+        -2.8134095022117904
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923035472722537,
+       "cost": 48.63054332633783,
+       "theta": {
+        "g1": 0.19530519888496892,
+        "g2": 0.08907791038003687,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014974157012459643,
+        "tau2_s": 0.0600000050083408
+       },
+       "u": [
+        -0.4447471660159671,
+        -4.201429429556143,
+        -0.883991794569192,
+        -2.813410633287693
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923157736772335,
+       "cost": 48.63120966540922,
+       "theta": {
+        "g1": 0.19533803257046495,
+        "g2": 0.08903931422134093,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01497876009433891,
+        "tau2_s": 0.06000000015790414
+       },
+       "u": [
+        -0.4444713003276851,
+        -4.201122075057141,
+        -0.8844518990332803,
+        -2.8134107141283007
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923265375709746,
+       "cost": 48.631796297618116,
+       "theta": {
+        "g1": 0.19531064359857314,
+        "g2": 0.08906792289658885,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014975262025092266,
+        "tau2_s": 0.060000004888088904
+       },
+       "u": [
+        -0.44470141886804404,
+        -4.201355637631716,
+        -0.8841249901086305,
+        -2.8134106352918913
+       ]
+      }
+     ],
+     "message": "`xtol` termination condition is satisfied.",
+     "nfev": 15,
+     "start": 1,
+     "status": 3,
+     "u0": [
+      -0.7665109021523945,
+      -4.4768340871413415,
+      -1.6217666912447233,
+      -1.899219663359641
+     ]
+    },
+    {
+     "history": [
+      {
+       "chi2_reduced": 11.629309436585771,
+       "cost": 633.7973642939245,
+       "theta": {
+        "g1": 0.08854936766937802,
+        "g2": 0.14691889983407339,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.010075722854214767,
+        "tau2_s": 0.06420701503454426
+       },
+       "u": [
+        -1.5361288196262055,
+        -4.597626426406504,
+        -0.5880804830076263,
+        -2.7456428058047386
+       ]
+      },
+      {
+       "chi2_reduced": 6.79573892221208,
+       "cost": 370.36777126055836,
+       "theta": {
+        "g1": 0.10846802587870552,
+        "g2": 0.13897998242230733,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.012197736968341286,
+        "tau2_s": 0.06092508481766573
+       },
+       "u": [
+        -1.2836117457158567,
+        -4.406504838847395,
+        -0.5972872238283359,
+        -2.798110287306621
+       ]
+      },
+      {
+       "chi2_reduced": 4.696025902490329,
+       "cost": 255.93341168572294,
+       "theta": {
+        "g1": 0.12633557232284845,
+        "g2": 0.12892415923134268,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.013650534358695593,
+        "tau2_s": 0.06018387156718253
+       },
+       "u": [
+        -1.0844165033132842,
+        -4.293976610960212,
+        -0.6409732008803471,
+        -2.8103508767291765
+       ]
+      },
+      {
+       "chi2_reduced": 3.0761872691706995,
+       "cost": 167.65220616980312,
+       "theta": {
+        "g1": 0.1441397912308975,
+        "g2": 0.11984788093021628,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014053750563185948,
+        "tau2_s": 0.06003781082537116
+       },
+       "u": [
+        -0.903754380621334,
+        -4.264865974826592,
+        -0.6776607605588285,
+        -2.812780734817485
+       ]
+      },
+      {
+       "chi2_reduced": 2.0470918694282214,
+       "cost": 111.56650688383806,
+       "theta": {
+        "g1": 0.15912991252705824,
+        "g2": 0.11179810084528101,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014099811680914369,
+        "tau2_s": 0.06001015745307551
+       },
+       "u": [
+        -0.7617805010142931,
+        -4.261593837650726,
+        -0.7173417327377335,
+        -2.8132414402035293
+       ]
+      },
+      {
+       "chi2_reduced": 1.3748797895621898,
+       "cost": 74.93094853113935,
+       "theta": {
+        "g1": 0.1705323105499909,
+        "g2": 0.10675231163867854,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01382321805174611,
+        "tau2_s": 0.06000255364179497
+       },
+       "u": [
+        -0.6585535063402828,
+        -4.2814056330641,
+        -0.7353833170000627,
+        -2.8133681569691342
+       ]
+      },
+      {
+       "chi2_reduced": 1.044369335211641,
+       "cost": 56.91812876903443,
+       "theta": {
+        "g1": 0.1794609490252534,
+        "g2": 0.10310887846878389,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.013623715347000713,
+        "tau2_s": 0.06000061782063983
+       },
+       "u": [
+        -0.5800464827701945,
+        -4.29594322933674,
+        -0.7460922505984928,
+        -2.8134004198023863
+       ]
+      },
+      {
+       "chi2_reduced": 0.9313963042399601,
+       "cost": 50.761098581077825,
+       "theta": {
+        "g1": 0.18753415845649854,
+        "g2": 0.09611961395728512,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014376757983215633,
+        "tau2_s": 0.060000304970371565
+       },
+       "u": [
+        -0.5105341488885604,
+        -4.242142405291518,
+        -0.8112866352917907,
+        -2.813405633933428
+       ]
+      },
+      {
+       "chi2_reduced": 0.901291311663036,
+       "cost": 49.12037648563546,
+       "theta": {
+        "g1": 0.19177810101864273,
+        "g2": 0.0925432348507204,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014625187430426262,
+        "tau2_s": 0.060000150739982855
+       },
+       "u": [
+        -0.4744809950086251,
+        -4.225010070190696,
+        -0.8461136948376159,
+        -2.8134082044301447
+       ]
+      },
+      {
+       "chi2_reduced": 0.8936847283934608,
+       "cost": 48.705817697443614,
+       "theta": {
+        "g1": 0.19407466391818473,
+        "g2": 0.09034511291190898,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01483785854431185,
+        "tau2_s": 0.06000007603765551
+       },
+       "u": [
+        -0.4550981218677436,
+        -4.21057335459952,
+        -0.8696961806109259,
+        -2.813409449466581
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923353413129262,
+       "cost": 48.63227610155448,
+       "theta": {
+        "g1": 0.19532968590636882,
+        "g2": 0.08904517480358665,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014980618771056237,
+        "tau2_s": 0.06000004054226011
+       },
+       "u": [
+        -0.4445414266750377,
+        -4.200997995267098,
+        -0.8843976107495204,
+        -2.8134100410559295
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923073144702913,
+       "cost": 48.63074863863088,
+       "theta": {
+        "g1": 0.1953081850090198,
+        "g2": 0.08907359471958012,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014974559523099947,
+        "tau2_s": 0.060000000309665756
+       },
+       "u": [
+        -0.4447220761807107,
+        -4.201402549563483,
+        -0.8840464100772046,
+        -2.8134107115989404
+       ]
+      },
+      {
+       "chi2_reduced": 0.8923157398140172,
+       "cost": 48.63120781986394,
+       "theta": {
+        "g1": 0.19533447030157466,
+        "g2": 0.08904335348483865,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.01497834260099678,
+        "tau2_s": 0.06000000000726661
+       },
+       "u": [
+        -0.4445012293873454,
+        -4.201149947802139,
+        -0.884404322942875,
+        -2.813410716638926
+       ]
+      }
+     ],
+     "message": "`xtol` termination condition is satisfied.",
+     "nfev": 13,
+     "start": 2,
+     "status": 3,
+     "u0": [
+      -1.5361288196262055,
+      -4.597626426406504,
+      -0.5880804830076263,
+      -2.7456428058047386
+     ]
+    }
+   ],
+   "theta": {
+    "g1": 0.19539249267733183,
+    "g2": 0.08899136204860573,
+    "mu_eq_pa": 340462.2666007528,
+    "mu_table": 0.5,
+    "tau1_s": 0.014983505831121423,
+    "tau2_s": 0.06000000499114685
+   },
+   "wall_s": 719.3393395320745
+  },
+  {
+   "best_cost": 322.5152802541469,
+   "best_start": 0,
+   "budget_clock_end_s": 2284.6913265038747,
+   "budget_hit": false,
+   "experiments": [
+    "T2",
+    "C1"
+   ],
+   "n_residuals": 497,
+   "name": "S4_joint_polish",
+   "params": [
+    "mu_eq_pa",
+    "g1",
+    "tau1_s",
+    "g2",
+    "tau2_s",
+    "mu_table"
+   ],
+   "starts": [
+    {
+     "history": [
+      {
+       "chi2_reduced": 3.4992521594470074,
+       "cost": 859.0664051442403,
+       "theta": {
+        "g1": 0.19539249267733183,
+        "g2": 0.08899136204860573,
+        "mu_eq_pa": 340462.2666007528,
+        "mu_table": 0.5,
+        "tau1_s": 0.014983505831121423,
+        "tau2_s": 0.06000000499114685
+       },
+       "u": [
+        12.738059580812044,
+        -0.4440137680624686,
+        -4.200805294154521,
+        -0.8849604121584717,
+        -2.813410633574259,
+        0.5
+       ]
+      },
+      {
+       "chi2_reduced": 2.48689494774186,
+       "cost": 610.5327096706267,
+       "theta": {
+        "g1": 0.19482207483642572,
+        "g2": 0.10450016140689765,
+        "mu_eq_pa": 331774.87763619836,
+        "mu_table": 0.5,
+        "tau1_s": 0.01312663494352762,
+        "tau2_s": 0.12191455014073027
+       },
+       "u": [
+        12.712211938489764,
+        -0.4488082624067811,
+        -4.333111911136376,
+        -0.652511840257381,
+        -2.1044348883321744,
+        0.5
+       ]
+      },
+      {
+       "chi2_reduced": 2.1695015027540556,
+       "cost": 532.6126189261206,
+       "theta": {
+        "g1": 0.19487213092801792,
+        "g2": 0.10449270217562076,
+        "mu_eq_pa": 329046.24715944764,
+        "mu_table": 0.5,
+        "tau1_s": 0.013135758520884555,
+        "tau2_s": 0.11990087309168308
+       },
+       "u": [
+        12.703953588742332,
+        -0.44838732696630834,
+        -4.332417109443123,
+        -0.652370935392973,
+        -2.1210899351429617,
+        0.5
+       ]
+      },
+      {
+       "chi2_reduced": 1.4145849593463284,
+       "cost": 347.28060751952364,
+       "theta": {
+        "g1": 0.1962452149101621,
+        "g2": 0.11579338424502983,
+        "mu_eq_pa": 324563.01023193565,
+        "mu_table": 0.5,
+        "tau1_s": 0.013659338221127125,
+        "tau2_s": 0.10210825162320973
+       },
+       "u": [
+        12.690234972646092,
+        -0.4368557741709782,
+        -4.293331872489846,
+        -0.4844291944598049,
+        -2.2817217380447827,
+        0.5
+       ]
+      },
+      {
+       "chi2_reduced": 1.3342491514882773,
+       "cost": 327.55816669037205,
+       "theta": {
+        "g1": 0.1963346402760256,
+        "g2": 0.11786555813797574,
+        "mu_eq_pa": 325115.32565568486,
+        "mu_table": 0.5,
+        "tau1_s": 0.013717303362411563,
+        "tau2_s": 0.10401152886205328
+       },
+       "u": [
+        12.69193524653949,
+        -0.4361057529945639,
+        -4.28909722393166,
+        -0.455125121375793,
+        -2.263253531541844,
+        0.5
+       ]
+      },
+      {
+       "chi2_reduced": 1.31370786254235,
+       "cost": 322.5152802541469,
+       "theta": {
+        "g1": 0.19634150822144525,
+        "g2": 0.11801002689664962,
+        "mu_eq_pa": 324386.4509339838,
+        "mu_table": 0.5,
+        "tau1_s": 0.013721084287770089,
+        "tau2_s": 0.10398645845681345
+       },
+       "u": [
+        12.689690833809792,
+        -0.4360481557150902,
+        -4.28882163008623,
+        -0.4530853171500603,
+        -2.263494595464475,
+        0.5
+       ]
+      }
+     ],
+     "message": "The maximum number of function evaluations is exceeded.",
+     "nfev": 6,
+     "start": 0,
+     "status": 0,
+     "u0": [
+      12.738059580812044,
+      -0.4440137680624686,
+      -4.200805294154521,
+      -0.8849604121584717,
+      -2.813410633574259,
+      0.5
+     ]
+    }
+   ],
+   "theta": {
+    "g1": 0.19634150822144525,
+    "g2": 0.11801002689664962,
+    "mu_eq_pa": 324386.4509339838,
+    "mu_table": 0.5,
+    "tau1_s": 0.013721084287770089,
+    "tau2_s": 0.10398645845681345
+   },
+   "wall_s": 1469.4341043489985
+  }
+ ],
+ "starts": [
+  {
+   "budget_exhausted": false,
+   "chi2": 645.0305605082938,
+   "chi2_reduced": 1.31370786254235,
+   "converged_xtol": false,
+   "cost": 322.5152802541469,
+   "message": "The maximum number of function evaluations is exceeded.",
+   "n_residuals": 497,
+   "nfev": 6,
+   "start": 0,
+   "status": 0,
+   "theta": {
+    "g1": 0.19634150822144525,
+    "g2": 0.11801002689664962,
+    "mu_eq_pa": 324386.4509339838,
+    "mu_table": 0.5,
+    "tau1_s": 0.013721084287770089,
+    "tau2_s": 0.10398645845681345
+   },
+   "theta0": {
+    "g1": 0.19539249267733183,
+    "g2": 0.08899136204860573,
+    "mu_eq_pa": 340462.2666007528,
+    "mu_table": 0.5,
+    "tau1_s": 0.014983505831121423,
+    "tau2_s": 0.06000000499114685
+   },
+   "u": [
+    12.689690833809792,
+    -0.4360481557150902,
+    -4.28882163008623,
+    -0.4530853171500603,
+    -2.263494595464475,
+    0.5
+   ],
+   "wall_s": 2284.719641108997
+  }
+ ],
+ "theta_hat": {
+  "g1": 0.19634150822144525,
+  "g2": 0.11801002689664962,
+  "mu_eq_pa": 324386.4509339838,
+  "mu_table": 0.5,
+  "tau1_s": 0.013721084287770089,
+  "tau2_s": 0.10398645845681345
+ },
+ "u_hat": [
+  12.689690833809792,
+  -0.4360481557150902,
+  -4.28882163008623,
+  -0.4530853171500603,
+  -2.263494595464475,
+  0.5
+ ],
+ "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC"
+}

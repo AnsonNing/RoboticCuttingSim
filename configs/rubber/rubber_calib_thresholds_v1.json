@@ -1,0 +1,319 @@
+{
+ "cal04_limit_chi2_reduced": 1.9097368859110446,
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "chi2_pilot_n_residuals": 2380,
+ "chi2_pilot_per_experiment_mean_square": {
+  "C1": 1.056043246602641,
+  "F1": 1.6637914059168328,
+  "G1": 1.1171210752127527,
+  "R1": 1.4701565525776352,
+  "T1": 1.0534697712929981,
+  "T2": 1.7721275674653196
+ },
+ "chi2_pilot_reduced": 1.2731579239406965,
+ "components": {
+  "C2": {
+   "M4": {
+    "a_noise_floor": 0.014064454044147044,
+    "b_discretisation_floor": 0.011723545788965901,
+    "binding": "2(a+b)",
+    "floor": 0.01,
+    "tol": 0.05157599966622589
+   },
+   "M5": {
+    "a_noise_floor": 0.08561230370007777,
+    "b_discretisation_floor": 0.16787689194430744,
+    "binding": "floor",
+    "floor": 2.0,
+    "tol": 2.0
+   },
+   "M6": {
+    "a_noise_floor": 0.030339635686435107,
+    "b_discretisation_floor": 0.0012888436738847653,
+    "binding": "2(a+b)",
+    "floor": 0.005,
+    "tol": 0.06325695872063974
+   },
+   "M8": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 2.429626647261401e-07,
+    "binding": "floor",
+    "floor": 0.001,
+    "tol": 0.001
+   },
+   "M9": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 0.001004295645971064,
+    "binding": "floor",
+    "floor": 0.02,
+    "tol": 0.02
+   }
+  },
+  "C3": {
+   "M4": {
+    "a_noise_floor": 0.010071815579212256,
+    "b_discretisation_floor": 0.0014052484557483377,
+    "binding": "2(a+b)",
+    "floor": 0.01,
+    "tol": 0.022954128069921188
+   },
+   "M5": {
+    "a_noise_floor": 0.09292606587218977,
+    "b_discretisation_floor": 0.013624423167546418,
+    "binding": "floor",
+    "floor": 2.0,
+    "tol": 2.0
+   },
+   "M6": {
+    "a_noise_floor": 0.013380391663010915,
+    "b_discretisation_floor": 0.0004508601852575844,
+    "binding": "2(a+b)",
+    "floor": 0.005,
+    "tol": 0.027662503696537
+   },
+   "M8": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 1.7047918731208272e-07,
+    "binding": "floor",
+    "floor": 0.001,
+    "tol": 0.001
+   },
+   "M9": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 0.0002838814864431219,
+    "binding": "floor",
+    "floor": 0.02,
+    "tol": 0.02
+   }
+  },
+  "C4": {
+   "M4": {
+    "a_noise_floor": 0.01230457407337854,
+    "b_discretisation_floor": 0.001817211758803738,
+    "binding": "2(a+b)",
+    "floor": 0.01,
+    "tol": 0.028243571664364555
+   },
+   "M5": {
+    "a_noise_floor": 0.0697950069820652,
+    "b_discretisation_floor": 0.008657861984284754,
+    "binding": "floor",
+    "floor": 2.0,
+    "tol": 2.0
+   },
+   "M6": {
+    "a_noise_floor": 0.014771215693333006,
+    "b_discretisation_floor": 0.0004236804305414732,
+    "binding": "2(a+b)",
+    "floor": 0.005,
+    "tol": 0.03038979224774896
+   },
+   "M8": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 5.338843826667659e-07,
+    "binding": "floor",
+    "floor": 0.001,
+    "tol": 0.001
+   },
+   "M9": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 0.001380129597736678,
+    "binding": "floor",
+    "floor": 0.02,
+    "tol": 0.02
+   }
+  },
+  "F2": {
+   "M7_onset": {
+    "a_noise_floor": 4.006784938695551,
+    "b_discretisation_floor": 0.16879685011828016,
+    "binding": "2(a+b)",
+    "floor": 2.0,
+    "tol": 8.351163577627663
+   },
+   "M7_slip": {
+    "a_noise_floor": 0.016603765771870744,
+    "b_discretisation_floor": 0.009963758624940994,
+    "binding": "2(a+b)",
+    "floor": 0.02,
+    "tol": 0.05313504879362348
+   },
+   "M8": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 1.5007969994116583e-07,
+    "binding": "floor",
+    "floor": 0.001,
+    "tol": 0.001
+   },
+   "M9": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 0.008650313591228868,
+    "binding": "floor",
+    "floor": 0.02,
+    "tol": 0.02
+   }
+  },
+  "T3": {
+   "M1": {
+    "a_noise_floor": 0.012204734147203277,
+    "b_discretisation_floor": 0.0033777474582099357,
+    "binding": "2(a+b)",
+    "floor": 0.005,
+    "tol": 0.031164963210826426
+   },
+   "M2": {
+    "a_noise_floor": 0.023000981631922022,
+    "b_discretisation_floor": 0.00018551592599474196,
+    "binding": "2(a+b)",
+    "floor": 0.01,
+    "tol": 0.04637299511583353
+   },
+   "M8": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 2.158068978314313e-05,
+    "binding": "floor",
+    "floor": 0.001,
+    "tol": 0.001
+   },
+   "M9": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 0.0002986270138294254,
+    "binding": "floor",
+    "floor": 0.02,
+    "tol": 0.02
+   }
+  },
+  "T4": {
+   "M1": {
+    "a_noise_floor": 0.010836345089084593,
+    "b_discretisation_floor": 0.011041233928031559,
+    "binding": "2(a+b)",
+    "floor": 0.005,
+    "tol": 0.0437551580342323
+   },
+   "M2": {
+    "a_noise_floor": 0.021711257240006825,
+    "b_discretisation_floor": 0.016185278275538926,
+    "binding": "2(a+b)",
+    "floor": 0.01,
+    "tol": 0.07579307103109151
+   },
+   "M8": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 0.00021216483012026336,
+    "binding": "floor",
+    "floor": 0.001,
+    "tol": 0.001
+   },
+   "M9": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 0.003007730592978957,
+    "binding": "floor",
+    "floor": 0.02,
+    "tol": 0.02
+   }
+  },
+  "T5": {
+   "M1": {
+    "a_noise_floor": 0.016061330033167814,
+    "b_discretisation_floor": 0.0022456890968948406,
+    "binding": "2(a+b)",
+    "floor": 0.005,
+    "tol": 0.03661403826012531
+   },
+   "M2": {
+    "a_noise_floor": 0.013350798618307035,
+    "b_discretisation_floor": 0.00010360940466663484,
+    "binding": "2(a+b)",
+    "floor": 0.01,
+    "tol": 0.02690881604594734
+   },
+   "M8": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 1.8400322620533848e-05,
+    "binding": "floor",
+    "floor": 0.001,
+    "tol": 0.001
+   },
+   "M9": {
+    "a_noise_floor": 0.0,
+    "b_discretisation_floor": 0.00018067467620234095,
+    "binding": "floor",
+    "floor": 0.02,
+    "tol": 0.02
+   }
+  }
+ },
+ "frozen": "committed before the formal dataset exists; never changed after it",
+ "id": "rubber_calib_thresholds_v1",
+ "pilot": {
+  "dataset_id": "p2_5_pilot_001",
+  "evaluation_commit": "f042d347a0bd46eff9a5aefbdd5e5afb03fa6625",
+  "generator_commit": "54a8f064ac12dad5ea8c328d33d7f925c3b4e6eb",
+  "manifest": "configs/rubber/calibration_synthetic/p2_5_pilot_001/manifest.json",
+  "revealed_utc": "2026-11-11T14:14:21+00:00",
+  "rho_pilot_kg_m3": 1178.9222552321085,
+  "sealed_truth_sha256": "019e844178a6df2c3e53995f056e99d72abf8b250f670d45f6f47714857f89e5",
+  "theta_pilot": {
+   "g1": 0.15050354801426558,
+   "g2": 0.1326730227227276,
+   "mu_eq_pa": 332854.8976816754,
+   "mu_table": 0.49388266340570025,
+   "tau1_s": 0.008305024407173161,
+   "tau2_s": 0.10826100818616516
+  }
+ },
+ "protocol": "rubber_calib_tests_v1",
+ "protocol_sha256": "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b",
+ "recipe_promoted": false,
+ "rule": "tol_mk = max(2 (a_mk + b_mk), floor_m) for every held-out (experiment k, metric m)",
+ "schema": "rcs_rubber_calib_thresholds_v1",
+ "tolerances": {
+  "C2": {
+   "M4": 0.05157599966622589,
+   "M5": 2.0,
+   "M6": 0.06325695872063974,
+   "M8": 0.001,
+   "M9": 0.02
+  },
+  "C3": {
+   "M4": 0.022954128069921188,
+   "M5": 2.0,
+   "M6": 0.027662503696537,
+   "M8": 0.001,
+   "M9": 0.02
+  },
+  "C4": {
+   "M4": 0.028243571664364555,
+   "M5": 2.0,
+   "M6": 0.03038979224774896,
+   "M8": 0.001,
+   "M9": 0.02
+  },
+  "F2": {
+   "M7_onset": 8.351163577627663,
+   "M7_slip": 0.05313504879362348,
+   "M8": 0.001,
+   "M9": 0.02
+  },
+  "T3": {
+   "M1": 0.031164963210826426,
+   "M2": 0.04637299511583353,
+   "M8": 0.001,
+   "M9": 0.02
+  },
+  "T4": {
+   "M1": 0.0437551580342323,
+   "M2": 0.07579307103109151,
+   "M8": 0.001,
+   "M9": 0.02
+  },
+  "T5": {
+   "M1": 0.03661403826012531,
+   "M2": 0.02690881604594734,
+   "M8": 0.001,
+   "M9": 0.02
+  }
+ },
+ "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC"
+}

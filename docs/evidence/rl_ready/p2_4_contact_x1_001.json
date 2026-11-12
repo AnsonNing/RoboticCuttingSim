@@ -2229,5 +2229,10 @@
    "exit 0"
   ]
  },
- "frozen": "v1 contact kernels byte-identical (source hashes pinned in tests/test_rubber_contact_v2.py; four contact_v1_001 jobs rerun byte-identical in x1_v1_identity_002); rubber_contact_tests_v1 and its results unchanged; no Phase 1 module, configs/rl_benchmark/*, scripts/rl_ready/* or frozen rubber module changed"
+ "frozen": "v1 contact kernels byte-identical (source hashes pinned in tests/test_rubber_contact_v2.py; four contact_v1_001 jobs rerun byte-identical in x1_v1_identity_002); rubber_contact_tests_v1 and its results unchanged; no Phase 1 module, configs/rl_benchmark/*, scripts/rl_ready/* or frozen rubber module changed",
+ "review_corrections_k2": {
+  "header": "Additive notes of the K2 combined review fixes (2026-11-11; findings in docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md). No recorded value, verdict or command of this file is changed; no GPU job was re-run for these notes.",
+  "K2-6": "decision.root_cause states that defect 2 'is not continuum physics below mu = 1' (the rigid-flat half-space stability argument). Task X2 withdrew this as unproven: the half-space analysis keeps bilateral contact and does not cover the separating solutions the model produces (ADR 0023 section 22.10, 'Converged in dt, not in dx'; evidence p2_4_contact_x2_001.json). The original text is kept above; read it with this correction.",
+  "K2-5": "RUBBER-CONT-05 d: v1 FAIL; rubber_contact_tests_v2 changed the metric after the v1 FAIL (window-mean balance instead of the per-step one, same 5 %): a post-hoc metric correction; the v1 per-step metric is reported."
+ }
 }

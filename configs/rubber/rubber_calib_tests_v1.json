@@ -1,0 +1,627 @@
+{
+ "schema": "rcs_rubber_protocol_v1",
+ "id": "rubber_calib_tests_v1",
+ "status": "DECLARED_BEFORE_ANY_PILOT_OR_FORMAL_RUN",
+ "date": "2026-11-11",
+ "task": "P2-5 task P5.4 (ADR 0023 \u00a723.2 decision 6; docs/reports/rl_ready/P2_REMAINING_PLAN.md \u00a73, table P5.1-P5.6)",
+ "labels": {
+  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+  "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+  "statement": "Synthetic numerical validation of the calibration interface. The truth is the simulator itself (same model family) at a finer resolution with sensor noise. It is NEVER a calibration: no real rubber data exists on this machine; no recipe is promoted; synthetic manifests can never satisfy the REAL_CALIBRATED gate. Same-family truth cannot reveal model-form error against real rubber; it tests identifiability, the pipeline and generalisation of the declared protocol under discretisation and noise.",
+  "resolution_specific": "Q1w (K2 review condition 4): every fitted theta is RESOLUTION_SPECIFIC to rubber_ref_v1 (n_t 4, CFL 0.5), which carries the measured wide-strip sag bias Q1w +0.62 % (+0.50 ... +0.78 %; known_limitation rubber_phys_11_v5_q1w_gci_2.16pct). The n_t 6 truth is itself +0.21 % for Q1w, so the discretisation floor b_mk captures only about 0.4 % of the n_t 4 bias, not the whole bias. theta_hat is never carried to n_t 3 or 6 without the bias shift; the fit receipt carries the label.",
+  "sealing": "The seal is procedural (K2 review, P2-5 additions): the truth is generated and revealed by separate processes; sealed/ lives under artifacts/ (outside the git worktree, on /mnt/data) with mode 0700 / 0400; every read through rubber_calibration_synthetic.reveal is logged in sealed/read_log.txt; the fit / held-out API refuses sealed paths. The fitting agent runs as the same OS user, so CAL-08 detects order violations, not peeking."
+ },
+ "code": {
+  "modules": [
+   "src/robotic_cutting_sim/rubber_calibration_v2.py",
+   "src/robotic_cutting_sim/rubber_calibration_experiments.py",
+   "src/robotic_cutting_sim/rubber_calibration_fit.py",
+   "src/robotic_cutting_sim/rubber_calibration_synthetic.py"
+  ],
+  "code_commit": "9b138a9 (P5.1-P5.3) + 221c337 (lockstep starts, material dedup, rebound direction, translational check, resolution label, sealed read log); a change to the semantics of a module after this declaration is a protocol v2",
+  "unchanged": "rubber_calibration.py (v1) and the REAL_CALIBRATED block of rubber_material.parse_recipe (byte pins in tests/test_rubber_calibration_v2.py)"
+ },
+ "common": {
+  "model": "neo_hookean_jbar_prony_v1, M = 2 Prony terms on the isochoric part",
+  "bulk_ratio_beta": 20.0,
+  "control_dt_s": 0.001,
+  "step_material": {
+   "mu0_max_pa": 800000.0,
+   "density_min_kg_m3": 1000.0,
+   "note": "mu0_max = mu_eq,max / (1 - G) of the parameter space (4e5 / 0.5); dt from the step rule at the fidelity's CFL; identical for every candidate so that the objective is smooth in theta"
+  },
+  "fidelities": {
+   "fit": {
+    "n_t": 4,
+    "cfl": 0.5,
+    "resolution_profile": "rubber_ref_v1"
+   },
+   "truth": {
+    "n_t": 6,
+    "cfl": 0.25,
+    "resolution_profile": "rubber_ref_v1"
+   }
+  },
+  "options": {
+   "dirichlet": "consistent_mass_projection_v1",
+   "constraint_work": "kick_average_v1",
+   "traction_work": "grid_displacement_v1",
+   "state_precision": "f64_shadow_v1"
+  },
+  "visco_energy": "branch_work_kick_average_v2",
+  "stable_step_guard": 1.0,
+  "contact_law": "grid_node_penalty_coulomb_v3",
+  "contact_law_parameters": "ContactSpec defaults (kappa_n 0.25, kappa_t 0.25, zeta_n 0.5, zeta_t 0.5, zeta_d 1.0) = rubber_contact_tests_v3 common.law_parameters",
+  "contact_envelope": "ENV1 / ENV2 (claude/rl-rubber-p26): contact_envelope_v2 sha256 46f74efa880cf7121e50070a0cf5fb2358e87d7e390f67cd7b608802f9f03b78 (commit dc35bda): law v3 ESTABLISHED sliding / static mu_max 0.8 at n_t 4 (contact_v3_001) and n_t 6 (contact_envelope_v1_001); the fit box mu_table [0.3, 0.8] and the prior box [0.4, 0.6] lie inside both rows (translational scope, K2-1). Law v3 status EXPERIMENTAL_NOT_ACCEPTED until the K2 review (labelled).",
+  "gravity": "solver gravity 0; the body weight M_g g (strip-local -z, g 9.81) is applied as a traction per traction group (particle mass of the model, i.e. the measured density for the fit model, rho* for the truth), ramped with smootherstep so that the loads are quasi-static; its work is part of the traction work",
+  "applied_loads": "tip load, push and top load are absolute inputs in N (multiples of the NOMINAL weight rho_nom 1150 kg/m^3 x V_nominal x g where stated), independent of the model's density",
+  "geometry": "every specimen on the particle lattice of both fidelities (spacing dx / 2); the forward model uses the nominal lattice geometry; measured dimensions and mass enter only the density",
+  "devices": "CAL-01 / CAL-02 on the Warp CPU device; pilot, truth generation, fits and the held-out evaluation on GPU0 / GPU1 (RTX 5090) under flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu<N>.lock with >= 4 GB free, labelled SHARED_GPU / EXCLUSIVE_GPU; GPU float atomics make repeated GPU objective calls non-bitwise (byte-wise repeatability is a CPU claim)",
+  "contact_scope_K2_1": "K2 combined review (claude/rl-rubber @60e9119, finding K2-1): law v3 is valid for TRANSLATIONAL sliding only (its patch slip-rate equalisation suppresses rotation about the normal and in-plane bending in slip; label contact_slip_rate_equalised outside that scope). Choice for P2-5: the friction experiments F1 / F2 are scoped to straight-line translational sliding with v3 and the restriction is stated: a free symmetric block (no grip, one contact region = the table plane) pushed by a uniform back-face traction along +x through its symmetry plane, so the motion is pure translation by construction. Law v2 is not used: its only formally scored row is n_t 3 (sliding 0.6), while the fit model is n_t 4 and the truth n_t 6 (v2 NOT_ESTABLISHED there). Scope check (declared, reported in the truth receipts and the held-out predictions): max lateral centroid drift and max change of the y spread of the 9 cross-section centroids <= 1e-4 m (1 video sigma); a row above it is labelled OUTSIDE_TRANSLATIONAL_SCOPE. The fitted mu_table is a translational-sliding friction coefficient of law v3 only; it must not be used for spin, sideways drag or multi-region contact (P2-6 friction stays under the K2-1 fallback). Fit box [0.3, 0.8] and prior box [0.4, 0.6] lie inside the v3 translational envelope at n_t 4 (contact_v3_001) and n_t 6 (contact_envelope_v1_001)."
+ },
+ "parameter_space": {
+  "params": [
+   "mu_eq_pa",
+   "g1",
+   "tau1_s",
+   "g2",
+   "tau2_s",
+   "mu_table"
+  ],
+  "bounds_theta": {
+   "mu_eq_pa": [
+    150000.0,
+    400000.0
+   ],
+   "g1": [
+    0.02,
+    0.4
+   ],
+   "tau1_s": [
+    0.002,
+    0.03
+   ],
+   "tau2_s": [
+    0.03,
+    0.5
+   ],
+   "mu_table": [
+    0.3,
+    0.8
+   ]
+  },
+  "g2_fraction_of_remaining_budget": [
+   0.02,
+   0.98
+  ],
+  "g_total_max": 0.5,
+  "transforms": {
+   "mu_eq_pa": "log",
+   "g1": "logit(g1 / G)",
+   "g2": "logit(g2 / (G - g1)) (stick-breaking, sum g < G < 1)",
+   "tau1_s": "log",
+   "tau2_s": "log",
+   "mu_table": "linear"
+  },
+  "not_fitted": {
+   "density": "measured: specimen mass / measured volume",
+   "beta": "numerical bulk ratio 20"
+  }
+ },
+ "prior_box": {
+  "mu_eq_pa": [
+   200000.0,
+   350000.0
+  ],
+  "g1": [
+   0.08,
+   0.2
+  ],
+  "g2": [
+   0.06,
+   0.15
+  ],
+  "tau1_s": [
+   0.005,
+   0.015
+  ],
+  "tau2_s": [
+   0.06,
+   0.2
+  ],
+  "mu_table": [
+   0.4,
+   0.6
+  ],
+  "density_kg_m3": [
+   1100.0,
+   1200.0
+  ],
+  "draw": "rubber_calibration_synthetic.draw_truth: log-uniform for mu_eq, tau1, tau2; uniform for g1, g2, mu_table, density; numpy default_rng(secret seed), secret seed = 128 bits of os.urandom, written only to <run>/sealed/truth.json"
+ },
+ "measurement": {
+  "dimension_sigma_m": 2e-05,
+  "mass_sigma_kg": 5e-07,
+  "model": "measured dimension = nominal + N(0, sigma); measured mass = rho* V_nominal + N(0, sigma); one draw per specimen"
+ },
+ "sensors": {
+  "load_cell": {
+   "kind": "load_cell",
+   "noise_sigma": 0.15,
+   "resolution": 0.001,
+   "sample_rate_hz": 1000.0,
+   "full_scale": 50.0,
+   "unit": "N"
+  },
+  "crosshead": {
+   "kind": "crosshead",
+   "noise_sigma": 1e-06,
+   "resolution": 1e-06,
+   "sample_rate_hz": 1000.0,
+   "full_scale": 0.1,
+   "unit": "m"
+  },
+  "video": {
+   "kind": "video_markers",
+   "noise_sigma": 0.0001,
+   "resolution": 0.0,
+   "sample_rate_hz": 240.0,
+   "full_scale": 0.0,
+   "unit": "m"
+  },
+  "force_plate": {
+   "kind": "force_plate",
+   "noise_sigma": 0.0003,
+   "resolution": 0.001,
+   "sample_rate_hz": 1000.0,
+   "full_scale": 0.1,
+   "unit": "N"
+  },
+  "model_id": "rubber_calib_sensors_v1",
+  "noise": "Gaussian N(0, noise_sigma) per sample, then quantisation to the resolution; time stamps exact",
+  "transform": "load cell / crosshead / force plate: one sample per control step k = 1..K (the reaction is the control-step mean, the crosshead the step-end position); video: frames f / 240 s, f = 0..floor(T 240), linear interpolation between control-step states; cantilever / sag video = z of the 9 cross-section centroids; friction video = block centroid x (mean of the 9 cross-section centroids)"
+ },
+ "specimens": {
+  "ST4": {
+   "nominal_dimensions_m": {
+    "length": 0.06,
+    "width": 0.012,
+    "thickness": 0.004
+   }
+  },
+  "ST3": {
+   "nominal_dimensions_m": {
+    "length": 0.06,
+    "width": 0.012,
+    "thickness": 0.003
+   }
+  },
+  "SC42": {
+   "nominal_dimensions_m": {
+    "length": 0.042,
+    "width": 0.015,
+    "thickness": 0.004
+   }
+  },
+  "SC42T3": {
+   "nominal_dimensions_m": {
+    "length": 0.042,
+    "width": 0.015,
+    "thickness": 0.003
+   }
+  },
+  "SF": {
+   "nominal_dimensions_m": {
+    "length": 0.03,
+    "width": 0.016,
+    "thickness": 0.004
+   }
+  },
+  "SC51": {
+   "nominal_dimensions_m": {
+    "length": 0.051,
+    "width": 0.015,
+    "thickness": 0.004
+   }
+  }
+ },
+ "experiments": [
+  {
+   "id": "T1",
+   "type": "tensile_load_unload",
+   "split": "fit",
+   "specimen_id": "ST4",
+   "loading": {
+    "strain_rate_1_s": 1.0,
+    "max_stretch": 1.5,
+    "min_stretch": 1.1
+   }
+  },
+  {
+   "id": "T2",
+   "type": "tensile_load_unload",
+   "split": "fit",
+   "specimen_id": "ST4",
+   "loading": {
+    "strain_rate_1_s": 8.0,
+    "max_stretch": 1.5,
+    "min_stretch": 1.1
+   }
+  },
+  {
+   "id": "R1",
+   "type": "stress_relaxation",
+   "split": "fit",
+   "specimen_id": "ST4",
+   "loading": {
+    "ramp_s": 0.02,
+    "hold_stretch": 1.3,
+    "hold_s": 0.3
+   }
+  },
+  {
+   "id": "C1",
+   "type": "cantilever_rebound",
+   "split": "fit",
+   "specimen_id": "SC42",
+   "loading": {
+    "weight_ramp_s": 0.3,
+    "tip_load_n": 0.0135,
+    "release_s": 0.4,
+    "record_after_release_s": 0.4
+   }
+  },
+  {
+   "id": "G1",
+   "type": "gravity_sag",
+   "split": "fit",
+   "specimen_id": "SC42",
+   "loading": {
+    "weight_ramp_s": 0.3,
+    "duration_s": 0.4,
+    "static_window_s": [
+     0.35,
+     0.4
+    ]
+   }
+  },
+  {
+   "id": "F1",
+   "type": "friction_sliding",
+   "split": "fit",
+   "specimen_id": "SF",
+   "loading": {
+    "settle_ramp_s": 0.05,
+    "push_start_s": 0.08,
+    "push_ramp_s": 0.2,
+    "push_max_over_nominal_normal": 0.85,
+    "extra_top_load_over_nominal_weight": 0.0,
+    "duration_s": 0.38
+   }
+  },
+  {
+   "id": "T3",
+   "type": "tensile_load_unload",
+   "split": "heldout",
+   "held_out_axis": "rate (interpolation)",
+   "specimen_id": "ST4",
+   "loading": {
+    "strain_rate_1_s": 3.0,
+    "max_stretch": 1.5,
+    "min_stretch": 1.1
+   }
+  },
+  {
+   "id": "T4",
+   "type": "tensile_load_unload",
+   "split": "heldout",
+   "held_out_axis": "rate (extrapolation)",
+   "specimen_id": "ST4",
+   "loading": {
+    "strain_rate_1_s": 20.0,
+    "max_stretch": 1.5,
+    "min_stretch": 1.1
+   }
+  },
+  {
+   "id": "T5",
+   "type": "tensile_load_unload",
+   "split": "heldout",
+   "held_out_axis": "thickness (3 mm, dx 0.75 mm)",
+   "specimen_id": "ST3",
+   "loading": {
+    "strain_rate_1_s": 3.0,
+    "max_stretch": 1.5,
+    "min_stretch": 1.1
+   }
+  },
+  {
+   "id": "C2",
+   "type": "cantilever_rebound",
+   "split": "heldout",
+   "held_out_axis": "length (51 mm)",
+   "specimen_id": "SC51",
+   "loading": {
+    "weight_ramp_s": 0.3,
+    "tip_load_n": 0.0135,
+    "release_s": 0.4,
+    "record_after_release_s": 0.4
+   }
+  },
+  {
+   "id": "C3",
+   "type": "cantilever_rebound",
+   "split": "heldout",
+   "held_out_axis": "thickness (3 mm, dx 0.75 mm)",
+   "specimen_id": "SC42T3",
+   "loading": {
+    "weight_ramp_s": 0.3,
+    "tip_load_n": 0.0135,
+    "release_s": 0.4,
+    "record_after_release_s": 0.4
+   }
+  },
+  {
+   "id": "C4",
+   "type": "cantilever_rebound",
+   "split": "heldout",
+   "held_out_axis": "initial deformation (2 x tip load)",
+   "specimen_id": "SC42",
+   "loading": {
+    "weight_ramp_s": 0.3,
+    "tip_load_n": 0.027,
+    "release_s": 0.4,
+    "record_after_release_s": 0.4
+   }
+  },
+  {
+   "id": "F2",
+   "type": "friction_sliding",
+   "split": "heldout",
+   "held_out_axis": "normal load (2 x weight: top traction 1 x nominal weight) and push rate",
+   "specimen_id": "SF",
+   "loading": {
+    "settle_ramp_s": 0.05,
+    "push_start_s": 0.08,
+    "push_ramp_s": 0.15,
+    "push_max_over_nominal_normal": 0.85,
+    "extra_top_load_over_nominal_weight": 1.0,
+    "duration_s": 0.33
+   }
+  }
+ ],
+ "experiment_definitions": {
+  "tensile_load_unload": "case C (end faces gripped axially, face-centre pins), grip 1 at the crosshead speed eps_dot L: lambda 1 -> max_stretch -> min_stretch (then hold); data: load cell (F = -grip-1 reaction x) and crosshead",
+  "stress_relaxation": "case C, grip 1 linear to hold_stretch in ramp_s, hold for hold_s; load cell + crosshead",
+  "cantilever_rebound": "case A (jaw x <= 0, 2 dx, fully held), body weight and the tip load (-z, last particle layer) ramped together with smootherstep over weight_ramp_s, tip load released at release_s, free rebound for record_after_release_s; video of the 9 cross-section centroids (z)",
+  "gravity_sag": "case A, body weight ramped (smootherstep) over weight_ramp_s and held; video; static observable = mean tip z over static_window_s",
+  "friction_sliding": "free block on the rigid table plane z = 0 (contact law above), weight (+ top traction on the top particle layer) ramped over settle_ramp_s, push traction on the back particle layer rising linearly from push_start_s over push_ramp_s to push_max_over_nominal_normal x (nominal weight + top load), then released (coast); force plate (table reaction x and -z) + video (block centroid x)",
+  "control_steps": "K = ceil(duration / control_dt); a schedule ending inside a step holds its end value; tractions are evaluated at the step's mid time, grip positions are step-end values"
+ },
+ "objective": {
+  "residuals": "(prediction - data) / sqrt(sigma^2 + resolution^2 / 12) per sample: T / R force (load cell); C / G z of markers 4 and 8, frames f >= 1; F centroid x (frames f >= 1) and the table friction force",
+  "split": "fit-split experiments of the frozen manifest only; no RL term (a reward argument is refused)",
+  "invalid_candidate": "every residual of an experiment whose env sets an invalid bit is 1e3"
+ },
+ "fit": {
+  "formal_method": {
+   "name": "scipy.optimize.least_squares method trf",
+   "x_scale": 1.0,
+   "xtol": 0.0001,
+   "ftol": 1e-08,
+   "gtol": 1e-08,
+   "max_nfev": 40,
+   "fd_step_u": 0.001,
+   "jacobian": "forward differences in u; every residual evaluation runs ONE population of p + 1 = 7 candidates (the point and its 6 perturbations; a perturbation that would leave the box steps backwards) and caches the Jacobian",
+   "starts": 3,
+   "start_design": "Latin hypercube, numpy default_rng(seed 2511), over the u-image of the prior box: ln mu_eq [ln 2e5, ln 3.5e5], logit(g1 / 0.5) [logit 0.16, logit 0.4], logit(g2 fraction) [logit(0.06 / 0.42), logit(0.15 / 0.30)], ln tau1 [ln 5e-3, ln 1.5e-2], ln tau2 [ln 6e-2, ln 0.2], mu_table [0.4, 0.6]",
+   "selection": "the start with the lowest cost gives theta_hat",
+   "lockstep": "the 3 starts run in threads; every round evaluates the requests of all active starts as one forward population (rubber_calibration_fit.fit_trf_lockstep; per-start results identical to sequential starts, CPU test); candidates with the same physics-relevant material for an experiment share one env (mu_table acts only in F)"
+  },
+  "covariance": "Gauss-Newton at theta_hat: cov_u = s^2 (J^T J)^-1 with s^2 = chi2 / (n - p) by eigen-decomposition (eigenvalues < 1e-10 x max -> infinite variance), cov_theta = D cov_u D^T (delta method)",
+  "comparison_method": {
+   "name": "in-repo CMA-ES (rubber_calibration_fit.CMAES) through the ask / tell hook",
+   "popsize": 7,
+   "sigma0_u": 0.3,
+   "x0": "TRF start 0",
+   "generations": 4,
+   "seed": 2512,
+   "status": "REPORTED, NOT FORMAL (same population size as one TRF evaluation; 28 candidates; GPU budget)"
+  },
+  "ask_tell": "run_ask_tell(optimizer, objective, space, generations): ask() -> u[lambda, 6], tell(loss[lambda]), loss = |r|^2 / 2; the plug-in point of the external agentic optimizer or a BO method (not run here)"
+ },
+ "metrics": {
+  "M1": {
+   "applies": [
+    "tensile_load_unload",
+    "stress_relaxation"
+   ],
+   "definition": "RMSE of the load-cell force over the record / max |F_obs|",
+   "floor": 0.005
+  },
+  "M2": {
+   "applies": [
+    "tensile_load_unload"
+   ],
+   "definition": "relative error of the loop work sum (F_k + F_k-1) / 2 (u_k - u_k-1) over the record (u: prediction the crosshead channel of the prediction, observation the measured crosshead)",
+   "floor": 0.01
+  },
+  "M3": {
+   "applies": [
+    "stress_relaxation"
+   ],
+   "definition": "relative error of the mean force of the last 10 samples",
+   "floor": 0.005
+  },
+  "M4": {
+   "applies": [
+    "cantilever_rebound"
+   ],
+   "definition": "RMSE of the tip (marker 8) z over frames t >= release_s / (max - min of the observed tip z over the same frames)",
+   "floor": 0.01
+  },
+  "M5": {
+   "applies": [
+    "cantilever_rebound"
+   ],
+   "definition": "absolute error (ms) of the rebound time: tip z smoothed by a centred 5-frame moving average; p0 = value at the release frame, p1 = first local MAXIMUM after release (the tip load acts in -z, so the rebound is upward), p2 = the next local minimum (parabolic refinement); rebound time = first crossing of (p0 + p1) / 2 after release (linear interpolation) - release_s",
+   "floor": 2.0
+  },
+  "M6": {
+   "applies": [
+    "cantilever_rebound"
+   ],
+   "definition": "absolute error of the log decrement 2 ln(|p1 - p0| / |p1 - p2|) (p0, p1, p2 as in M5)",
+   "floor": 0.005
+  },
+  "M7_slip": {
+   "applies": [
+    "friction_sliding"
+   ],
+   "definition": "relative error of the slip distance = mean centroid x of the last 5 frames - mean of the 5 frames before push_start_s",
+   "floor": 0.02
+  },
+  "M7_onset": {
+   "applies": [
+    "friction_sliding"
+   ],
+   "definition": "absolute error (ms) of the slip onset = first time after push_start_s at which the centroid displacement exceeds 0.5 mm (linear interpolation)",
+   "floor": 2.0
+  },
+  "M8": {
+   "applies": "all (synthetic only)",
+   "definition": "RMS over the control steps 0..K of |volume ratio (mean J) of the prediction - of the noise-free truth|",
+   "floor": 0.001
+  },
+  "M9": {
+   "applies": "all (synthetic only)",
+   "definition": "relative error of the total dissipated energy at the end of the record, D = W_ext - (KE + Psi_eq + Psi_visc_stored) from the books (W_ext: Dirichlet + traction work incl. the weight traction)",
+   "floor": 0.02
+  },
+  "settings": {
+   "rebound_smoothing_frames": 5,
+   "slip_onset_threshold_m": 0.0005,
+   "M3_end_samples": 10
+  },
+  "per_type": {
+   "tensile_load_unload": [
+    "M1",
+    "M2",
+    "M8",
+    "M9"
+   ],
+   "stress_relaxation": [
+    "M1",
+    "M3",
+    "M8",
+    "M9"
+   ],
+   "cantilever_rebound": [
+    "M4",
+    "M5",
+    "M6",
+    "M8",
+    "M9"
+   ],
+   "friction_sliding": [
+    "M7_slip",
+    "M7_onset",
+    "M8",
+    "M9"
+   ]
+  },
+  "viscous_metrics": [
+   "M1",
+   "M2",
+   "M5",
+   "M6"
+  ],
+  "nan": "a metric that cannot be extracted (NaN) FAILS"
+ },
+ "tolerance_rule": {
+  "formula": "tol_mk = max(2 (a_mk + b_mk), floor_m) for every held-out (experiment k, metric m)",
+  "a_mk": "noise floor: the metric between two independent noise realisations (A as the prediction, B as the observation) of the same pilot truth; 0 for M8 / M9 (oracle metrics have no sensor noise)",
+  "b_mk": "discretisation floor: the metric between the NOISE-FREE pilot truth (n_t 6, CFL 0.25; as the observation) and the fit model at theta_pilot with the pilot's measured densities (n_t 4, CFL 0.5; as the prediction)",
+  "chi2_pilot": "reduced chi2 of the fit model at theta_pilot (measured densities) against the pilot's realisation A, fit split, n - p degrees of freedom",
+  "output": "configs/rubber/rubber_calib_thresholds_v1.json, SHA-pinned and committed BEFORE the formal dataset is generated; never changed after it"
+ },
+ "pilot": {
+  "dataset_id": "p2_5_pilot_001",
+  "seed": "its own secret seeds (truth and noise), sealed like the formal dataset; theta_pilot is revealed right after the pilot and used only for the tolerances and chi2_pilot",
+  "realisations": "A (the pilot manifest's data) and B (noise floor only)",
+  "manifest": "configs/rubber/calibration_synthetic/p2_5_pilot_001/manifest.json (status SYNTHETIC_PILOT)"
+ },
+ "formal": {
+  "dataset_id": "p2_5_formal_001",
+  "manifest": "configs/rubber/calibration_synthetic/p2_5_formal_001/manifest.json (SYNTHETIC_FROZEN_FOR_HELDOUT)",
+  "sealed": "artifacts/rl_ready/p2_5/<run>/sealed/truth.json (theta*, rho*, both seeds, noise-free truth channels); only its sha256 and the noise-seed sha256 are in the manifest",
+  "sequence": "fit (TRF, 3 starts) -> fit receipt -> negative-control fit -> its receipt -> both receipts committed -> one-shot held-out of both -> reveal -> recovery (CAL-06); CMA-ES (reported) any time before the reveal"
+ },
+ "tests": {
+  "CAL-01": {
+   "name": "Interface and refusals (CPU)",
+   "content": "v2 manifest validation (origin, sensors, sealed SHA, origin-bound statuses), split disjointness, path guard, one-shot held-out guard, REAL gate refuses every synthetic manifest (any directory, status, verdict) + gate-directory tripwire, theta bounds vs the step rule, objective refusals (reward, held-out, sealed, v1)",
+   "tests": [
+    "tests/test_rubber_calibration_v2.py",
+    "tests/test_rubber_calibration_fit.py"
+   ],
+   "pass": "every unit test passes, with CUDA_VISIBLE_DEVICES='' and with =0"
+  },
+  "CAL-02": {
+   "name": "Forward-model parity (CPU)",
+   "content": "population batch = single references byte-wise (L0) for every experiment type (raw summary, visco summary, markers, wrench, work, contact work, plane wrench, every control step), re-used batch and repeated objective calls byte-identical",
+   "tests": [
+    "tests/test_rubber_calibration_experiments.py"
+   ],
+   "pass": "byte-wise, in both CUDA_VISIBLE_DEVICES modes"
+  },
+  "CAL-03": {
+   "name": "Truth generation receipts",
+   "pass": "complete: truth profile, generator commit + clean tree, secret seeds never written outside sealed/, sealed SHA and noise-seed SHA in the manifest, manifest + data + oracle frozen (sha256); ordering per CAL-08"
+  },
+  "CAL-04": {
+   "name": "Fit quality on the fit split (TRF, 3 starts)",
+   "pass": "chi2_reduced(theta_hat) <= 1.5 x chi2_pilot AND the best start terminated by scipy's xtol / ftol / gtol criterion or by the declared budget max_nfev 40 (status reported)"
+  },
+  "CAL-05": {
+   "name": "Held-out prediction (primary)",
+   "pass": "every held-out (experiment, metric) value of the prediction at theta_hat against the frozen held-out data (M8 / M9 against the oracle) <= its frozen tolerance tol_mk"
+  },
+  "CAL-06": {
+   "name": "Parameter recovery (after the reveal)",
+   "pass": "|theta_hat_i - theta*_i| <= max(3 sigma_hat_i, 0.02 theta*_i) for every parameter with sigma_hat_i / theta_hat_i < 0.5; the others are reported as non-identifiable"
+  },
+  "CAL-07": {
+   "name": "Negative control (power)",
+   "pass": "a fit on T2 + C1 only (same TRF settings and starts) must FAIL CAL-05 on at least one held-out viscous metric (M1, M2, M5 or M6); if it passes, the protocol lacks power and CAL-07 FAILs"
+  },
+  "CAL-08": {
+   "name": "Order and sealing",
+   "pass": "protocol commit < pilot run < thresholds commit < formal dataset + manifest freeze (commit) < fit receipt commit < one-shot held-out < reveal, verified from git commit times and the receipts' UTC times; any violation makes the run INVALID"
+  },
+  "CAL-09": {
+   "name": "Labels",
+   "pass": "every output carries SIMULATOR_ONLY_UNCALIBRATED and NUMERICAL_VALIDATION_SYNTHETIC; no recipe promoted"
+  }
+ },
+ "evidence": {
+  "file": "docs/evidence/rl_ready/p2_5_calib_synthetic_001.json",
+  "report": "docs/reports/rl_ready/P2_5_RUBBER_CALIBRATION.md",
+  "artifacts": "artifacts/rl_ready/p2_5/<run>/ (never overwritten)"
+ },
+ "real_data": {
+  "status": "DECLARED_NOT_RUN (no real data)",
+  "protocol": "rubber_calib_tests_real_v1 (to be declared when real data exist): the same pipeline with data_origin real_measurement, tolerances from the measurement error plus a pilot on fit data only, the manifest FROZEN_FOR_HELDOUT before any held-out evaluation, an additional Prony term with a declared short tau (ADR 0023 \u00a722.10; fitted or reported as non-identifiable); only a held-out PASS through rubber_calibration_v2.real_calibrated_gate_v2 can make a recipe REAL_CALIBRATED"
+ },
+ "deviations_from_plan": [
+  "Tensile width 12 mm (plan 10 mm): on the particle lattice of n_t 4 / 6 at t 3 and 4 mm with the face-centre pins on grid nodes.",
+  "Cantilever 42 x 15 mm, held-out length 51 mm (plan 80 x 16 mm and 120 mm): lattice (multiples of 3 mm serve t 3 / 4 mm at n_t 4 / 6) and frequency (a flat 80 x 16 x 4 mm strip has f1 ~ 3 Hz and a ~49 mm linear gravity sag, so 0.4 s of video would not hold three tip peaks; 42 mm gives ~10 Hz, 51 mm ~7 Hz). Design probe (fit model, prior-box points, GPU, not a result): a 63 mm strip was still swinging from a 0.15 s weight ramp at release (first extremum downwards), hence 51 mm and a 0.30 s ramp. Held-out initial deformation = 2 x tip load.",
+  "Initial deformation and gravity sag by a simulated, declared load phase (smootherstep ramp 0.30 s, hold to 0.40 s, tip load released) instead of the static initializer: relax_to_static is single-env only and has no relaxed Prony-state initialisation; the population batch cannot run it.",
+  "Friction rig: force-controlled push (back-face traction ramp to 0.85 x normal load, then released) instead of a speed-controlled fixture pusher: slip distance and onset then depend on mu (a speed-controlled push makes the slip distance kinematic), and there is no contact frame (no per-node frame slerp). F2 holds out the normal load (top traction 1 x nominal weight, i.e. 2 x weight) and the push rate (0.15 s instead of 0.20 s ramp) instead of '20 mm/s'.",
+  "Tensile unloading to lambda 1.1 (plan: back to 1): keeps the strip in tension (a thin strip in compression buckles and truth and fit could bifurcate differently); a 1D Prony design check over the prior box gives a minimum unloading force >= 9 % of the maximum at eps_dot 1-20 /s.",
+  "M5 uses the midpoint between the release value and the first rebound peak as the equilibrium estimate (the static equilibrium is not observable within the record); M7 onset threshold 0.5 mm (5 video sigma) with a declared floor of 2 ms (the plan gives only the 2 % slip floor); M8 is the RMS over the record.",
+  "Gravity applied as a ramped body traction with solver gravity 0 (quasi-static loading; the step load of a constant gravity overshoots by 2).",
+  "Friction law and scope per the K2 review (K2-1): v3 for translational sliding only (see common.contact_scope_K2_1); v2 has no formal row at n_t 4 / 6.",
+  "CMA-ES comparison budget 4 generations x 7 (GPU budget); reported, not formal."
+ ]
+}

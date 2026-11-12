@@ -1,0 +1,8 @@
+{
+ "schema": "rcs_rl_ready_evidence_note_v1",
+ "id": "p2_6_rubber_rl_002_note_001",
+ "amends": "p2_6_rubber_rl_002.json (additive; the file is unchanged)",
+ "source": "P6.7 xhigh review finding F9 (a)",
+ "erratum": "'by step 20 in 6 envs' should read 'in 5 envs': the recorded every-10-step tip samples in gpu_rl05_v3_001/rows/RL05v3.json show 0.7 / 0.9 / 1.8 / 6.5 / 4.5 mm in envs 3-7 at step 20. The verdict (RL-05 v3 FAIL: 8 / 8 better, 0 successes) is unchanged; nothing re-scored",
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED"
+}

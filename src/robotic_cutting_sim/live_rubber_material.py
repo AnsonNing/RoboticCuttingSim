@@ -311,6 +311,8 @@ class LiveRubberMaterial:
     def receipt(self):
         return {"runtime": "live_rubber_material_v1", "solver": self.solver.solver_receipt(),
                 "recipe": self.recipe.receipt(), "scene": self.scene.receipt(), "step_rule": self.step_rule,
+                "resolution": rm.resolution_label(self.scene.resolution["resolution_profile"],
+                                                  self.scene.resolution["cells_through_thickness"]),
                 "control_dt_s": self.control_dt, "graph": self.capture_receipt, "strict": self.strict,
                 "calibration_status": self.recipe.calibration_status, "memory_bytes": self.solver.memory_bytes(),
                 "build_wall_s": self.build_wall_s, "invalid_reason": decode_reason(self.invalid_reason),

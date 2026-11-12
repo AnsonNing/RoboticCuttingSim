@@ -1,0 +1,3609 @@
+{
+ "cal04": {
+  "best_start_message": "The maximum number of function evaluations is exceeded.",
+  "best_start_status": 0,
+  "chi2_reduced": 2.4837866008502156,
+  "limit": 1.9097368859110446
+ },
+ "cal05_rows": [
+  {
+   "experiment": "T3",
+   "invalid_reason": 0,
+   "metric": "M1",
+   "tolerance": 0.031164963210826426,
+   "value": 0.013615842763759645,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T3",
+   "invalid_reason": 0,
+   "metric": "M2",
+   "tolerance": 0.04637299511583353,
+   "value": 0.02241163558770643,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T3",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 0.0005426909644756616,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T3",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.005928149514449663,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T4",
+   "invalid_reason": 0,
+   "metric": "M1",
+   "tolerance": 0.0437551580342323,
+   "value": 0.032311557250478795,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T4",
+   "invalid_reason": 0,
+   "metric": "M2",
+   "tolerance": 0.07579307103109151,
+   "value": 0.244652453896335,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "T4",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 0.0008697433765223656,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T4",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.2087455525877222,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "T5",
+   "invalid_reason": 0,
+   "metric": "M1",
+   "tolerance": 0.03661403826012531,
+   "value": 0.01532989646868161,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T5",
+   "invalid_reason": 0,
+   "metric": "M2",
+   "tolerance": 0.02690881604594734,
+   "value": 0.016297115820742676,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T5",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 0.0005448124806426151,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T5",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.005860455317165647,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M4",
+   "tolerance": 0.05157599966622589,
+   "value": 0.030689837117948933,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M5",
+   "tolerance": 2.0,
+   "value": 0.3285682232140319,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M6",
+   "tolerance": 0.06325695872063974,
+   "value": 0.06523191966267972,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 8.940779259796269e-07,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.04180449181239286,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M4",
+   "tolerance": 0.022954128069921188,
+   "value": 0.040039513591202856,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M5",
+   "tolerance": 2.0,
+   "value": 0.3039077246533295,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M6",
+   "tolerance": 0.027662503696537,
+   "value": 0.07225815893375165,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 9.654467599879426e-07,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.043189975373382906,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M4",
+   "tolerance": 0.028243571664364555,
+   "value": 0.04622775710475888,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M5",
+   "tolerance": 2.0,
+   "value": 0.00456844474228113,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M6",
+   "tolerance": 0.03038979224774896,
+   "value": 0.11002070807362718,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 4.056548921759824e-06,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.03456237021574814,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "F2",
+   "invalid_reason": 0,
+   "metric": "M7_onset",
+   "tolerance": 8.351163577627663,
+   "value": 0.011036073593151396,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "F2",
+   "invalid_reason": 0,
+   "metric": "M7_slip",
+   "tolerance": 0.05313504879362348,
+   "value": 0.008366604142920387,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "F2",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 3.2485608141430196e-07,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "F2",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.004327376120961587,
+   "verdict": "PASS"
+  }
+ ],
+ "cal07_rows": [
+  {
+   "experiment": "T3",
+   "invalid_reason": 0,
+   "metric": "M1",
+   "tolerance": 0.031164963210826426,
+   "value": 0.009880994686407615,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T3",
+   "invalid_reason": 0,
+   "metric": "M2",
+   "tolerance": 0.04637299511583353,
+   "value": 0.045786520509129076,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T3",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 9.030091263896905e-05,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T3",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.0605300240674627,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "T4",
+   "invalid_reason": 0,
+   "metric": "M1",
+   "tolerance": 0.0437551580342323,
+   "value": 0.007865074907562915,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T4",
+   "invalid_reason": 0,
+   "metric": "M2",
+   "tolerance": 0.07579307103109151,
+   "value": 0.01834708151474217,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T4",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 0.00026329389441607967,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T4",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.021334704066766526,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "T5",
+   "invalid_reason": 0,
+   "metric": "M1",
+   "tolerance": 0.03661403826012531,
+   "value": 0.01228442034772896,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T5",
+   "invalid_reason": 0,
+   "metric": "M2",
+   "tolerance": 0.02690881604594734,
+   "value": 0.051579034873887486,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "T5",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 8.305421262690936e-05,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "T5",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.0605065283879062,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M4",
+   "tolerance": 0.05157599966622589,
+   "value": 0.02126884067649896,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M5",
+   "tolerance": 2.0,
+   "value": 0.40992024330271937,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M6",
+   "tolerance": 0.06325695872063974,
+   "value": 0.005885991527790568,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 2.8379402742199465e-07,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C2",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.03666519522454233,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M4",
+   "tolerance": 0.022954128069921188,
+   "value": 0.018991626529675863,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M5",
+   "tolerance": 2.0,
+   "value": 0.22380279894307353,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M6",
+   "tolerance": 0.027662503696537,
+   "value": 0.007674887325952784,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 2.8328824656075813e-07,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C3",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.02744851994459346,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M4",
+   "tolerance": 0.028243571664364555,
+   "value": 0.0164319551263594,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M5",
+   "tolerance": 2.0,
+   "value": 0.09739902853578286,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M6",
+   "tolerance": 0.03038979224774896,
+   "value": 0.017549448512366617,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 1.3894005089099983e-06,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "C4",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.02404302578192998,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "F2",
+   "invalid_reason": 0,
+   "metric": "M7_onset",
+   "tolerance": 8.351163577627663,
+   "value": 8.638257855426989,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "F2",
+   "invalid_reason": 0,
+   "metric": "M7_slip",
+   "tolerance": 0.05313504879362348,
+   "value": 0.3827152338350346,
+   "verdict": "FAIL"
+  },
+  {
+   "experiment": "F2",
+   "invalid_reason": 0,
+   "metric": "M8",
+   "tolerance": 0.001,
+   "value": 1.555382156355742e-07,
+   "verdict": "PASS"
+  },
+  {
+   "experiment": "F2",
+   "invalid_reason": 0,
+   "metric": "M9",
+   "tolerance": 0.02,
+   "value": 0.31129707620093233,
+   "verdict": "FAIL"
+  }
+ ],
+ "cal08_order": [
+  {
+   "commit": "c5054b99a69047d5936351956d7fb467e08c602e",
+   "event": "protocol_commit",
+   "utc": "2026-11-11T10:57:19+00:00"
+  },
+  {
+   "commit": null,
+   "event": "pilot_run_end",
+   "utc": "2026-11-11T12:08:10+00:00"
+  },
+  {
+   "commit": "4d7d2c44947526942cb03cf6ec4b9634be48c8f8",
+   "event": "thresholds_commit",
+   "utc": "2026-11-11T14:14:35+00:00"
+  },
+  {
+   "commit": null,
+   "event": "formal_dataset_generated",
+   "utc": "2026-11-11T15:19:09+00:00"
+  },
+  {
+   "commit": "a0250bbc6d53f0d85caeceab3aa7ed8db4e42189",
+   "event": "formal_manifest_commit",
+   "utc": "2026-11-11T15:19:30+00:00"
+  },
+  {
+   "commit": "4218dd68959dd9138a824390f80f920a87b43aa0",
+   "event": "protocol_v2_commit",
+   "utc": "2026-11-11T21:32:42+00:00"
+  },
+  {
+   "commit": "ab4faf7799ff567a2c4a1d0b8ae83778ac7cbfea",
+   "event": "fit_receipts_commit",
+   "utc": "2026-11-11T23:56:44+00:00"
+  },
+  {
+   "commit": "ad4c5aa07c7c1604df2deef7a24cc7f57defab5d",
+   "event": "negative_control_receipt_commit",
+   "utc": "2026-11-12T00:35:08+00:00"
+  },
+  {
+   "commit": null,
+   "event": "one_shot_heldout",
+   "utc": "2026-11-12T00:35:14+00:00"
+  },
+  {
+   "commit": null,
+   "event": "reveal",
+   "utc": "2026-11-12T00:47:30+00:00"
+  }
+ ],
+ "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+ "cmaes_comparison": "NOT_RUN (optional in v2; not within the GPU budget)",
+ "contact_scope": "K2 combined review (claude/rl-rubber @60e9119, finding K2-1): law v3 is valid for TRANSLATIONAL sliding only (its patch slip-rate equalisation suppresses rotation about the normal and in-plane bending in slip; label contact_slip_rate_equalised outside that scope). Choice for P2-5: the friction experiments F1 / F2 are scoped to straight-line translational sliding with v3 and the restriction is stated: a free symmetric block (no grip, one contact region = the table plane) pushed by a uniform back-face traction along +x through its symmetry plane, so the motion is pure translation by construction. Law v2 is not used: its only formally scored row is n_t 3 (sliding 0.6), while the fit model is n_t 4 and the truth n_t 6 (v2 NOT_ESTABLISHED there). Scope check (declared, reported in the truth receipts and the held-out predictions): max lateral centroid drift and max change of the y spread of the 9 cross-section centroids <= 1e-4 m (1 video sigma); a row above it is labelled OUTSIDE_TRANSLATIONAL_SCOPE. The fitted mu_table is a translational-sliding friction coefficient of law v3 only; it must not be used for spin, sideways drag or multi-region contact (P2-6 friction stays under the K2-1 fallback). Fit box [0.3, 0.8] and prior box [0.4, 0.6] lie inside the v3 translational envelope at n_t 4 (contact_v3_001) and n_t 6 (contact_envelope_v1_001).",
+ "cpu_tests": {
+  "CAL-01": "PASS",
+  "CAL-02": "PASS",
+  "commit": "dfd2059",
+  "cuda_visible_devices_0": {
+   "lock": "GPU0 blocking flock",
+   "log": "artifacts/rl_ready/p2_5/cpu_tests_002/cuda0.log",
+   "result": "599 passed, 2 warnings",
+   "wall_s": 797
+  },
+  "cuda_visible_devices_empty": {
+   "log": "artifacts/rl_ready/p2_5/cpu_tests_002/cuda_none.log",
+   "result": "599 passed, 2 warnings (scipy IntegrationWarning)",
+   "wall_s": 780
+  },
+  "p2_5_tests": "tests/test_rubber_calibration_v2.py (40), tests/test_rubber_calibration_experiments.py (11), tests/test_rubber_calibration_fit.py (17), tests/test_rubber_p2_5_protocol.py (8) - all pass in both modes",
+  "suites": "tests/test_rubber_*.py tests/test_batched_*.py tests/test_repo_naming.py tests/test_wp12_phase5_frozen.py"
+ },
+ "fits": {
+  "cmaes": null,
+  "formal": {
+   "budget_hit": false,
+   "chi2_reduced": 2.4837866008502156,
+   "receipt": "docs/evidence/rl_ready/p2_5/fit_receipt_formal.json",
+   "run": {
+    "budget_hit": false,
+    "candidates_evaluated": 295,
+    "objective_evaluations": 35,
+    "tree": {
+     "branch": "claude/rl-rubber-p25",
+     "clean": true,
+     "commit": "dfd20599b3c2623a60401d02fef28d3a38c2f179"
+    },
+    "wall_s": 8595.112687584013
+   },
+   "sigma_hat": {
+    "g1": 0.0017929446627390074,
+    "g2": 0.0018385841245527489,
+    "mu_eq_pa": 188.86014375483467,
+    "mu_table": 0.000267153768436224,
+    "tau1_s": 0.0005574203037077768,
+    "tau2_s": 0.0011485014826701965
+   },
+   "stages": [
+    {
+     "best_cost": 1665.3003128279815,
+     "budget_hit": false,
+     "experiments": [
+      "T1"
+     ],
+     "name": "S1_elastic",
+     "params": [
+      "mu_eq_pa"
+     ],
+     "theta": {
+      "g1": 0.14000000000000004,
+      "g2": 0.10500000000000002,
+      "mu_eq_pa": 321103.7988537839,
+      "mu_table": 0.5,
+      "tau1_s": 0.008660254037844387,
+      "tau2_s": 0.10954451150103321
+     },
+     "wall_s": 1375.8079005279578
+    },
+    {
+     "best_cost": 1942.9335212582537,
+     "budget_hit": false,
+     "experiments": [
+      "R1",
+      "T2"
+     ],
+     "name": "S2_visco",
+     "params": [
+      "g1",
+      "tau1_s",
+      "g2",
+      "tau2_s"
+     ],
+     "theta": {
+      "g1": 0.08397937504435461,
+      "g2": 0.17949260681674525,
+      "mu_eq_pa": 321103.7988537839,
+      "mu_table": 0.5,
+      "tau1_s": 0.005158170406193004,
+      "tau2_s": 0.08614068255386025
+     },
+     "wall_s": 2753.0735986870714
+    },
+    {
+     "best_cost": 295.7670589778423,
+     "budget_hit": false,
+     "experiments": [
+      "F1"
+     ],
+     "name": "S3_friction",
+     "params": [
+      "mu_table"
+     ],
+     "theta": {
+      "g1": 0.08397937504435461,
+      "g2": 0.17949260681674525,
+      "mu_eq_pa": 321103.7988537839,
+      "mu_table": 0.45044057419304523,
+      "tau1_s": 0.005158170406193004,
+      "tau2_s": 0.08614068255386025
+     },
+     "wall_s": 284.09133819001727
+    },
+    {
+     "best_cost": 2948.2546952092057,
+     "budget_hit": false,
+     "experiments": [
+      "T1",
+      "T2",
+      "R1",
+      "C1",
+      "G1",
+      "F1"
+     ],
+     "name": "S4_joint_polish",
+     "params": [
+      "mu_eq_pa",
+      "g1",
+      "tau1_s",
+      "g2",
+      "tau2_s",
+      "mu_table"
+     ],
+     "theta": {
+      "g1": 0.09416185018605731,
+      "g2": 0.1859269144992891,
+      "mu_eq_pa": 322996.09217060916,
+      "mu_table": 0.4500674218378532,
+      "tau1_s": 0.014278249769467226,
+      "tau2_s": 0.07225364249210152
+     },
+     "wall_s": 4182.117593339994
+    }
+   ],
+   "starts": [
+    {
+     "chi2_reduced": 2.4837866008502156,
+     "cost": 2948.2546952092057,
+     "message": "The maximum number of function evaluations is exceeded.",
+     "nfev": 6,
+     "start": 0,
+     "status": 0,
+     "theta": {
+      "g1": 0.09416185018605731,
+      "g2": 0.1859269144992891,
+      "mu_eq_pa": 322996.09217060916,
+      "mu_table": 0.4500674218378532,
+      "tau1_s": 0.014278249769467226,
+      "tau2_s": 0.07225364249210152
+     },
+     "theta0": {
+      "g1": 0.08397937504435461,
+      "g2": 0.17949260681674525,
+      "mu_eq_pa": 321103.7988537839,
+      "mu_table": 0.45044057419304523,
+      "tau1_s": 0.005158170406193004,
+      "tau2_s": 0.08614068255386025
+     },
+     "wall_s": 8595.112674524076
+    }
+   ],
+   "theta_hat": {
+    "g1": 0.09416185018605731,
+    "g2": 0.1859269144992891,
+    "mu_eq_pa": 322996.09217060916,
+    "mu_table": 0.4500674218378532,
+    "tau1_s": 0.014278249769467226,
+    "tau2_s": 0.07225364249210152
+   }
+  },
+  "negative_control": {
+   "budget_hit": false,
+   "chi2_reduced": 1.31370786254235,
+   "experiments": [
+    "T2",
+    "C1"
+   ],
+   "receipt": "docs/evidence/rl_ready/p2_5/fit_receipt_negative_control.json",
+   "run": {
+    "objective_evaluations": 29,
+    "tree": {
+     "branch": "claude/rl-rubber-p25",
+     "clean": true,
+     "commit": "ab4faf7799ff567a2c4a1d0b8ae83778ac7cbfea"
+    },
+    "wall_s": 2284.7196535869734
+   },
+   "sigma_hat": {
+    "g1": 0.006204258036350599,
+    "g2": 0.006224265614822822,
+    "mu_eq_pa": 710.8324457325574,
+    "mu_table": Infinity,
+    "tau1_s": 0.0005648918908070869,
+    "tau2_s": 0.008807945936133117
+   },
+   "theta_hat": {
+    "g1": 0.19634150822144525,
+    "g2": 0.11801002689664962,
+    "mu_eq_pa": 324386.4509339838,
+    "mu_table": 0.5,
+    "tau1_s": 0.013721084287770089,
+    "tau2_s": 0.10398645845681345
+   }
+  }
+ },
+ "formal_dataset": {
+  "freeze_sha256": "3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9",
+  "gen": {
+   "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+   "dataset_dir": "/home/ningan/RoboticCuttingSim-rl-rubber-p25/configs/rubber/calibration_synthetic/p2_5_formal_001",
+   "dataset_id": "p2_5_formal_001",
+   "env": {
+    "argv": [
+     "scripts/rubber/p2_5/gen_synthetic.py",
+     "--kind",
+     "formal",
+     "--run-dir",
+     "artifacts/rl_ready/p2_5/formal_gen_001",
+     "--gpu-index",
+     "0"
+    ],
+    "cuda_visible_devices": "0",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "scipy": "1.18.1",
+    "warp": "1.17.0"
+   },
+   "gpu_free_mib_at_start": 31449.0,
+   "gpu_samples": [
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1158, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:14:55+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 780, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1944, 32607, 79, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:21:06+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 780, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1944, 32607, 49, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:21:53+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 780, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1944, 32607, 71, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:24:05+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1954, 32607, 41, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:31:23+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1964, 32607, 100, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:35:03+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1964, 32607, 66, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:37:33+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1964, 32607, 64, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:39:37+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1964, 32607, 44, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:39:56+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3952765, 714, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 41, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 790, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:44:11+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3952765, 714, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 790, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T14:52:46+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3952765, 714, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 790, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T15:09:29+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3952765, 714, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975909, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975908, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975904, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975907, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 6175, 32607, 99, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T15:16:58+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3952765, 714, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975909, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975908, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975904, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975907, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 6175, 32607, 99, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T15:19:09+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3941118, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3952765, 714, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975909, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975908, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975904, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "3975907, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 6175, 32607, 99, 570.211.01"
+     ],
+     "own_pid": 3941118,
+     "utc": "2026-11-11T15:19:09+00:00"
+    }
+   ],
+   "kind": "formal",
+   "manifest_freeze_sha256": "3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9",
+   "manifest_status": "SYNTHETIC_FROZEN_FOR_HELDOUT",
+   "module_sha256": {
+    "batched/rubber_batch.py": "0b5fae8cd1269341f0be2d658cd41c69186f9b222c7a0dfc9174d4c037e86bf5",
+    "batched/rubber_contact_batch.py": "a65ca1549b398d3ed8556ca745479db161576fca207df23cf0deb473d942518f",
+    "batched/rubber_material_batch.py": "9028f28c4be9a30f46edde333ead46b285df56bf085a10e72bf9f549c2eb5bdd",
+    "live_rubber_material.py": "3cfb91e6b3c4b06691b0f133a4dd399a11d28ad5b0d308bf21e8a08808898b43",
+    "rubber_calibration_experiments.py": "42db5383462f704abd044cb201d78bcc4985006fa4462a7b3651209ea1ed3ae5",
+    "rubber_calibration_fit.py": "203b8644bc8988f63a8597b885066ade2b41fc4df58cd607d315046de05f44fe",
+    "rubber_calibration_synthetic.py": "68c79e45f44d09580726e4f0b08659535f32458616891b9feb9d3c77fc51aa41",
+    "rubber_calibration_v2.py": "410b2bef3043cc103b4394a3fd51b928a730fc05cbe929b8bc336e72033d94fd",
+    "rubber_contact.py": "0a5d4a59f1ca624dc1d151d4a5d683575d2a5e9c56063417cca0fcb58540245d",
+    "tlmpm_rubber_contact_v1.py": "f92a825ba075d33e231103b33918c1575b06d5d899d084a660f6f0b97909a07a",
+    "tlmpm_rubber_v1.py": "28fc5189e26170db9bb80aa2895143835ec55a0d9db66c77dfba5222defbc8d5",
+    "tlmpm_rubber_visco_v1.py": "bec7e8a1081cba54d801fcd4b13cd835900dcef6665bec152dd66fb529337438"
+   },
+   "noise_seed_sha256": "945b08aafb95c638b1aefa6dec1ef63d879fbd8f7f96df89f4000d6bba28cea2",
+   "protocol_sha256": "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b",
+   "recipe_promoted": false,
+   "sealed_truth_path": "artifacts/rl_ready/p2_5/formal_gen_001/sealed/truth.json",
+   "sealed_truth_sha256": "e5b5c7183199493223ea52089ee4c6688b71fd57b623ba462ae1de980fcd9899",
+   "secret_seeds": "written only to the sealed file",
+   "smoke": false,
+   "tree": {
+    "branch": "claude/rl-rubber-p25",
+    "clean": true,
+    "commit": "44dcc9c8a67b566a5c879c2602077fe9eb0a05de"
+   },
+   "truth_invalid": {},
+   "truth_receipts": {
+    "C1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "C1",
+     "graph": {
+      "capture_wall_s": 0.20454269798938185,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61529820,
+     "particles_per_env": 70200,
+     "population": 1,
+     "steps": 800,
+     "substeps": 784,
+     "wall_s": 437.5772404191084
+    },
+    "C2": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "C2",
+     "graph": {
+      "capture_wall_s": 0.2054471269948408,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 72985804,
+     "particles_per_env": 84780,
+     "population": 1,
+     "steps": 800,
+     "substeps": 784,
+     "wall_s": 514.8055937270401
+    },
+    "C3": {
+     "device": "cuda:0",
+     "dt_s": 9.560229445506693e-07,
+     "dx_m": 0.0005,
+     "experiment": "C3",
+     "graph": {
+      "capture_wall_s": 0.325986564042978,
+      "chunk_replays": 2,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 46
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 107503748,
+     "particles_per_env": 123840,
+     "population": 1,
+     "steps": 800,
+     "substeps": 1046,
+     "wall_s": 1002.0621181379538
+    },
+    "C4": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "C4",
+     "graph": {
+      "capture_wall_s": 0.4887237880611792,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61529820,
+     "particles_per_env": 70200,
+     "population": 1,
+     "steps": 800,
+     "substeps": 784,
+     "wall_s": 448.632075728965
+    },
+    "F1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "F1",
+     "graph": {
+      "capture_wall_s": 0.19533966202288866,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 43707596,
+     "particles_per_env": 51840,
+     "population": 1,
+     "steps": 380,
+     "substeps": 784,
+     "translation_check": {
+      "max_centroid_y_drift_m": 2.897431339993206e-10,
+      "max_marker_y_spread_change_m": 5.580230005505782e-09
+     },
+     "wall_s": 149.55686629400589
+    },
+    "F2": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "F2",
+     "graph": {
+      "capture_wall_s": 0.41851138102356344,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 43707596,
+     "particles_per_env": 51840,
+     "population": 1,
+     "steps": 330,
+     "substeps": 784,
+     "translation_check": {
+      "max_centroid_y_drift_m": 2.7645159945965947e-10,
+      "max_marker_y_spread_change_m": 6.700297995251847e-09
+     },
+     "wall_s": 130.95455114194192
+    },
+    "G1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "G1",
+     "graph": {
+      "capture_wall_s": 0.20653289090842009,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61529820,
+     "particles_per_env": 70200,
+     "population": 1,
+     "steps": 400,
+     "substeps": 784,
+     "wall_s": 220.0810810700059
+    },
+    "R1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "R1",
+     "graph": {
+      "capture_wall_s": 0.19761551194824278,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 320,
+     "substeps": 784,
+     "wall_s": 131.9292054750258
+    },
+    "T1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "T1",
+     "graph": {
+      "capture_wall_s": 0.19594935106579214,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 900,
+     "substeps": 784,
+     "wall_s": 371.32511103898287
+    },
+    "T2": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "T2",
+     "graph": {
+      "capture_wall_s": 0.19826583401300013,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 113,
+     "substeps": 784,
+     "wall_s": 46.87484927196056
+    },
+    "T3": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "T3",
+     "graph": {
+      "capture_wall_s": 0.20368552207946777,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 300,
+     "substeps": 784,
+     "wall_s": 123.80700165301096
+    },
+    "T4": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "T4",
+     "graph": {
+      "capture_wall_s": 0.2077935580164194,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 45,
+     "substeps": 784,
+     "wall_s": 18.888656666036695
+    },
+    "T5": {
+     "device": "cuda:0",
+     "dt_s": 9.560229445506693e-07,
+     "dx_m": 0.0005,
+     "experiment": "T5",
+     "graph": {
+      "capture_wall_s": 0.1362866599811241,
+      "chunk_replays": 2,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 46
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 109226236,
+     "particles_per_env": 138240,
+     "population": 1,
+     "steps": 300,
+     "substeps": 1046,
+     "wall_s": 255.30787348607555
+    }
+   },
+   "utc_end": "2026-11-11T15:19:09+00:00",
+   "utc_start": "2026-11-11T14:14:55+00:00",
+   "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+   "verdict_truth_valid": "PASS",
+   "wall_s": 3854.2803060249425,
+   "warp_device": "cuda:0"
+  },
+  "manifest": "configs/rubber/calibration_synthetic/p2_5_formal_001/manifest.json",
+  "sealed_truth_sha256": "e5b5c7183199493223ea52089ee4c6688b71fd57b623ba462ae1de980fcd9899"
+ },
+ "heldout": {
+  "ledger": {
+   "audit_rerun": null,
+   "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+   "dataset_id": "p2_5_formal_001",
+   "fits": [
+    {
+     "fit_experiments": [
+      "T1",
+      "T2",
+      "R1",
+      "C1",
+      "G1",
+      "F1"
+     ],
+     "fit_receipt": "docs/evidence/rl_ready/p2_5/fit_receipt_formal.json",
+     "fit_receipt_sha256": "617d65f346daf8899d4460806d23956f90994db208418a70ed5ee79eb20124d7",
+     "rows": [
+      {
+       "experiment": "T3",
+       "invalid_reason": 0,
+       "metric": "M1",
+       "tolerance": 0.031164963210826426,
+       "value": 0.013615842763759645,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T3",
+       "invalid_reason": 0,
+       "metric": "M2",
+       "tolerance": 0.04637299511583353,
+       "value": 0.02241163558770643,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T3",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 0.0005426909644756616,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T3",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.005928149514449663,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T4",
+       "invalid_reason": 0,
+       "metric": "M1",
+       "tolerance": 0.0437551580342323,
+       "value": 0.032311557250478795,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T4",
+       "invalid_reason": 0,
+       "metric": "M2",
+       "tolerance": 0.07579307103109151,
+       "value": 0.244652453896335,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "T4",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 0.0008697433765223656,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T4",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.2087455525877222,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "T5",
+       "invalid_reason": 0,
+       "metric": "M1",
+       "tolerance": 0.03661403826012531,
+       "value": 0.01532989646868161,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T5",
+       "invalid_reason": 0,
+       "metric": "M2",
+       "tolerance": 0.02690881604594734,
+       "value": 0.016297115820742676,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T5",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 0.0005448124806426151,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T5",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.005860455317165647,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M4",
+       "tolerance": 0.05157599966622589,
+       "value": 0.030689837117948933,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M5",
+       "tolerance": 2.0,
+       "value": 0.3285682232140319,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M6",
+       "tolerance": 0.06325695872063974,
+       "value": 0.06523191966267972,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 8.940779259796269e-07,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.04180449181239286,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M4",
+       "tolerance": 0.022954128069921188,
+       "value": 0.040039513591202856,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M5",
+       "tolerance": 2.0,
+       "value": 0.3039077246533295,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M6",
+       "tolerance": 0.027662503696537,
+       "value": 0.07225815893375165,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 9.654467599879426e-07,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.043189975373382906,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M4",
+       "tolerance": 0.028243571664364555,
+       "value": 0.04622775710475888,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M5",
+       "tolerance": 2.0,
+       "value": 0.00456844474228113,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M6",
+       "tolerance": 0.03038979224774896,
+       "value": 0.11002070807362718,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 4.056548921759824e-06,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.03456237021574814,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "F2",
+       "invalid_reason": 0,
+       "metric": "M7_onset",
+       "tolerance": 8.351163577627663,
+       "value": 0.011036073593151396,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "F2",
+       "invalid_reason": 0,
+       "metric": "M7_slip",
+       "tolerance": 0.05313504879362348,
+       "value": 0.008366604142920387,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "F2",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 3.2485608141430196e-07,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "F2",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.004327376120961587,
+       "verdict": "PASS"
+      }
+     ],
+     "theta_hat": {
+      "g1": 0.09416185018605731,
+      "g2": 0.1859269144992891,
+      "mu_eq_pa": 322996.09217060916,
+      "mu_table": 0.4500674218378532,
+      "tau1_s": 0.014278249769467226,
+      "tau2_s": 0.07225364249210152
+     },
+     "verdict": "FAIL"
+    },
+    {
+     "fit_experiments": [
+      "T2",
+      "C1"
+     ],
+     "fit_receipt": "docs/evidence/rl_ready/p2_5/fit_receipt_negative_control.json",
+     "fit_receipt_sha256": "3446a6d2234f55944c773ab069c7527b00ddd28c999527d306cd9f7d87a8137f",
+     "rows": [
+      {
+       "experiment": "T3",
+       "invalid_reason": 0,
+       "metric": "M1",
+       "tolerance": 0.031164963210826426,
+       "value": 0.009880994686407615,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T3",
+       "invalid_reason": 0,
+       "metric": "M2",
+       "tolerance": 0.04637299511583353,
+       "value": 0.045786520509129076,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T3",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 9.030091263896905e-05,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T3",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.0605300240674627,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "T4",
+       "invalid_reason": 0,
+       "metric": "M1",
+       "tolerance": 0.0437551580342323,
+       "value": 0.007865074907562915,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T4",
+       "invalid_reason": 0,
+       "metric": "M2",
+       "tolerance": 0.07579307103109151,
+       "value": 0.01834708151474217,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T4",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 0.00026329389441607967,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T4",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.021334704066766526,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "T5",
+       "invalid_reason": 0,
+       "metric": "M1",
+       "tolerance": 0.03661403826012531,
+       "value": 0.01228442034772896,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T5",
+       "invalid_reason": 0,
+       "metric": "M2",
+       "tolerance": 0.02690881604594734,
+       "value": 0.051579034873887486,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "T5",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 8.305421262690936e-05,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "T5",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.0605065283879062,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M4",
+       "tolerance": 0.05157599966622589,
+       "value": 0.02126884067649896,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M5",
+       "tolerance": 2.0,
+       "value": 0.40992024330271937,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M6",
+       "tolerance": 0.06325695872063974,
+       "value": 0.005885991527790568,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 2.8379402742199465e-07,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C2",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.03666519522454233,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M4",
+       "tolerance": 0.022954128069921188,
+       "value": 0.018991626529675863,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M5",
+       "tolerance": 2.0,
+       "value": 0.22380279894307353,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M6",
+       "tolerance": 0.027662503696537,
+       "value": 0.007674887325952784,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 2.8328824656075813e-07,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C3",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.02744851994459346,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M4",
+       "tolerance": 0.028243571664364555,
+       "value": 0.0164319551263594,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M5",
+       "tolerance": 2.0,
+       "value": 0.09739902853578286,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M6",
+       "tolerance": 0.03038979224774896,
+       "value": 0.017549448512366617,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 1.3894005089099983e-06,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "C4",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.02404302578192998,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "F2",
+       "invalid_reason": 0,
+       "metric": "M7_onset",
+       "tolerance": 8.351163577627663,
+       "value": 8.638257855426989,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "F2",
+       "invalid_reason": 0,
+       "metric": "M7_slip",
+       "tolerance": 0.05313504879362348,
+       "value": 0.3827152338350346,
+       "verdict": "FAIL"
+      },
+      {
+       "experiment": "F2",
+       "invalid_reason": 0,
+       "metric": "M8",
+       "tolerance": 0.001,
+       "value": 1.555382156355742e-07,
+       "verdict": "PASS"
+      },
+      {
+       "experiment": "F2",
+       "invalid_reason": 0,
+       "metric": "M9",
+       "tolerance": 0.02,
+       "value": 0.31129707620093233,
+       "verdict": "FAIL"
+      }
+     ],
+     "theta_hat": {
+      "g1": 0.19634150822144525,
+      "g2": 0.11801002689664962,
+      "mu_eq_pa": 324386.4509339838,
+      "mu_table": 0.5,
+      "tau1_s": 0.013721084287770089,
+      "tau2_s": 0.10398645845681345
+     },
+     "verdict": "FAIL"
+    }
+   ],
+   "heldout_experiments": [
+    "T3",
+    "T4",
+    "T5",
+    "C2",
+    "C3",
+    "C4",
+    "F2"
+   ],
+   "label": "ONE_SHOT",
+   "manifest": "/home/ningan/RoboticCuttingSim-rl-rubber-p25/configs/rubber/calibration_synthetic/p2_5_formal_001/manifest.json",
+   "manifest_freeze_sha256": "3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9",
+   "provenance": {
+    "env": {
+     "argv": [
+      "scripts/rubber/p2_5/run_heldout.py",
+      "--fit-receipts",
+      "docs/evidence/rl_ready/p2_5/fit_receipt_formal.json",
+      "docs/evidence/rl_ready/p2_5/fit_receipt_negative_control.json",
+      "--ledger",
+      "artifacts/rl_ready/p2_5/fit_v2_001/heldout",
+      "--gpu-index",
+      "0"
+     ],
+     "cuda_visible_devices": "0",
+     "numpy": "2.5.4",
+     "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+     "python": "3.12.12",
+     "scipy": "1.18.1",
+     "warp": "1.17.0"
+    },
+    "gpu_free_mib_at_start": 31449.0,
+    "gpu_samples": [
+     {
+      "compute_apps": [
+       "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+       "2911728, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2911729, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2911725, 886, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2914551, 1281, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2914553, 1281, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2914550, 1281, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+       "2914552, 1281, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+      ],
+      "gpus": [
+       "0, NVIDIA GeForce RTX 5090, 1158, 32607, 0, 570.211.01",
+       "1, NVIDIA GeForce RTX 5090, 8840, 32607, 51, 570.211.01"
+      ],
+      "own_pid": 2916138,
+      "utc": "2026-11-12T00:35:14+00:00"
+     }
+    ],
+    "module_sha256": {
+     "batched/rubber_batch.py": "0b5fae8cd1269341f0be2d658cd41c69186f9b222c7a0dfc9174d4c037e86bf5",
+     "batched/rubber_contact_batch.py": "a65ca1549b398d3ed8556ca745479db161576fca207df23cf0deb473d942518f",
+     "batched/rubber_material_batch.py": "9028f28c4be9a30f46edde333ead46b285df56bf085a10e72bf9f549c2eb5bdd",
+     "live_rubber_material.py": "3cfb91e6b3c4b06691b0f133a4dd399a11d28ad5b0d308bf21e8a08808898b43",
+     "rubber_calibration_experiments.py": "42db5383462f704abd044cb201d78bcc4985006fa4462a7b3651209ea1ed3ae5",
+     "rubber_calibration_fit.py": "9be7b4d1752f37dce70a021232cac5834db5273aa8cb22d73f4b956658e14535",
+     "rubber_calibration_synthetic.py": "68c79e45f44d09580726e4f0b08659535f32458616891b9feb9d3c77fc51aa41",
+     "rubber_calibration_v2.py": "410b2bef3043cc103b4394a3fd51b928a730fc05cbe929b8bc336e72033d94fd",
+     "rubber_contact.py": "0a5d4a59f1ca624dc1d151d4a5d683575d2a5e9c56063417cca0fcb58540245d",
+     "tlmpm_rubber_contact_v1.py": "f92a825ba075d33e231103b33918c1575b06d5d899d084a660f6f0b97909a07a",
+     "tlmpm_rubber_v1.py": "28fc5189e26170db9bb80aa2895143835ec55a0d9db66c77dfba5222defbc8d5",
+     "tlmpm_rubber_visco_v1.py": "bec7e8a1081cba54d801fcd4b13cd835900dcef6665bec152dd66fb529337438"
+    },
+    "protocol_sha256": "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b",
+    "thresholds_sha256": "40be2f8bb7053199ef6b29776e0a7f125dff350e224124c10b07e965182caa36",
+    "tree": {
+     "branch": "claude/rl-rubber-p25",
+     "clean": true,
+     "commit": "ad4c5aa07c7c1604df2deef7a24cc7f57defab5d"
+    },
+    "utc": "2026-11-12T00:35:14+00:00"
+   },
+   "recipe_promoted": false,
+   "schema": "rcs_rubber_heldout_receipt_v1",
+   "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+   "verdict": "FAIL",
+   "wall_s": 725.4338897080161
+  },
+  "summary": {
+   "CAL-05": "FAIL",
+   "CAL-07": "PASS",
+   "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+   "forward_receipts": [
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "T3",
+     "particles_per_env": 23040,
+     "population": 1,
+     "steps": 300,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "T4",
+     "particles_per_env": 23040,
+     "population": 1,
+     "steps": 45,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 2.865329512893983e-06,
+     "dx_m": 0.00075,
+     "experiment": "T5",
+     "particles_per_env": 40960,
+     "population": 1,
+     "steps": 300,
+     "substeps": 349
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "C2",
+     "particles_per_env": 25440,
+     "population": 1,
+     "steps": 800,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 2.865329512893983e-06,
+     "dx_m": 0.00075,
+     "experiment": "C3",
+     "particles_per_env": 37120,
+     "population": 1,
+     "steps": 800,
+     "substeps": 349
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "C4",
+     "particles_per_env": 21120,
+     "population": 1,
+     "steps": 800,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "F2",
+     "particles_per_env": 15360,
+     "population": 1,
+     "steps": 330,
+     "substeps": 262
+    }
+   ],
+   "negative_control_failed_viscous_rows": [
+    {
+     "experiment": "T5",
+     "invalid_reason": 0,
+     "metric": "M2",
+     "tolerance": 0.02690881604594734,
+     "value": 0.051579034873887486,
+     "verdict": "FAIL"
+    }
+   ],
+   "predict_wall_s": [
+    365.055123529979,
+    360.3774339100346
+   ],
+   "recipe_promoted": false,
+   "utc_end": "2026-11-12T00:47:19+00:00",
+   "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+   "wall_s": 725.5177972050151
+  }
+ },
+ "id": "p2_5_calib_synthetic_001",
+ "pilot": {
+  "eval": {
+   "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+   "env": {
+    "argv": [
+     "scripts/rubber/p2_5/run_pilot.py",
+     "--pilot-run",
+     "artifacts/rl_ready/p2_5/pilot_gen_001",
+     "--out-run",
+     "artifacts/rl_ready/p2_5/pilot_eval_001",
+     "--gpu-index",
+     "0"
+    ],
+    "cuda_visible_devices": "0",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "scipy": "1.18.1",
+    "warp": "1.17.0"
+   },
+   "forward_receipts": [
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "T1",
+     "particles_per_env": 23040,
+     "population": 1,
+     "steps": 900,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "T2",
+     "particles_per_env": 23040,
+     "population": 1,
+     "steps": 113,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "R1",
+     "particles_per_env": 23040,
+     "population": 1,
+     "steps": 320,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "C1",
+     "particles_per_env": 21120,
+     "population": 1,
+     "steps": 800,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "G1",
+     "particles_per_env": 21120,
+     "population": 1,
+     "steps": 400,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "F1",
+     "particles_per_env": 15360,
+     "population": 1,
+     "steps": 380,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "T3",
+     "particles_per_env": 23040,
+     "population": 1,
+     "steps": 300,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "T4",
+     "particles_per_env": 23040,
+     "population": 1,
+     "steps": 45,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 2.865329512893983e-06,
+     "dx_m": 0.00075,
+     "experiment": "T5",
+     "particles_per_env": 40960,
+     "population": 1,
+     "steps": 300,
+     "substeps": 349
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "C2",
+     "particles_per_env": 25440,
+     "population": 1,
+     "steps": 800,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 2.865329512893983e-06,
+     "dx_m": 0.00075,
+     "experiment": "C3",
+     "particles_per_env": 37120,
+     "population": 1,
+     "steps": 800,
+     "substeps": 349
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "C4",
+     "particles_per_env": 21120,
+     "population": 1,
+     "steps": 800,
+     "substeps": 262
+    },
+    {
+     "device": "cuda:0",
+     "dt_s": 3.816793893129771e-06,
+     "dx_m": 0.001,
+     "experiment": "F2",
+     "particles_per_env": 15360,
+     "population": 1,
+     "steps": 330,
+     "substeps": 262
+    }
+   ],
+   "gpu_free_mib_at_start": 31449.0,
+   "gpu_samples": [
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3936366, 1746, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3909244, 1262, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2910, 32607, 99, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1338, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3936366,
+     "utc": "2026-11-11T14:14:21+00:00"
+    }
+   ],
+   "pred_invalid": {
+    "C1": 0,
+    "C2": 0,
+    "C3": 0,
+    "C4": 0,
+    "F1": 0,
+    "F2": 0,
+    "G1": 0,
+    "R1": 0,
+    "T1": 0,
+    "T2": 0,
+    "T3": 0,
+    "T4": 0,
+    "T5": 0
+   },
+   "protocol_sha256": "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b",
+   "recipe_promoted": false,
+   "tree": {
+    "branch": "claude/rl-rubber-p25",
+    "clean": true,
+    "commit": "f042d347a0bd46eff9a5aefbdd5e5afb03fa6625"
+   },
+   "utc_end": "2026-11-11T14:14:21+00:00",
+   "utc_start": null,
+   "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+   "wall_s": 582.5327083769953
+  },
+  "gen": {
+   "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+   "dataset_dir": "/home/ningan/RoboticCuttingSim-rl-rubber-p25/configs/rubber/calibration_synthetic/p2_5_pilot_001",
+   "dataset_id": "p2_5_pilot_001",
+   "env": {
+    "argv": [
+     "scripts/rubber/p2_5/gen_synthetic.py",
+     "--kind",
+     "pilot",
+     "--run-dir",
+     "artifacts/rl_ready/p2_5/pilot_gen_001",
+     "--gpu-index",
+     "0"
+    ],
+    "cuda_visible_devices": "0",
+    "numpy": "2.5.4",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "scipy": "1.18.1",
+    "warp": "1.17.0"
+   },
+   "gpu_free_mib_at_start": 31449.0,
+   "gpu_samples": [
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3767796, 938, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1158, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1014, 32607, 97, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:04:11+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 780, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3791317, 940, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1944, 32607, 41, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1016, 32607, 97, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:10:23+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 780, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3797948, 938, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1944, 32607, 64, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1014, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:11:10+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 780, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3805303, 1178, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1944, 32607, 19, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1254, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:13:22+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3827736, 1188, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1954, 32607, 8, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1264, 32607, 97, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:20:47+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1046, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1954, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1122, 32607, 0, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:24:30+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1954, 32607, 94, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1274, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:27:00+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1967, 32607, 44, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1274, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:29:04+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 790, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1967, 32607, 58, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1274, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:29:23+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2031, 32607, 70, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1274, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:33:39+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 974, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 85, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1050, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:42:15+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 100, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1274, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T11:58:40+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2018, 32607, 100, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1274, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T12:06:00+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2031, 32607, 71, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1274, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T12:08:10+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3773343, 854, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "3846269, 1198, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2031, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 1274, 32607, 100, 570.211.01"
+     ],
+     "own_pid": 3773343,
+     "utc": "2026-11-11T12:08:10+00:00"
+    }
+   ],
+   "kind": "pilot",
+   "manifest_freeze_sha256": null,
+   "manifest_status": "SYNTHETIC_PILOT",
+   "module_sha256": {
+    "batched/rubber_batch.py": "0b5fae8cd1269341f0be2d658cd41c69186f9b222c7a0dfc9174d4c037e86bf5",
+    "batched/rubber_contact_batch.py": "a65ca1549b398d3ed8556ca745479db161576fca207df23cf0deb473d942518f",
+    "batched/rubber_material_batch.py": "9028f28c4be9a30f46edde333ead46b285df56bf085a10e72bf9f549c2eb5bdd",
+    "live_rubber_material.py": "3cfb91e6b3c4b06691b0f133a4dd399a11d28ad5b0d308bf21e8a08808898b43",
+    "rubber_calibration_experiments.py": "42db5383462f704abd044cb201d78bcc4985006fa4462a7b3651209ea1ed3ae5",
+    "rubber_calibration_fit.py": "203b8644bc8988f63a8597b885066ade2b41fc4df58cd607d315046de05f44fe",
+    "rubber_calibration_synthetic.py": "68c79e45f44d09580726e4f0b08659535f32458616891b9feb9d3c77fc51aa41",
+    "rubber_calibration_v2.py": "410b2bef3043cc103b4394a3fd51b928a730fc05cbe929b8bc336e72033d94fd",
+    "rubber_contact.py": "0a5d4a59f1ca624dc1d151d4a5d683575d2a5e9c56063417cca0fcb58540245d",
+    "tlmpm_rubber_contact_v1.py": "f92a825ba075d33e231103b33918c1575b06d5d899d084a660f6f0b97909a07a",
+    "tlmpm_rubber_v1.py": "28fc5189e26170db9bb80aa2895143835ec55a0d9db66c77dfba5222defbc8d5",
+    "tlmpm_rubber_visco_v1.py": "bec7e8a1081cba54d801fcd4b13cd835900dcef6665bec152dd66fb529337438"
+   },
+   "noise_seed_sha256": "8712e333a95972c2dbaadfe2058cb05a8d125a4cf92230f31258511b6d63e7e5",
+   "protocol_sha256": "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b",
+   "recipe_promoted": false,
+   "sealed_truth_path": "artifacts/rl_ready/p2_5/pilot_gen_001/sealed/truth.json",
+   "sealed_truth_sha256": "019e844178a6df2c3e53995f056e99d72abf8b250f670d45f6f47714857f89e5",
+   "secret_seeds": "written only to the sealed file",
+   "smoke": false,
+   "tree": {
+    "branch": "claude/rl-rubber-p25",
+    "clean": true,
+    "commit": "54a8f064ac12dad5ea8c328d33d7f925c3b4e6eb"
+   },
+   "truth_invalid": {},
+   "truth_receipts": {
+    "C1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "C1",
+     "graph": {
+      "capture_wall_s": 0.31695159804075956,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61529820,
+     "particles_per_env": 70200,
+     "population": 1,
+     "steps": 800,
+     "substeps": 784,
+     "wall_s": 444.4807047289796
+    },
+    "C2": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "C2",
+     "graph": {
+      "capture_wall_s": 0.2220884459093213,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 72985804,
+     "particles_per_env": 84780,
+     "population": 1,
+     "steps": 800,
+     "substeps": 784,
+     "wall_s": 516.1090916070389
+    },
+    "C3": {
+     "device": "cuda:0",
+     "dt_s": 9.560229445506693e-07,
+     "dx_m": 0.0005,
+     "experiment": "C3",
+     "graph": {
+      "capture_wall_s": 0.15192766801919788,
+      "chunk_replays": 2,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 46
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 107503748,
+     "particles_per_env": 123840,
+     "population": 1,
+     "steps": 800,
+     "substeps": 1046,
+     "wall_s": 985.5236132909777
+    },
+    "C4": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "C4",
+     "graph": {
+      "capture_wall_s": 0.21036277897655964,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61529820,
+     "particles_per_env": 70200,
+     "population": 1,
+     "steps": 800,
+     "substeps": 784,
+     "wall_s": 439.61214775103144
+    },
+    "F1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "F1",
+     "graph": {
+      "capture_wall_s": 0.3095693290233612,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 43707596,
+     "particles_per_env": 51840,
+     "population": 1,
+     "steps": 380,
+     "substeps": 784,
+     "translation_check": {
+      "max_centroid_y_drift_m": 3.2346180942055547e-10,
+      "max_marker_y_spread_change_m": 9.48426127737878e-09
+     },
+     "wall_s": 149.53190408903174
+    },
+    "F2": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "F2",
+     "graph": {
+      "capture_wall_s": 0.2006892670178786,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 43707596,
+     "particles_per_env": 51840,
+     "population": 1,
+     "steps": 330,
+     "substeps": 784,
+     "translation_check": {
+      "max_centroid_y_drift_m": 4.870978707188778e-10,
+      "max_marker_y_spread_change_m": 1.4345990470218672e-08
+     },
+     "wall_s": 129.74240866396576
+    },
+    "G1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "G1",
+     "graph": {
+      "capture_wall_s": 0.2234870409592986,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61529820,
+     "particles_per_env": 70200,
+     "population": 1,
+     "steps": 400,
+     "substeps": 784,
+     "wall_s": 222.99531783605926
+    },
+    "R1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "R1",
+     "graph": {
+      "capture_wall_s": 0.20131735794711858,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 320,
+     "substeps": 784,
+     "wall_s": 132.24229598394595
+    },
+    "T1": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "T1",
+     "graph": {
+      "capture_wall_s": 0.20544204802718014,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 900,
+     "substeps": 784,
+     "wall_s": 371.407778723049
+    },
+    "T2": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "T2",
+     "graph": {
+      "capture_wall_s": 0.20293767901603132,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 113,
+     "substeps": 784,
+     "wall_s": 47.00472113408614
+    },
+    "T3": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "T3",
+     "graph": {
+      "capture_wall_s": 0.21868339204229414,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 300,
+     "substeps": 784,
+     "wall_s": 124.0448493140284
+    },
+    "T4": {
+     "device": "cuda:0",
+     "dt_s": 1.2755102040816327e-06,
+     "dx_m": 0.0006666666666666666,
+     "experiment": "T4",
+     "graph": {
+      "capture_wall_s": 0.20280962099786848,
+      "chunk_replays": 1,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 284
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 61695724,
+     "particles_per_env": 77760,
+     "population": 1,
+     "steps": 45,
+     "substeps": 784,
+     "wall_s": 19.005945735028945
+    },
+    "T5": {
+     "device": "cuda:0",
+     "dt_s": 9.560229445506693e-07,
+     "dx_m": 0.0005,
+     "experiment": "T5",
+     "graph": {
+      "capture_wall_s": 0.14579959900584072,
+      "chunk_replays": 2,
+      "graph_chunk_substeps": 500,
+      "remainder_substeps": 46
+     },
+     "invalid_reason": 0,
+     "memory_bytes": 109226236,
+     "particles_per_env": 138240,
+     "population": 1,
+     "steps": 300,
+     "substeps": 1046,
+     "wall_s": 255.40807739901356
+    }
+   },
+   "utc_end": "2026-11-11T12:08:10+00:00",
+   "utc_start": "2026-11-11T11:04:11+00:00",
+   "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+   "verdict_truth_valid": "PASS",
+   "wall_s": 3838.7499521680875,
+   "warp_device": "cuda:0"
+  }
+ },
+ "protocol": {
+  "file": "configs/rubber/rubber_calib_tests_v1.json",
+  "sha256": "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b"
+ },
+ "protocol_v2": {
+  "file": "configs/rubber/rubber_calib_tests_v2.json",
+  "scope": "supersedes v1 for the fit procedure only, adds the compute budget",
+  "sha256": "1606457fbe3e569f495d33abc38221d51493cb09612e1981aa63edc9708c01ff"
+ },
+ "recipe_promoted": false,
+ "resolution_specific": "Q1w (K2 review condition 4): every fitted theta is RESOLUTION_SPECIFIC to rubber_ref_v1 (n_t 4, CFL 0.5), which carries the measured wide-strip sag bias Q1w +0.62 % (+0.50 ... +0.78 %; known_limitation rubber_phys_11_v5_q1w_gci_2.16pct). The n_t 6 truth is itself +0.21 % for Q1w, so the discretisation floor b_mk captures only about 0.4 % of the n_t 4 bias, not the whole bias. theta_hat is never carried to n_t 3 or 6 without the bias shift; the fit receipt carries the label.",
+ "reveal": {
+  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+  "fits": [
+   {
+    "CAL-06": "FAIL",
+    "fit_receipt": "docs/evidence/rl_ready/p2_5/fit_receipt_formal.json",
+    "kind": "formal",
+    "rows": [
+     {
+      "abs_error": 5738.442832521512,
+      "bound": 6345.152986761753,
+      "identifiable": true,
+      "param": "mu_eq_pa",
+      "rel_error": 0.018087642156127508,
+      "sigma_hat": 188.86014375483467,
+      "theta_hat": 322996.09217060916,
+      "theta_star": 317257.64933808765,
+      "verdict": "PASS"
+     },
+     {
+      "abs_error": 0.09840793894866236,
+      "bound": 0.0053788339882170225,
+      "identifiable": true,
+      "param": "g1",
+      "rel_error": 0.5110248050373949,
+      "sigma_hat": 0.0017929446627390074,
+      "theta_hat": 0.09416185018605731,
+      "theta_star": 0.19256978913471967,
+      "verdict": "FAIL"
+     },
+     {
+      "abs_error": 7.055495231305699e-05,
+      "bound": 0.0016722609111233305,
+      "identifiable": true,
+      "param": "tau1_s",
+      "rel_error": 0.004917130986245878,
+      "sigma_hat": 0.0005574203037077768,
+      "theta_hat": 0.014278249769467226,
+      "theta_star": 0.014348804721780283,
+      "verdict": "PASS"
+     },
+     {
+      "abs_error": 0.0522560669983424,
+      "bound": 0.005515752373658246,
+      "identifiable": true,
+      "param": "g2",
+      "rel_error": 0.3909309170645626,
+      "sigma_hat": 0.0018385841245527489,
+      "theta_hat": 0.1859269144992891,
+      "theta_star": 0.1336708475009467,
+      "verdict": "FAIL"
+     },
+     {
+      "abs_error": 0.0510709648281569,
+      "bound": 0.0034455044480105894,
+      "identifiable": true,
+      "param": "tau2_s",
+      "rel_error": 0.4141182034785001,
+      "sigma_hat": 0.0011485014826701965,
+      "theta_hat": 0.07225364249210152,
+      "theta_star": 0.12332460732025842,
+      "verdict": "FAIL"
+     },
+     {
+      "abs_error": 0.0031756081203410114,
+      "bound": 0.008937836274350243,
+      "identifiable": true,
+      "param": "mu_table",
+      "rel_error": 0.007105988570084585,
+      "sigma_hat": 0.000267153768436224,
+      "theta_hat": 0.4500674218378532,
+      "theta_star": 0.4468918137175122,
+      "verdict": "PASS"
+     }
+    ]
+   },
+   {
+    "CAL-06": "FAIL",
+    "fit_receipt": "docs/evidence/rl_ready/p2_5/fit_receipt_negative_control.json",
+    "kind": "negative_control",
+    "rows": [
+     {
+      "abs_error": 7128.801595896133,
+      "bound": 6345.152986761753,
+      "identifiable": true,
+      "param": "mu_eq_pa",
+      "rel_error": 0.022470070022801183,
+      "sigma_hat": 710.8324457325574,
+      "theta_hat": 324386.4509339838,
+      "theta_star": 317257.64933808765,
+      "verdict": "FAIL"
+     },
+     {
+      "abs_error": 0.003771719086725578,
+      "bound": 0.018612774109051794,
+      "identifiable": true,
+      "param": "g1",
+      "rel_error": 0.019586245088978757,
+      "sigma_hat": 0.006204258036350599,
+      "theta_hat": 0.19634150822144525,
+      "theta_star": 0.19256978913471967,
+      "verdict": "PASS"
+     },
+     {
+      "abs_error": 0.0006277204340101941,
+      "bound": 0.0016946756724212607,
+      "identifiable": true,
+      "param": "tau1_s",
+      "rel_error": 0.043747228161615935,
+      "sigma_hat": 0.0005648918908070869,
+      "theta_hat": 0.013721084287770089,
+      "theta_star": 0.014348804721780283,
+      "verdict": "PASS"
+     },
+     {
+      "abs_error": 0.01566082060429709,
+      "bound": 0.018672796844468466,
+      "identifiable": true,
+      "param": "g2",
+      "rel_error": 0.1171595818915278,
+      "sigma_hat": 0.006224265614822822,
+      "theta_hat": 0.11801002689664962,
+      "theta_star": 0.1336708475009467,
+      "verdict": "PASS"
+     },
+     {
+      "abs_error": 0.019338148863444968,
+      "bound": 0.02642383780839935,
+      "identifiable": true,
+      "param": "tau2_s",
+      "rel_error": 0.15680689591191024,
+      "sigma_hat": 0.008807945936133117,
+      "theta_hat": 0.10398645845681345,
+      "theta_star": 0.12332460732025842,
+      "verdict": "PASS"
+     },
+     {
+      "abs_error": 0.05310818628248781,
+      "bound": Infinity,
+      "identifiable": false,
+      "param": "mu_table",
+      "rel_error": 0.11883902244863762,
+      "sigma_hat": Infinity,
+      "theta_hat": 0.5,
+      "theta_star": 0.4468918137175122,
+      "verdict": "NON_IDENTIFIABLE_REPORTED"
+     }
+    ]
+   }
+  ],
+  "heldout_ledger": "artifacts/rl_ready/p2_5/fit_v2_001/heldout/heldout_3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9.json",
+  "heldout_utc": "2026-11-12T00:35:14+00:00",
+  "manifest_freeze_sha256": "3d37a95070c07776f56cef18dffe54c7a94f4d69c0ecad67f5106211a3f689c9",
+  "noise_seed": "96516026564109564663281212288589483291",
+  "noise_seed_sha256_check": true,
+  "protocol_sha256": "1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b",
+  "recipe_promoted": false,
+  "rho_star_kg_m3": 1121.5438234425387,
+  "theta_star": {
+   "g1": 0.19256978913471967,
+   "g2": 0.1336708475009467,
+   "mu_eq_pa": 317257.64933808765,
+   "mu_table": 0.4468918137175122,
+   "tau1_s": 0.014348804721780283,
+   "tau2_s": 0.12332460732025842
+  },
+  "tree": {
+   "branch": "claude/rl-rubber-p25",
+   "clean": false,
+   "commit": "ad4c5aa07c7c1604df2deef7a24cc7f57defab5d"
+  },
+  "truth_seed": "128669217054499089731163802508729620752",
+  "utc_reveal": "2026-11-12T00:47:30+00:00",
+  "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC"
+ },
+ "schema": "rcs_evidence_v1",
+ "sealing": "The seal is procedural (K2 review, P2-5 additions): the truth is generated and revealed by separate processes; sealed/ lives under artifacts/ (outside the git worktree, on /mnt/data) with mode 0700 / 0400; every read through rubber_calibration_synthetic.reveal is logged in sealed/read_log.txt; the fit / held-out API refuses sealed paths. The fitting agent runs as the same OS user, so CAL-08 detects order violations, not peeking.",
+ "statement": "Synthetic numerical validation of the calibration interface. The truth is the simulator itself (same model family) at a finer resolution with sensor noise. It is NEVER a calibration: no real rubber data exists on this machine; no recipe is promoted; synthetic manifests can never satisfy the REAL_CALIBRATED gate. Same-family truth cannot reveal model-form error against real rubber; it tests identifiability, the pipeline and generalisation of the declared protocol under discretisation and noise.",
+ "supplementary_diagnostic_not_scored": {
+  "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+  "fit_split_chi2": {
+   "theta_hat": {
+    "chi2_reduced_total": 2.483777649759091,
+    "per_experiment": {
+     "C1": {
+      "chi2": 1304.5286748219523,
+      "n": 384
+     },
+     "F1": {
+      "chi2": 591.9625438895573,
+      "n": 471
+     },
+     "G1": {
+      "chi2": 174.87903531162033,
+      "n": 192
+     },
+     "R1": {
+      "chi2": 1481.6013427402033,
+      "n": 320
+     },
+     "T1": {
+      "chi2": 1673.0095735687867,
+      "n": 900
+     },
+     "T2": {
+      "chi2": 670.5069701959625,
+      "n": 113
+     }
+    }
+   },
+   "theta_star": {
+    "chi2_reduced_total": 1.4157454914757048,
+    "per_experiment": {
+     "C1": {
+      "chi2": 374.4905621046414,
+      "n": 384
+     },
+     "F1": {
+      "chi2": 1088.4058596864563,
+      "n": 471
+     },
+     "G1": {
+      "chi2": 176.2590983498551,
+      "n": 192
+     },
+     "R1": {
+      "chi2": 675.2674376286811,
+      "n": 320
+     },
+     "T1": {
+      "chi2": 915.123880346418,
+      "n": 900
+     },
+     "T2": {
+      "chi2": 131.43295864727168,
+      "n": 113
+     }
+    }
+   }
+  },
+  "gpu_lock": {
+   "acquisitions": 2,
+   "held_s": 705.1553055339027,
+   "lock": "/mnt/data/ningan/lab_records/rcs_rl_runner/gpu0.lock",
+   "mode": "blocking flock per forward evaluation",
+   "samples": [
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "2935628, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2935633, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2935631, 886, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2935632, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 1158, 32607, 0, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 5001, 32607, 19, 570.211.01"
+     ],
+     "own_pid": 2936634,
+     "utc": "2026-11-12T00:47:40+00:00"
+    },
+    {
+     "compute_apps": [
+      "642659, 766, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "2936634, 1158, GPU-76f61dc7-9c48-d525-ce02-df1d879024ad",
+      "2944254, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2944257, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2944259, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35",
+      "2944258, 1331, GPU-a278df44-8db0-7770-630f-4f298a570b35"
+     ],
+     "gpus": [
+      "0, NVIDIA GeForce RTX 5090, 2322, 32607, 99, 570.211.01",
+      "1, NVIDIA GeForce RTX 5090, 5456, 32607, 22, 570.211.01"
+     ],
+     "own_pid": 2936634,
+     "utc": "2026-11-12T00:53:19+00:00"
+    }
+   ],
+   "wait_s": 2.520799171179533e-05
+  },
+  "heldout_at_theta_star": [
+   {
+    "experiment": "T3",
+    "metric": "M1",
+    "tol": 0.031164963210826426,
+    "value_at_theta_star": 0.009553735183806249,
+    "within_tol": true
+   },
+   {
+    "experiment": "T3",
+    "metric": "M2",
+    "tol": 0.04637299511583353,
+    "value_at_theta_star": 0.001094957492023176,
+    "within_tol": true
+   },
+   {
+    "experiment": "T3",
+    "metric": "M8",
+    "tol": 0.001,
+    "value_at_theta_star": 2.906594264721121e-05,
+    "within_tol": true
+   },
+   {
+    "experiment": "T3",
+    "metric": "M9",
+    "tol": 0.02,
+    "value_at_theta_star": 0.00019909406907053635,
+    "within_tol": true
+   },
+   {
+    "experiment": "T4",
+    "metric": "M1",
+    "tol": 0.0437551580342323,
+    "value_at_theta_star": 0.008547147396644193,
+    "within_tol": true
+   },
+   {
+    "experiment": "T4",
+    "metric": "M2",
+    "tol": 0.07579307103109151,
+    "value_at_theta_star": 0.008879550712437604,
+    "within_tol": true
+   },
+   {
+    "experiment": "T4",
+    "metric": "M8",
+    "tol": 0.001,
+    "value_at_theta_star": 0.00027388629079526736,
+    "within_tol": true
+   },
+   {
+    "experiment": "T4",
+    "metric": "M9",
+    "tol": 0.02,
+    "value_at_theta_star": 0.0004578255882772253,
+    "within_tol": true
+   },
+   {
+    "experiment": "T5",
+    "metric": "M1",
+    "tol": 0.03661403826012531,
+    "value_at_theta_star": 0.011762634918407618,
+    "within_tol": true
+   },
+   {
+    "experiment": "T5",
+    "metric": "M2",
+    "tol": 0.02690881604594734,
+    "value_at_theta_star": 0.007247947928988539,
+    "within_tol": true
+   },
+   {
+    "experiment": "T5",
+    "metric": "M8",
+    "tol": 0.001,
+    "value_at_theta_star": 2.212981131854383e-05,
+    "within_tol": true
+   },
+   {
+    "experiment": "T5",
+    "metric": "M9",
+    "tol": 0.02,
+    "value_at_theta_star": 0.00012796936219622803,
+    "within_tol": true
+   },
+   {
+    "experiment": "C2",
+    "metric": "M4",
+    "tol": 0.05157599966622589,
+    "value_at_theta_star": 0.015975701022234477,
+    "within_tol": true
+   },
+   {
+    "experiment": "C2",
+    "metric": "M5",
+    "tol": 2.0,
+    "value_at_theta_star": 0.37219496523133166,
+    "within_tol": true
+   },
+   {
+    "experiment": "C2",
+    "metric": "M6",
+    "tol": 0.06325695872063974,
+    "value_at_theta_star": 0.023161983908274286,
+    "within_tol": true
+   },
+   {
+    "experiment": "C2",
+    "metric": "M8",
+    "tol": 0.001,
+    "value_at_theta_star": 3.954875759422398e-07,
+    "within_tol": true
+   },
+   {
+    "experiment": "C2",
+    "metric": "M9",
+    "tol": 0.02,
+    "value_at_theta_star": 0.0023513138489336238,
+    "within_tol": true
+   },
+   {
+    "experiment": "C3",
+    "metric": "M4",
+    "tol": 0.022954128069921188,
+    "value_at_theta_star": 0.009920178903353461,
+    "within_tol": true
+   },
+   {
+    "experiment": "C3",
+    "metric": "M5",
+    "tol": 2.0,
+    "value_at_theta_star": 0.20232812568060643,
+    "within_tol": true
+   },
+   {
+    "experiment": "C3",
+    "metric": "M6",
+    "tol": 0.027662503696537,
+    "value_at_theta_star": 0.008264786247806466,
+    "within_tol": true
+   },
+   {
+    "experiment": "C3",
+    "metric": "M8",
+    "tol": 0.001,
+    "value_at_theta_star": 1.8769859051948688e-07,
+    "within_tol": true
+   },
+   {
+    "experiment": "C3",
+    "metric": "M9",
+    "tol": 0.02,
+    "value_at_theta_star": 0.0003398054288117581,
+    "within_tol": true
+   },
+   {
+    "experiment": "C4",
+    "metric": "M4",
+    "tol": 0.028243571664364555,
+    "value_at_theta_star": 0.009512900610135927,
+    "within_tol": true
+   },
+   {
+    "experiment": "C4",
+    "metric": "M5",
+    "tol": 2.0,
+    "value_at_theta_star": 0.10717385483166586,
+    "within_tol": true
+   },
+   {
+    "experiment": "C4",
+    "metric": "M6",
+    "tol": 0.03038979224774896,
+    "value_at_theta_star": 0.001422413209160589,
+    "within_tol": true
+   },
+   {
+    "experiment": "C4",
+    "metric": "M8",
+    "tol": 0.001,
+    "value_at_theta_star": 8.941806489924255e-07,
+    "within_tol": true
+   },
+   {
+    "experiment": "C4",
+    "metric": "M9",
+    "tol": 0.02,
+    "value_at_theta_star": 0.0016533739654996877,
+    "within_tol": true
+   },
+   {
+    "experiment": "F2",
+    "metric": "M7_onset",
+    "tol": 8.351163577627663,
+    "value_at_theta_star": 0.5699930227699157,
+    "within_tol": true
+   },
+   {
+    "experiment": "F2",
+    "metric": "M7_slip",
+    "tol": 0.05313504879362348,
+    "value_at_theta_star": 0.020722430601418932,
+    "within_tol": true
+   },
+   {
+    "experiment": "F2",
+    "metric": "M8",
+    "tol": 0.001,
+    "value_at_theta_star": 1.3251452642056787e-07,
+    "within_tol": true
+   },
+   {
+    "experiment": "F2",
+    "metric": "M9",
+    "tol": 0.02,
+    "value_at_theta_star": 0.01764062528179584,
+    "within_tol": true
+   }
+  ],
+  "interpretation": "optimisation shortfall",
+  "label": "SUPPLEMENTARY_DIAGNOSTIC_NOT_SCORED (after the one-shot held-out and the reveal)",
+  "recipe_promoted": false,
+  "thetas": {
+   "theta_hat": {
+    "g1": 0.09416185018605731,
+    "g2": 0.1859269144992891,
+    "mu_eq_pa": 322996.09217060916,
+    "mu_table": 0.4500674218378532,
+    "tau1_s": 0.014278249769467226,
+    "tau2_s": 0.07225364249210152
+   },
+   "theta_star": {
+    "g1": 0.19256978913471967,
+    "g2": 0.1336708475009467,
+    "mu_eq_pa": 317257.64933808765,
+    "mu_table": 0.4468918137175122,
+    "tau1_s": 0.014348804721780283,
+    "tau2_s": 0.12332460732025842
+   }
+  },
+  "tree": {
+   "branch": "claude/rl-rubber-p25",
+   "clean": false,
+   "commit": "1923fc0cfaec3a7b7257a417c125498833a7b2ae"
+  },
+  "utc": "2026-11-12T00:59:25+00:00",
+  "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+  "wall_s": 705.1580386148999
+ },
+ "task": "P2-5 (P5.1-P5.6)",
+ "thresholds": {
+  "chi2_pilot_reduced": 1.2731579239406965,
+  "file": "configs/rubber/rubber_calib_thresholds_v1.json",
+  "sha256": "40be2f8bb7053199ef6b29776e0a7f125dff350e224124c10b07e965182caa36",
+  "tolerances": {
+   "C2": {
+    "M4": 0.05157599966622589,
+    "M5": 2.0,
+    "M6": 0.06325695872063974,
+    "M8": 0.001,
+    "M9": 0.02
+   },
+   "C3": {
+    "M4": 0.022954128069921188,
+    "M5": 2.0,
+    "M6": 0.027662503696537,
+    "M8": 0.001,
+    "M9": 0.02
+   },
+   "C4": {
+    "M4": 0.028243571664364555,
+    "M5": 2.0,
+    "M6": 0.03038979224774896,
+    "M8": 0.001,
+    "M9": 0.02
+   },
+   "F2": {
+    "M7_onset": 8.351163577627663,
+    "M7_slip": 0.05313504879362348,
+    "M8": 0.001,
+    "M9": 0.02
+   },
+   "T3": {
+    "M1": 0.031164963210826426,
+    "M2": 0.04637299511583353,
+    "M8": 0.001,
+    "M9": 0.02
+   },
+   "T4": {
+    "M1": 0.0437551580342323,
+    "M2": 0.07579307103109151,
+    "M8": 0.001,
+    "M9": 0.02
+   },
+   "T5": {
+    "M1": 0.03661403826012531,
+    "M2": 0.02690881604594734,
+    "M8": 0.001,
+    "M9": 0.02
+   }
+  }
+ },
+ "tree": {
+  "branch": "claude/rl-rubber-p25",
+  "clean": true,
+  "commit": "6879d4b4b115a9c95a1a02b9c64aa39cfda18527"
+ },
+ "v1_fit_aborted": {
+  "formal": {
+   "reason": "stopped by the agent (SIGINT) at 18:30 UTC after 7 lockstep rounds of ~28 min (3.3 h GPU0): cost still 3.2e4-4.6e4 vs the expected floor ~1.5e3 (chi2_pilot 1.27) with 2-13 % gain per round; the declared budget (max_nfev 40) would have held GPU0 ~15 h more while P2-6 jobs queued, ~6x the plan's 2.5 GPU-h for P5.6",
+   "status": "ABORTED_NO_RECEIPT"
+  },
+  "label": "v1 formal fit aborted for compute, no receipt",
+  "negative_control": {
+   "reason": "stopped by the agent (SIGINT) at 18:36 UTC after 12 lockstep rounds of ~11 min (2.3 h GPU1): still converging (best cost 3.5e2, 5 % per round); released because the P1-6 runner (priority on GPU1 per the plan) had waited 2 h 16 min for the lock and the control is unusable without the formal fit",
+   "status": "ABORTED_NO_RECEIPT"
+  },
+  "records": [
+   "artifacts/rl_ready/p2_5/fit_001/formal/ABORTED.json",
+   "artifacts/rl_ready/p2_5/fit_001/negative_control/ABORTED.json"
+  ]
+ },
+ "v2_method_development": {
+  "pilot_validation": {
+   "rows": [
+    {
+     "abs_error": 1557.614522871154,
+     "bound": 6657.097953633508,
+     "identifiable": true,
+     "param": "mu_eq_pa",
+     "rel_error": 0.004679560173877246,
+     "sigma_hat": 164.79607744663105,
+     "theta_hat": 334412.51220454654,
+     "theta_star": 332854.8976816754,
+     "verdict": "PASS"
+    },
+    {
+     "abs_error": 0.023233867125335178,
+     "bound": 0.0038699167054363232,
+     "identifiable": true,
+     "param": "g1",
+     "rel_error": 0.1543742153050966,
+     "sigma_hat": 0.001289972235145441,
+     "theta_hat": 0.1272696808889304,
+     "theta_star": 0.15050354801426558,
+     "verdict": "FAIL"
+    },
+    {
+     "abs_error": 0.0008965138034878134,
+     "bound": 0.0005628212863348012,
+     "identifiable": true,
+     "param": "tau1_s",
+     "rel_error": 0.10794836469276146,
+     "sigma_hat": 0.0001876070954449337,
+     "theta_hat": 0.0074085106036853475,
+     "theta_star": 0.008305024407173161,
+     "verdict": "FAIL"
+    },
+    {
+     "abs_error": 0.01108905056081333,
+     "bound": 0.0038679491795428097,
+     "identifiable": true,
+     "param": "g2",
+     "rel_error": 0.08358180384559608,
+     "sigma_hat": 0.0012893163931809366,
+     "theta_hat": 0.14376207328354093,
+     "theta_star": 0.1326730227227276,
+     "verdict": "FAIL"
+    },
+    {
+     "abs_error": 0.015645364951923174,
+     "bound": 0.0043552748139247316,
+     "identifiable": true,
+     "param": "tau2_s",
+     "rel_error": 0.14451523419234627,
+     "sigma_hat": 0.001451758271308244,
+     "theta_hat": 0.09261564323424198,
+     "theta_star": 0.10826100818616516,
+     "verdict": "FAIL"
+    },
+    {
+     "abs_error": 0.0013442628790427125,
+     "bound": 0.009877653268114005,
+     "identifiable": true,
+     "param": "mu_table",
+     "rel_error": 0.002721826414745939,
+     "sigma_hat": 0.00023850820160916777,
+     "theta_hat": 0.49522692628474296,
+     "theta_star": 0.49388266340570025,
+     "verdict": "PASS"
+    }
+   ],
+   "verdict": "FAIL"
+  },
+  "repeatability": {
+   "C1": {
+    "bitwise_identical_copies": false,
+    "chi2_mean_square": 1.0560432559243578,
+    "copies_x_runs": 6,
+    "fd_signal_h1e-3": {
+     "g1": {
+      "rms_delta_residual_h1e-3": 0.0021570991776479168
+     },
+     "g2": {
+      "rms_delta_residual_h1e-3": 0.004765238296897231
+     },
+     "mu_eq_pa": {
+      "rms_delta_residual_h1e-3": 0.0488331077864634
+     },
+     "mu_table": {
+      "rms_delta_residual_h1e-3": 1.7995463565690974e-06
+     },
+     "tau1_s": {
+      "rms_delta_residual_h1e-3": 0.002873363395811375
+     },
+     "tau2_s": {
+      "rms_delta_residual_h1e-3": 0.0014833777179827567
+     }
+    },
+    "n_residuals": 384,
+    "spread_max": 3.4154010394764137e-06,
+    "spread_rms": 8.256200178614378e-07,
+    "wall_s": 497.400288434932
+   },
+   "F1": {
+    "bitwise_identical_copies": false,
+    "chi2_mean_square": 1.6636094333852713,
+    "copies_x_runs": 6,
+    "fd_signal_h1e-3": {
+     "g1": {
+      "rms_delta_residual_h1e-3": 0.004022317817662709
+     },
+     "g2": {
+      "rms_delta_residual_h1e-3": 0.004914936813263753
+     },
+     "mu_eq_pa": {
+      "rms_delta_residual_h1e-3": 0.04163433738779157
+     },
+     "mu_table": {
+      "rms_delta_residual_h1e-3": 0.6870248003480235
+     },
+     "tau1_s": {
+      "rms_delta_residual_h1e-3": 0.0007433940176463668
+     },
+     "tau2_s": {
+      "rms_delta_residual_h1e-3": 0.000823269274509729
+     }
+    },
+    "n_residuals": 471,
+    "spread_max": 0.001689119429264161,
+    "spread_rms": 0.0003934869835181641,
+    "wall_s": 168.6649183849804
+   },
+   "G1": {
+    "bitwise_identical_copies": false,
+    "chi2_mean_square": 1.1171210412596555,
+    "copies_x_runs": 6,
+    "fd_signal_h1e-3": {
+     "g1": {
+      "rms_delta_residual_h1e-3": 0.00012805412477576484
+     },
+     "g2": {
+      "rms_delta_residual_h1e-3": 0.0008475272722183358
+     },
+     "mu_eq_pa": {
+      "rms_delta_residual_h1e-3": 0.01636496631008716
+     },
+     "mu_table": {
+      "rms_delta_residual_h1e-3": 2.5490065312199193e-07
+     },
+     "tau1_s": {
+      "rms_delta_residual_h1e-3": 0.000125795957896593
+     },
+     "tau2_s": {
+      "rms_delta_residual_h1e-3": 0.0008126386563814267
+     }
+    },
+    "n_residuals": 192,
+    "spread_max": 4.360489127638491e-07,
+    "spread_rms": 1.7605576354806498e-07,
+    "wall_s": 254.36315765604377
+   },
+   "R1": {
+    "bitwise_identical_copies": false,
+    "chi2_mean_square": 1.4701564690195101,
+    "copies_x_runs": 6,
+    "fd_signal_h1e-3": {
+     "g1": {
+      "rms_delta_residual_h1e-3": 0.014708286441051254
+     },
+     "g2": {
+      "rms_delta_residual_h1e-3": 0.01856825601205117
+     },
+     "mu_eq_pa": {
+      "rms_delta_residual_h1e-3": 0.10611286205837023
+     },
+     "mu_table": {
+      "rms_delta_residual_h1e-3": 4.906760941542088e-06
+     },
+     "tau1_s": {
+      "rms_delta_residual_h1e-3": 0.001148969340603796
+     },
+     "tau2_s": {
+      "rms_delta_residual_h1e-3": 0.003772420815397847
+     }
+    },
+    "n_residuals": 320,
+    "spread_max": 7.184785590734932e-06,
+    "spread_rms": 3.113645813216043e-06,
+    "wall_s": 145.63458456692751
+   },
+   "T1": {
+    "bitwise_identical_copies": false,
+    "chi2_mean_square": 1.0534691199398285,
+    "copies_x_runs": 6,
+    "fd_signal_h1e-3": {
+     "g1": {
+      "rms_delta_residual_h1e-3": 0.0015456628667253397
+     },
+     "g2": {
+      "rms_delta_residual_h1e-3": 0.0030916492140916894
+     },
+     "mu_eq_pa": {
+      "rms_delta_residual_h1e-3": 0.074310573859165
+     },
+     "mu_table": {
+      "rms_delta_residual_h1e-3": 8.440511486931491e-06
+     },
+     "tau1_s": {
+      "rms_delta_residual_h1e-3": 0.0003697175154850564
+     },
+     "tau2_s": {
+      "rms_delta_residual_h1e-3": 0.0026944754078348375
+     }
+    },
+    "n_residuals": 900,
+    "spread_max": 1.4824921537189866e-05,
+    "spread_rms": 5.283598238431461e-06,
+    "wall_s": 408.1909620780498
+   },
+   "T2": {
+    "bitwise_identical_copies": false,
+    "chi2_mean_square": 1.7721297552585926,
+    "copies_x_runs": 6,
+    "fd_signal_h1e-3": {
+     "g1": {
+      "rms_delta_residual_h1e-3": 0.005822376922448195
+     },
+     "g2": {
+      "rms_delta_residual_h1e-3": 0.009911135755417142
+     },
+     "mu_eq_pa": {
+      "rms_delta_residual_h1e-3": 0.10308611819463928
+     },
+     "mu_table": {
+      "rms_delta_residual_h1e-3": 3.976232092898403e-06
+     },
+     "tau1_s": {
+      "rms_delta_residual_h1e-3": 0.002363141923536069
+     },
+     "tau2_s": {
+      "rms_delta_residual_h1e-3": 0.0038322100286783093
+     }
+    },
+    "n_residuals": 113,
+    "spread_max": 4.824970571264187e-06,
+    "spread_rms": 2.3190156863187043e-06,
+    "wall_s": 51.727509666001424
+   }
+  }
+ },
+ "validation_kind": "NUMERICAL_VALIDATION_SYNTHETIC",
+ "verdicts": {
+  "CAL-01": "PASS",
+  "CAL-02": "PASS",
+  "CAL-03": "PASS",
+  "CAL-04": "FAIL",
+  "CAL-05": "FAIL",
+  "CAL-06": "FAIL",
+  "CAL-07": "PASS",
+  "CAL-08": "PASS",
+  "CAL-09": "PASS"
+ },
+ "writer": "scripts/rubber/p2_5/write_evidence.py",
+ "written_utc": "2026-11-12T00:59:50+00:00"
+}

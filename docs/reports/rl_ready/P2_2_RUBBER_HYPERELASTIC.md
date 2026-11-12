@@ -603,3 +603,41 @@ Code at `1bdef79`; `.venv` Python 3.12, Warp 1.17.0. Command:
   the "full" label for wide strips.
 - GPU equivalence of the static refinement observables (float32 atomics in P2G / MUSL) is not established.
 - The `motion_table_v1` BC launch used by the GPU rows is still unreviewed (ADR 0023 §20.6).
+
+### v5.8 K2 review corrections (additive, 2026-11-11; `docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md`)
+
+The sections above are kept as written; these notes correct or qualify them. Evidence: `k2_review_notes` in
+`docs/evidence/rl_ready/p2_2_v5_001.json`.
+
+- **Q1w decision (v5.7 first item): option (c) accepted.** n_t 4 (`rubber_ref_v1`) stays the production grid for
+  bending-dominated scenes, with its measured wide-strip sag bias as a labelled limitation; RUBBER-PHYS-11 v5 stays
+  **FAIL**; no v6 rule. The label is implemented (K2-2): every profile of `rubber_material.RESOLUTION_PROFILES` carries
+  `measured_bias` (schema `rcs_resolution_bias_v1`) and `known_limitation`; `rubber_ref_v1` has the id
+  `rubber_phys_11_v5_q1w_gci_2.16pct` and the label `full_with_known_limitation: rubber_phys_11_v5_q1w_gci_2.16pct`.
+  Values (point against the p_eff 2 extrapolation of n_t 4 / 6 / 8; range from the n_t 8 value to the p = 1
+  extrapolation of n_t 6 / 8): n_t 4 Q1w +0.62 % (+0.50 … +0.78 %), Q1 +0.39 % (+0.33 … +0.47 %), Q2 −0.39 %
+  (−0.50 … −0.31 %); n_t 3 Q1w +1.39 % (+1.27 … +1.56 %), Q1 +0.97 % (+0.91 … +1.06 %), Q2 −0.83 % (−0.94 … −0.76 %).
+  **Q4 is oscillatory**: the "+0.08 %" / "−0.05 %" in the table of v5.3 are point estimates, not signed biases (the
+  label gives |bias| ≤ 0.12 % at n_t 3 and ≤ 0.05 % at n_t 4).
+- **Width qualifiers (K2-11).** The earlier `rubber_rl_v1` label "static_sag_L_over_t_10: ≤ 0.5 %" holds for W = t only.
+  From the -02 rows (range from the n_t 6 value to the -02 two-grid extrapolation; identical for t 3 / 4 / 6 mm): n_t 3
+  at L/t 10: +0.44 … +0.49 % (W = t), +1.05 … +1.29 % (W = 4t); at L/t 20: +0.86 … +1.08 % (W = t), +1.18 … +1.50 %
+  (W = 4t). n_t 4: +0.06 … +0.11 % / +0.30 … +0.53 % at L/t 10, +0.28 … +0.50 % / +0.40 … +0.73 % at L/t 20. The bias
+  grows with L/t and W/t and is not measured beyond L/t 20 / W/t 4 (the P2-6 slots reach L/t 37.5: RL-08 measures it).
+- **Workload E v2 "full".** `workload_e_v2.json` is SHA-pinned and is not edited: its row E_full label "full" reads
+  "full with the known limitation `rubber_phys_11_v5_q1w_gci_2.16pct`" (wide-strip sag +0.62 %).
+- **K2-9, dirty batched -04 run.** `batched_04_v5_001` recorded `tree_dirty: true` without `dirty_paths`
+  (`run_batched_04_v5.py` does not record them). The attribution above is the author's; the K2 sub-review found the 14
+  Warp kernel-module hashes of a clean `git archive 1bdef79` equal to the run log and env 0's tip series byte-equal to
+  the clean formal dt run. Host Python cannot be proven unchanged. Later runners record dirty paths or refuse dirty
+  trees.
+- **K2-10 a, `summary_final.json`.** The exact command that produced it was not recorded (v5.6 only describes it). Re-
+  evaluating the raw outputs at HEAD reproduces it exactly; it differs from `summary.json` only in -04 (NOT_RUN → PASS for
+  `valid` / `batched_equal`).
+- **K2-10 b, co-running CPU workers.** The workload E v2 GPU rows (22:07:57–22:09:30) were measured while the 40 CPU
+  workers of the formal runs (`refinement_v5_001`, 24 workers, from 22:06:45; `rubber_phys_v5_001`, 16 workers, from
+  22:06:47) were active. This was not disclosed in v5.4. The rows are reported, not scored; host-side times may be
+  affected.
+- **K2-11, other details.** The -09 `guard_before_nonfinite` PASS is vacuous (no run became non-finite in its 5 steps);
+  the real evidence remains -12 v3. -08's deformation reserve r = 1.5 is not a production default (r stays 1.0):
+  large-shear scenes must declare r by the rule or they fail loudly with the CFL flag.
