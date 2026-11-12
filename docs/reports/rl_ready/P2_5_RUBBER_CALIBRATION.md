@@ -538,7 +538,7 @@ a resolution bias is supported, but its size (≈ 10 %) and "more polishing does
 8. **θ̂ is RESOLUTION_SPECIFIC** to `rubber_ref_v1` (n_t 4). Never carry it to another resolution without the bias
    shift.
 9. **Until F3 is fixed,** use one canonical ledger directory per freeze, and commit the ledger before the reveal. F3 is
-   fixed from commit `F3_COMMIT` onward: global one-shot registry, and the gate loads and checks the ledger itself
+   fixed from commit `0b9a8d8` onward: global one-shot registry, and the gate loads and checks the ledger itself
    (§12.5).
 
 ### 12.3 E3 (C3): pre-v2 snapshot
@@ -564,4 +564,29 @@ shows it.
 - C2 M4 PASSed; the CAL-05 failures are T4 M2 / M9, C2 M6 / M9, C3 M4 / M6 / M9 and C4 M4 / M6 / M9.
 - The reveal ran on a tree dirty only by the then uncommitted supplementary script, and the diagnostic ran on a tree
   dirty only by `write_evidence.py` edits (F8). `reveal.py` now refuses a dirty tree and pins the protocol.
+
+## 11. `rubber_calib_tests_v3`: final blind re-test (orchestrator decision after the P5.7 review)
+
+### 11.1 Cost estimate (committed before any v3 declaration, development or run)
+
+From the v2 receipts: per evaluation, S4 (P 7, all six experiments) ≈ 640–700 s, R1 + T2 at P 15 ≈ 184 s, T1 at P 2
+≈ 230 s, F1 ≈ 36 s. The FD columns are already one batched population. Truth generation took 3,854 s and the held-out
+predictions ≈ 725 s.
+
+Assumed v3 design:
+- Stage A: μ_eq with the four Prony parameters on R1 + T2, two lockstep starts.
+- Stage B: μ_table on F1.
+- Stage C: the joint polish run to convergence.
+- Bounds: the v1 fit box.
+
+| Item | GPU-h |
+|---|---|
+| new sealed formal dataset | 1.07 |
+| fit | stage A 1.0–1.5 + stage B 0.1 + stage C 1.1–2.7 = 2.2–4.3; declared budget **3.5** |
+| negative control | 0.7–1.7; declared budget **1.5** |
+| held-out + reveal | 0.25 |
+| development (≤ 1.5 allowed) | ≤ 1.0 |
+| **total** | central ≈ 6.0; **upper bound with the declared budgets 7.3 ≤ 8 → PROCEED** |
+
+Details: `docs/evidence/rl_ready/p2_5/v3_cost_estimate.json`.
 

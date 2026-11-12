@@ -1,0 +1,53 @@
+{
+ "schema": "rcs_p2_5_v3_cost_estimate_v1",
+ "date": "2026-11-12",
+ "status": "ESTIMATE (committed before any v3 declaration, development or run)",
+ "basis": {
+  "v2_formal_receipt": "docs/evidence/rl_ready/p2_5/fit_receipt_formal.json + artifacts/rl_ready/p2_5/fit_v2_001/formal/fit_run_receipt.json",
+  "per_round_wall_incl_lock_waits_s": {
+   "S1 (T1, P 2)": 229,
+   "S2 (R1 + T2, P 15)": 184,
+   "S3 (F1, P 2)": 36,
+   "S4 (all six, P 7)": 697
+  },
+  "gpu_hold_total_s": 7737,
+  "evaluations": 35,
+  "throughput_probe_ms_per_control_step": {
+   "T 23k particles P 7": 229,
+   "T P 21": 569,
+   "A 20k particles P 14": 513
+  },
+  "truth_generation_s": 3854,
+  "heldout_two_predictions_s": 725,
+  "convergence_trend": "v2 S2 still -1.6..-7.1 % per evaluation at 15; S4 -5.4 % at 6 (5,850 -> 2,948, target ~1,690 = chi2_red 1.42 x 2,380 / 2 at theta* of formal_001); FD columns are already one batched population per evaluation"
+ },
+ "design_assumed": {
+  "stage_A": "mu_eq + g1, tau1, g2, tau2 jointly on R1 + T2 (mu_eq from the relaxation plateau, not a frozen T1 fit), 2 starts in lockstep (prior-box centre + 1 seeded LHS point), P 12",
+  "stage_B": "mu_table on F1, P 2",
+  "stage_C": "joint polish of all six on the whole fit split to convergence, P 7",
+  "bounds": "the v1 parameter-space box (wider than the prior box)",
+  "termination": "xtol 1e-4 / ftol 1e-3 or the budget; per-stage termination flag"
+ },
+ "estimate_gpu_h": {
+  "new_formal_dataset": 1.07,
+  "fit": {
+   "stage_A": "25-35 evaluations x ~150 s = 1.0-1.5",
+   "stage_B": 0.1,
+   "stage_C": "6-15 evaluations x ~640 s = 1.1-2.7",
+   "total": "2.2-4.3",
+   "declared_budget": 3.5
+  },
+  "negative_control": {
+   "stage_A_T2": "0.2-0.3",
+   "stage_C_T2_C1": "8-20 x ~245 s = 0.5-1.4",
+   "total": "0.7-1.7",
+   "declared_budget": 1.5
+  },
+  "heldout_and_reveal": 0.25,
+  "development": "<= 1.0 (stage A on the revealed formal_001 fit split, labelled development)",
+  "total_central": 6.0,
+  "total_upper_with_declared_budgets": "1.07 + 3.5 + 1.5 + 0.25 + 1.0 = 7.3",
+  "rule": "<= 8 GPU-h -> proceed (orchestrator decision 2026-11-12)"
+ },
+ "decision": "PROCEED (upper bound with the declared hard budgets 7.3 GPU-h <= 8)"
+}
