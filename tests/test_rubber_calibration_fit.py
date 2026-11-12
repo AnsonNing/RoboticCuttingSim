@@ -267,20 +267,28 @@ def test_heldout_is_one_shot_and_guarded(tmp_path):
     neg, _, _ = _fit_receipt(tmp_path, path, "neg.json", experiments=["T1"])
     thr = {"T3": {"M1": 0.05, "M2": 0.05, "M8": 1e-3, "M9": 0.05}}
     ledger = tmp_path/"ledger"
-    out = rcf.evaluate_heldout(path, [fit, neg], ledger, predict=_predict, thresholds=thr, metric_settings=SETTINGS)
+    reg = tmp_path/"registry"
+    out = rcf.evaluate_heldout(path, [fit, neg], ledger, predict=_predict, thresholds=thr, metric_settings=SETTINGS,
+                               registry_dir=reg)
     assert out["label"] == "ONE_SHOT" and out["verdict"] in ("PASS", "FAIL") and len(out["fits"]) == 2
     assert {r["metric"] for r in out["fits"][0]["rows"]} == {"M1", "M2", "M8", "M9"}
     with pytest.raises(rcf.CalibrationFitError, match="HELDOUT_ALREADY_EVALUATED"):
-        rcf.evaluate_heldout(path, [fit], ledger, predict=_predict, thresholds=thr, metric_settings=SETTINGS)
+        rcf.evaluate_heldout(path, [fit], ledger, predict=_predict, thresholds=thr, metric_settings=SETTINGS,
+                             registry_dir=reg)
+    with pytest.raises(rcf.CalibrationFitError, match="HELDOUT_ALREADY_EVALUATED"):   # F3: global, not per folder
+        rcf.evaluate_heldout(path, [fit], tmp_path/"another_ledger_dir", predict=_predict, thresholds=thr,
+                             metric_settings=SETTINGS, registry_dir=reg)
+    entry = json.loads((reg/f"{out['manifest_freeze_sha256']}.json").read_text())
+    assert entry["label"] == "ONE_SHOT" and len(entry["ledger_sha256"]) == 64
     audit = rcf.evaluate_heldout(path, [fit], ledger, predict=_predict, thresholds=thr, metric_settings=SETTINGS,
-                                 audit_rerun="reviewer_check_1")
+                                 audit_rerun="reviewer_check_1", registry_dir=reg)
     assert audit["label"].startswith("AUDIT_RERUN")
     with pytest.raises(rcf.CalibrationFitError, match="AUDIT_NAME_USED"):
         rcf.evaluate_heldout(path, [fit], ledger, predict=_predict, thresholds=thr, metric_settings=SETTINGS,
-                             audit_rerun="reviewer_check_1")
+                             audit_rerun="reviewer_check_1", registry_dir=reg)
     with pytest.raises(rcf.CalibrationFitError, match="SEALED_PATH_REFUSED"):
         rcf.evaluate_heldout(path, [fit], tmp_path/"sealed", predict=_predict, thresholds=thr,
-                             metric_settings=SETTINGS)
+                             metric_settings=SETTINGS, registry_dir=tmp_path/"reg2")
 
 
 def test_heldout_refusals(tmp_path):
@@ -289,7 +297,7 @@ def test_heldout_refusals(tmp_path):
     other = make_dataset(tmp_path, noise_seed=12, name="other")
     fit, rec, _ = _fit_receipt(tmp_path, frozen)
     thr = {"T3": {"M1": 1.0, "M2": 1.0, "M8": 1.0, "M9": 1.0}}
-    kw = dict(predict=_predict, thresholds=thr, metric_settings=SETTINGS)
+    kw = dict(predict=_predict, thresholds=thr, metric_settings=SETTINGS, registry_dir=tmp_path/"registry")
     with pytest.raises(rcf.CalibrationFitError, match="MANIFEST_NOT_FROZEN"):
         rcf.evaluate_heldout(pilot, [fit], tmp_path/"l1", **kw)
     with pytest.raises(rcf.CalibrationFitError, match="FIT_RECEIPT_OTHER_FREEZE"):
@@ -440,3 +448,11 @@ def test_budget_counts_only_the_supplied_clock(tmp_path):
                          stages=TOY_STAGES, start_theta=_centre(), budget_s=55.0, clock=lambda: held["t"])
     # exceeded by at most the guaranteed final-stage population; time outside the clock is not counted
     assert res["budget_hit"] and held["t"] <= 55.0+10.0 and res["budget_clock_used_s"] == held["t"]
+
+
+def test_termination_flags_capped_stages():
+    """F6: scipy status 3 / 4 = xtol; a capped stage still falling > 1 % per evaluation is NON_CONVERGED."""
+    assert rcf.termination(3, [10, 9])["termination"] == "CONVERGED"
+    assert rcf.termination(0, [100.0, 94.6])["termination"] == "NON_CONVERGED"
+    assert rcf.termination(0, [100.0, 99.95])["termination"] == "CAP_OR_BUDGET_FLAT"
+    assert rcf.termination("BUDGET_EXHAUSTED", [100.0, 90.0])["termination"] == "NON_CONVERGED"

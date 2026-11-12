@@ -59,6 +59,7 @@ _SENSOR_KEYS = {"kind", "noise_sigma", "resolution", "sample_rate_hz", "full_sca
 _SYNTHETIC_KEYS = {"generator_commit", "generator_tree_clean", "truth_profile", "sensor_model_id",
                    "sealed_truth_sha256", "protocol_sha256", "prior_box", "noise_seed_sha256"}
 _SPLIT_KEYS = {"fit", "heldout", "frozen_at", "sha256"}
+COLUMN_UNIT_SUFFIXES = (("_s", "s"), ("_m", "m"), ("_n", "N"), ("_pa", "Pa"), ("_kg", "kg"), ("_rad", "rad"))
 
 
 class CalibrationManifestV2Error(ValueError):
@@ -214,6 +215,10 @@ def validate_manifest(manifest, directory=None, *, check_files=True):
             _refuse(f"{where}.data_files must be a non-empty {{role: {{file, columns}}}} object")
         for role, entry in files.items():
             _keys(entry, {"file", "columns"}, f"{where}.data_files.{role}")
+            for col, unit in (entry["columns"] or {}).items():
+                want = next((u for suf, u in COLUMN_UNIT_SUFFIXES if col.endswith(suf)), None)
+                if want is not None and unit != want:
+                    _refuse(f"{where}.data_files.{role}: column {col!r} must have unit {want!r}, not {unit!r}")
             if Path(entry["file"]).name != entry["file"]:
                 _refuse(f"{where}.data_files.{role}: data files are plain names next to the manifest")
             if check_files:
@@ -319,11 +324,31 @@ def gate_directory_audit(directory=GATE_DIR):
     return problems
 
 
-def real_calibrated_gate_v2(manifest_path, heldout_receipt):
+HELDOUT_SCHEMA = "rcs_rubber_heldout_receipt_v1"
+
+
+def _git_committed_sha(repo_root, path):
+    """SHA-256 of ``path`` as committed at HEAD of ``repo_root`` (None if untracked)."""
+    import subprocess
+    rel = str(Path(path).resolve().relative_to(Path(repo_root).resolve()))
+    out = subprocess.run(["git", "show", f"HEAD:{rel}"], cwd=repo_root, capture_output=True)
+    return hashlib.sha256(out.stdout).hexdigest() if out.returncode == 0 else None
+
+
+def real_calibrated_gate_v2(manifest_path, ledger_path, *, thresholds_sha256, registry_dir=None, repo_root=ROOT):
     """Versioned REAL gate for future real data (NOT used by any recipe yet). Returns True or raises.
-    Requires a v2 manifest with ``data_origin: real_measurement`` and status ``FROZEN_FOR_HELDOUT`` (freeze hash
-    checked against the files), and a one-shot held-out receipt (``rubber_calibration_fit.evaluate_heldout``) for that
-    freeze with verdict PASS. Every v1 manifest (origin unknown) and every synthetic manifest is refused."""
+
+    Hardened after the P5.7 review (F3): the held-out evidence must be the LEDGER FILE written by
+    ``rubber_calibration_fit.evaluate_heldout`` (a dict is refused), and the gate checks it itself:
+    - the manifest is v2, ``data_origin: real_measurement``, ``FROZEN_FOR_HELDOUT``, freeze hash valid; every v1 and
+      every synthetic manifest is refused;
+    - the ledger has the held-out schema, label ``ONE_SHOT``, no audit re-run, verdict PASS, ``validation_kind``
+      ``REAL_MEASUREMENT_HELDOUT``, this manifest's freeze and the expected thresholds SHA-256;
+    - the global one-shot registry entry for the freeze names exactly this ledger (path and SHA-256);
+    - every fit receipt in the ledger is committed at HEAD of ``repo_root`` with the SHA-256 recorded in the ledger."""
+    if not isinstance(ledger_path, (str, Path)):
+        _refuse("REAL gate v2: the held-out evidence must be the ledger FILE written by evaluate_heldout, "
+                "not a caller-supplied object")
     path = Path(manifest_path)
     data = json.loads(path.read_text())
     if data.get("schema") != SCHEMA:
@@ -333,10 +358,29 @@ def real_calibrated_gate_v2(manifest_path, heldout_receipt):
     validate_manifest(data, path.parent)
     if data["data_origin"] != "real_measurement" or data["status"] != "FROZEN_FOR_HELDOUT":
         _refuse("REAL gate v2: needs data_origin real_measurement and status FROZEN_FOR_HELDOUT")
-    if not isinstance(heldout_receipt, dict) or heldout_receipt.get("verdict") != "PASS":
-        _refuse("REAL gate v2: needs a held-out receipt with verdict PASS")
-    if heldout_receipt.get("manifest_freeze_sha256") != data["splits"]["sha256"]:
+    freeze = data["splits"]["sha256"]
+    lpath = Path(ledger_path)
+    raw = lpath.read_bytes()
+    led = json.loads(raw)
+    if (led.get("schema") != HELDOUT_SCHEMA or led.get("label") != "ONE_SHOT" or led.get("audit_rerun")
+            or led.get("verdict") != "PASS"):
+        _refuse("REAL gate v2: the ledger is not a ONE_SHOT held-out receipt with verdict PASS")
+    if led.get("manifest_freeze_sha256") != freeze:
         _refuse("REAL gate v2: the held-out receipt is for another manifest freeze")
-    if heldout_receipt.get("validation_kind") != VALIDATION_REAL or heldout_receipt.get("audit_rerun"):
-        _refuse("REAL gate v2: the held-out receipt is not a first real-data evaluation")
+    if led.get("validation_kind") != VALIDATION_REAL:
+        _refuse("REAL gate v2: the held-out receipt is not a real-data evaluation")
+    if led.get("thresholds_sha256") != thresholds_sha256:
+        _refuse("REAL gate v2: the held-out receipt used other thresholds")
+    from .rubber_calibration_fit import HELDOUT_REGISTRY_DIR
+    reg = Path(HELDOUT_REGISTRY_DIR if registry_dir is None else registry_dir)/f"{freeze}.json"
+    if not reg.is_file():
+        _refuse("REAL gate v2: no one-shot registry entry for this freeze")
+    entry = json.loads(reg.read_text())
+    if entry.get("ledger_sha256") != hashlib.sha256(raw).hexdigest() or Path(entry["ledger"]) != lpath.resolve():
+        _refuse("REAL gate v2: the registry's one-shot ledger for this freeze is a different file")
+    for fit in led.get("fits", []):
+        work = hashlib.sha256(Path(fit["fit_receipt"]).read_bytes()).hexdigest()
+        if _git_committed_sha(repo_root, fit["fit_receipt"]) != fit["fit_receipt_sha256"] or work != fit[
+                "fit_receipt_sha256"]:
+            _refuse(f"REAL gate v2: fit receipt {fit['fit_receipt']} is not committed with the recorded SHA-256")
     return True

@@ -376,7 +376,8 @@ def fit_trf(objective, space, starts_u, *, max_nfev=40, xtol=1e-4, ftol=1e-8, gt
                         "status": int(sol.status), "message": str(sol.message), "nfev": int(sol.nfev),
                         "njev": int(sol.njev or 0), "optimality": float(sol.optimality),
                         "active_mask": sol.active_mask.tolist(), "jac": sol.jac, "residuals": r,
-                        "converged_xtol": int(sol.status) in (2, 4), "budget_exhausted": int(sol.status) == 0,
+                        "converged_xtol": int(sol.status) in (3, 4), "converged": int(sol.status) in (1, 2, 3, 4),
+                        "budget_exhausted": int(sol.status) == 0,
                         "history": sj.history, "wall_s": time.perf_counter()-t0})
     best = min(results, key=lambda x: x["cost"])
     return {"method": "scipy.optimize.least_squares trf", "formal": True, "starts": results, "best": best["start"],
@@ -648,14 +649,21 @@ def freeze_fit(path, *, objective, space, trf, provenance, extra=None):
     return receipt, hashlib.sha256(text.encode()).hexdigest()
 
 
+HELDOUT_REGISTRY_DIR = rc2.ROOT/"artifacts"/"rl_ready"/"calibration_heldout_registry"
+
+
 def evaluate_heldout(manifest_path, fit_receipt_paths, ledger_dir, *, predict, thresholds, metric_settings,
-                     audit_rerun=None, provenance=None):
+                     audit_rerun=None, provenance=None, registry_dir=None, thresholds_sha256=None):
     """One-shot held-out evaluation of one or more frozen fits (the primary fit first, then e.g. the negative control)
     against the frozen manifest. ``predict(theta, experiments) -> {exp_id: channels incl. 'oracle'}`` is the fit
     model; ``thresholds``: {exp_id: {metric: tol}} (the SHA-pinned thresholds file). Refusals: manifest not
     ``*FROZEN_FOR_HELDOUT`` or freeze hash mismatch; a fit receipt for another freeze or naming a held-out experiment;
     a second evaluation of the same freeze (``HELDOUT_ALREADY_EVALUATED``) unless ``audit_rerun`` names it (then the
-    result is labelled ``AUDIT_RERUN`` and is not the one-shot result); sealed paths."""
+    result is labelled ``AUDIT_RERUN`` and is not the one-shot result); sealed paths.
+    One-shot is GLOBAL per manifest freeze (P5.7 review F3): a claim file ``<registry_dir>/<freeze>.claim`` is created
+    exclusively before any evaluation (a crash leaves the freeze claimed: an audit is then required), and
+    ``<freeze>.json`` records the ledger path and its SHA-256 afterwards. ``registry_dir`` defaults to
+    ``HELDOUT_REGISTRY_DIR`` (shared by every worktree through the artifacts link)."""
     mpath = guard_path(manifest_path)
     manifest = rc2.load_manifest(mpath)
     if manifest["status"] not in rc2.FROZEN_STATUSES:
@@ -663,8 +671,11 @@ def evaluate_heldout(manifest_path, fit_receipt_paths, ledger_dir, *, predict, t
     freeze = manifest["splits"]["sha256"]
     ledger_dir = guard_path(ledger_dir)
     ledger = Path(ledger_dir)/f"heldout_{freeze}.json"
-    if ledger.exists() and not audit_rerun:
-        raise CalibrationFitError("HELDOUT_ALREADY_EVALUATED", f"freeze {freeze[:12]}… was evaluated ({ledger})")
+    registry = Path(HELDOUT_REGISTRY_DIR if registry_dir is None else registry_dir)
+    claim = registry/f"{freeze}.claim"
+    if (ledger.exists() or claim.exists() or (registry/f"{freeze}.json").exists()) and not audit_rerun:
+        raise CalibrationFitError("HELDOUT_ALREADY_EVALUATED", f"freeze {freeze[:12]}… was evaluated or claimed "
+                                  f"({ledger}, registry {registry})")
     fit_split, held = set(manifest["splits"]["fit"]), list(manifest["splits"]["heldout"])
     receipts = []
     for p in fit_receipt_paths:
@@ -678,6 +689,10 @@ def evaluate_heldout(manifest_path, fit_receipt_paths, ledger_dir, *, predict, t
         if bad:
             raise CalibrationFitError("FIT_USED_HELDOUT", f"{p} names non-fit experiments {sorted(bad)}")
         receipts.append((p, rec, _sha_file(p)))
+    if not audit_rerun:
+        registry.mkdir(parents=True, exist_ok=True)
+        with open(claim, "x") as fh:          # exclusive: one evaluation per freeze, across every ledger directory
+            fh.write(json.dumps({"freeze": freeze, "ledger": str(ledger), "utc": time.time()})+"\n")
     specimens = {s["specimen_id"]: s for s in manifest["specimens"]}
     by_id = {e["experiment_id"]: e for e in manifest["experiments"]}
     exps = [experiment_definition(by_id[e], specimens[by_id[e]["specimen_id"]]) for e in held]
@@ -709,7 +724,9 @@ def evaluate_heldout(manifest_path, fit_receipt_paths, ledger_dir, *, predict, t
            "dataset_id": manifest["dataset_id"], "heldout_experiments": held, "fits": fits,
            "verdict": fits[0]["verdict"] if fits else "NOT_RUN", "audit_rerun": audit_rerun,
            "label": "AUDIT_RERUN (not the one-shot result)" if audit_rerun else "ONE_SHOT",
-           "wall_s": time.perf_counter()-t0, "provenance": provenance or {}}
+           "wall_s": time.perf_counter()-t0, "provenance": provenance or {},
+           "thresholds_sha256": thresholds_sha256 or (provenance or {}).get("thresholds_sha256"),
+           "registry": str(registry)}
     text = json.dumps(_jsonable(out), indent=1, sort_keys=True)+"\n"
     if audit_rerun:
         target = Path(ledger_dir)/f"heldout_{freeze}_audit_{audit_rerun}.json"
@@ -720,6 +737,11 @@ def evaluate_heldout(manifest_path, fit_receipt_paths, ledger_dir, *, predict, t
     Path(ledger_dir).mkdir(parents=True, exist_ok=True)
     with open(target, "x") as fh:          # exclusive create: a race cannot evaluate twice
         fh.write(text)
+    if not audit_rerun:
+        with open(registry/f"{freeze}.json", "x") as fh:
+            fh.write(json.dumps({"freeze": freeze, "ledger": str(Path(target).resolve()),
+                                 "ledger_sha256": hashlib.sha256(text.encode()).hexdigest(),
+                                 "label": "ONE_SHOT"}, sort_keys=True)+"\n")
     return out
 
 
@@ -763,6 +785,23 @@ class SubSpace:
 
 class BudgetExhausted(RuntimeError):
     pass
+
+
+NONCONVERGED_DROP = 0.01      # a capped stage still falling by > 1 % per evaluation is NON_CONVERGED
+
+
+def termination(status, costs):
+    """Termination record of one TRF run (P5.7 review F6): scipy status 1-4 -> CONVERGED (gtol / ftol / xtol / both);
+    0 (max_nfev) or a budget stop -> CAP_OR_BUDGET, flagged NON_CONVERGED when the last evaluation still lowered the
+    cost by more than 1 %."""
+    drop = None
+    if len(costs) >= 2 and costs[-2] > 0:
+        drop = (costs[-2]-costs[-1])/costs[-2]
+    if status in (1, 2, 3, 4):
+        kind = "CONVERGED"
+    else:
+        kind = "NON_CONVERGED" if (drop is None or drop > NONCONVERGED_DROP) else "CAP_OR_BUDGET_FLAT"
+    return {"termination": kind, "last_relative_cost_drop": drop}
 
 
 class BudgetedObjective:
@@ -837,6 +876,7 @@ def _run_stage(objective, sub, starts, *, max_nfev, fd_step, xtol, ftol, gtol, x
     for i, sj in enumerate(sjs):
         recs[i] = {**(recs[i] or {}), "start": i, "u0": np.asarray(starts[i], float).tolist(),
                    "history": sj.history}
+        recs[i].update(termination(recs[i].get("status"), [h["cost"] for h in sj.history]))
         for u, r, J in sj.evaluated:
             cost = 0.5*float(r @ r)
             if best is None or cost < best[3]:
@@ -919,7 +959,8 @@ def freeze_fit_staged(path, *, result, space, provenance, protocol_id, extra=Non
                        "status": final["starts"][0].get("status") if final.get("starts") else None,
                        "message": final["starts"][0].get("message") if final.get("starts") else None,
                        "nfev": sum(len(s["history"]) for s in final.get("starts", [])),
-                       "converged_xtol": final["starts"][0].get("status") in (2, 4) if final.get("starts") else False,
+                       "converged_xtol": final["starts"][0].get("status") in (3, 4) if final.get("starts") else False,
+                       "converged": final["starts"][0].get("status") in (1, 2, 3, 4) if final.get("starts") else False,
                        "budget_exhausted": bool(result["budget_hit"]), "jac": result["jac"],
                        "residuals": result["residuals"], "wall_s": result["wall_s"]}]}
     return freeze_fit(path, objective=obj, space=space, trf=trf, provenance=provenance,

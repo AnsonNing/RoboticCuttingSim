@@ -40,11 +40,14 @@ def main():
     ap.add_argument("--ledger", required=True)
     ap.add_argument("--fit-receipts", nargs="+", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--dataset-id", default=None, help="formal dataset id (default: the v1 protocol's)")
     args = ap.parse_args()
-    protocol, psha = C.load_protocol()
+    protocol, psha = C.load_protocol("1f6816411d141555973537995300ba87927a8162e8eba5f942d51faf40b2ff2b")
+    if not C.tree_state()["clean"]:
+        raise SystemExit("the tree must be clean (P5.7 review F8)")
     from robotic_cutting_sim import rubber_calibration_synthetic as rcs
     from robotic_cutting_sim import rubber_calibration_v2 as rc2
-    mpath = C.SYNTHETIC_DIR/protocol["formal"]["dataset_id"]/"manifest.json"
+    mpath = C.SYNTHETIC_DIR/(args.dataset_id or protocol["formal"]["dataset_id"])/"manifest.json"
     manifest = rc2.load_manifest(mpath)
     ledger = Path(args.ledger)/f"heldout_{manifest['splits']['sha256']}.json"
     if not ledger.is_file():

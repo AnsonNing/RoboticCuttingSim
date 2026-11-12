@@ -160,8 +160,7 @@ def test_no_synthetic_manifest_can_yield_real_calibrated(tmp_path, status, verdi
     with pytest.raises((rm.RubberRecipeError, rc1.CalibrationManifestError)):     # schema refusal by the v1 loader
         rm.parse_recipe(raw, manifest_dir=d)
     with pytest.raises(rc2.CalibrationManifestV2Error):
-        rc2.real_calibrated_gate_v2(d/"syn_v2.json", {"verdict": "PASS", "manifest_freeze_sha256":
-                                                      m["splits"]["sha256"], "validation_kind": rc2.VALIDATION_REAL})
+        rc2.real_calibrated_gate_v2(d/"syn_v2.json", d/"no_ledger.json", thresholds_sha256="c"*64)
 
 
 def test_v1_hole_is_closed_by_the_gate_directory_tripwire(tmp_path):
@@ -206,24 +205,83 @@ def test_no_synthetic_manifest_outside_the_synthetic_directory():
     assert offenders == []
 
 
+def _real_ledger(tmp_path):
+    """A real-origin frozen test manifest, a committed fit receipt (temporary git repo) and a ONE_SHOT ledger written
+    by evaluate_heldout with an exact predictor (test fixture data, not a material)."""
+    import subprocess
+    from robotic_cutting_sim import rubber_calibration_experiments as rce
+    from robotic_cutting_sim import rubber_calibration_fit as rcf
+    repo = tmp_path/"repo"
+    data = repo/"data"
+    data.mkdir(parents=True)
+    write_files(data)
+    m = rc2.freeze(manifest("real_measurement"), data, "t")
+    (data/"real.json").write_text(json.dumps(m))
+    rec = {"schema": rcf.FIT_RECEIPT_SCHEMA, "theta_hat": {"mu_eq_pa": 2.6e5, "g1": 0.1, "tau1_s": 0.01, "g2": 0.1,
+                                                          "tau2_s": 0.1, "mu_table": 0.5},
+           "objective": {"manifest_freeze_sha256": m["splits"]["sha256"], "fit_experiments": ["T1"]}}
+    (repo/"fit.json").write_text(json.dumps(rec))
+    for cmd in (["git", "init", "-q"], ["git", "add", "-A"],
+                ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "fixture"]):
+        subprocess.run(cmd, cwd=repo, check=True)
+    exact = {e: {r: rce.read_channels(data/f["file"]) for r, f in x["data_files"].items()}
+             for x in m["experiments"] for e in [x["experiment_id"]]}
+    out = rcf.evaluate_heldout(data/"real.json", [repo/"fit.json"], tmp_path/"ledger",
+                               predict=lambda th, exps: {e["id"]: exact[e["id"]] for e in exps},
+                               thresholds={"T3": {"M1": 0.01, "M2": 0.01}}, metric_settings={},
+                               registry_dir=tmp_path/"registry", thresholds_sha256="c"*64)
+    assert out["verdict"] == "PASS"
+    return repo, data, tmp_path/"ledger"/f"heldout_{m['splits']['sha256']}.json", m
+
+
 def test_real_gate_v2_positive_control_and_refusals(tmp_path):
-    write_files(tmp_path)
-    frozen = rc2.freeze(manifest("real_measurement"), tmp_path, "t")
-    (tmp_path/"real.json").write_text(json.dumps(frozen))
-    ok = {"verdict": "PASS", "manifest_freeze_sha256": frozen["splits"]["sha256"],
-          "validation_kind": rc2.VALIDATION_REAL}
-    assert rc2.real_calibrated_gate_v2(tmp_path/"real.json", ok)
-    for bad in ({**ok, "verdict": "FAIL"}, {**ok, "manifest_freeze_sha256": "b"*64}, {**ok, "audit_rerun": "x"},
-                {**ok, "validation_kind": rc2.VALIDATION_SYNTHETIC}):
-        with pytest.raises(rc2.CalibrationManifestV2Error):
-            rc2.real_calibrated_gate_v2(tmp_path/"real.json", bad)
+    """F3 (P5.7 review): the gate reads and checks the ledger file itself (schema, ONE_SHOT, verdict, freeze,
+    thresholds SHA, the global registry entry, committed fit receipts); a hand-written dict is refused."""
+    repo, data, ledger, m = _real_ledger(tmp_path)
+    kw = dict(thresholds_sha256="c"*64, registry_dir=tmp_path/"registry", repo_root=repo)
+    assert rc2.real_calibrated_gate_v2(data/"real.json", ledger, **kw)
+    with pytest.raises(rc2.CalibrationManifestV2Error, match="ledger FILE"):
+        rc2.real_calibrated_gate_v2(data/"real.json", {"verdict": "PASS", "manifest_freeze_sha256":
+                                                       m["splits"]["sha256"], "validation_kind": rc2.VALIDATION_REAL},
+                                    **kw)
+    with pytest.raises(rc2.CalibrationManifestV2Error, match="other thresholds"):
+        rc2.real_calibrated_gate_v2(data/"real.json", ledger, **{**kw, "thresholds_sha256": "d"*64})
+    forged = json.loads(ledger.read_text())
+    forged["label"] = "ONE_SHOT"
+    copy_path = tmp_path/"forged.json"
+    copy_path.write_text(json.dumps(forged))            # same content class, but not the registered ledger file
+    with pytest.raises(rc2.CalibrationManifestV2Error, match="registry"):
+        rc2.real_calibrated_gate_v2(data/"real.json", copy_path, **kw)
+    audit = dict(forged, label="AUDIT_RERUN (not the one-shot result)", audit_rerun="x")
+    (tmp_path/"audit.json").write_text(json.dumps(audit))
+    with pytest.raises(rc2.CalibrationManifestV2Error, match="ONE_SHOT"):
+        rc2.real_calibrated_gate_v2(data/"real.json", tmp_path/"audit.json", **kw)
+    with pytest.raises(rc2.CalibrationManifestV2Error, match="registry"):
+        rc2.real_calibrated_gate_v2(data/"real.json", ledger, **{**kw, "registry_dir": tmp_path/"empty"})
+    import subprocess
+    (repo/"fit.json").write_text((repo/"fit.json").read_text()+" ")       # receipt differs from the evaluated one
+    with pytest.raises(rc2.CalibrationManifestV2Error, match="not committed"):
+        rc2.real_calibrated_gate_v2(data/"real.json", ledger, **kw)
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-am", "edit"], cwd=repo,
+                   check=True)
+    with pytest.raises(rc2.CalibrationManifestV2Error, match="not committed"):
+        rc2.real_calibrated_gate_v2(data/"real.json", ledger, **kw)
     pilot = manifest("real_measurement")
-    (tmp_path/"pilot.json").write_text(json.dumps(pilot))
+    (data/"pilot.json").write_text(json.dumps(pilot))
     with pytest.raises(rc2.CalibrationManifestV2Error, match="FROZEN_FOR_HELDOUT"):
-        rc2.real_calibrated_gate_v2(tmp_path/"pilot.json", ok)
-    (tmp_path/"v1.json").write_text((ROOT/"configs"/"rubber"/"calibration"/"none_v1.json").read_text())
+        rc2.real_calibrated_gate_v2(data/"pilot.json", ledger, **kw)
+    (data/"v1.json").write_text((ROOT/"configs"/"rubber"/"calibration"/"none_v1.json").read_text())
     with pytest.raises(rc2.CalibrationManifestV2Error, match="v1 manifest has no data origin"):
-        rc2.real_calibrated_gate_v2(tmp_path/"v1.json", ok)
+        rc2.real_calibrated_gate_v2(data/"v1.json", ledger, **kw)
+
+
+def test_column_units_are_bound_to_names(tmp_path):
+    """F10: a column named *_n must be in N, *_m in m, *_s in s."""
+    write_files(tmp_path)
+    m = manifest()
+    m["experiments"][0]["data_files"]["force"]["columns"]["force_n"] = "m"
+    with pytest.raises(rc2.CalibrationManifestV2Error, match="must have unit 'N'"):
+        rc2.validate_manifest(m, tmp_path)
 
 
 def test_v1_module_and_gate_unchanged():

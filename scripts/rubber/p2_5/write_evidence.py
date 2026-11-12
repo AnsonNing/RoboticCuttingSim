@@ -49,6 +49,11 @@ def main():
     rv = load(Path(a.reveal)/"reveal_receipt.json")
     cm = load(Path(a.cmaes)/"cmaes_result.json") if a.cmaes else None
     rel = lambda p: str(Path(p).resolve().relative_to(C.ROOT))   # noqa: E731
+    # F7: CAL-09 computed - every scored output carries both labels and no recipe is promoted
+    labelled = [ff, fn, ledger, rv, manifest, thr]
+    cal09 = "PASS" if all(x.get("calibration_status") == "SIMULATOR_ONLY_UNCALIBRATED" and
+                          x.get("validation_kind") == "NUMERICAL_VALIDATION_SYNTHETIC" for x in labelled) and \
+        all(x.get("recipe_promoted", False) is False for x in labelled) else "FAIL"
     ev_dir = "docs/evidence/rl_ready/p2_5"
     order = [("protocol_commit", *commit_time("configs/rubber/rubber_calib_tests_v1.json")),
              ("pilot_run_end", None, pg["utc_end"]),
@@ -60,8 +65,15 @@ def main():
              ("negative_control_receipt_commit", *commit_time(f"{ev_dir}/fit_receipt_negative_control.json")),
              ("one_shot_heldout", None, ledger["provenance"]["utc"]),
              ("reveal", None, rv["utc_reveal"])]
+    # F7: the sealed read log must hold exactly one read, the reveal, after the one-shot held-out
+    rl = Path(a.formal_gen)/"sealed"/"read_log.txt"
+    reads = rl.read_text().splitlines() if rl.is_file() else []
+    read_times = [datetime.datetime.fromisoformat(x.split()[0]).isoformat(timespec="seconds") for x in reads]
+    order.append(("sealed_reads", None, read_times[0] if read_times else None))
+    reads_ok = len(reads) == 1 and read_times[0] >= ledger["provenance"]["utc"]
     times = [t for _, _, t in order]
-    ok = all(t is not None for t in times) and all(times[i] <= times[i+1] for i in range(len(times)-1))
+    ok = (all(t is not None for t in times) and all(times[i] <= times[i+1] for i in range(len(times)-2))
+          and reads_ok)
     # the pilot-run time also has to follow the protocol commit and precede the thresholds commit (checked above)
     best = ff["starts"][ff["best_start"]]
     st = best["status"]
@@ -121,7 +133,7 @@ def main():
                        "CAL-06": rec.get("formal", {}).get("CAL-06"),
                        "CAL-07": hsum.get("CAL-07"),
                        "CAL-08": "PASS" if ok else "INVALID",
-                       "CAL-09": "PASS"},
+                       "CAL-09": cal09},
           "cal04": {"chi2_reduced": ff["chi2_reduced"], "limit": thr["cal04_limit_chi2_reduced"],
                     "best_start_status": best["status"], "best_start_message": best["message"]},
           "cal05_rows": formal_rows, "cal07_rows": neg_rows, "cal08_order": [
