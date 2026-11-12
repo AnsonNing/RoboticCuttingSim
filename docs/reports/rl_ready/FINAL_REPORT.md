@@ -10,7 +10,7 @@
 
 **Revision after the Phase 2 acceptance review (Z1).** The xhigh review
 [PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md) (at `92e671a`, verdict GO_WITH_CONDITIONS) checked 69
-values in this draft. 68 matched; the RL-05 v2 count was wrong (5/8, not 4/8). This revision applies its documentation
+values in the draft. 68 matched; the RL-05 v2 count was wrong (5/8, not 4/8). This revision applies its documentation
 conditions D1 (findings F1, F4, F5, F6): box 2 and box 3 wording, the real-data protocol status, stale passages, the
 reproduction row names, the batching-gain wording (§2.3, §4.4), two missing limitations and the calibration-to-RL
 handoff (§5). No verdict is re-scored.
@@ -53,7 +53,7 @@ merged and pinned (SYNCED).
 Phase 2 adds a TLMPM rubber material: Neo-Hookean with a J̄ volumetric term, Prony viscoelasticity, and grid-node
 penalty Coulomb contact. The material runs single-env, batched and in Native Kit, with a batched rubber RL task and a
 calibration interface for real data. Every Phase 2 package records its FAILs. The synthetic calibration test (P2-5)
-**FAILED**, and the material stays uncalibrated. The Phase 2 PR is not yet open.
+**FAILED**, and the material stays uncalibrated. Phase 2 is merged into `main` (PR #16, `7347c9a`), and the external pins are SYNCED (§9).
 
 ### 1.1 Phase 1 Done (specification, seven checkboxes)
 
@@ -65,7 +65,7 @@ calibration interface for real data. Every Phase 2 package records its FAILs. Th
 | 4 | GPU-native action / obs / reward / done, per-env seeds, reproducible scenes, API tests | **PASS** (with limitations) | Parity matrix rows 7, 8, 14 PASS. Row 9 is PARTIAL: no per-episode geometry or material randomisation inside a live batch (U-P15-3) |
 | 5 | Long rollout, OOM / memory / reset stress, real GPU telemetry | **PARTIAL** | LR-A PASS (N=8, 64 full episodes, 5.06 h). LR-C PASS. LR-D 5/5 PASS. **LR-B FAIL** on its own VRAM bound (2,304 > 2,253 MiB). LR-A2 and LR-E NOT_RUN. Every run is SHARED_GPU ([P1_4_LONG_ROLLOUT.md](P1_4_LONG_ROLLOUT.md)). The review calls this "MET with a recorded FAIL" |
 | 6 | Headless, vision and Native speeds reported separately; no fake comparison | **PASS** | Three boundaries in separate rows. Batched vision is UNSUPPORTED, not estimated. No B-vs-Native ratio ([P1_PERFORMANCE_TABLE.md](P1_PERFORMANCE_TABLE.md) §5) |
-| 7 | External optimizer results written back to RCS and synced | **PASS** | `p16c0`: descriptor `rcs_rl_vector_v1` pinned at `bfe6d5e`, SYNCED. `p16c1`: `alias_free_v2` accepted, merged in PR #14 (`9ee1e9d`), pinned as `rcs_rl_vector_v2`, SYNCED ([RL_READY_PROGRESS.md](../../RL_READY_PROGRESS.md), "進行中"). The follow-up PR #15 (`62caecc`) has no recorded pin (§5) |
+| 7 | External optimizer results written back to RCS and synced | **PASS** | `p16c0`: descriptor `rcs_rl_vector_v1` pinned at `bfe6d5e`, SYNCED. `p16c1`: `alias_free_v2` accepted, merged in PR #14 (`9ee1e9d`), pinned as `rcs_rl_vector_v2`, SYNCED ([RL_READY_PROGRESS.md](../../RL_READY_PROGRESS.md), "Status log"). The follow-up PR #15 (`62caecc`) had no pin of its own; `rcs_rl_vector_v3` at `7347c9a`, which contains it, supersedes v2 (§9) |
 
 ### 1.2 Phase 2 Done (specification, six checkboxes)
 
@@ -88,6 +88,7 @@ From `git log origin/main`:
 | #13 | Phase 1 follow-up: `acceptance_v2`, workload-B and labelling fixes | `bfe6d5e` | PASS_WITH_LIMITATIONS, re-review PASS ([P1_FOLLOWUP_REVIEW.md](P1_FOLLOWUP_REVIEW.md)) |
 | #14 | P1-6 cycle `p16c1`: opt-in `alias_free_v2`, accepted by the frozen evaluator | `9ee1e9d` | PASS_WITH_LIMITATIONS ([P1_6_P16C1_PR14_REVIEW.md](P1_6_P16C1_PR14_REVIEW.md)) |
 | #15 | `p16c1` review follow-ups: slow-contact shrink test, shrink counter, fail-closed r/dt check | `62caecc` | PASS ([P1_6_P16C1_PR15_REVIEW.md](P1_6_P16C1_PR15_REVIEW.md)) |
+| #16 | Phase 2: rubber material physics (`rubber_material_v1`, batched rubber RL task, Native rubber host, calibration interface; SIM_ONLY) | `7347c9a` | GO_WITH_CONDITIONS, re-check GO ([PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md), Addendum A) |
 
 ## 2. Phase 1 — RL-ready batched simulator
 
@@ -241,7 +242,7 @@ cycle records (adapter, sandbox, ledger) are in the external optimizer repositor
   40 skipped); the GPU contract at N=2 with partial reset on GPU1.
 - Its PR merged; the sync receipt chain went MERGED_RCS_PENDING_OPTIMIZER_SYNC → **SYNCED**.
 - The adapter's xhigh review was PASS_WITH_LIMITATIONS with a re-check GO
-  ([RL_READY_PROGRESS.md](../../RL_READY_PROGRESS.md), "進行中").
+  ([RL_READY_PROGRESS.md](../../RL_READY_PROGRESS.md), "Status log").
 
 **Cycle `p16c1` — `alias_free_v2`.**
 
@@ -533,8 +534,8 @@ frozen before any real held-out evaluation.
 - **Formal table code:** it measured `691b571`, before review fix F1.
 - **Acceptance contract:** `acceptance_v2` does not gate N=8, and its reset / VRAM gates are candidate-reported. Audit
   notes wait for an `acceptance_v3` ([P1_6_P16C1_FOLLOWUPS.md](P1_6_P16C1_FOLLOWUPS.md)).
-- **`alias_free_v2`:** N ≤ 2495 (int32), O(N·C) memory. The external pin is `rcs_rl_vector_v2` at `9ee1e9d`; no
-  record shows a pin of `main` after PR #15 (`62caecc`).
+- **`alias_free_v2`:** N ≤ 2495 (int32), O(N·C) memory. The external vector-env pin is now `rcs_rl_vector_v3` at
+  `7347c9a`, which contains PR #15 (`62caecc`) and supersedes `rcs_rl_vector_v2` at `9ee1e9d` (§9).
 - **Open physics item:** the WP-17 seed-512 final cut-code difference against WP-16 (4,266 particles).
 - **Pre-existing test failure:** `tests/test_wp12_phase5_native_success.py::test_reproduces_phase2b_records` fails
   where `artifacts/wp12` links the main checkout's artifacts. It is unrelated, and WP-12 records are untouched
@@ -546,8 +547,9 @@ frozen before any real held-out evaluation.
 - **Coupling:** robot-coupled rubber (B3 / C1) is deferred; the grip is kinematic and the wrench is reported only
   (U-P2-1).
 - **Self-contact:** NOT_IMPLEMENTED_V1, detection only. A pass-through faster than the check interval can be missed.
-- **Throughput:** about 1 env-step/s at N=8–16 at full fidelity. RL-07 is SHARED_GPU with only start/end co-tenant
-  samples. No EXCLUSIVE Native row exists.
+- **Throughput:** about 1 env-step/s at N=8–16 at full fidelity. The formal RL-07 row is SHARED_GPU with only
+  start/end co-tenant samples; a supplementary EXCLUSIVE_GPU RL-07 row is within about 2 % of it (§4.1, M2). No
+  EXCLUSIVE Native row exists.
 - **Bending bias:** +0.62 % (L/t 20) and +0.71 % (L/t 37.5) at n_t 4; the -11 v5 FAIL is kept.
 - **Randomisation:** geometry is per env, not per episode. `reset(seeds=None)` repeats the episode's draws.
 - **RL-05:** the scripted sanity passed only with the third declared controller, and its success depends on the goal
@@ -692,11 +694,11 @@ Protocols and declarations are SHA-pinned in `configs/rubber/` and `configs/rl_b
 | Item | Value |
 | --- | --- |
 | P2-5 / P2-6 merged into `claude/rl-ready-rubber-physics` | P2-5 merged into `claude/rl-rubber` at `75aa34c`. P2-6 merged into `claude/rl-rubber` at `e13339b`, plus the evidence-only `9919a6e`. Merged into the integration branch at `92e671a`, plus `fc7dff5` |
-| xhigh review of the Phase 2 PR | Z1 [PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md): GO_WITH_CONDITIONS at `92e671a`. Conditions D1–D4, M2 and M3 met. Re-check at `9ea50a6`: **GO** (Addendum A) |
+| xhigh review of the Phase 2 PR | Z1 [PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md): GO_WITH_CONDITIONS at `92e671a`. Conditions D1–D5 and M1–M3 met. Re-check at `9ea50a6`: **GO** (Addendum A) |
 | Phase 2 PR | #16 (head `9ea50a6`, base `62caecc`) |
 | Merge into `main` | `7347c9a` (merge commit) |
 | GitHub CI on the PR head | push run 43168433241: 2,951 passed, 93 skipped, 6 xfailed, 0 failed. pull_request run 43168462836: 2,981 passed, 63 skipped, 6 xfailed, 0 failed |
-| New external descriptors | `rcs_rl_vector_v3` (sha256 `57b88f17…7557`; supersedes v2; default contact mode `frozen_v1`, `alias_free_v2` opt-in only). `rcs_rubber_strip_v1` (sha256 `adf8faa0…f214`; backend `kinematic_grip_batched`, task `rubber_strip_drag_v2`, profile `rubber_rl_env_v2`, `SIMULATOR_ONLY_UNCALIBRATED`, `OPENBLAS_NUM_THREADS=1` in the env). Both pinned at `7347c9a`, sharing one frozen checkout from a local mirror. v1, v2 and the historical descriptors are unchanged |
+| New external descriptors | `rcs_rl_vector_v3` (sha256 `57b88f17…7557`; supersedes v2; default contact mode `frozen_v1`; `alias_free_v1` and `alias_free_v2` opt-in only). `rcs_rubber_strip_v1` (sha256 `adf8faa0…f214`; backend `kinematic_grip_batched`, task `rubber_strip_drag_v2`, profile `rubber_rl_env_v2`, `SIMULATOR_ONLY_UNCALIBRATED`, `OPENBLAS_NUM_THREADS=1` in the env). Both pinned at `7347c9a`, sharing one frozen checkout from a local mirror. v1, v2 and the historical descriptors are unchanged |
 | Smoke | `rcs_rl_vector_v3`: CPU contract PASS; host contract PASS (266 passed / 0 failed / 40 skipped); GPU contract N=2 with partial reset PASS (EXCLUSIVE_GPU). `rcs_rubber_strip_v1`: CPU contract PASS; host contract PASS (13 passed / 0 failed / 3 skipped, Torch-only); GPU contract N=2 PASS, with 6 steps including a partial reset, `invalid_reason` 0 at every step and `OPENBLAS_NUM_THREADS=1` confirmed in the episode process (EXCLUSIVE_GPU) |
 | External repository PR | #5, merged. Its host test suite: 812 passed, 6 skipped, 0 failed. It adds a short pointer to this report |
 | Sync status | **SYNCED** for both descriptors (receipt chain MERGED_RCS_PENDING_OPTIMIZER_SYNC → SYNCED verifies) |

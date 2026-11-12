@@ -27,7 +27,7 @@ raw artifacts (git-ignored): `artifacts/rl_ready/`.
   - Re-check at 9ea50a6: **GO** (Addendum A).
 - **Phase 2 merged into `main`: PR #16, merge `7347c9a`, 2026-11-12.**
   - CI green: push run 2,951 passed and pull_request run 2,981 passed, 0 failed.
-  - Box 6 of the Phase 2 Done list waits only for the external pin.
+  - Box 6 of the Phase 2 Done list then waited only for the external pin (done below).
 - **Z3 done: SYNCED.** The external agentic optimizer repository pinned `rcs_rl_vector_v3` and
   `rcs_rubber_strip_v1` at `7347c9a`.
   - Smoke PASS: CPU, host and GPU contracts at N=2 with a partial reset, EXCLUSIVE_GPU.
