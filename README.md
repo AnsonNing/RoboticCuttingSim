@@ -212,7 +212,8 @@ material and one CUDA graph per batch shape. It never loops over single envs or 
 unsupported configuration raises an `UNSUPPORTED_*` code. Plan and status are in
 [RL_READY_PLAN.md](docs/RL_READY_PLAN.md) and [RL_READY_PROGRESS.md](docs/RL_READY_PROGRESS.md). The final
 feature-parity matrix and Phase 1 checklist are in
-[P1_PARITY_MATRIX.md](docs/reports/rl_ready/P1_PARITY_MATRIX.md).
+[P1_PARITY_MATRIX.md](docs/reports/rl_ready/P1_PARITY_MATRIX.md); the whole plan is summarised in the
+[final report](docs/reports/rl_ready/FINAL_REPORT.md) (draft). Phase 1 reached `main` in PRs #12–#15.
 
 **Backends of `open_vector_env(num_envs, task=..., tasks=..., device="cuda", backend=...)`:**
 
@@ -227,10 +228,25 @@ feature-parity matrix and Phase 1 checklist are in
   - `tool_mount="physical_grasp_v1"` (B2) with the opt-in `grip_contact_profile="mjwarp_grip_v1"` (a listed
     difference, not a calibrated grip).
   - Needs `.deps/isaaclab-venv`.
+- `kinematic_grip_batched`: the Phase 2 rubber strip task (see [Rubber material (Phase 2)](#rubber-material-phase-2)).
 
-**Both backends share one contract (`rl.vector_contract`):**
+**Particle-contact modes** (option `particle_contact_mode=` of the default backend; all three compute the same
+contacts and impulses on the same state):
 
-- `reset(seeds=, env_ids=)` (masked partial reset); `step(actions[N,8])` returns Torch device tensors;
+- `frozen_v1` (default): the frozen contact path, byte-identical.
+- `alias_free_v1` (opt-in, P1-3a): alias-free hash dimensions and a speed-guarded fallback. In the exclusive table it
+  is 1.38–1.47× faster than `frozen_v1` in env-steps/s, but the workload-A windows at N ≥ 4 are pre-contact.
+- `alias_free_v2` (opt-in, P1-6 cycle `p16c1`, PR #14): env-major hash buckets plus a per-env query shrink while
+  every particle of that env is slower than 0.25 m/s. It was written by the external agentic optimizer and accepted
+  by the frozen evaluator at 1.168× (N=1) and 1.279× (N=16) over `alias_free_v1` (`SHARED_GPU`, interleaved ABBA
+  pairs). Limits:
+  - the shrink engages only in slow envs; `particle_contact_options={"shrink_speed_m_s": None}` turns it off;
+  - O(N·C) bucket memory (about 4.3 MiB/env measured) and an int32 cap of N ≤ 2495 for the TRIM workpiece;
+  - a diagnostic per-env counter `shrink_engaged_substeps` (PR #15, receipt only).
+
+**All backends share one contract (`rl.vector_contract`):**
+
+- `reset(seeds=, env_ids=)` (masked partial reset); `step(actions[N,A])` returns Torch device tensors;
 - `info["termination_reason"]` (`rl.termination`: material, rigid, grasp lost, IK, truncation, input guard,
   infrastructure; `decode_termination_detail` names the material bits);
 - `evaluate(env_ids)` through the **frozen** `goals.evaluate_goal`. A non-finite env gets a structured
@@ -243,8 +259,16 @@ feature-parity matrix and Phase 1 checklist are in
 - the RL pipeline smoke (`scripts/rl_ready/run_rl_smoke.py`, `rcs_rl_rollout_v1`; opt-in `--rollout-schema
   rcs_rl_rollout_v2` labels the privileged / oracle-derived fields; no training);
 - the P1-6 acceptance harness and judge (`scripts/rl_ready/run_perf_acceptance.py`, `judge_perf_acceptance.py`) with
-  the contract `configs/rl_benchmark/acceptance_v2.json` (D-14). `acceptance_v1.json` is frozen and kept for the
-  record only.
+  the **frozen** contract `configs/rl_benchmark/acceptance_v2.json` (D-14, frozen at the PR #13 merge `bfe6d5e`).
+  The judge recomputes PHYSICS, PERFORMANCE and INTEGRITY layers from the candidate's dumps. G9 times steps 229–400
+  of the s512 replay (all tool contact and cutting) at N 1/16 with 3 ABBA pairs. `acceptance_v1.json` (pre-contact
+  window) is frozen and kept for the record only; any change is `acceptance_v3`.
+- the external agentic optimizer cycle (P1-6). The optimizer works in its own repository and edits an isolated RCS
+  worktree. A candidate counts only if the frozen evaluator accepts it, an RCS PR merges it, and a new versioned
+  descriptor pins the merged commit. Cycle `p16c0` pinned `rcs_rl_vector_v1` at `bfe6d5e`. Cycle `p16c1` produced
+  `alias_free_v2`: accepted, merged at `9ee1e9d`, pinned as `rcs_rl_vector_v2`, **SYNCED**. Two earlier acceptance
+  attempts were BLOCKED by evaluation-sandbox bugs, and one was stopped because it starved on the GPU lock; none of
+  them was counted.
 
 ```bash
 # CPU tests (project venv); run once with CUDA hidden and once with GPU 0 visible.
@@ -272,7 +296,8 @@ CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src flock /mnt/dat
   `UNSUPPORTED_RECORDER`). Vision data comes from the Native reference.
 - Warp 1.17 replays a captured HashGrid query with the descriptor of the last-built grid. So the rule is **one
   device HashGrid per process**: one batch or single material per process (`UNSUPPORTED_MULTIPLE_DEVICE_HASHGRIDS`;
-  a grid created later sets `FOREIGN_DEVICE_HASHGRID`, which counts as material-invalid plus infrastructure).
+  a grid created later sets `FOREIGN_DEVICE_HASHGRID`, which counts as material-invalid plus infrastructure). An
+  early "≈1.9× at N=4" timing came from a process holding two grids and is withdrawn.
 - Performance: the formal table is merged —
   [P1 performance table](docs/reports/rl_ready/P1_PERFORMANCE_TABLE.md) (GPU1, RTX 5090, 20 of 23 runs
   `EXCLUSIVE_GPU`; particles/env 102,732 (A, s512), 96,000 (CUT) or about 103,300 (B, seeds 512/15 mixed); 50 Hz
@@ -285,16 +310,11 @@ CUDA_VISIBLE_DEVICES=0 TMPDIR=/mnt/data/ningan/tmp PYTHONPATH=src flock /mnt/dat
   - workload B1 (rigid mount): 4.96 at N=1, 7.66 at N=4, 8.67 at N=8; N=16 (8.79) is `SHARED_GPU` only; B2 N=4: 7.37.
 
   The rows measured code `691b571`, before the per-step HashGrid refresh of review fix F1. P1-4 long-rollout rows
-  and every partial-reset latency are `SHARED_GPU`. No B-vs-Native ratio is claimed.
-- Status: **P1-6 external-optimizer sync is PENDING**. After the Phase 1 merge the status is
-  `MERGED_RCS_PENDING_OPTIMIZER_SYNC` until the external descriptor is pinned. P1-6 acceptances use
-  `acceptance_v2` (D-14): G9 times steps 229–400 of the s512 replay (all tool contact, particle contact and cutting)
-  at N 1/16 with 3 ABBA pairs, a trade-off against v1's 5 pairs at N 1/8/16 (N=8 is not gated); `G9:window` checks
-  the window on the episode runs; VRAM and reset p95 stay candidate-reported. No acceptance under v2 has run yet,
-  and v2 freezes at its merge into `main`. `acceptance_v1` (pre-contact G9 window) is never used.
+  and every partial-reset latency are `SHARED_GPU`. `alias_free_v2` has no row in that table; its accepted ratios
+  are `SHARED_GPU`. No B-vs-Native ratio is claimed.
 - "Whole-RCS RL-ready" is **PARTIAL for CUT**: the frozen v5 CUT is not batched, and batched CUT is the opt-in
   v7_2 scene with ideal tracking and no robot.
-- Materials are provisional and uncalibrated. The rubber material is Phase 2 work on its own branch.
+- Materials are provisional and uncalibrated. The rubber material is described below.
 
 Reports in `docs/reports/rl_ready/`:
 [P1-0 baseline](docs/reports/rl_ready/P1_0_BASELINE.md) ·
@@ -309,7 +329,121 @@ Reports in `docs/reports/rl_ready/`:
 [P1-1/P1-2/P1-3a acceptance review](docs/reports/rl_ready/P1_1_P1_2_P1_3A_ACCEPTANCE_REVIEW.md) ·
 [Phase 1 acceptance review](docs/reports/rl_ready/PHASE1_ACCEPTANCE_REVIEW.md) (PASS_WITH_LIMITATIONS at `f03fbff`) ·
 [P1 follow-up](docs/reports/rl_ready/P1_FOLLOWUP.md) (`acceptance_v2`, review findings 1–4, 10, 12) ·
-[P1 follow-up review](docs/reports/rl_ready/P1_FOLLOWUP_REVIEW.md).
+[P1 follow-up review](docs/reports/rl_ready/P1_FOLLOWUP_REVIEW.md) ·
+[P1-6 cycle p16c1](docs/reports/rl_ready/P1_6_p16c1.md) ·
+[PR #14 review](docs/reports/rl_ready/P1_6_P16C1_PR14_REVIEW.md) ·
+[p16c1 follow-ups](docs/reports/rl_ready/P1_6_P16C1_FOLLOWUPS.md) ·
+[PR #15 review](docs/reports/rl_ready/P1_6_P16C1_PR15_REVIEW.md).
+
+## Rubber material (Phase 2)
+
+Phase 2 adds a rubber material to the same batched material layout and vector-env contract as Phase 1. It reaches
+`main` in its own PR. Material status everywhere: **`SIMULATOR_ONLY_UNCALIBRATED`**. No real rubber data exists, and
+every modulus, Prony term and friction value is illustrative. Design: [ADR 0023](docs/adr/0023-rubber-material-v1.md);
+summary and every recorded FAIL: [final report](docs/reports/rl_ready/FINAL_REPORT.md).
+
+**What exists (all opt-in; frozen solvers v1–v7_2 and Phase 1 modules are unchanged):**
+
+- **Solver `tlmpm_rubber_v1`**, as a single-env reference (`LiveRubberMaterial`) and batched
+  (`batched/rubber_material_batch.py`, `BatchedRubberMaterial`). Two models:
+  - `neo_hookean_jbar_v1`: isochoric Neo-Hookean with a J̄-averaged volumetric term and a documented reduced bulk
+    ratio κ = 20 μ;
+  - `neo_hookean_jbar_prony_v1`: the same plus Prony viscoelasticity (exact exponential update). The internal
+    variables are per env and are cleared by a partial reset.
+
+  Recipes: `configs/materials/rubber_generic_{soft,visco}_v1.json`.
+- **Contact laws `grid_node_penalty_coulomb_v1/v2/v3`.** v1 is the default. v2 is the law of the RL task. v3
+  (patch slip-rate equalisation) is valid for straight translational sliding only: review finding K2-1 showed an
+  unbounded patch torque under rotation or sideways drag.
+- **S1 self-penetration detector** (`surface_grid_v1`): detection only. It sets the sticky invalid bit
+  `RUBBER_SELF_CONTACT_UNRESOLVED`. Self-contact forces are not implemented.
+- **Batched rubber RL task:** `open_vector_env(backend="kinematic_grip_batched")` with a `RubberStripTaskFamily`.
+  - Task and profile: task `rubber_strip_drag_v2`, profile `rubber_rl_env_v2`.
+  - Scene: a strip on a table, dragged by a kinematically tracked grip toward a tip goal. Slots are L 100 / 125 /
+    150 × t 4 / 5 / 6 mm, W 16 mm, dx 1 mm.
+  - Actions and observations: 6-D `grip_delta_v1` actions; a 78-dim deployable `policy` observation; an opt-in
+    106-dim `critic` observation with `observation_profile="privileged_state"`.
+  - Reward and success: the shaping reward `rubber_tip_tracking_v1`; success comes only from `evaluate()`
+    (`rubber_tracking_eval_v1`).
+  - Randomisation: material, traction, preload and goal are resampled per reset. Geometry is fixed per env;
+    `rebuild()` changes it.
+- **Native rubber host** (`native_rubber_host.py`, launcher `scripts/rubber/p2_6/launch_native_rubber.py`). It runs
+  the same recipe and profile inside Kit, fed by the PhysX-measured clamp pose.
+  - RL-09 PASS: the material inputs were bitwise equal in 30 headless replays, and 0 of 46 statistics fell outside
+    the declared band.
+  - The clamp wrench is reported only, not fed back.
+- **Calibration interface for real data:**
+  - `rubber_calibration_v2.py`: manifest schema `rcs_rubber_calibration_dataset_v2` (data origin, sensors, measured
+    specimens) and `real_calibrated_gate_v2`, which refuses synthetic and v1 manifests;
+  - batched forward models of five experiment types (`rubber_calibration_experiments.py`);
+  - a fit API (`rubber_calibration_fit.py`: bounded TRF, CMA-ES, an ask/tell plug-in point) with a one-shot held-out
+    ledger.
+
+  The real-data manifest `configs/rubber/calibration/none_v1.json` is `NO_REAL_DATA`, and the real-data protocol
+  `rubber_calib_tests_real_v1` is NOT_RUN. Read the guidance for real data in
+  [P2_5_RUBBER_CALIBRATION.md](docs/reports/rl_ready/P2_5_RUBBER_CALIBRATION.md) §12.2 first.
+
+```python
+import torch
+from robotic_cutting_sim.rl.vector_env import open_vector_env
+from robotic_cutting_sim.rl.rubber_family import RubberStripTaskFamily
+
+N = 8
+family = RubberStripTaskFamily(num_envs=N, slot_seed=0)        # rubber_strip_drag_v2, profile rubber_rl_env_v2
+with open_vector_env(num_envs=N, task=family, backend="kinematic_grip_batched", device="cuda") as env:
+    obs, info = env.reset(seeds=[1000 + e for e in range(N)])  # obs["policy"]: float32 [N, 78] on the device
+    actions = torch.zeros((N, 6), dtype=torch.float32, device=obs["policy"].device)
+    obs, reward, terminated, truncated, info = env.step(actions)
+    obs, info = env.reset(env_ids=[3], seeds=[2000])           # masked partial reset with new draws
+    results = env.evaluate()                                   # rubber_tracking_eval_v1
+```
+
+Set `OPENBLAS_NUM_THREADS=1` (or a small value) in any process that opens the rubber env. A reset recomputes block
+inverses on the host, and with OpenBLAS's default all-core pool on a loaded host the reset p95 was 5.0 s, against
+0.093 s single-threaded. The inverse's bits depend on the thread count.
+
+**Known limitations:**
+
+- Table friction is **fixed at μ = 0.3**. The law-v2 envelope check failed at 0.4 on the strip scene; real rubber is
+  often 0.6–1.0 or more.
+- Robot-coupled rubber is deferred: the grip is kinematic, and no rubber wrench reaches a robot. The 20 ms handoff
+  was assessed as significant.
+- Throughput at full fidelity (n_t 4, 5,226 substeps per 20 ms step) is about **1 env-step/s** aggregate: 0.96 at
+  N=8 for the full slot set, `SHARED_GPU`. The labelled reduced-fidelity variant `rubber_rl_v1` (n_t 3) is about
+  3× faster.
+- Bending carries a measured discretisation bias at n_t 4: +0.62 % (L/t 20) and +0.71 % (L/t 37.5). The
+  RUBBER-PHYS-11 v5 FAIL is kept.
+- **P2-5 synthetic calibration test: FAIL** (`rubber_calib_tests_v2`). The interface, batched-equals-single parity,
+  sealing and one-shot machinery work. The declared staged fit stopped on its per-stage evaluation caps and failed fit
+  quality, held-out prediction and parameter recovery. A final blind re-test was estimated at 7.1–10.2 GPU-h and was
+  not run.
+- A fitted θ is **resolution-specific** (`rubber_ref_v1`, n_t 4). Do not carry it to another resolution without the
+  bias shift.
+- No cameras, sensors or recorders in the batched rubber env (`UNSUPPORTED_*`). The P2-6 env tests need Torch, so
+  they are NOT_RUN in GitHub CI; the local Torch-venv runs are the gate.
+
+```bash
+# Rubber CPU suites (project venv; Torch-gated tests skip there = NOT_RUN)
+CUDA_VISIBLE_DEVICES='' .venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_*.py \
+  tests/test_live_rubber_material.py tests/test_tlmpm_rubber_v1.py tests/test_native_rubber_*.py tests/test_repo_naming.py
+# Rubber RL env tests (Torch venv, D-09 pytest overlay)
+CUDA_VISIBLE_DEVICES='' OPENBLAS_NUM_THREADS=1 PYTHONPATH=/home/ningan/rcs_rl_data/pytest_overlay_py312:src \
+  .deps/isaacsim-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_rubber_rl_*.py \
+  tests/test_rubber_device_staging.py tests/test_rubber_scripted.py tests/test_native_rubber_*.py
+# GPU rows (P2-6 runner) under the blocking per-GPU flock; sets OPENBLAS_NUM_THREADS=1
+scripts/rubber/p2_6/queue_gpu_rows.sh <gpu index> <rows, e.g. RL-01> artifacts/rl_ready/<new_run>
+```
+
+Reports in `docs/reports/rl_ready/`:
+[P2-0/P2-1 rubber](docs/reports/rl_ready/P2_0_P2_1_RUBBER.md) ·
+[P2-2 hyperelastic](docs/reports/rl_ready/P2_2_RUBBER_HYPERELASTIC.md) ·
+[P2-3 viscoelastic](docs/reports/rl_ready/P2_3_RUBBER_VISCO.md) ·
+[P2-4 contact](docs/reports/rl_ready/P2_4_RUBBER_CONTACT.md) ·
+[P2-5 calibration](docs/reports/rl_ready/P2_5_RUBBER_CALIBRATION.md) ·
+[P2-6 rubber RL](docs/reports/rl_ready/P2_6_RUBBER_RL.md) ·
+reviews: [P2-0..P2-2](docs/reports/rl_ready/P2_0_P2_2_ACCEPTANCE_REVIEW.md),
+[P2-3](docs/reports/rl_ready/P2_PREREQ_P2_3_REVIEW.md), [K2 combined](docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md),
+[P2-5](docs/reports/rl_ready/P2_5_ACCEPTANCE_REVIEW.md), [P2-6](docs/reports/rl_ready/P2_6_ACCEPTANCE_REVIEW.md).
 
 ## Agentic control robot seeded trimming
 
