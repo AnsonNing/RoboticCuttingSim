@@ -27,7 +27,7 @@ feedback; `robot_feedback_coupling: NOT_IMPLEMENTED_PHASE2`), perception `ideal_
 | RL-04 a CPU L1 + masked reset = fresh env | **PASS** | pytest |
 | RL-04 b GPU -09 v2 rule, N 4 | **PASS** (3,780 scalars, worst d / limit 0.469) | `gpu_rl_a_001` |
 | RL-05 CPU clauses (bits → MATERIAL_INVALID, NaN env, reward recomputation, truncation, evaluator, S1 (a)-(f)) | **PASS** | pytest |
-| RL-05 GPU sanity, v2 (`rubber_scripted_drag_v1`) | **FAIL** (scripted better in 4 / 8, 0 successes) — preserved | `gpu_rl_a_001` |
+| RL-05 GPU sanity, v2 (`rubber_scripted_drag_v1`) | **FAIL** (scripted better in ~~4 / 8~~ 5 / 8 [erratum Z1-F4f: the evidence shows 5 / 8, envs 2, 4, 5, 6, 7], 0 successes) — preserved | `gpu_rl_a_001` |
 | RL-05 GPU sanity, v3 (`rubber_scripted_pivot_v1`) | **FAIL** (better in 8 / 8, 0 successes) — preserved | `gpu_rl05_v3_001` |
 | RL-05 GPU sanity, v4 (`rubber_scripted_pivot_hold_v1`, last attempt) | **PASS** (better in 7 / 8, 5 successes) | `gpu_rl05_v4_001` |
 | RL-06 long rollout N 8, 400 steps | **PASS** (53 partial resets, VRAM growth 0, 0 invalid; reset p95 5.0 s) | `gpu_rl_c_001` |
@@ -199,7 +199,7 @@ env code are identical.
 
 | Version | Controller | Seeds | Scripted better than zero | Successes | Verdict |
 | --- | --- | --- | --- | --- | --- |
-| v2 | `rubber_scripted_drag_v1`: grip moved by the tip error | 2000 + e | 4 / 8 | 0 | FAIL (preserved) |
+| v2 | `rubber_scripted_drag_v1`: grip moved by the tip error | 2000 + e | ~~4 / 8~~ 5 / 8 (erratum Z1-F4f: the evidence shows 5 / 8, envs 2, 4, 5, 6, 7) | 0 | FAIL (preserved) |
 | v3 | `rubber_scripted_pivot_v1`: grip yaw toward the goal bearing plus radial move along the grip axis; developed on a coarse CPU stand-in, seeds 5000–5011 | 7000 + e | 8 / 8 | 0 | FAIL (preserved) |
 | v4 (last attempt) | `rubber_scripted_pivot_hold_v1`: the v3 approach plus a latched hold phase (hysteresis r_in 8 mm / r_out 30 mm, no yaw while holding, PD on the tip error with the observed tip velocity, deadband 3 mm); developed on the full-resolution GPU model, seeds 5000–5007, ≈ 1.0 GPU-h | 8000 + e | 7 / 8 | 5 | **PASS** |
 
@@ -634,3 +634,11 @@ RL-10 checker, the declaration, evidence and docs. Logs are in `artifacts/rl_rea
   projects' processes.
 
 **RL-11: PASS.**
+
+## 13. Erratum after the Phase 2 acceptance review (additive, 2026-11-12)
+
+Review `docs/reports/rl_ready/PHASE2_ACCEPTANCE_REVIEW.md` (Z1, finding F4 f). RL-05 v2 (`rubber_scripted_drag_v1`,
+run `gpu_rl_a_001`): the scripted controller beat the zero action in **5 / 8** envs (envs 2, 4, 5, 6, 7), not 4 / 8 as
+first written in §0 and §5 (`p2_6_rubber_rl_001.json` `RL05/scripted_better`; raw `gpu_rl_a_001/rows/RL05.json`).
+The old value is kept struck through. The verdict is unchanged: FAIL (the rule needs ≥ 7 / 8 and at least one success;
+there were 0 successes). The frozen evidence JSON is not edited.

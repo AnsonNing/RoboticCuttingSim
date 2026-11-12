@@ -217,10 +217,10 @@ merged speedup, and the timed windows differ as stated in §3.
 | CUT C2 (`frozen_v1`) | 6.849 | NOT_RUN | 10.350 (1.51×) | 10.223 (1.49×) | all EXCLUSIVE |
 | B1 rigid mount (robot + material) | 4.955 (s512 only) | 7.655 (1.54×; first run 7.402, SHARED) | 8.666 (1.75×) | 8.789 (1.77×, SHARED, 0 % foreign SM) | see labels |
 
-- Material-only batches gain ~1.4–1.5× over N=1 (A already at N=4, CUT at N=8) and nothing beyond: the batch step grows linearly
+- Material-only batches gain ~~~1.4–1.5×~~ ~1.4× (1.37–1.40× in matched windows; see erratum E-1 below) over N=1 (A already at N=4, CUT at N=8) and nothing beyond: the batch step grows linearly
   with N after N=4 (CUT: 0.146 → 0.773 → 1.565 s per batch step at N=1/8/16). Our own `pmon` SM-busy share is already 76 % (mean) at
   A N=1, so one ~100k-particle env leaves only ~1/3 of the 5090 idle, and that is what batching recovers. This
-  confirms P1-2's matched-load result (N8/N1 1.45×, N16/N1 1.42×) on an exclusive GPU.
+  confirms P1-2's matched-load result (N8/N1 ~~1.45×~~ 1.40×, N16/N1 ~~1.42×~~ 1.37×; erratum E-1) on an exclusive GPU.
 - B1 gains more (1.75× at N=8/16) because its N=1 step carries ~50 ms of latency-bound robot work (rigid substeps,
   IK, Python-driven launches: 0.202 s per step vs 0.146 s for CUT N=1 and 0.148 s for A N=1) that the batch amortises; at
   N=16 robot + material costs 1.82 s per batch step against 1.57 s for the material-only CUT batch.
@@ -277,13 +277,31 @@ gates); the windows are pre-contact (N ≥ 4) where `alias_free_v1`'s contact wo
 | P1-1b S3 B1 N=4 `s3_b1_n4_001` (SHARED) | 3.079 | 7.655 | 2.49× |
 | P1-1b B2 `mjwarp_grip_v1` N=4 `s3_b2grip_n4_001` (49 %) | 3.639 | 7.372 | 2.03× |
 
-The co-tenant halved most earlier batched numbers; the earlier P1-2 *ratios at matched load* (1.45× / 1.42×) and
+The co-tenant halved most earlier batched numbers; the earlier P1-2 *ratios at matched load* (~~1.45× / 1.42×~~ 1.40× / 1.37×, erratum E-1) and
 the P1-0 EXCLUSIVE single-env row agree with the exclusive window. The P1-2 rows use longer windows with contact and
 mixed seeds, so their ratio to the s512 harness rows is indicative, not exact. Physics in the exclusive rows matches
 the earlier evidence: workload B labelled counts are identical to P1-1b S3 (B1 33,740 / 80,986 per seed in every N;
 B2 38,220 / 81,034 / 38,220 / 81,033), single-env replays reproduce the Native final codes, and the batched CUT final
 codes are within 0–60 particles of the three P1-5 single references (28 of 33 reference episodes bitwise equal to one
 of them, the others 4–30 particles from the nearest).
+
+### 5.5 Erratum E-1 (additive, 2026-11-12; Phase 2 acceptance review F5, §4.2)
+
+The struck-through values above are kept; nothing else in this report, its rows or its evidence
+(`p1_exclusive_001.json`) changes.
+
+- **P1-2 matched-load batching gain: 1.40× (N=8) / 1.37× (N=16), not 1.45× / 1.42×.** The review recomputed it from
+  the raw step times of P1-2 alternation round 1 (`p1_2/alt_r1_n{1,8,16}_001/steps.npz`): N=8 over steps [0:150]
+  divided by N=1 over [0:150] is 1.396×; N=16 over [0:100] divided by N=1 over [0:100] is 1.370×. The 1.447× / 1.418×
+  quoted here divided by a 300-step N=1 window whose step cost rises late. That is a window artefact, already
+  superseded in `P1_1_P1_2_MILESTONES.md` by review fix F3 (commit 0a26b5f) before this table was written.
+- **The §5.1 ratios over N=1 carry the same bias.** The workload-A N=1 baseline times a 300-step window (steps
+  21–320, ending in the late approach and the first contact steps), against 100-step windows at N ≥ 4. Mean step /
+  median step is 1.040 (`frozen_v1`) and 1.050 (`alias_free_v1`) at N=1 and 1.000 at every N ≥ 4
+  (`exclusive_001/a_n*/rounds/round_0.json`), so the §5.1 workload-A ratios (1.43–1.49×) are about 4–5 % high. A
+  reviewer proxy on median steps (not a measured matched window) gives `frozen_v1` 1.43 / 1.37 / 1.40× and
+  `alias_free_v1` 1.35 / 1.37 / 1.33× at N 4 / 8 / 16, in line with the matched P1-2 values.
+- The measured env-steps/s of every row are unaffected; only the ratios built on the N=1 window are.
 
 ## 6. Fidelity labels
 

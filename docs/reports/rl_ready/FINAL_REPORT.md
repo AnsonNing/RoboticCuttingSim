@@ -1,9 +1,16 @@
 # RL-Ready Simulator & Rubber Physics — final report (DRAFT)
 
 **Status: DRAFT, 2026-11-12.** The Phase 2 merge into `main` and the new external descriptor pin are still
-pending (§9). The P2-5 and P2-6 reports this draft cites are on `claude/rl-rubber` and `claude/rl-rubber-p26`. Their
-links below give the paths they will have after the merge into this branch:
-[P2_5_RUBBER_CALIBRATION.md](P2_5_RUBBER_CALIBRATION.md) and [P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md).
+pending (§9). Phase 2 (P2-5, P2-6 and the K2 follow-ups) is merged into `claude/rl-ready-rubber-physics` at
+`92e671a`, so every report cited here, including [P2_5_RUBBER_CALIBRATION.md](P2_5_RUBBER_CALIBRATION.md) and
+[P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md), is on this branch.
+
+**Revision after the Phase 2 acceptance review (Z1).** The xhigh review
+[PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md) (at `92e671a`, verdict GO_WITH_CONDITIONS) checked 69
+values in this draft. 68 matched; the RL-05 v2 count was wrong (5/8, not 4/8). This revision applies its documentation
+conditions D1 (findings F1, F4, F5, F6): box 2 and box 3 wording, the real-data protocol status, stale passages, the
+reproduction row names, the batching-gain wording (§2.3, §4.4), two missing limitations and the calibration-to-RL
+handoff (§5). No verdict is re-scored.
 
 **Scope.** This report covers the user's plan v2.0 ("RL-Ready Simulator & Rubber Physics", 2026-11-10). Its in-repo
 copy is [RL_READY_SPECIFICATION.md](../../RL_READY_SPECIFICATION.md). Work packages and decisions D-01..D-14 are in
@@ -62,8 +69,8 @@ calibration interface for real data. Every Phase 2 package records its FAILs. Th
 | # | Criterion (abridged) | Status | Evidence |
 | --- | --- | --- | --- |
 | 1 | Rubber recipe and hyperelastic / viscoelastic / contact models with reproducible run evidence | **PASS** (with limitations) | Recipe schema `rcs_rubber_material_v1`; models `neo_hookean_jbar_v1`, `neo_hookean_jbar_prony_v1`; contact laws v1/v2/v3. Each protocol was declared and SHA-pinned before its formal run, with compact evidence under `docs/evidence/rl_ready/p2_*` ([ADR 0023](../../adr/0023-rubber-material-v1.md); K2 review: [P2_K2_COMBINED_REVIEW.md](P2_K2_COMBINED_REVIEW.md) §0) |
-| 2 | Large deformation, gravity, stretch / release, rebound, hysteresis and friction tests pass physically and numerically | **PARTIAL** | Most declared tests PASS. Remaining, all recorded: the RUBBER-PHYS-11 v5 refinement FAIL (wide-strip sag GCI 2.16 % > 2 %, accepted as a labelled +0.62 % bias); friction above μ 0.3 unsupported in the RL task (envelope FAIL at 0.4); contact law v3 for translational sliding only (K2-1); the -01 d stick-run energy books FAIL; self-contact detected, not resolved. ADR 0023 §23.3 calls the same state PASS_WITH_LIMITATIONS |
-| 3 | The same rubber in multi-env RL headless and in Full Native; at least 8 envs with reliable results | **PASS** (with limitations) | P2-6 RL-01..RL-12 PASS at N=8 (RL-05 only on its third declared controller). Native RL-09 PASS. The P2-6 review grades box 3 PASS_WITH_LIMITATIONS: friction fixed at 0.3, geometry per env, kinematic grip, about 1 env-step/s ([P2_6_ACCEPTANCE_REVIEW.md](P2_6_ACCEPTANCE_REVIEW.md) §8; [P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md) §0) |
+| 2 | Large deformation, gravity, stretch / release, rebound, hysteresis and friction tests pass physically and numerically | **PARTIAL** | Most declared tests PASS. Remaining, all recorded: the RUBBER-PHYS-11 v5 refinement FAIL (wide-strip sag GCI 2.16 % > 2 %, accepted as a labelled +0.62 % bias); friction above μ 0.3 unsupported in the RL task (envelope FAIL at 0.4); contact law v3 for translational sliding only (K2-1); the -01 d stick-run energy books FAIL; self-contact detected, not resolved. Hysteresis passes only as "v1 FAIL, v2 PASS (post-hoc measurement correction)" (VISC-03, §4.1). The κ = 20 μ near-incompressibility treatment is a model-form error: volume ratio J − 1 = +5.4 % and nominal stress −4.2 % at stretch 2.0, bending stiffness −1.6 % ([ADR 0023](../../adr/0023-rubber-material-v1.md) §6). ADR 0023 §23.3 calls the same state PASS_WITH_LIMITATIONS; the Phase 2 review says PARTIAL ([PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md) §1) |
+| 3 | The same rubber in multi-env RL headless and in Full Native; at least 8 envs with reliable results | **PASS** (with limitations) | P2-6 RL-01..RL-12 PASS (RL-05 only on its third declared controller). The N=8 GPU rows are RL-01, RL-02 b, RL-03, RL-05 v4, RL-06, RL-07 and RL-12; GPU isolation (RL-04 b) was tested at **N=4**, and the GPU L3 band (RL-02 c) runs an N=8 batch but scores 2 envs. Native RL-09 PASS. The P2-6 review grades box 3 PASS_WITH_LIMITATIONS: friction fixed at 0.3, geometry per env, kinematic grip, about 1 env-step/s ([P2_6_ACCEPTANCE_REVIEW.md](P2_6_ACCEPTANCE_REVIEW.md) §8; [P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md) §0) |
 | 4 | REAL_CALIBRATED only after an independent held-out pass on real data; otherwise SIM_ONLY | **PASS** (conditional box: no real data) | Status stays `SIMULATOR_ONLY_UNCALIBRATED`. The synthetic numerical test of the calibration pipeline (P2-5, `rubber_calib_tests_v2`) **FAILED** CAL-04 / CAL-05 / CAL-06 ([P2_5_RUBBER_CALIBRATION.md](P2_5_RUBBER_CALIBRATION.md) §10) |
 | 5 | Old CUT / TRIM / v5 / v7 baselines not broken | **PASS** | RL-11 on the P2-6 head: `.venv` 2,932 passed / 0 failed; Torch selection 414–416 passed; frozen Phase 1 paths equal to `main` except the 13-line dispatch branch ([P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md) §12) |
 | 6 | Models, tests, scene and docs merged into RCS; external pin updated | **PENDING** | Phase 2 PR, merge and new descriptor are NOT_RUN at the time of this draft (§9) |
@@ -142,8 +149,11 @@ Workload A is s512, 102,732 particles/env, 20 warm-up and 100 timed batch steps 
   - batched CUT: 6.849 / 10.350 / 10.223 at N=1/8/16 (33/33 episodes evaluator PASS);
   - B1 rigid mount: 4.955 / 7.655 / 8.666 at N=1/4/8; N=16 8.789 is SHARED;
   - B2 `mjwarp_grip_v1` N=4: 7.372 (4/4 PASS, grasp held).
-- **Scaling.** Material-only batches gain about 1.4–1.5× over N=1 and saturate from N≈4 (§5.1). The table's
-  explanation is that one ~100k-particle env already keeps the SMs about 76 % busy.
+- **Scaling.** Material-only batches gain about 1.4× over N=1 and saturate from N≈4: 1.37–1.40× in matched windows
+  (P1-2, review fix F3). The exclusive table's own 1.43–1.49× (§5.1) divides by a 300-step N=1 window against
+  100-step windows at N ≥ 4, which makes it about 4–5 % high
+  ([PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md) §4.2; erratum in the table). The table's explanation
+  for the saturation is that one ~100k-particle env already keeps the SMs about 76 % busy.
 - **Contact modes.** `alias_free_v1` / `frozen_v1` is 1.38–1.47× in every pair (§5.3).
 - **Boundaries.** Native, single-env headless and batched rows are never merged into one speed-up. The single
   comparisons are in §5.2 of the table.
@@ -420,7 +430,7 @@ the evaluator `rubber_tracking_eval_v1`.
 | RL-01 contract | PASS | CPU N 1 / 3, GPU N 1 / 8, both profiles |
 | RL-02 parity | PASS | CPU L0 bytewise; GPU L2 60 steps; GPU L3 0 / 90 outside the band (max M/U 0.774) |
 | RL-03 randomisation, RL-04 isolation | PASS | -09 v2 rule: 3,780 scalars, worst d/limit 0.469 |
-| RL-05 scripted sanity v2 / v3 | **FAIL / FAIL** (preserved) | v2: better than zero action in 4/8, 0 successes. v3: 8/8, 0 successes (the tip reached the goal, then swung out) |
+| RL-05 scripted sanity v2 / v3 | **FAIL / FAIL** (preserved) | v2: better than zero action in 5/8 (erratum: first written as 4/8), 0 successes. v3: 8/8, 0 successes (the tip reached the goal, then swung out) |
 | RL-05 v4 (declared as the last attempt) | PASS | better in 7/8, 5 evaluator successes |
 | RL-06 long rollout | PASS | N=8, 400 steps, 53 partial resets, VRAM growth 0. Reset p95 5.0 s, or 0.093 s with `OPENBLAS_NUM_THREADS=1` |
 | RL-07 throughput | PASS (SHARED_GPU) | N=8 / N=1 gain 1.46. Full slot set 0.658 / 1.019 / 0.960 / 1.009 env-steps/s at N=1/4/8/16. VRAM 1,228 MiB at N=8 |
@@ -439,11 +449,25 @@ the evaluator `rubber_tracking_eval_v1`.
 - **Throughput against Phase 1.** At N=8 the rubber env is about 10× slower per env-step than workload A, measured
   in the same session at 9.7 env-steps/s. The main reason is 5,226 substeps per control step instead of 200 (§4).
   The reduced-fidelity `rubber_rl_v1` (n_t 3) runs 3.277 env-steps/s at N=8.
+- **Supplementary `EXCLUSIVE_GPU` RL-07 row — PLACEHOLDER (PENDING).** The Phase 2 review (F2, condition M2) asked
+  for RL-07 to be rerun unchanged (`rubber_rl_tests_v2`) on an idle GPU with a continuous co-tenant sampler, as an
+  additional labelled row. The original SHARED_GPU row and its PASS stay the row of record. The measurement is
+  running; the expected evidence file is `docs/evidence/rl_ready/p2_6_rubber_rl07_exclusive_001.json`.
+
+  | Set | N | particles / env | env-steps/s | sim-time / wall | VRAM MiB | GPU / sharing | commit | evidence |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | full slot set | 1 | `<…>` | `<…>` | `<…>` | `<…>` | `<GPU, EXCLUSIVE_GPU?>` | `<sha>` | PENDING |
+  | full slot set | 8 | `<…>` | `<…>` | `<…>` | `<…>` | `<…>` | `<sha>` | PENDING |
+  | full slot set | 16 | `<…>` | `<…>` | `<…>` | `<…>` | `<…>` | `<sha>` | PENDING |
+
+  Until it is filled in, every Phase 2 throughput and Native row is SHARED_GPU.
 
 ### 4.2 Material status
 
 `SIMULATOR_ONLY_UNCALIBRATED` everywhere. No recipe is promoted. No synthetic manifest can pass the REAL gate. The
-real-data protocol `rubber_calib_tests_real_v1` is declared and NOT_RUN.
+real-data protocol `rubber_calib_tests_real_v1` exists only as an **outline** inside `rubber_calib_tests_v1.json`
+(`real_data`: "to be declared when real data exist"). It has no thresholds and is NOT_RUN; it must be declared and
+frozen before any real held-out evaluation.
 
 ### 4.3 Reviews of Phase 2
 
@@ -459,10 +483,16 @@ real-data protocol `rubber_calib_tests_real_v1` is declared and NOT_RUN.
 
 - **P1-2 batching gain.** [P1_PERFORMANCE_TABLE.md](P1_PERFORMANCE_TABLE.md) §5 (twice) cites "P1-2's matched-load
   result (N8/N1 1.45×, N16/N1 1.42×)". [P1_1_P1_2_MILESTONES.md](P1_1_P1_2_MILESTONES.md) (review fix F3) supersedes
-  those figures: they compared unequal windows. The matched-window values are 1.40× and 1.37×. This report uses
-  1.40× / 1.37×.
+  those figures: they compared unequal windows. The matched-window values are 1.40× and 1.37×. **Resolved:** the
+  Phase 2 review recomputed them from the raw step times (1.396× / 1.370×; the unequal windows give 1.447× /
+  1.418×), so 1.40× / 1.37× is correct. The exclusive table's §5.1 ratios over N=1 (1.43–1.49×) carry the same window
+  bias and are about 4–5 % high ([PHASE2_ACCEPTANCE_REVIEW.md](PHASE2_ACCEPTANCE_REVIEW.md) §4.2). An additive
+  erratum now stands in [P1_PERFORMANCE_TABLE.md](P1_PERFORMANCE_TABLE.md) §5.
 - **p16c1 absolute speeds.** The baseline measurement gave 13.44 env-steps/s at N=16, the a04 baseline runs 7.46–7.83
   (shared GPU). Only the interleaved ratios are used.
+- **RL-05 v2 count.** [P2_6_RUBBER_RL.md](P2_6_RUBBER_RL.md) §0 / §5 and ADR 0023 §23.7 first said the v2 scripted
+  controller beat the zero action in 4/8 envs; the evidence shows 5/8 (envs 2, 4, 5, 6, 7). Additive errata are in
+  both files. The verdict (FAIL: 0 successes) is unaffected.
 - **Phase 2 Done box 2.** ADR 0023 §23.3 grades it PASS_WITH_LIMITATIONS. This report says PARTIAL because recorded
   FAILs (Q1w, μ 0.4, -01 d) and unimplemented self-contact remain.
 - **P2-5 mechanism.** The report's §9–§10 explain the v2 FAIL as a "resolution bias" and a "different basin". Erratum
@@ -509,9 +539,31 @@ real-data protocol `rubber_calib_tests_real_v1` is declared and NOT_RUN.
 - **BLAS threads:** `threadpoolctl` is absent from both venvs, so `OPENBLAS_NUM_THREADS=1` is a documented user
   setting, not enforced. Reset bits depend on the BLAS thread count.
 - **CI:** GitHub CI has no Torch, so the P2-6 env tests are NOT_RUN there. Local Torch-venv runs are the gate.
+- **κ = 20 μ model-form error:** the reduced bulk ratio (ν_eff 0.4754 instead of about 0.4995 for real rubber) gives
+  J − 1 = +1.2 / +2.5 / +5.4 % and nominal stress −2.1 / −2.7 / −4.2 % at uniaxial stretch 1.25 / 1.5 / 2.0, and
+  bending stiffness −1.6 % ([ADR 0023](../../adr/0023-rubber-material-v1.md) §6). Volume change and confined
+  (pinch) responses must not be compared with real rubber as if they were physics.
+- **Default contact law:** the code default is law v1 (`rubber_contact.py`), which has the worst formal record
+  (RUBBER-CONT-01 / 03 / 04 / 05 FAIL). The friction envelope is enforced only in the RL task family
+  (`rl/rubber_family.py`). Both recipes carry a nominal table friction of 0.8, so a `LiveRubberMaterial` /
+  `BatchedRubberMaterial` built directly from a recipe without an explicit law runs v1 at μ 0.8 with no refusal,
+  outside every established envelope row. Changing the default or enforcing the envelope in the material classes
+  would be a versioned decision.
 - **Native visual smoke:** the rendered-clamp visual fix (`measured_pose_v1`) has not run in Kit (visual smoke
   NOT_RUN).
 - **Merge and pin:** Phase 2 PR, merge and the new external descriptor are PENDING (§9).
+
+**Calibration results do not plug directly into the RL task** (Phase 2 review F1). The calibration interface is
+ready for ingesting, gating and one-shot held-out bookkeeping of real data, not for handing a fit to the RL task:
+- **Friction law.** P2-5 fits friction with contact law v3 (translational sliding only), so a fitted `μ_table` is a
+  law-v3 coefficient. The RL task uses law v2 with μ fixed at 0.3.
+- **Resolution.** Fitted θ are `RESOLUTION_SPECIFIC` to n_t 4 (`rubber_ref_v1`), while the RL slots run at
+  n_t 4 / 5 / 6 (t 4 / 5 / 6 mm).
+- **Material source.** The RL task draws its material from the fixed ranges in `rubber_strip_drag_v2`, not from a
+  recipe.
+
+A user with real data therefore still needs a new task-config version, a law-v2 friction fit (or an equivalence
+check at the target μ), and the resolution bias shift for n_t 5 / 6.
 
 ## 6. User decisions pending
 
@@ -535,7 +587,9 @@ decides otherwise. None blocks work.
 | U-P2-5 | Prony identifiability at n_t 4 | Keep fitted θ labelled resolution-specific; the bias size is unmeasured | Fit with an n_t 6 forward model (several-fold GPU cost) |
 | U-P2-6 | P2-5 synthetic recovery FAIL | The v2 FAIL is this round's result | Fund a v3 (about 9–10 GPU-h: branch-modulus parametrisation, joint stage from the start, Broyden Jacobian updates, new sealed dataset) |
 
-Note: in the progress file the U-P2-3 entry is split by the U-P2-4..6 lines. The table above joins the two parts.
+Two further items need the user, per the Phase 2 review (§4.4): whether `threadpoolctl` (or an in-code guard) may be
+added to enforce `OPENBLAS_NUM_THREADS` (default in force: a documented user setting), and whether GitHub CI gets a
+Torch job (default in force: the local Torch-venv runs are the gate for the P2-6 tests).
 
 ## 7. Resource use
 
@@ -599,7 +653,9 @@ flock <gpu lock> env TMPDIR=<tmp> .deps/isaacsim-venv/bin/python scripts/rl_read
 .deps/isaacsim-venv/bin/python scripts/rl_ready/supervise_rollout.py --help
 
 # P2-6 rubber GPU rows (sets OPENBLAS_NUM_THREADS=1, blocking per-GPU lock)
-scripts/rubber/p2_6/queue_gpu_rows.sh <g> <rows, e.g. RL-01,RL-02b> artifacts/rl_ready/<new_run>
+# Row names as run_rubber_rl_gpu.py accepts them: RL01 RL02b RL02c RL03 RL04b RL05 RL06 RL07 RL08 RL08b
+# (RL-05 v3 / v4, RL-12: scripts/rubber/p2_6/run_rubber_rl05_v{3,4}.py, run_rubber_rl12_hostmem.py)
+scripts/rubber/p2_6/queue_gpu_rows.sh <g> <rows, e.g. RL01,RL02b> artifacts/rl_ready/<new_run>
 # P2-6 Native host (Kit; refuses unless 14 GiB + 4 GiB are free), replays, comparison: P2_6_RUBBER_RL.md §9.2
 .venv/bin/python scripts/rubber/p2_6/launch_native_rubber.py --gpu 0 --task-config rubber_strip_drag_v2 ...
 # P2-5 calibration: scripts/rubber/p2_5/{gen_synthetic,run_pilot,run_fit_v2,run_heldout,reveal}.py (P2_5 report §3–§10)

@@ -2485,7 +2485,7 @@ Branch `claude/rl-rubber-p26` (Native work merged from `claude/rl-rubber-p26n`, 
     ΔO1 / L 8.8e-6); RL-09 Native; RL-10 (provenance of all six formal runs); RL-11 (full suites both CUDA modes, both venvs; workload A contract N 2 on GPU; frozen paths equal `main`).
   - RL-08 b is REPORTED: the Q1w bias at L/t 37.5 is +0.71 %, so the 1 % fallback trigger is not met.
   - RL-05 GPU sanity:
-    - v2 FAIL (4 / 8 better, 0 successes);
+    - v2 FAIL (~~4 / 8~~ 5 / 8 better, 0 successes; erratum Z1-F4f, see the note at the end of §23.7);
     - v3 FAIL (8 / 8, 0 successes);
     - v4 PASS (7 / 8, 5 successes; `rubber_scripted_pivot_hold_v1`, fresh seeds 8000 + e).
 
@@ -2526,3 +2526,6 @@ Branch `claude/rl-rubber-p26` (Native work merged from `claude/rl-rubber-p26n`, 
   - **F8.** P2-6 env tests are NOT_RUN in CI (no Torch); the local Torch-venv runs are the merge gate.
   - **Z-d.** `origin/main` `62caecc` was merged (`5692726`).
   - **C3 (resolved at the P2-5 merge).** The §23.6 numbering collision: P2-5 keeps §23.6 and this section is §23.7.
+- **Additive erratum (Phase 2 acceptance review Z1, F4 f, 2026-11-12).** RL-05 v2 beat the zero action in **5 / 8**
+  envs (2, 4, 5, 6, 7), not 4 / 8; the old value is kept struck through above. The FAIL verdict (0 successes) is
+  unchanged. Report: `P2_6_RUBBER_RL.md` §13.
