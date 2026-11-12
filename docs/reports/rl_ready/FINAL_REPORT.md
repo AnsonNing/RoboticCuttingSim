@@ -449,18 +449,32 @@ the evaluator `rubber_tracking_eval_v1`.
 - **Throughput against Phase 1.** At N=8 the rubber env is about 10× slower per env-step than workload A, measured
   in the same session at 9.7 env-steps/s. The main reason is 5,226 substeps per control step instead of 200 (§4).
   The reduced-fidelity `rubber_rl_v1` (n_t 3) runs 3.277 env-steps/s at N=8.
-- **Supplementary `EXCLUSIVE_GPU` RL-07 row — PLACEHOLDER (PENDING).** The Phase 2 review (F2, condition M2) asked
-  for RL-07 to be rerun unchanged (`rubber_rl_tests_v2`) on an idle GPU with a continuous co-tenant sampler, as an
-  additional labelled row. The original SHARED_GPU row and its PASS stay the row of record. The measurement is
-  running; the expected evidence file is `docs/evidence/rl_ready/p2_6_rubber_rl07_exclusive_001.json`.
+- **Supplementary `EXCLUSIVE_GPU` RL-07 row.** The Phase 2 review asked for this row (F2, condition M2). It was rerun
+  unchanged on an idle GPU with a continuous co-tenant sampler, as an additional labelled row (evidence
+  `docs/evidence/rl_ready/p2_6_rubber_rl07_exclusive_001.json` and its note).
+  - **Setup:** the exact declared RL-07 runner and settings (`rubber_rl_tests_v2`), commit `c21ae8d` (clean),
+    RTX 5090 GPU1, `OPENBLAS_NUM_THREADS=1`.
+  - **Sharing:** **EXCLUSIVE_GPU**. 275 samples at 2 s with a largest gap of 2.0 s, and 0 foreign-process samples.
+  - **Status:** the formal SHARED_GPU row (`gpu_rl_b_001`) and its PASS stay the row of record; nothing was
+    re-scored.
+  - **Numbers:** env-steps/s is N / median warm-step wall over 5 warm steps.
 
-  | Set | N | particles / env | env-steps/s | sim-time / wall | VRAM MiB | GPU / sharing | commit | evidence |
-  | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-  | full slot set | 1 | `<…>` | `<…>` | `<…>` | `<…>` | `<GPU, EXCLUSIVE_GPU?>` | `<sha>` | PENDING |
-  | full slot set | 8 | `<…>` | `<…>` | `<…>` | `<…>` | `<…>` | `<sha>` | PENDING |
-  | full slot set | 16 | `<…>` | `<…>` | `<…>` | `<…>` | `<…>` | `<sha>` | PENDING |
+  | Set | N | env-steps/s exclusive | env-steps/s shared (formal) | VRAM MiB (process peak) |
+  | --- | --- | --- | --- | --- |
+  | full slot set | 1 | 0.648 | 0.658 | 812 |
+  | full slot set | 4 | 1.002 | 1.019 | 972 |
+  | full slot set | 8 | 0.942 | 0.960 | 1,228 |
+  | full slot set | 16 | 0.996 | 1.009 | 1,676 |
+  | uniform L125_t4 | 1 | 0.624 | 0.624 | 876 |
+  | uniform L125_t4 | 8 | 1.144 | 1.160 | 1,196 |
+  | uniform L125_t4 | 16 | 1.209 | 1.235 | 1,548 |
+  | `rubber_rl_v1` (reduced fidelity) | 1 | 1.195 | 1.221 | 908 |
+  | `rubber_rl_v1` (reduced fidelity) | 8 | 3.236 | 3.277 | 1,004 |
 
-  Until it is filled in, every Phase 2 throughput and Native row is SHARED_GPU.
+  - **N8/N1 (median, matched 5-step windows):** full slot set **1.454×** (shared 1.459×), uniform 1.835× (1.860×),
+    reduced fidelity 2.709× (2.684×).
+  - **Conclusion:** the shared formal numbers were within about 2 % of exclusive. Every other Phase 2 throughput row
+    and the Native row remain SHARED_GPU.
 
 ### 4.2 Material status
 
