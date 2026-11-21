@@ -1,0 +1,147 @@
+{
+  "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+  "command": [
+    "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+    "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/rubber_numerics_controls_001.py",
+    "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_numerics_controls_001.json"
+  ],
+  "rest_prony_guard": [
+    {
+      "cfl": 0.5,
+      "dt_s": 5.102040816326531e-06,
+      "nominal_cfl": 0.49989586587411805,
+      "particles": 1152,
+      "guard_count_first_rest_substep": 0
+    },
+    {
+      "cfl": 0.65,
+      "dt_s": 6.633499170812604e-06,
+      "nominal_cfl": 0.6499475271066476,
+      "particles": 1152,
+      "guard_count_first_rest_substep": 0
+    },
+    {
+      "cfl": 0.8,
+      "dt_s": 8.163265306122448e-06,
+      "nominal_cfl": 0.7998333853985888,
+      "particles": 1152,
+      "guard_count_first_rest_substep": 0
+    },
+    {
+      "cfl": 1.0,
+      "dt_s": 1.0204081632653061e-05,
+      "nominal_cfl": 0.9997917317482361,
+      "particles": 1152,
+      "guard_count_first_rest_substep": 1152
+    }
+  ],
+  "quadrature": [
+    {
+      "ppc": 2,
+      "particles": 384,
+      "interpolated_peak": 0.25,
+      "gradient_peak_per_m": 500.0
+    },
+    {
+      "ppc": 1,
+      "particles": 48,
+      "interpolated_peak": 0.0,
+      "gradient_peak_per_m": 0.0
+    }
+  ],
+  "contact": {
+    "expected_unscaled_penetration_ratio": 1.6821894962971333,
+    "rows": [
+      {
+        "name": "reference",
+        "dt_s": 5.797101449275362e-06,
+        "cfl": 0.5,
+        "kn": 0.25,
+        "guard_violations": 0,
+        "expected_weight_n": 0.0018050400043648552,
+        "tail": [
+          {
+            "penetration_m": 1.3526889639996413e-08,
+            "normal_force_abs_n": 0.001806862402750867
+          },
+          {
+            "penetration_m": 1.307343724579032e-08,
+            "normal_force_abs_n": 0.0018106605535774011
+          },
+          {
+            "penetration_m": 1.3010066948201121e-08,
+            "normal_force_abs_n": 0.0018047372497757815
+          },
+          {
+            "penetration_m": 1.2634004704958747e-08,
+            "normal_force_abs_n": 0.0018039521925329335
+          },
+          {
+            "penetration_m": 1.2754429793186733e-08,
+            "normal_force_abs_n": 0.0017992139578121528
+          }
+        ]
+      },
+      {
+        "name": "larger_dt",
+        "dt_s": 7.518796992481203e-06,
+        "cfl": 0.65,
+        "kn": 0.25,
+        "guard_violations": 0,
+        "expected_weight_n": 0.0018050400043648552,
+        "tail": [
+          {
+            "penetration_m": 2.1390197469249776e-08,
+            "normal_force_abs_n": 0.0018101155970616717
+          },
+          {
+            "penetration_m": 2.0556912100870475e-08,
+            "normal_force_abs_n": 0.0017961540920759561
+          },
+          {
+            "penetration_m": 2.0292040457852413e-08,
+            "normal_force_abs_n": 0.0018098002420536016
+          },
+          {
+            "penetration_m": 2.0704579174971117e-08,
+            "normal_force_abs_n": 0.001800838322157978
+          },
+          {
+            "penetration_m": 2.057481236038738e-08,
+            "normal_force_abs_n": 0.0018126815643033096
+          }
+        ]
+      },
+      {
+        "name": "matched_kn",
+        "dt_s": 7.518796992481203e-06,
+        "cfl": 0.65,
+        "kn": 0.42054737407428333,
+        "guard_violations": 0,
+        "expected_weight_n": 0.0018050400043648552,
+        "tail": [
+          {
+            "penetration_m": 1.345864692461371e-08,
+            "normal_force_abs_n": 0.0018136185628043438
+          },
+          {
+            "penetration_m": 1.2726121114473574e-08,
+            "normal_force_abs_n": 0.001799456700550482
+          },
+          {
+            "penetration_m": 1.3107592312468571e-08,
+            "normal_force_abs_n": 0.0018101087965597207
+          },
+          {
+            "penetration_m": 1.2844050001121166e-08,
+            "normal_force_abs_n": 0.0017986855035316274
+          },
+          {
+            "penetration_m": 1.2758726418936602e-08,
+            "normal_force_abs_n": 0.0018070976080111559
+          }
+        ]
+      }
+    ]
+  }
+}
