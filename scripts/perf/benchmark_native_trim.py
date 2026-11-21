@@ -25,11 +25,6 @@ def load_controller(path, sha256):
 
 
 def main():
-    from agentic_robot.lab.sim.envs.rcs_gpu1 import _require_gpu1, launch_app_gpu1
-    from robotic_cutting_sim import isaac_sim_runner
-    from robotic_cutting_sim.agentic_trim_env import open_env, write_json
-    from robotic_cutting_sim.profiling import StageProfiler
-
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--seed", type=int, choices=(512, 15), required=True)
@@ -39,6 +34,11 @@ def main():
     p.add_argument("--reuse-grasp-state", action="store_true")
     p.add_argument("--robot-substeps", type=int, default=10)
     args = p.parse_args()
+    from agentic_robot.lab.sim.envs.rcs_gpu1 import _require_gpu1, launch_app_gpu1
+    from robotic_cutting_sim import isaac_sim_runner
+    from robotic_cutting_sim.agentic_trim_env import open_env, write_json
+    from robotic_cutting_sim.profiling import StageProfiler
+
     _require_gpu1()
     isaac_sim_runner.launch_app = launch_app_gpu1
     run = load_controller(args.controller, args.controller_sha256)
@@ -73,7 +73,10 @@ def main():
         finally:
             profiler.uninstall()
             write_json(args.out / "stage_summary.json", profiler.summary())
-        ev = json.loads((env.current_recording / "evaluation.json").read_text())
+        rec = env.current_recording
+        ev = json.loads((rec / "evaluation.json").read_text())
+        frames = json.loads((rec / "frame_manifest.json").read_text())
+        physics_stream = json.loads((rec / "physics_stream.json").read_text())
         boundary = env.total_steps == 1200 and abs(env.time_s - 24.0) <= 1e-9
         total = time.perf_counter() - start
         result = {"status": "COMPLETE" if boundary else "INCOMPLETE",
@@ -83,7 +86,8 @@ def main():
                   "finalize_s": finalize_s, "full_episode_wall_s": total,
                   "episodes_per_gpu_hour": 3600 / total if boundary else None,
                   "control": control, "evaluation": ev,
-                  "recording": str(env.current_recording.relative_to(args.out))}
+                  "recording": str(rec.relative_to(args.out)),
+                  "frame_manifest_entries": len(frames), "physics_stream": physics_stream}
         write_json(args.out / "benchmark.json", result)
         print(json.dumps({k: result[k] for k in ("status", "physics_status", "control_steps",
                                                 "full_episode_wall_s")}), flush=True)

@@ -64,7 +64,7 @@ def execute(args, telemetry):
     import torch
     import warp as wp
     from robotic_cutting_sim.rl import open_vector_env
-    from run_vector_milestones import L2Monitor
+    import run_vector_milestones as replay
     from run_perf_acceptance import stats_slots
 
     start = time.perf_counter()
@@ -86,7 +86,8 @@ def execute(args, telemetry):
         if not 2 <= first <= last <= env.max_episode_steps:
             raise ValueError(f"invalid measured window [{first}, {last}] for {env.max_episode_steps} steps")
         steps = env.max_episode_steps if args.full else last
-        monitor = L2Monitor(env)
+        replay._grouped_query_audit = replay._define_kernels()
+        monitor = replay.L2Monitor(env)
         rows, contacts, tool_contacts = [], [], []
         telemetry.set_phase("run")
         begin = time.perf_counter()
@@ -100,6 +101,8 @@ def execute(args, telemetry):
                 pair, tool = stats_slots(env)
                 contacts.append(pair.tolist())
                 tool_contacts.append(tool.tolist())
+            if k in (last, steps):
+                monitor.audit(k)
             if k % 50 == 0 or k in (first, last, steps):
                 print(f"step {k}/{steps} wall {rows[-1]:.3f}s", flush=True)
         sync()
@@ -111,8 +114,12 @@ def execute(args, telemetry):
         eval_s = time.perf_counter() - t0
         wall = sum(rows[first - 1:last])
         contact_count = np.count_nonzero(tool_contacts, axis=0).tolist()
+        steps_actual = info["step_count"].tolist()
+        complete = all(k == env.max_episode_steps for k in steps_actual) and all(trunc.tolist())
+        mass = env.material.solver.mass.numpy()
+        offsets = env.material.packed.particle_offset
         res = {
-            "status": "COMPLETE" if args.full else "WINDOW_COMPLETE",
+            "status": ("COMPLETE" if complete else "INCOMPLETE") if args.full else "WINDOW_COMPLETE",
             "task": args.task,
             "runtime_profile": args.runtime_profile,
             "contact_mode": args.contact_mode,
@@ -127,7 +134,8 @@ def execute(args, telemetry):
             "eval_s": eval_s,
             "terminal": term.tolist(),
             "truncated": trunc.tolist(),
-            "episode_ends": info["step_count"].tolist(),
+            "episode_ends": steps_actual, "final_mass_kg_per_env": [
+                float(row.sum(dtype=np.float64)) for row in np.split(mass, offsets[1:-1])],
             "window_steps": args.window_steps,
             "window_first_last": [first, last],
             "window_s": wall,
@@ -148,7 +156,7 @@ def execute(args, telemetry):
         if evaluation is not None:
             res["evaluation"] = evaluation
     res["total_wall_s"] = time.perf_counter() - start
-    res["episodes_per_gpu_hour"] = 3600.0 * n / res["total_wall_s"] if args.full else None
+    res["episodes_per_gpu_hour"] = 3600.0 * n / res["total_wall_s"] if res["status"] == "COMPLETE" else None
     return res
 
 
@@ -199,7 +207,8 @@ def main():
     write_json(args.out / "benchmark.json", result)
     print(json.dumps({k: result[k] for k in ("status", "window_first_last", "aggregate_env_steps_s",
                                             "contact_window_verdict", "total_wall_s")}), flush=True)
-    return 0 if result["contact_window_verdict"] == "PASS" else 1
+    return 0 if (result["contact_window_verdict"] == "PASS" and result["l2"]["status"] == "PASS"
+                 and result["status"] != "INCOMPLETE") else 1
 
 
 if __name__ == "__main__":

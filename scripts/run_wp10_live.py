@@ -830,6 +830,8 @@ def run_configured(a, out, task):
             raise ValueError(f"runtime_profile {a.runtime_profile!r} fixes --material-dt to {material_dt}")
         options.update(material_dt=material_dt, dx=task.grid_dx_m, **(runtime.get('native') or {}))
         profile_receipt = make_receipt(runtime, check_task(runtime, task, material_dt))
+        profile_receipt.update(recording={"every": a.record_every}, preset_overrides={},
+                               history_stride=a.oracle_stride)
     for key in ('native_sensor_runtime', 'material_diagnostics', 'reuse_grasp_state',
                 'robot_substeps', 'surface_update'):
         if hasattr(a, key):
