@@ -1,0 +1,3711 @@
+{
+  "rubber_sweep_001": [
+    {
+      "status": "PASS",
+      "profile": "beta10",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 7.000350017500875e-06,
+      "beta": 10.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 2857,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.7948329021601239,
+      "aggregate_env_steps_s": 2.5162521513195837,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 792.0,
+      "name": "beta10",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/beta10",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "beta10"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/beta10",
+      "peak_penetration_m": 7.498438697196084e-06,
+      "end_J_range": [
+        0.9790011274082848,
+        1.0252891108051576
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "beta5",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.363295880149813e-06,
+      "beta": 5.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 2136,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.5992744460721345,
+      "aggregate_env_steps_s": 3.337369068727587,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 806.0,
+      "name": "beta5",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/beta5",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "beta5"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/beta5",
+      "peak_penetration_m": 1.0764448174244116e-05,
+      "end_J_range": [
+        0.9753697569966948,
+        1.0282229339895361
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "cfl100",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 1.0204081632653061e-05,
+      "beta": 20.0,
+      "cfl": 1.0,
+      "prony_terms": 2,
+      "substeps": 1960,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.551713028922677,
+      "aggregate_env_steps_s": 3.6250729911261557,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 830.0,
+      "name": "cfl100",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/cfl100",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "cfl100"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/cfl100",
+      "peak_penetration_m": 1.3617559989132849e-05,
+      "end_J_range": [
+        0.9803505898952476,
+        1.0234391904574398
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "cfl65",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 6.633499170812604e-06,
+      "beta": 20.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 3015,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.8380881751703176,
+      "aggregate_env_steps_s": 2.3863837472632956,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 840.0,
+      "name": "cfl65",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/cfl65",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "cfl65"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/cfl65",
+      "peak_penetration_m": 8.108448810940378e-06,
+      "end_J_range": [
+        0.9805423817619379,
+        1.0233758117643987
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "cfl80",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 8.163265306122448e-06,
+      "beta": 20.0,
+      "cfl": 0.8,
+      "prony_terms": 2,
+      "substeps": 2450,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.684167702915147,
+      "aggregate_env_steps_s": 2.9232598842042203,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 824.0,
+      "name": "cfl80",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/cfl80",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "cfl80"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/cfl80",
+      "peak_penetration_m": 9.143034747745427e-06,
+      "end_J_range": [
+        0.9809144338671738,
+        1.0232771577585202
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "f32",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 5.102040816326531e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 3920,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 1.0167339449884214,
+      "aggregate_env_steps_s": 1.9670829422566156,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 802.0,
+      "name": "f32",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/f32",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "f32"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/f32",
+      "peak_penetration_m": 6.226110976110334e-06,
+      "end_J_range": [
+        0.9806549383659767,
+        1.0231186382479358
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "fast_cfl80",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 1.1198208286674133e-05,
+      "beta": 10.0,
+      "cfl": 0.8,
+      "prony_terms": 2,
+      "substeps": 1786,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.5036710574107323,
+      "aggregate_env_steps_s": 3.970845595698078,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 858.0,
+      "name": "fast_cfl80",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/fast_cfl80",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "fast_cfl80"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/fast_cfl80",
+      "peak_penetration_m": 1.5290625458079447e-05,
+      "end_J_range": [
+        0.9779458602412848,
+        1.025184568933552
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 2198,
+      "particles": [
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 8,
+      "release_steps": 0,
+      "batch_step_s": 1.3706694586289814,
+      "aggregate_env_steps_s": 5.836563986770405,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "max_sampled_process_mib": 952.0,
+      "name": "fast_eager_profile",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/fast_eager_profile",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "8",
+        "--release",
+        "0",
+        "--speed-profile",
+        "rubber_fast_v1",
+        "--sample-eager-substeps",
+        "64"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/fast_eager_profile",
+      "peak_penetration_m": 6.783212761653353e-06,
+      "end_J_range": [
+        0.9734152261917733,
+        1.0292007502807832
+      ],
+      "eager_kernel_sample": {
+        "substeps": 64,
+        "kernels": {
+          "forward kernel stress_prony_ac67a0f4": {
+            "wall_ms": 7.974496059119701,
+            "launches": 64
+          },
+          "forward kernel _p2g_e1ede251": {
+            "wall_ms": 6.2333440110087395,
+            "launches": 64
+          },
+          "forward kernel _musl_e9e6c259": {
+            "wall_ms": 5.768959999084473,
+            "launches": 128
+          },
+          "forward kernel _deformation_f64_fa638cbe": {
+            "wall_ms": 3.6288639940321445,
+            "launches": 64
+          },
+          "forward kernel _proj_reaction_b_7bbe5f54": {
+            "wall_ms": 2.5703680105507374,
+            "launches": 64
+          },
+          "forward kernel _proj_rhs_85c962a0": {
+            "wall_ms": 2.2958399951457977,
+            "launches": 64
+          },
+          "forward kernel node_penalty_contact_v2_32b1edc0": {
+            "wall_ms": 1.9096639920026064,
+            "launches": 64
+          },
+          "forward kernel _proj_solve_4b6bc55b": {
+            "wall_ms": 1.813984002918005,
+            "launches": 64
+          },
+          "forward kernel _g2p_11cfd05e": {
+            "wall_ms": 1.6137920040637255,
+            "launches": 64
+          },
+          "forward kernel _positions_f64_2de7a3c2": {
+            "wall_ms": 1.5276479925960302,
+            "launches": 64
+          },
+          "forward kernel cfl_guard_prony_88de7bef": {
+            "wall_ms": 1.2237760033458471,
+            "launches": 64
+          },
+          "forward kernel _proj_particles_faa9ab69": {
+            "wall_ms": 1.1127359997481108,
+            "launches": 64
+          },
+          "forward kernel cell_jbar_91db4706": {
+            "wall_ms": 0.9261439898982644,
+            "launches": 64
+          },
+          "forward kernel _grid_update_e23670c3": {
+            "wall_ms": 0.7709120009094477,
+            "launches": 128
+          },
+          "forward kernel _bc_table_b_f42a0eca": {
+            "wall_ms": 0.6410239990800619,
+            "launches": 64
+          }
+        },
+        "contact_events": [
+          [
+            3893,
+            0,
+            3893
+          ],
+          [
+            17058,
+            0,
+            17058
+          ],
+          [
+            1010,
+            0,
+            1010
+          ],
+          [
+            11151,
+            0,
+            11151
+          ],
+          [
+            2699,
+            0,
+            2699
+          ],
+          [
+            2197,
+            0,
+            2197
+          ],
+          [
+            6149,
+            0,
+            6149
+          ],
+          [
+            10585,
+            0,
+            10585
+          ]
+        ],
+        "diagnostic_boundary": "eager solver substeps only, after the episode; excludes S1 and policy API"
+      }
+    },
+    {
+      "status": "PASS",
+      "profile": "fast_f32",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 2198,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.5785135485008747,
+      "aggregate_env_steps_s": 3.4571359740539873,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 824.0,
+      "name": "fast_f32",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/fast_f32",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "fast_f32"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/fast_f32",
+      "peak_penetration_m": 1.107654361144953e-05,
+      "end_J_range": [
+        0.9785082994497224,
+        1.0256128772777817
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_rl_env_v2",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 5.102040816326531e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 3920,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 1.0865255328293035,
+      "aggregate_env_steps_s": 1.8407298674261399,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 802.0,
+      "name": "legacy",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/legacy",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--resolution",
+        "rubber_rl_v1"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/legacy",
+      "peak_penetration_m": 6.037999571850402e-06,
+      "end_J_range": [
+        0.9807805247613475,
+        1.0230860092581715
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_rl_env_v2",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 5.102040816326531e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 3920,
+      "particles": [
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 8,
+      "release_steps": 0,
+      "batch_step_s": 2.426330768481421,
+      "aggregate_env_steps_s": 3.2971596881685667,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        8
+      ],
+      "max_sampled_process_mib": 930.0,
+      "name": "legacy_eager_profile",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/legacy_eager_profile",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "8",
+        "--release",
+        "0",
+        "--resolution",
+        "rubber_rl_v1",
+        "--sample-eager-substeps",
+        "64"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/legacy_eager_profile",
+      "peak_penetration_m": 3.177695182892065e-06,
+      "end_J_range": [
+        0.9756900740697182,
+        1.0265295157330276
+      ],
+      "eager_kernel_sample": {
+        "substeps": 64,
+        "kernels": {
+          "forward kernel stress_prony_ac67a0f4": {
+            "wall_ms": 7.97110403329134,
+            "launches": 64
+          },
+          "forward kernel _p2g_e1ede251": {
+            "wall_ms": 6.236416012048721,
+            "launches": 64
+          },
+          "forward kernel _musl_e9e6c259": {
+            "wall_ms": 5.776095997542143,
+            "launches": 128
+          },
+          "forward kernel _deformation_f64_fa638cbe": {
+            "wall_ms": 3.6295039914548397,
+            "launches": 64
+          },
+          "forward kernel _proj_reaction_b_7bbe5f54": {
+            "wall_ms": 2.5786240100860596,
+            "launches": 64
+          },
+          "forward kernel _proj_rhs_85c962a0": {
+            "wall_ms": 2.294080004096031,
+            "launches": 64
+          },
+          "forward kernel node_penalty_contact_v2_32b1edc0": {
+            "wall_ms": 1.911776002496481,
+            "launches": 64
+          },
+          "forward kernel _proj_solve_4b6bc55b": {
+            "wall_ms": 1.8129279967397451,
+            "launches": 64
+          },
+          "forward kernel _g2p_11cfd05e": {
+            "wall_ms": 1.6207680068910122,
+            "launches": 64
+          },
+          "forward kernel _positions_f64_2de7a3c2": {
+            "wall_ms": 1.5248319953680038,
+            "launches": 64
+          },
+          "forward kernel cfl_guard_prony_88de7bef": {
+            "wall_ms": 1.2310400065034628,
+            "launches": 64
+          },
+          "forward kernel _proj_particles_faa9ab69": {
+            "wall_ms": 1.1145600005984306,
+            "launches": 64
+          },
+          "forward kernel cell_jbar_91db4706": {
+            "wall_ms": 0.9216639949008822,
+            "launches": 64
+          },
+          "forward kernel _grid_update_e23670c3": {
+            "wall_ms": 0.7816000012680888,
+            "launches": 128
+          },
+          "forward kernel _bc_table_b_f42a0eca": {
+            "wall_ms": 0.6516799982637167,
+            "launches": 64
+          }
+        },
+        "contact_events": [
+          [
+            2643,
+            0,
+            2643
+          ],
+          [
+            12173,
+            0,
+            12173
+          ],
+          [
+            597,
+            0,
+            597
+          ],
+          [
+            7287,
+            0,
+            7287
+          ],
+          [
+            1979,
+            0,
+            1979
+          ],
+          [
+            2323,
+            0,
+            2323
+          ],
+          [
+            5662,
+            0,
+            5662
+          ],
+          [
+            8672,
+            0,
+            8672
+          ]
+        ],
+        "diagnostic_boundary": "eager solver substeps only, after the episode; excludes S1 and policy API"
+      }
+    },
+    {
+      "status": "PASS",
+      "profile": "lumped",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 5.102040816326531e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 3920,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.7258259215886937,
+      "aggregate_env_steps_s": 2.755481638934007,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 780.0,
+      "name": "lumped",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/lumped",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "lumped"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/lumped",
+      "peak_penetration_m": 6.018939176557158e-06,
+      "end_J_range": [
+        0.9808343620649552,
+        1.023154858912059
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "lumped",
+      "slots": [
+        "L100_t4",
+        "L100_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 5.102040816326531e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 3920,
+      "particles": [
+        22176,
+        22176
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.684467728836656,
+      "aggregate_env_steps_s": 2.921978518109636,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 780.0,
+      "name": "lumped_short",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/lumped_short",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "short",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "lumped"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/lumped_short",
+      "peak_penetration_m": 6.046978573464874e-06,
+      "end_J_range": [
+        0.9873456793009342,
+        1.0133967527536911
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "nt2",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002
+      ],
+      "dt_s": 7.654037504783774e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 2613,
+      "particles": [
+        6656,
+        9856
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.514347152231494,
+      "aggregate_env_steps_s": 3.88842436732274,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 762.0,
+      "name": "nt2",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/nt2",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "nt2"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/nt2",
+      "peak_penetration_m": 1.0565849256600136e-05,
+      "end_J_range": [
+        0.9813800026712352,
+        1.0213743113387272
+      ]
+    },
+    {
+      "status": "FAIL",
+      "profile": "ppc1",
+      "slots": [
+        "L100_t4",
+        "L100_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 5.102040816326531e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 3920,
+      "particles": [
+        2772,
+        2772
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.3711641274955279,
+      "aggregate_env_steps_s": 5.388451770636422,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        0,
+        0
+      ],
+      "max_sampled_process_mib": 748.0,
+      "name": "ppc1",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/ppc1",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "short",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "ppc1"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/ppc1",
+      "peak_penetration_m": 1.0238810342653387e-05,
+      "end_J_range": [
+        0.9963051715561316,
+        1.0040340013297666
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "prony1",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 5.102040816326531e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 1,
+      "substeps": 3920,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 1.0497816736606183,
+      "aggregate_env_steps_s": 1.9051580439825584,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 802.0,
+      "name": "prony1",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/prony1",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "prony1"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/prony1",
+      "peak_penetration_m": 5.643979168550493e-06,
+      "end_J_range": [
+        0.9799418309460922,
+        1.023862944360287
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_rl_env_v2",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002
+      ],
+      "num_envs": 3,
+      "mode": "graph",
+      "dx_m": [
+        0.001,
+        0.001,
+        0.001
+      ],
+      "dt_s": 3.827018752391887e-06,
+      "beta": 20.0,
+      "cfl": 0.5,
+      "prony_terms": 2,
+      "substeps": 5226,
+      "particles": [
+        52224,
+        77824,
+        52224
+      ],
+      "measured_drag_steps": 50,
+      "release_steps": 40,
+      "batch_step_s": 3.00296439640224,
+      "aggregate_env_steps_s": 0.9990128433071697,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        50,
+        50,
+        50
+      ],
+      "max_sampled_process_mib": 908.0,
+      "name": "reference_release",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/reference_release",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "3",
+        "--steps",
+        "50",
+        "--release",
+        "40"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/reference_release",
+      "peak_penetration_m": 8.709976092022551e-06,
+      "end_J_range": [
+        0.9794744433180563,
+        1.0249741960448555
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 2198,
+      "particles": [
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.6157913185064293,
+      "aggregate_env_steps_s": 3.2478535177321093,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 824.0,
+      "name": "rubber_fast_v1",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/rubber_fast_v1",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "rubber_fast_v1"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/rubber_fast_v1",
+      "peak_penetration_m": 1.1023056555949344e-05,
+      "end_J_range": [
+        0.9784086533065799,
+        1.0254179418937193
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_turbo_v1",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002
+      ],
+      "dt_s": 1.3651877133105803e-05,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 1465,
+      "particles": [
+        6656,
+        9856
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.2938410164206289,
+      "aggregate_env_steps_s": 6.8064017214568535,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 806.0,
+      "name": "rubber_turbo_v1",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/rubber_turbo_v1",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "rubber_turbo_v1"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/rubber_turbo_v1",
+      "peak_penetration_m": 1.531490562322752e-05,
+      "end_J_range": [
+        0.9791369669451606,
+        1.0234639707850242
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "turbo_aggressive",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002
+      ],
+      "dt_s": 2.2471910112359552e-05,
+      "beta": 5.0,
+      "cfl": 0.8,
+      "prony_terms": 2,
+      "substeps": 890,
+      "particles": [
+        832,
+        1232
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.08850446549574069,
+      "aggregate_env_steps_s": 22.597729829759277,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 758.0,
+      "name": "turbo_aggressive",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/turbo_aggressive",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "turbo_aggressive"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/turbo_aggressive",
+      "peak_penetration_m": 3.529338516923478e-05,
+      "end_J_range": [
+        0.9908202578356484,
+        1.010327035175732
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "turbo_f32",
+      "slots": [
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001
+      ],
+      "num_envs": 2,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002
+      ],
+      "dt_s": 1.3651877133105803e-05,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 1465,
+      "particles": [
+        6656,
+        9856
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.28116830592625774,
+      "aggregate_env_steps_s": 7.113177260187149,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 806.0,
+      "name": "turbo_f32",
+      "commit": "206e24be26e35569c168c7d53474d622cfb6e8f5",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_candidate_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/turbo_f32",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "2",
+        "--slots",
+        "paired",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "turbo_f32"
+      ],
+      "artifact": "artifacts/rubber_sweep_001/turbo_f32",
+      "peak_penetration_m": 1.4844935333136832e-05,
+      "end_J_range": [
+        0.9792781361142258,
+        1.023299550130485
+      ]
+    }
+  ],
+  "rubber_kernel_probe_001": [
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1_delta",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 2198,
+      "particles": [
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 0,
+      "batch_step_s": 1.2572040116550245,
+      "aggregate_env_steps_s": 6.363326815564753,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 946.0,
+      "name": "fast_delta_graph",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_probe_001/fast_delta_graph",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--mode",
+        "graph",
+        "--speed-profile",
+        "rubber_fast_v1_delta"
+      ],
+      "artifact": "artifacts/rubber_kernel_probe_001/fast_delta_graph",
+      "peak_penetration_m": 5.744237348954887e-06,
+      "end_J_range": [
+        0.9733797054881906,
+        1.0290037109043269
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "eager",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 2198,
+      "particles": [
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 0,
+      "batch_step_s": 1.4730656155782829,
+      "aggregate_env_steps_s": 5.430851087281289,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 790.0,
+      "name": "fast_eager",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_probe_001/fast_eager",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--mode",
+        "eager",
+        "--speed-profile",
+        "rubber_fast_v1"
+      ],
+      "artifact": "artifacts/rubber_kernel_probe_001/fast_eager",
+      "peak_penetration_m": 5.763060345635836e-06,
+      "end_J_range": [
+        0.9734464002204238,
+        1.029024835516247
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 2198,
+      "particles": [
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 0,
+      "batch_step_s": 1.3710100331712358,
+      "aggregate_env_steps_s": 5.8351141176519885,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 952.0,
+      "name": "fast_graph",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_probe_001/fast_graph",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--mode",
+        "graph",
+        "--speed-profile",
+        "rubber_fast_v1"
+      ],
+      "artifact": "artifacts/rubber_kernel_probe_001/fast_graph",
+      "peak_penetration_m": 6.209706602629039e-06,
+      "end_J_range": [
+        0.9733267173496912,
+        1.0292604288749394
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_turbo_v1_delta",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002
+      ],
+      "dt_s": 1.3651877133105803e-05,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 1465,
+      "particles": [
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 0,
+      "batch_step_s": 0.40508102341361035,
+      "aggregate_env_steps_s": 19.749135450938056,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 828.0,
+      "name": "turbo_delta_graph",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_probe_001/turbo_delta_graph",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--mode",
+        "graph",
+        "--speed-profile",
+        "rubber_turbo_v1_delta"
+      ],
+      "artifact": "artifacts/rubber_kernel_probe_001/turbo_delta_graph",
+      "peak_penetration_m": 5.70480586844434e-06,
+      "end_J_range": [
+        0.9753447205209052,
+        1.026528357252465
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_turbo_v1",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002
+      ],
+      "dt_s": 1.3651877133105803e-05,
+      "beta": 10.0,
+      "cfl": 0.65,
+      "prony_terms": 2,
+      "substeps": 1465,
+      "particles": [
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 0,
+      "batch_step_s": 0.4251271820054778,
+      "aggregate_env_steps_s": 18.81789812230101,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 838.0,
+      "name": "turbo_graph",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_probe_001/turbo_graph",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--mode",
+        "graph",
+        "--speed-profile",
+        "rubber_turbo_v1"
+      ],
+      "artifact": "artifacts/rubber_kernel_probe_001/turbo_graph",
+      "peak_penetration_m": 5.688070217963823e-06,
+      "end_J_range": [
+        0.9753554503433962,
+        1.0265139527916385
+      ]
+    }
+  ],
+  "rubber_shortlist_probe_001": [
+    {
+      "status": "PASS",
+      "profile": "fast_cfl80",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 1.1198208286674133e-05,
+      "beta": 10.0,
+      "cfl": 0.8,
+      "prony_terms": 2,
+      "substeps": 1786,
+      "particles": [
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 1.1182136704980319,
+      "aggregate_env_steps_s": 7.154267749594715,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 986.0,
+      "name": "fast_cfl80",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_shortlist_probe_001/fast_cfl80",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "fast_cfl80"
+      ],
+      "artifact": "artifacts/rubber_shortlist_probe_001/fast_cfl80",
+      "peak_penetration_m": 3.276192169131829e-05,
+      "end_J_range": [
+        0.9736051732980859,
+        1.0289167537606196
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "fast_cfl80_delta",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 1.1198208286674133e-05,
+      "beta": 10.0,
+      "cfl": 0.8,
+      "prony_terms": 2,
+      "substeps": 1786,
+      "particles": [
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 1.0255594795841414,
+      "aggregate_env_steps_s": 7.800620207073661,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 976.0,
+      "name": "fast_cfl80_delta",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_shortlist_probe_001/fast_cfl80_delta",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "fast_cfl80_delta"
+      ],
+      "artifact": "artifacts/rubber_shortlist_probe_001/fast_cfl80_delta",
+      "peak_penetration_m": 3.3653647361101314e-05,
+      "end_J_range": [
+        0.9737218993731928,
+        1.0291533149784269
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "turbo_low_bulk",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002
+      ],
+      "dt_s": 2.2471910112359552e-05,
+      "beta": 5.0,
+      "cfl": 0.8,
+      "prony_terms": 2,
+      "substeps": 890,
+      "particles": [
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.2627729065764773,
+      "aggregate_env_steps_s": 30.444538990825084,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 818.0,
+      "name": "turbo_low_bulk",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_shortlist_probe_001/turbo_low_bulk",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "turbo_low_bulk"
+      ],
+      "artifact": "artifacts/rubber_shortlist_probe_001/turbo_low_bulk",
+      "peak_penetration_m": 7.835035041180281e-05,
+      "end_J_range": [
+        0.9703895605183717,
+        1.0299316659696425
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "turbo_low_bulk_delta",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002
+      ],
+      "dt_s": 2.2471910112359552e-05,
+      "beta": 5.0,
+      "cfl": 0.8,
+      "prony_terms": 2,
+      "substeps": 890,
+      "particles": [
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.25235712984673836,
+      "aggregate_env_steps_s": 31.70110551209139,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 810.0,
+      "name": "turbo_low_bulk_delta",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_shortlist_probe_001/turbo_low_bulk_delta",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "turbo_low_bulk_delta"
+      ],
+      "artifact": "artifacts/rubber_shortlist_probe_001/turbo_low_bulk_delta",
+      "peak_penetration_m": 7.598680614473216e-05,
+      "end_J_range": [
+        0.9703822353173666,
+        1.029948169928124
+      ]
+    },
+    {
+      "status": "PASS",
+      "profile": "turbo_low_bulk_f32_delta",
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "num_envs": 8,
+      "mode": "graph",
+      "dx_m": [
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002
+      ],
+      "dt_s": 2.2471910112359552e-05,
+      "beta": 5.0,
+      "cfl": 0.8,
+      "prony_terms": 2,
+      "substeps": 890,
+      "particles": [
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856
+      ],
+      "measured_drag_steps": 12,
+      "release_steps": 8,
+      "batch_step_s": 0.23430409826202472,
+      "aggregate_env_steps_s": 34.143662271982606,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12,
+        12
+      ],
+      "max_sampled_process_mib": 810.0,
+      "name": "turbo_low_bulk_f32_delta",
+      "commit": "05eee4667d36faefce4ae658be5aacd0f70bf282",
+      "command": [
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+        "scripts/perf/benchmark_rubber.py",
+        "--out",
+        "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_shortlist_probe_001/turbo_low_bulk_f32_delta",
+        "--gpu-index",
+        "1",
+        "--num-envs",
+        "8",
+        "--steps",
+        "12",
+        "--release",
+        "8",
+        "--speed-profile",
+        "turbo_low_bulk_f32_delta"
+      ],
+      "artifact": "artifacts/rubber_shortlist_probe_001/turbo_low_bulk_f32_delta",
+      "peak_penetration_m": 7.921903755285831e-05,
+      "end_J_range": [
+        0.9704119687902332,
+        1.0299105369380248
+      ]
+    }
+  ],
+  "gpu": "RTX 5090 GPU1, 570.211.01, Warp 1.17.0 and Torch 2.11.0+cu128",
+  "trace_scope": "Fixed drag, actual grip deactivation and removal of independently randomized tip traction where release is present.",
+  "frozen_reference_parity": {
+    "arrays": 37,
+    "unequal": {},
+    "sources": [
+      "49c3d0c3a6e8e76edd98798a9a6a17d2093a2f51",
+      "05eee4667d36faefce4ae658be5aacd0f70bf282"
+    ]
+  },
+  "sparse_F8_cpu": {
+    "source": "dc034e2edc3cef54d08d12ba56a8491bb46678e8",
+    "command": [
+      "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_kernel_source_001/.deps/isaacsim-venv/bin/python",
+      "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/rubber_sparse_f8_cpu_002.py",
+      "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sparse_f8_cpu_002.json"
+    ],
+    "max_abs_errors": {
+      "positions": 1.862645149230957e-09,
+      "velocities": 2.039968967437744e-05,
+      "momentum": 6.81268375046784e-11,
+      "grip_wrench": 1.414408990259991e-07,
+      "plane_wrench": 1.0205096071498956e-06
+    },
+    "reference_invalid": [
+      0
+    ],
+    "delta_invalid": [
+      0
+    ],
+    "delta_particles": 192,
+    "total_particles": 896
+  },
+  "sparse_F8_profile_decision": {
+    "sample_source": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_sweep_001/fast_eager_profile/benchmark.json",
+    "all_ms": 42.87222405266948,
+    "musl_projection_ms": 6.881695998832583,
+    "musl_projection_share": 0.16051642178344344
+  },
+  "fast_sparse_projection_quality": {
+    "ref_profile": "rubber_fast_v1",
+    "candidate_profile": "rubber_fast_v1_delta",
+    "paired_envs": 8,
+    "slots": [
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4"
+    ],
+    "seeds": [
+      4000,
+      4001,
+      4002,
+      4003,
+      4004,
+      4005,
+      4006,
+      4007
+    ],
+    "reference_status": "PASS",
+    "candidate_status": "PASS",
+    "drag_tip_error_max_m": [
+      5.703353236053883e-06,
+      1.9898485296281014e-05,
+      9.139955190139928e-05,
+      2.8312197224436777e-05,
+      2.3441597081929205e-08,
+      1.6219271517722238e-05,
+      5.132692522756801e-06,
+      1.853599725935828e-05
+    ],
+    "drag_tip_error_rms_m": [
+      3.5906620262026106e-06,
+      1.137731854386408e-05,
+      3.6749175143326284e-05,
+      1.844161238858714e-05,
+      1.2909276432202473e-08,
+      6.471392483670958e-06,
+      2.599015775973842e-06,
+      8.597482020470838e-06
+    ],
+    "release_tip_error_max_m": null,
+    "reference": {
+      "drag_end_tip_m": [
+        [
+          0.1293040026600162,
+          0.03346108224812067,
+          0.001999138956913763
+        ],
+        [
+          0.17610684647742245,
+          0.05569900155791806,
+          0.0019984181364836534
+        ],
+        [
+          0.11950489495777421,
+          0.05957500145046247,
+          0.002016463363260199
+        ],
+        [
+          0.17711013834923506,
+          0.007222776880452228,
+          0.001999808610586721
+        ],
+        [
+          0.11710339474181333,
+          0.06663020493255721,
+          0.0022530881000824995
+        ],
+        [
+          0.17771544493734837,
+          0.008842129662904577,
+          0.0027358778679626994
+        ],
+        [
+          0.12957355038573343,
+          0.023727502570384078,
+          0.001999615341345715
+        ],
+        [
+          0.17229004556106195,
+          -0.020089152217325237,
+          0.0019997626487666923
+        ]
+      ],
+      "drag_tip_xy_shift_m": [
+        [
+          0.029868897878461406,
+          0.012575748227795381
+        ],
+        [
+          0.027003589810596584,
+          0.02118428151071486
+        ],
+        [
+          0.024841199318567903,
+          0.012810340435761541
+        ],
+        [
+          0.03217793359524676,
+          0.012304541143950902
+        ],
+        [
+          0.024734264964030847,
+          0.011060538934543729
+        ],
+        [
+          0.03408378828316927,
+          0.018352783060335137
+        ],
+        [
+          0.031059204549011246,
+          0.013746530976883756
+        ],
+        [
+          0.03297975017792648,
+          0.009154656048243243
+        ]
+      ],
+      "drag_extreme_marker_span_m": [
+        [
+          0.09914942644887077,
+          0.09951924267646192
+        ],
+        [
+          0.14892120542035603,
+          0.14935411796330866
+        ],
+        [
+          0.0992341275136146,
+          0.09947607302951175
+        ],
+        [
+          0.14883024420202667,
+          0.14927428583660493
+        ],
+        [
+          0.09919876097591307,
+          0.09932662405994541
+        ],
+        [
+          0.1491565553626875,
+          0.14927292362845307
+        ],
+        [
+          0.09920656657280648,
+          0.0994617306115792
+        ],
+        [
+          0.14862931577577643,
+          0.14916706885229514
+        ]
+      ],
+      "drag_peak_sag_m": [
+        -0.00300058508279714,
+        -0.0030007652878541397,
+        -0.0029986962403604086,
+        -0.0029989615567400404,
+        -0.0029988740352564487,
+        -0.0029991452247486445,
+        -0.0030003029086300456,
+        -0.0029992341333127115
+      ],
+      "drag_normal_impulse_abs_n_s": [
+        0.014026587263186372,
+        0.024166530642406005,
+        0.006788939429013877,
+        0.017103730413061954,
+        0.004611447719316762,
+        0.01219389299738415,
+        0.013731355645619708,
+        0.021348372720878098
+      ],
+      "drag_shear_impulse_abs_n_s": [
+        0.003460257300696688,
+        0.006370299853267705,
+        0.0015559947999483465,
+        0.004141567823704269,
+        0.0012492324942108865,
+        0.00308013815286367,
+        0.0034285290940589894,
+        0.0054491743383961715
+      ],
+      "peak_node_penetration_m": [
+        3.138449133253139e-06,
+        4.023548661312551e-06,
+        4.398922869791803e-06,
+        6.209706602629039e-06,
+        4.308097130998204e-06,
+        5.702145547790728e-06,
+        3.957986462016999e-06,
+        3.3336996748150704e-06
+      ],
+      "sampled_min_particle_z_m": [
+        0.00033239953336305916,
+        0.00033152688411064446,
+        0.00033164198976010084,
+        0.0003314517962280661,
+        0.0003315210633445531,
+        0.0003319988609291613,
+        0.00033259106567129493,
+        0.00033085618633776903
+      ],
+      "max_particle_speed_m_s": [
+        0.3460968877153178,
+        0.35937463541309644,
+        0.4544366606511369,
+        0.3565702842314497,
+        0.24591497441666318,
+        0.41733221087246003,
+        0.3860136298389827,
+        0.5797721572802185
+      ],
+      "min_J": [
+        0.9853579951770058,
+        0.9782060266505628,
+        0.9898037222524806,
+        0.9807844309390426,
+        0.9898196440612854,
+        0.9828836402374108,
+        0.9885296978920639,
+        0.9733267173496912
+      ],
+      "max_J": [
+        1.0144501784364288,
+        1.0253275930486068,
+        1.0095432284073291,
+        1.0209088916263038,
+        1.0109193311809814,
+        1.0167204668883205,
+        1.0110599212278808,
+        1.0292604288749394
+      ]
+    },
+    "candidate": {
+      "drag_end_tip_m": [
+        [
+          0.12930449688186246,
+          0.033464852733434074,
+          0.0019991810564129586
+        ],
+        [
+          0.17610233856572044,
+          0.05571838269113666,
+          0.0019984292870908068
+        ],
+        [
+          0.11949858126334018,
+          0.05959252099920478,
+          0.002011152740629364
+        ],
+        [
+          0.17710715780655542,
+          0.00720973065472208,
+          0.0019999019287853218
+        ],
+        [
+          0.1171033950522542,
+          0.066630206303671,
+          0.002253100550054417
+        ],
+        [
+          0.17771093361079693,
+          0.00882660804361674,
+          0.002737216537449664
+        ],
+        [
+          0.12957363575696945,
+          0.023724777184219822,
+          0.001999418811667258
+        ],
+        [
+          0.17229635837591356,
+          -0.0200717251540886,
+          0.0019999330306745833
+        ]
+      ],
+      "drag_tip_xy_shift_m": [
+        [
+          0.02986938568452993,
+          0.012581275491457846
+        ],
+        [
+          0.026998630621367037,
+          0.021208268693751753
+        ],
+        [
+          0.02483473190416892,
+          0.012828529838265643
+        ],
+        [
+          0.03217767799894014,
+          0.012300890925366223
+        ],
+        [
+          0.024734266412754863,
+          0.011060537615170084
+        ],
+        [
+          0.034079478536215096,
+          0.018338007197598927
+        ],
+        [
+          0.03105978388339281,
+          0.013748207231401464
+        ],
+        [
+          0.03298394143995312,
+          0.009166918992478814
+        ]
+      ],
+      "drag_extreme_marker_span_m": [
+        [
+          0.09914972065131243,
+          0.09951940535184994
+        ],
+        [
+          0.14892104176083293,
+          0.1493527391722578
+        ],
+        [
+          0.09923321502781628,
+          0.09947604415851742
+        ],
+        [
+          0.14883011801679313,
+          0.1492736586322363
+        ],
+        [
+          0.09919876106429937,
+          0.0993266241730871
+        ],
+        [
+          0.14915627926884845,
+          0.14927288517313764
+        ],
+        [
+          0.09920646850149915,
+          0.09946199051554504
+        ],
+        [
+          0.14862911727241537,
+          0.14916711062637067
+        ]
+      ],
+      "drag_peak_sag_m": [
+        -0.0030005391955556762,
+        -0.00300059188015843,
+        -0.0029982609865126303,
+        -0.002999277710235522,
+        -0.002998874827931609,
+        -0.002999147517685843,
+        -0.0030003866551042944,
+        -0.002999401066820913
+      ],
+      "drag_normal_impulse_abs_n_s": [
+        0.014025734896914435,
+        0.024165502549315248,
+        0.006778208147326576,
+        0.017105142123176032,
+        0.0046114356872993265,
+        0.012188136988132259,
+        0.013731548152820683,
+        0.0213414726712919
+      ],
+      "drag_shear_impulse_abs_n_s": [
+        0.0034594080335003468,
+        0.00636962290158835,
+        0.0015528245855807605,
+        0.004140655697946237,
+        0.0012492220865477075,
+        0.003073415540306557,
+        0.003429619655802002,
+        0.005447293563805356
+      ],
+      "peak_node_penetration_m": [
+        3.032501184991551e-06,
+        4.223689146700669e-06,
+        4.299843454886763e-06,
+        5.606533410958065e-06,
+        4.307645157331888e-06,
+        5.744237348954887e-06,
+        3.919112240247106e-06,
+        3.3255954805861312e-06
+      ],
+      "sampled_min_particle_z_m": [
+        0.00033246580278500915,
+        0.0003316215006634593,
+        0.00033112437813542783,
+        0.0003314308123663068,
+        0.0003315133217256516,
+        0.0003313914348836988,
+        0.0003326071018818766,
+        0.00033090531360358
+      ],
+      "max_particle_speed_m_s": [
+        0.3438056463870453,
+        0.3638986605245106,
+        0.4572615378824571,
+        0.35770202650808103,
+        0.24578717009479273,
+        0.4168776441789696,
+        0.3854847630586312,
+        0.5792375465940293
+      ],
+      "min_J": [
+        0.9854334150242899,
+        0.9781708793332763,
+        0.9898042313050386,
+        0.9809930039530534,
+        0.9898193938212068,
+        0.9829666788474224,
+        0.9886144563794116,
+        0.9733797054881906
+      ],
+      "max_J": [
+        1.0144353068834024,
+        1.025345956248842,
+        1.0102623850493964,
+        1.02088347096396,
+        1.0109214018034431,
+        1.0166840565901993,
+        1.0110218677791465,
+        1.0290037109043269
+      ]
+    }
+  },
+  "turbo_sparse_projection_quality": {
+    "ref_profile": "rubber_turbo_v1",
+    "candidate_profile": "rubber_turbo_v1_delta",
+    "paired_envs": 8,
+    "slots": [
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4",
+      "L100_t4",
+      "L150_t4"
+    ],
+    "seeds": [
+      4000,
+      4001,
+      4002,
+      4003,
+      4004,
+      4005,
+      4006,
+      4007
+    ],
+    "reference_status": "PASS",
+    "candidate_status": "PASS",
+    "drag_tip_error_max_m": [
+      3.3944574522781666e-06,
+      1.5339786068478863e-05,
+      3.1821767974446425e-06,
+      1.9003856462596482e-05,
+      8.860934527125794e-08,
+      3.14559491689131e-06,
+      3.7177188804772053e-07,
+      4.102999540723734e-06
+    ],
+    "drag_tip_error_rms_m": [
+      1.2411863880081453e-06,
+      8.801959739003632e-06,
+      1.6018231560565725e-06,
+      1.1039545090044005e-05,
+      3.6536485247844854e-08,
+      1.6040449511081482e-06,
+      1.466174087412435e-07,
+      2.345449474015486e-06
+    ],
+    "release_tip_error_max_m": null,
+    "reference": {
+      "drag_end_tip_m": [
+        [
+          0.1291420820634812,
+          0.03336496910196729,
+          0.0019997593271909864
+        ],
+        [
+          0.17590407165698707,
+          0.05584790155990049,
+          0.00199826627249422
+        ],
+        [
+          0.11933496384881437,
+          0.059589278360363096,
+          0.002047191505880619
+        ],
+        [
+          0.17692414997145534,
+          0.007129720053853816,
+          0.00200113163828064
+        ],
+        [
+          0.11694326112046838,
+          0.06654306052951142,
+          0.0024014900600377587
+        ],
+        [
+          0.1775679336860776,
+          0.009022202882988495,
+          0.002923350672062952
+        ],
+        [
+          0.12940227519720793,
+          0.023751771572278813,
+          0.0019988881022072746
+        ],
+        [
+          0.17210669605992734,
+          -0.020112681639147922,
+          0.001999808346226928
+        ]
+      ],
+      "drag_tip_xy_shift_m": [
+        [
+          0.02987509174272418,
+          0.012485923871281557
+        ],
+        [
+          0.026979594957083464,
+          0.021225306729320437
+        ],
+        [
+          0.024804071290418506,
+          0.012956985563505441
+        ],
+        [
+          0.03216060996055603,
+          0.012196134857958896
+        ],
+        [
+          0.024707260192371905,
+          0.011105444515123963
+        ],
+        [
+          0.03410001425072551,
+          0.01847046029251942
+        ],
+        [
+          0.031051462749019265,
+          0.013729908172535943
+        ],
+        [
+          0.03296018159016967,
+          0.009092218067962676
+        ]
+      ],
+      "drag_extreme_marker_span_m": [
+        [
+          0.0988078043529516,
+          0.09918438220630815
+        ],
+        [
+          0.1485887547579485,
+          0.14901880510967197
+        ],
+        [
+          0.09889582487651497,
+          0.09914155942390583
+        ],
+        [
+          0.14849732255290102,
+          0.1489363009697269
+        ],
+        [
+          0.0988792833443946,
+          0.09898008021916448
+        ],
+        [
+          0.14882222514786264,
+          0.14893439287797364
+        ],
+        [
+          0.09886770364453962,
+          0.09912682735244895
+        ],
+        [
+          0.1482929266483038,
+          0.14883109586882715
+        ]
+      ],
+      "drag_peak_sag_m": [
+        -0.002999165358232858,
+        -0.002998223028043867,
+        -0.0029990703478688374,
+        -0.002998199118337652,
+        -0.002996521689965448,
+        -0.0030001995992279262,
+        -0.0029986551962792873,
+        -0.002997834860252624
+      ],
+      "drag_normal_impulse_abs_n_s": [
+        0.014155887376833163,
+        0.024286498891962795,
+        0.006825922616992959,
+        0.01716543350132865,
+        0.004655646436106128,
+        0.012140031454129206,
+        0.013848146740627919,
+        0.021443010143366623
+      ],
+      "drag_shear_impulse_abs_n_s": [
+        0.0035362598616005326,
+        0.006404985759291151,
+        0.0015909746751562493,
+        0.004130688490875412,
+        0.0012665068442912256,
+        0.0031129198913829727,
+        0.0034550170567485034,
+        0.005478604960342457
+      ],
+      "peak_node_penetration_m": [
+        3.1634279869427864e-06,
+        2.386897271140962e-06,
+        4.988271857657871e-06,
+        3.692620848252795e-06,
+        4.965360113746559e-06,
+        5.688070217963823e-06,
+        3.7589746805417394e-06,
+        3.021959452475913e-06
+      ],
+      "sampled_min_particle_z_m": [
+        0.0004983841790817678,
+        0.000497693195939064,
+        0.0004983619437552989,
+        0.0004972905153408647,
+        0.0004975324845872819,
+        0.0004982326063327491,
+        0.0004988241707906127,
+        0.0004980485537089407
+      ],
+      "max_particle_speed_m_s": [
+        0.33567548658661583,
+        0.3290518007702699,
+        0.3499760081379565,
+        0.39978239203020915,
+        0.2457003335692423,
+        0.39685639798478706,
+        0.4282036172231596,
+        0.6065113317937866
+      ],
+      "min_J": [
+        0.987363735822261,
+        0.9791060381800764,
+        0.9878920105784941,
+        0.9809392654029873,
+        0.9900800392971764,
+        0.9847343996420573,
+        0.9893321742376917,
+        0.9753554503433962
+      ],
+      "max_J": [
+        1.0139872493059627,
+        1.023381846587764,
+        1.0137050104345438,
+        1.0192958296663084,
+        1.0104971663590452,
+        1.0140574308320187,
+        1.0102217984610076,
+        1.0265139527916385
+      ]
+    },
+    "candidate": {
+      "drag_end_tip_m": [
+        [
+          0.12914192024618387,
+          0.033366309449775144,
+          0.002000112373934826
+        ],
+        [
+          0.17590339994058013,
+          0.05585294310003519,
+          0.0019982477570010815
+        ],
+        [
+          0.11933375056833029,
+          0.05959173128940165,
+          0.002046558563961298
+        ],
+        [
+          0.17692625615745783,
+          0.007137493922982685,
+          0.0020013570929222624
+        ],
+        [
+          0.11694323283154517,
+          0.0665431102970615,
+          0.0024014698446990224
+        ],
+        [
+          0.17756785079836845,
+          0.009024465454785968,
+          0.00292543339128315
+        ],
+        [
+          0.12940217461436987,
+          0.023752128559863195,
+          0.001998913739953423
+        ],
+        [
+          0.17210564203560352,
+          -0.020115799838094972,
+          0.00199984261780628
+        ]
+      ],
+      "drag_tip_xy_shift_m": [
+        [
+          0.029874923988245428,
+          0.012486977968364954
+        ],
+        [
+          0.026978978887200356,
+          0.02123018543352373
+        ],
+        [
+          0.0248028626665473,
+          0.012959422660060227
+        ],
+        [
+          0.032162138959392905,
+          0.012201953252542808
+        ],
+        [
+          0.024707232252694666,
+          0.011105491314083338
+        ],
+        [
+          0.034099940210580826,
+          0.018472751517037977
+        ],
+        [
+          0.031051383004523814,
+          0.013730376012972556
+        ],
+        [
+          0.03295913874171674,
+          0.009089101586141624
+        ]
+      ],
+      "drag_extreme_marker_span_m": [
+        [
+          0.09880789327648043,
+          0.09918436745141822
+        ],
+        [
+          0.14858852009387202,
+          0.14901874708249088
+        ],
+        [
+          0.09889576018186035,
+          0.0991415567118591
+        ],
+        [
+          0.14849559896245149,
+          0.1489359210320656
+        ],
+        [
+          0.0988792834871466,
+          0.09898008596571671
+        ],
+        [
+          0.14882220126261278,
+          0.14893439572631353
+        ],
+        [
+          0.09886769663477116,
+          0.09912684464133599
+        ],
+        [
+          0.14829297672200478,
+          0.14883101479051053
+        ]
+      ],
+      "drag_peak_sag_m": [
+        -0.002999149374772969,
+        -0.0029982758860569447,
+        -0.002999074849867611,
+        -0.0029980240997247165,
+        -0.0029965232797621866,
+        -0.00300015408629406,
+        -0.0029986475346959196,
+        -0.0029982228224980645
+      ],
+      "drag_normal_impulse_abs_n_s": [
+        0.014156532869643862,
+        0.02428670731367033,
+        0.0068257548449011446,
+        0.01716546387224135,
+        0.004655649845230437,
+        0.012140882733086429,
+        0.013848276933204402,
+        0.021440490296004585
+      ],
+      "drag_shear_impulse_abs_n_s": [
+        0.003535781105602996,
+        0.00640445604783849,
+        0.0015906945927103087,
+        0.004137740730872065,
+        0.0012665264865385493,
+        0.003112226489154566,
+        0.003455000511870992,
+        0.005477784464515504
+      ],
+      "peak_node_penetration_m": [
+        2.986089073601027e-06,
+        2.412805275781451e-06,
+        5.001523674326347e-06,
+        4.074164866212311e-06,
+        4.965507059626486e-06,
+        5.70480586844434e-06,
+        3.7440433666783735e-06,
+        3.0518416924805787e-06
+      ],
+      "sampled_min_particle_z_m": [
+        0.0004986863350495696,
+        0.0004977168864570558,
+        0.0004984685219824314,
+        0.0004972331807948649,
+        0.0004975323099642992,
+        0.0004981037927791476,
+        0.0004988498985767365,
+        0.0004980451194569468
+      ],
+      "max_particle_speed_m_s": [
+        0.3366977037671425,
+        0.3235162675388723,
+        0.35063731918945856,
+        0.4125411918484864,
+        0.2457056556096833,
+        0.3970734817551508,
+        0.42898316822020544,
+        0.602408232423851
+      ],
+      "min_J": [
+        0.9873634586770912,
+        0.9792342421112179,
+        0.9878923393845733,
+        0.9811224636856812,
+        0.990080024860428,
+        0.9847387453602477,
+        0.9893206758108479,
+        0.9753447205209052
+      ],
+      "max_J": [
+        1.0139900954694834,
+        1.023293084579874,
+        1.0136488932617829,
+        1.0195546174016077,
+        1.0104965981825498,
+        1.0140540436240704,
+        1.0102303110344752,
+        1.026528357252465
+      ]
+    }
+  }
+}

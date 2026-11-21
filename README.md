@@ -462,6 +462,52 @@ reviews: [P2-0..P2-2](docs/reports/rl_ready/P2_0_P2_2_ACCEPTANCE_REVIEW.md),
 [P2-3](docs/reports/rl_ready/P2_PREREQ_P2_3_REVIEW.md), [K2 combined](docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md),
 [P2-5](docs/reports/rl_ready/P2_5_ACCEPTANCE_REVIEW.md), [P2-6](docs/reports/rl_ready/P2_6_ACCEPTANCE_REVIEW.md).
 
+### Use Fast or Turbo Rubber
+
+Omit `speed_profile` for the Reference task. Both speed profiles support
+`L100_t4` and `L150_t4` and keep the 20 ms control interval, 6-value
+`grip_delta_v1` action, 78-value policy observation, seeded masked reset,
+reward and termination semantics.
+
+```python
+import torch
+
+from robotic_cutting_sim.rl.rubber_family import RubberStripTaskFamily
+from robotic_cutting_sim.rl.vector_env import open_vector_env
+
+task = RubberStripTaskFamily(
+    ["L100_t4", "L150_t4"] * 4,
+    speed_profile="rubber_fast_v1",  # or rubber_turbo_v1
+)
+with open_vector_env(8, task=task, backend="kinematic_grip_batched", device="cuda:0") as env:
+    observation, info = env.reset(seeds=list(range(4000, 4008)))
+    action = torch.zeros((8, 6), dtype=torch.float32, device="cuda:0")
+    observation, reward, terminated, truncated, info = env.step(action)
+```
+
+Benchmark the normal vector step plus a diagnostic release in a new output
+directory. The standard task's ideal clamp has no open-grip action. The
+benchmark deactivates that clamp and removes the independent tip traction
+at the start of its release phase. Its force and particle diagnostics stay
+outside the policy observation.
+
+```bash
+flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu1.lock env \
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 OPENBLAS_NUM_THREADS=1 \
+  PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/perf/benchmark_rubber.py \
+    --gpu-index 1 --num-envs 8 --speed-profile rubber_turbo_v1 \
+    --steps 50 --release 40 --out artifacts/rubber_turbo_fresh
+```
+
+The faster profiles are uncalibrated kinematic strip experiments with v2
+frictional table contact at fixed µ=0.3. The original resolution-bias and
+contact-envelope studies retain their scopes. The new receipts identify
+the effective bulk ratio, grid, precision, projection mode and actual
+Prony guard. Self-penetration remains a detector and the model remains
+scoped to rubber deformation and manipulation.
+
+[Measured speed and quality](docs/reports/HIGH_SPEED_RESULTS.md).
+
 ## Agentic control robot seeded trimming
 
 The opt-in [seeded trimming challenge](docs/AGENTIC_TRIM_CHALLENGE.md) provides

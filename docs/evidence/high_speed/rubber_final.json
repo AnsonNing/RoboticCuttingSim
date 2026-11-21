@@ -1,0 +1,1719 @@
+{
+  "stable_profiles": [
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1",
+      "num_envs": 1,
+      "slots": [
+        "L100_t4"
+      ],
+      "seeds": [
+        4000
+      ],
+      "mode": "graph",
+      "drive": "fixed",
+      "dx_m": [
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "particles": [
+        22176
+      ],
+      "beta": 10.0,
+      "nominal_cfl": 0.6498115039620427,
+      "cfl": 0.65,
+      "substeps": 2198,
+      "batch_step_s": 0.4506961109570693,
+      "aggregate_env_steps_s": 2.2187899466815106,
+      "total_wall_s": 40.80543773097452,
+      "build_s": 0.7405412429943681,
+      "reset_s": 0.07156026997836307,
+      "first_step_s": 0.550240668002516,
+      "episode_s": 39.956302496022545,
+      "episode_steps": 100,
+      "max_sampled_process_mib": 786.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        50
+      ],
+      "evaluation": null,
+      "released_group_active": [
+        0
+      ],
+      "single_env_sim_s_per_wall_s": 0.04437579893363021,
+      "aggregate_sim_s_per_wall_s": 0.04437579893363021,
+      "episode_wall_episodes_per_gpu_hour": 88.30367750490512,
+      "steady_projection_250_step_episodes_per_gpu_hour": 31.95057523221375,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 8,
+        "remainder_substeps": 150,
+        "capture_wall_s": 0.12020575598580763
+      },
+      "source": {
+        "commit": "0adc0aae4d36ff45dcd9e79c909b8ffa4984334d",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_002/rubber_fast_v1_release_n1",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "1",
+          "--speed-profile",
+          "rubber_fast_v1",
+          "--steps",
+          "50",
+          "--release",
+          "40"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_002/rubber_fast_v1_release_n1",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES"
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_turbo_v1",
+      "num_envs": 1,
+      "slots": [
+        "L100_t4"
+      ],
+      "seeds": [
+        4000
+      ],
+      "mode": "graph",
+      "drive": "fixed",
+      "dx_m": [
+        0.002
+      ],
+      "dt_s": 1.8248175182481753e-05,
+      "particles": [
+        6656
+      ],
+      "beta": 5.0,
+      "nominal_cfl": 0.6494573146004448,
+      "cfl": 0.65,
+      "substeps": 1096,
+      "batch_step_s": 0.1947078661422711,
+      "aggregate_env_steps_s": 5.135899333770676,
+      "total_wall_s": 18.34964322304586,
+      "build_s": 0.7263723910436966,
+      "reset_s": 0.06442401796812192,
+      "first_step_s": 0.27456323499791324,
+      "episode_s": 17.51856191898696,
+      "episode_steps": 100,
+      "max_sampled_process_mib": 762.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        50
+      ],
+      "evaluation": null,
+      "released_group_active": [
+        0
+      ],
+      "single_env_sim_s_per_wall_s": 0.10271798667541351,
+      "aggregate_sim_s_per_wall_s": 0.10271798667541351,
+      "episode_wall_episodes_per_gpu_hour": 196.62076275468695,
+      "steady_projection_250_step_episodes_per_gpu_hour": 73.95695040629774,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 4,
+        "remainder_substeps": 72,
+        "capture_wall_s": 0.09835769602796063
+      },
+      "source": {
+        "commit": "0adc0aae4d36ff45dcd9e79c909b8ffa4984334d",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_002/rubber_turbo_v1_release_n1",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "1",
+          "--speed-profile",
+          "rubber_turbo_v1",
+          "--steps",
+          "50",
+          "--release",
+          "40"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_002/rubber_turbo_v1_release_n1",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES"
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1",
+      "num_envs": 3,
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002
+      ],
+      "mode": "graph",
+      "drive": "fixed",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "particles": [
+        22176,
+        32976,
+        22176
+      ],
+      "beta": 10.0,
+      "nominal_cfl": 0.6498115039620427,
+      "cfl": 0.65,
+      "substeps": 2198,
+      "batch_step_s": 0.6402501556451898,
+      "aggregate_env_steps_s": 4.685668521199896,
+      "total_wall_s": 60.7809691230068,
+      "build_s": 0.8633677199832164,
+      "reset_s": 0.08665736997500062,
+      "first_step_s": 0.7527818140224554,
+      "episode_s": 59.803802329988685,
+      "episode_steps": 100,
+      "max_sampled_process_mib": 818.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        50,
+        50,
+        50
+      ],
+      "evaluation": null,
+      "released_group_active": [
+        0,
+        0,
+        0
+      ],
+      "single_env_sim_s_per_wall_s": 0.03123779014133264,
+      "aggregate_sim_s_per_wall_s": 0.09371337042399792,
+      "episode_wall_episodes_per_gpu_hour": 177.76657798606624,
+      "steady_projection_250_step_episodes_per_gpu_hour": 67.4736267052785,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 8,
+        "remainder_substeps": 150,
+        "capture_wall_s": 0.12208412098698318
+      },
+      "source": {
+        "commit": "0adc0aae4d36ff45dcd9e79c909b8ffa4984334d",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_002/rubber_fast_v1_release_n3",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "3",
+          "--speed-profile",
+          "rubber_fast_v1",
+          "--steps",
+          "50",
+          "--release",
+          "40"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_002/rubber_fast_v1_release_n3",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES"
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_turbo_v1",
+      "num_envs": 3,
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002
+      ],
+      "mode": "graph",
+      "drive": "fixed",
+      "dx_m": [
+        0.002,
+        0.002,
+        0.002
+      ],
+      "dt_s": 1.8248175182481753e-05,
+      "particles": [
+        6656,
+        9856,
+        6656
+      ],
+      "beta": 5.0,
+      "nominal_cfl": 0.6494573146004448,
+      "cfl": 0.65,
+      "substeps": 1096,
+      "batch_step_s": 0.2164758012269158,
+      "aggregate_env_steps_s": 13.858361918500622,
+      "total_wall_s": 20.610580681997817,
+      "build_s": 0.7858723549870774,
+      "reset_s": 0.06877873901976272,
+      "first_step_s": 0.30434137996053323,
+      "episode_s": 19.71978502703132,
+      "episode_steps": 100,
+      "max_sampled_process_mib": 762.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        50,
+        50,
+        50
+      ],
+      "evaluation": null,
+      "released_group_active": [
+        0,
+        0,
+        0
+      ],
+      "single_env_sim_s_per_wall_s": 0.09238907945667081,
+      "aggregate_sim_s_per_wall_s": 0.27716723837001245,
+      "episode_wall_episodes_per_gpu_hour": 524.9232560476629,
+      "steady_projection_250_step_episodes_per_gpu_hour": 199.56041162640895,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 4,
+        "remainder_substeps": 72,
+        "capture_wall_s": 0.10566399100935087
+      },
+      "source": {
+        "commit": "0adc0aae4d36ff45dcd9e79c909b8ffa4984334d",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_002/rubber_turbo_v1_release_n3",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "3",
+          "--speed-profile",
+          "rubber_turbo_v1",
+          "--steps",
+          "50",
+          "--release",
+          "40"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_002/rubber_turbo_v1_release_n3",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES"
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1",
+      "num_envs": 8,
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "mode": "graph",
+      "drive": "fixed",
+      "dx_m": [
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333,
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "particles": [
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976,
+        22176,
+        32976
+      ],
+      "beta": 10.0,
+      "nominal_cfl": 0.6498115039620427,
+      "cfl": 0.65,
+      "substeps": 2198,
+      "batch_step_s": 1.253906851161737,
+      "aggregate_env_steps_s": 6.380059246496699,
+      "total_wall_s": 124.15438495099079,
+      "build_s": 1.1844537240103818,
+      "reset_s": 0.11936688097193837,
+      "first_step_s": 1.430608969007153,
+      "episode_s": 122.81055933900643,
+      "episode_steps": 100,
+      "max_sampled_process_mib": 946.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        50,
+        50,
+        50,
+        50,
+        50,
+        50,
+        50,
+        50
+      ],
+      "evaluation": null,
+      "released_group_active": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "single_env_sim_s_per_wall_s": 0.015950148116241746,
+      "aggregate_sim_s_per_wall_s": 0.12760118492993397,
+      "episode_wall_episodes_per_gpu_hour": 232.04402272320962,
+      "steady_projection_250_step_episodes_per_gpu_hour": 91.87285314955247,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 8,
+        "remainder_substeps": 150,
+        "capture_wall_s": 0.12253195303492248
+      },
+      "source": {
+        "commit": "0adc0aae4d36ff45dcd9e79c909b8ffa4984334d",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_002/rubber_fast_v1_release_n8",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "8",
+          "--speed-profile",
+          "rubber_fast_v1",
+          "--steps",
+          "50",
+          "--release",
+          "40"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_002/rubber_fast_v1_release_n8",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES"
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_turbo_v1",
+      "num_envs": 8,
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4",
+        "L100_t4",
+        "L150_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002,
+        4003,
+        4004,
+        4005,
+        4006,
+        4007
+      ],
+      "mode": "graph",
+      "drive": "fixed",
+      "dx_m": [
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002,
+        0.002
+      ],
+      "dt_s": 1.8248175182481753e-05,
+      "particles": [
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856,
+        6656,
+        9856
+      ],
+      "beta": 5.0,
+      "nominal_cfl": 0.6494573146004448,
+      "cfl": 0.65,
+      "substeps": 1096,
+      "batch_step_s": 0.2880098027328495,
+      "aggregate_env_steps_s": 27.77683233032382,
+      "total_wall_s": 27.886764094990212,
+      "build_s": 0.8107076319865882,
+      "reset_s": 0.07890493498416618,
+      "first_step_s": 0.3861484919907525,
+      "episode_s": 26.961102003988344,
+      "episode_steps": 100,
+      "max_sampled_process_mib": 794.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        50,
+        50,
+        50,
+        50,
+        50,
+        50,
+        50,
+        50
+      ],
+      "evaluation": null,
+      "released_group_active": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "single_env_sim_s_per_wall_s": 0.06944208082580955,
+      "aggregate_sim_s_per_wall_s": 0.5555366466064764,
+      "episode_wall_episodes_per_gpu_hour": 1034.0847782064002,
+      "steady_projection_250_step_episodes_per_gpu_hour": 399.98638555666304,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 4,
+        "remainder_substeps": 72,
+        "capture_wall_s": 0.10001028201077133
+      },
+      "source": {
+        "commit": "0adc0aae4d36ff45dcd9e79c909b8ffa4984334d",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_002/rubber_turbo_v1_release_n8",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "8",
+          "--speed-profile",
+          "rubber_turbo_v1",
+          "--steps",
+          "50",
+          "--release",
+          "40"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_002/rubber_turbo_v1_release_n8",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES"
+    }
+  ],
+  "high_wave_seed872": [
+    {
+      "status": "PASS",
+      "profile": "rubber_fast_v1",
+      "num_envs": 1,
+      "slots": [
+        "L100_t4"
+      ],
+      "seeds": [
+        872
+      ],
+      "mode": "graph",
+      "drive": "goal",
+      "dx_m": [
+        0.0013333333333333333
+      ],
+      "dt_s": 9.099181073703366e-06,
+      "particles": [
+        22176
+      ],
+      "beta": 10.0,
+      "nominal_cfl": 0.6498115039620427,
+      "cfl": 0.65,
+      "substeps": 2198,
+      "batch_step_s": 0.4347966856480828,
+      "aggregate_env_steps_s": 2.2999255353325836,
+      "total_wall_s": 112.3034959329525,
+      "build_s": 0.9161392870009877,
+      "reset_s": 0.07123294600751251,
+      "first_step_s": 0.546203489007894,
+      "episode_s": 111.28019852400757,
+      "episode_steps": 250,
+      "max_sampled_process_mib": 786.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        223
+      ],
+      "evaluation": [
+        {
+          "env": 0,
+          "slot": "L100_t4",
+          "seed": 872,
+          "episode": 1,
+          "step_count": 250,
+          "evaluator": "rubber_tracking_eval_v1",
+          "success": false,
+          "verdict": "NOT_SUCCESS",
+          "tip_distance_m": 0.01214271363208847,
+          "goal_m": [
+            0.08705279846135233,
+            0.061900321484274455,
+            0.002
+          ],
+          "within_streak": 0,
+          "window_steps": 25,
+          "tolerance_m": 0.01,
+          "termination_reason": [
+            "TRUNCATED_HORIZON"
+          ],
+          "invalid_reason": [],
+          "labels": {
+            "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+            "coupling": "kinematic_grip_ideal_tracking",
+            "perception": "ideal_marker_tracking",
+            "test_configuration": null
+          }
+        }
+      ],
+      "released_group_active": null,
+      "single_env_sim_s_per_wall_s": 0.045998510706651674,
+      "aggregate_sim_s_per_wall_s": 0.045998510706651674,
+      "episode_wall_episodes_per_gpu_hour": 32.066250082061394,
+      "steady_projection_250_step_episodes_per_gpu_hour": 33.11892770878921,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 8,
+        "remainder_substeps": 150,
+        "capture_wall_s": 0.12602077604969963
+      },
+      "source": {
+        "commit": "0adc0aae4d36ff45dcd9e79c909b8ffa4984334d",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_002/rubber_fast_v1_high_wave_goal_n1",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "1",
+          "--speed-profile",
+          "rubber_fast_v1",
+          "--seed",
+          "872",
+          "--steps",
+          "240",
+          "--drive",
+          "goal"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_002/rubber_fast_v1_high_wave_goal_n1",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES"
+    },
+    {
+      "status": "PASS",
+      "profile": "rubber_turbo_v1",
+      "num_envs": 1,
+      "slots": [
+        "L100_t4"
+      ],
+      "seeds": [
+        872
+      ],
+      "mode": "graph",
+      "drive": "goal",
+      "dx_m": [
+        0.002
+      ],
+      "dt_s": 1.8248175182481753e-05,
+      "particles": [
+        6656
+      ],
+      "beta": 5.0,
+      "nominal_cfl": 0.6494573146004448,
+      "cfl": 0.65,
+      "substeps": 1096,
+      "batch_step_s": 0.1858905387268654,
+      "aggregate_env_steps_s": 5.3795099355181835,
+      "total_wall_s": 49.67482623900287,
+      "build_s": 0.6627677410142496,
+      "reset_s": 0.06418106897035614,
+      "first_step_s": 0.26540949498303235,
+      "episode_s": 48.90929831296671,
+      "episode_steps": 250,
+      "max_sampled_process_mib": 762.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          0
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        222
+      ],
+      "evaluation": [
+        {
+          "env": 0,
+          "slot": "L100_t4",
+          "seed": 872,
+          "episode": 1,
+          "step_count": 250,
+          "evaluator": "rubber_tracking_eval_v1",
+          "success": false,
+          "verdict": "NOT_SUCCESS",
+          "tip_distance_m": 0.027449008863447064,
+          "goal_m": [
+            0.08705279846135233,
+            0.061900321484274455,
+            0.002
+          ],
+          "within_streak": 0,
+          "window_steps": 25,
+          "tolerance_m": 0.01,
+          "termination_reason": [
+            "TRUNCATED_HORIZON"
+          ],
+          "invalid_reason": [],
+          "labels": {
+            "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+            "coupling": "kinematic_grip_ideal_tracking",
+            "perception": "ideal_marker_tracking",
+            "test_configuration": null
+          }
+        }
+      ],
+      "released_group_active": null,
+      "single_env_sim_s_per_wall_s": 0.10759019871036367,
+      "aggregate_sim_s_per_wall_s": 0.10759019871036367,
+      "episode_wall_episodes_per_gpu_hour": 72.52764277449563,
+      "steady_projection_250_step_episodes_per_gpu_hour": 77.46494307146185,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 4,
+        "remainder_substeps": 72,
+        "capture_wall_s": 0.09940658998675644
+      },
+      "source": {
+        "commit": "0adc0aae4d36ff45dcd9e79c909b8ffa4984334d",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_002/rubber_turbo_v1_high_wave_goal_n1",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "1",
+          "--speed-profile",
+          "rubber_turbo_v1",
+          "--seed",
+          "872",
+          "--steps",
+          "240",
+          "--drive",
+          "goal"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_002/rubber_turbo_v1_high_wave_goal_n1",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES"
+    }
+  ],
+  "rejected_cfl_0_8_high_wave_seed872": [
+    {
+      "status": "FAIL",
+      "profile": "rubber_fast_v1",
+      "num_envs": 1,
+      "slots": [
+        "L100_t4"
+      ],
+      "seeds": [
+        872
+      ],
+      "mode": "graph",
+      "drive": "goal",
+      "dx_m": [
+        0.0013333333333333333
+      ],
+      "dt_s": 1.1198208286674133e-05,
+      "particles": [
+        22176
+      ],
+      "beta": 10.0,
+      "nominal_cfl": 0.7997120300719877,
+      "cfl": 0.8,
+      "substeps": 1786,
+      "batch_step_s": 0.35576013525545325,
+      "aggregate_env_steps_s": 2.8108826731863896,
+      "total_wall_s": 92.46300052496372,
+      "build_s": 0.7648922589723952,
+      "reset_s": 0.07225964800454676,
+      "first_step_s": 0.46511616196949035,
+      "episode_s": 91.58536749199266,
+      "episode_steps": 250,
+      "max_sampled_process_mib": 816.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          4262
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        218
+      ],
+      "evaluation": [
+        {
+          "env": 0,
+          "slot": "L100_t4",
+          "seed": 872,
+          "episode": 1,
+          "step_count": 250,
+          "evaluator": "rubber_tracking_eval_v1",
+          "success": false,
+          "verdict": "NOT_SUCCESS",
+          "tip_distance_m": 0.03922922535631412,
+          "goal_m": [
+            0.08705279846135233,
+            0.061900321484274455,
+            0.002
+          ],
+          "within_streak": 0,
+          "window_steps": 25,
+          "tolerance_m": 0.01,
+          "termination_reason": [
+            "MATERIAL_INVALID",
+            "TRUNCATED_HORIZON"
+          ],
+          "invalid_reason": [
+            "RUBBER_CFL_EXCEEDED"
+          ],
+          "labels": {
+            "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+            "coupling": "kinematic_grip_ideal_tracking",
+            "perception": "ideal_marker_tracking",
+            "test_configuration": null
+          }
+        }
+      ],
+      "released_group_active": null,
+      "single_env_sim_s_per_wall_s": 0.05621765346372779,
+      "aggregate_sim_s_per_wall_s": 0.05621765346372779,
+      "episode_wall_episodes_per_gpu_hour": 38.951545828993446,
+      "steady_projection_250_step_episodes_per_gpu_hour": 40.47671049388401,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 6,
+        "remainder_substeps": 250,
+        "capture_wall_s": 0.1494406119454652
+      },
+      "source": {
+        "commit": "59e5a75009aab7baeb28d8097f97eb08fb23ac1b",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_001/rubber_fast_v1_high_wave_goal_n1",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "1",
+          "--speed-profile",
+          "rubber_fast_v1",
+          "--seed",
+          "872",
+          "--steps",
+          "240",
+          "--drive",
+          "goal"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_001/rubber_fast_v1_high_wave_goal_n1",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES",
+      "first_invalid": {
+        "step": 73,
+        "invalid_reason": [
+          4
+        ],
+        "cfl_guard_violations_cumulative": [
+          336
+        ],
+        "end_step_elastic_cfl": [
+          0.9653641581535339
+        ]
+      }
+    },
+    {
+      "status": "FAIL",
+      "profile": "rubber_turbo_v1",
+      "num_envs": 1,
+      "slots": [
+        "L100_t4"
+      ],
+      "seeds": [
+        872
+      ],
+      "mode": "graph",
+      "drive": "goal",
+      "dx_m": [
+        0.002
+      ],
+      "dt_s": 2.2471910112359552e-05,
+      "particles": [
+        6656
+      ],
+      "beta": 5.0,
+      "nominal_cfl": 0.7997811424742555,
+      "cfl": 0.8,
+      "substeps": 890,
+      "batch_step_s": 0.15182423826166389,
+      "aggregate_env_steps_s": 6.586563591226679,
+      "total_wall_s": 41.19048512697918,
+      "build_s": 0.6987167939660139,
+      "reset_s": 0.0649298180360347,
+      "first_step_s": 0.23608925397275016,
+      "episode_s": 40.391758560959715,
+      "episode_steps": 250,
+      "max_sampled_process_mib": 778.0,
+      "actual_guard": {
+        "id": "stable_step_guard_visco_v1",
+        "limit": 1.0,
+        "cumulative_violations": [
+          12464
+        ]
+      },
+      "loaded_table_steps_per_env": [
+        219
+      ],
+      "evaluation": [
+        {
+          "env": 0,
+          "slot": "L100_t4",
+          "seed": 872,
+          "episode": 1,
+          "step_count": 250,
+          "evaluator": "rubber_tracking_eval_v1",
+          "success": false,
+          "verdict": "NOT_SUCCESS",
+          "tip_distance_m": 0.02938738788641979,
+          "goal_m": [
+            0.08705279846135233,
+            0.061900321484274455,
+            0.002
+          ],
+          "within_streak": 0,
+          "window_steps": 25,
+          "tolerance_m": 0.01,
+          "termination_reason": [
+            "MATERIAL_INVALID",
+            "TRUNCATED_HORIZON"
+          ],
+          "invalid_reason": [
+            "RUBBER_CFL_EXCEEDED"
+          ],
+          "labels": {
+            "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
+            "coupling": "kinematic_grip_ideal_tracking",
+            "perception": "ideal_marker_tracking",
+            "test_configuration": null
+          }
+        }
+      ],
+      "released_group_active": null,
+      "single_env_sim_s_per_wall_s": 0.1317312718245336,
+      "aggregate_sim_s_per_wall_s": 0.1317312718245336,
+      "episode_wall_episodes_per_gpu_hour": 87.47332178775692,
+      "steady_projection_250_step_episodes_per_gpu_hour": 94.84651571366419,
+      "graph": {
+        "graph_chunk_substeps": 256,
+        "chunk_replays": 3,
+        "remainder_substeps": 122,
+        "capture_wall_s": 0.11442981602158397
+      },
+      "source": {
+        "commit": "59e5a75009aab7baeb28d8097f97eb08fb23ac1b",
+        "dirty_paths": [],
+        "python": "3.12.12",
+        "command": [
+          "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_rubber.py",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_final_001/rubber_turbo_v1_high_wave_goal_n1",
+          "--gpu-index",
+          "1",
+          "--num-envs",
+          "1",
+          "--speed-profile",
+          "rubber_turbo_v1",
+          "--seed",
+          "872",
+          "--steps",
+          "240",
+          "--drive",
+          "goal"
+        ],
+        "gpu_index": 1,
+        "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+        "env": {
+          "CUDA_VISIBLE_DEVICES": "1",
+          "CUDA_DEVICE_ORDER": "PCI_BUS_ID",
+          "OPENBLAS_NUM_THREADS": "1"
+        }
+      },
+      "artifact": "artifacts/rubber_final_001/rubber_turbo_v1_high_wave_goal_n1",
+      "gpu_compute_sharing": "EXCLUSIVE_AT_SAMPLES",
+      "first_invalid": {
+        "step": 36,
+        "invalid_reason": [
+          4
+        ],
+        "cfl_guard_violations_cumulative": [
+          61
+        ],
+        "end_step_elastic_cfl": [
+          0.9752542972564697
+        ]
+      }
+    }
+  ],
+  "three_seed_release_quality": {
+    "rubber_fast_v1": {
+      "ref_profile": "rubber_rl_env_v2",
+      "candidate_profile": "rubber_fast_v1",
+      "paired_envs": 3,
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002
+      ],
+      "reference_status": "PASS",
+      "candidate_status": "PASS",
+      "drag_tip_error_max_m": [
+        0.00018984240016844676,
+        0.00042647711912964157,
+        0.0003242275293524687
+      ],
+      "drag_tip_error_rms_m": [
+        0.00011952579933548614,
+        0.00029655783089622354,
+        0.00014822440935620797
+      ],
+      "release_tip_error_max_m": [
+        0.0006629387264707237,
+        0.000267795866685333,
+        0.0005271960854203354
+      ],
+      "reference": {
+        "drag_end_tip_m": [
+          [
+            0.21478655224200338,
+            0.06969598832074553,
+            0.002001778514227226
+          ],
+          [
+            0.2519734586821869,
+            0.10337441982119344,
+            0.0019985810530442905
+          ],
+          [
+            0.1917915486264974,
+            0.08989541584742256,
+            0.002018758588064884
+          ]
+        ],
+        "drag_tip_xy_shift_m": [
+          [
+            0.11527014218154363,
+            0.04885137322708033
+          ],
+          [
+            0.10277358698658645,
+            0.06900905752991093
+          ],
+          [
+            0.09706835434189998,
+            0.04304682083602529
+          ]
+        ],
+        "drag_extreme_marker_span_m": [
+          [
+            0.09932308083150188,
+            0.09968514139167543
+          ],
+          [
+            0.1490921353243063,
+            0.14950169499602156
+          ],
+          [
+            0.09942249356886057,
+            0.09963644068895977
+          ]
+        ],
+        "drag_peak_sag_m": [
+          -0.0030007570085217594,
+          -0.0030011396739837437,
+          -0.00299944821574627
+        ],
+        "drag_normal_impulse_abs_n_s": [
+          0.05826727372183929,
+          0.10071154223895665,
+          0.028832819824054497
+        ],
+        "drag_shear_impulse_abs_n_s": [
+          0.013432848558315502,
+          0.02652745995484105,
+          0.006004421175996334
+        ],
+        "peak_node_penetration_m": [
+          5.599424450556971e-06,
+          8.709976092022551e-06,
+          5.325049148798164e-06
+        ],
+        "sampled_min_particle_z_m": [
+          0.00024924101307988167,
+          0.0002487925812602043,
+          0.0002486268640495837
+        ],
+        "max_particle_speed_m_s": [
+          0.5936164311860993,
+          0.7286436960699431,
+          0.860612934785806
+        ],
+        "min_J": [
+          0.9867135269221471,
+          0.9794744433180563,
+          0.9905134637128574
+        ],
+        "max_J": [
+          1.0131273712022393,
+          1.0249741960448555,
+          1.0090976361595085
+        ],
+        "release_final_tip_m": [
+          [
+            0.21748373529408127,
+            0.07239660620689392,
+            0.001999957501539029
+          ],
+          [
+            0.25336031726328656,
+            0.10501020684023388,
+            0.0019999450257728313
+          ],
+          [
+            0.19262864731717855,
+            0.0922736354987137,
+            0.001999965381742186
+          ]
+        ],
+        "release_max_tip_motion_m": [
+          0.003816833193446918,
+          0.002187539683479402,
+          0.002521312920699752
+        ],
+        "release_final_tip_speed_m_s": [
+          1.3720495349806347e-06,
+          6.334572727025275e-07,
+          4.7631558541509553e-07
+        ],
+        "release_peak_abs_grip_force_n": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "release_loaded_steps": [
+          40,
+          40,
+          40
+        ]
+      },
+      "candidate": {
+        "drag_end_tip_m": [
+          [
+            0.21474968010766637,
+            0.06957470216891831,
+            0.002000171823763392
+          ],
+          [
+            0.25177180767059326,
+            0.10355015626798073,
+            0.001997571728578704
+          ],
+          [
+            0.1917474434400598,
+            0.0898076668381691,
+            0.0020079245912509374
+          ]
+        ],
+        "drag_tip_xy_shift_m": [
+          [
+            0.11531449078271785,
+            0.04868827080483444
+          ],
+          [
+            0.10266844100422332,
+            0.06903634074195805
+          ],
+          [
+            0.09708388594703542,
+            0.04304259192819397
+          ]
+        ],
+        "drag_extreme_marker_span_m": [
+          [
+            0.0991495755155138,
+            0.09951943404983227
+          ],
+          [
+            0.1489209212479528,
+            0.1493537326889582
+          ],
+          [
+            0.0992336405980424,
+            0.09947610916702448
+          ]
+        ],
+        "drag_peak_sag_m": [
+          -0.0030005718985598325,
+          -0.0030016528562555322,
+          -0.002998574455583972
+        ],
+        "drag_normal_impulse_abs_n_s": [
+          0.058787767811682046,
+          0.10106933431464983,
+          0.029075814182992425
+        ],
+        "drag_shear_impulse_abs_n_s": [
+          0.014800540528527589,
+          0.026748825789730396,
+          0.006247285157419097
+        ],
+        "peak_node_penetration_m": [
+          1.45204740044597e-05,
+          1.793384184315364e-05,
+          1.2191613837645043e-05
+        ],
+        "sampled_min_particle_z_m": [
+          0.0003323744749650359,
+          0.0003316841321066022,
+          0.0003312448097858578
+        ],
+        "max_particle_speed_m_s": [
+          0.583432696780095,
+          0.7693005077511126,
+          0.6408065153128832
+        ],
+        "min_J": [
+          0.9853952647559499,
+          0.9781738302827979,
+          0.9888226879574419
+        ],
+        "max_J": [
+          1.014599415910449,
+          1.0255560185196881,
+          1.0119949733734814
+        ],
+        "release_final_tip_m": [
+          [
+            0.21710540437036088,
+            0.07185225224950247,
+            0.0019999416146876886
+          ],
+          [
+            0.2531551990865005,
+            0.10516404929674333,
+            0.00199992843610946
+          ],
+          [
+            0.1925151138049033,
+            0.09175904653966427,
+            0.0019999504854947897
+          ]
+        ],
+        "release_max_tip_motion_m": [
+          0.0032768383409478366,
+          0.0021493366294403383,
+          0.0020969655983181677
+        ],
+        "release_final_tip_speed_m_s": [
+          6.306393353563901e-07,
+          3.4311085139384213e-07,
+          2.718720693956445e-07
+        ],
+        "release_peak_abs_grip_force_n": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "release_loaded_steps": [
+          40,
+          40,
+          40
+        ]
+      }
+    },
+    "rubber_turbo_v1": {
+      "ref_profile": "rubber_rl_env_v2",
+      "candidate_profile": "rubber_turbo_v1",
+      "paired_envs": 3,
+      "slots": [
+        "L100_t4",
+        "L150_t4",
+        "L100_t4"
+      ],
+      "seeds": [
+        4000,
+        4001,
+        4002
+      ],
+      "reference_status": "PASS",
+      "candidate_status": "PASS",
+      "drag_tip_error_max_m": [
+        0.0005234690138471868,
+        0.0010759603715203958,
+        0.0005333248628287113
+      ],
+      "drag_tip_error_rms_m": [
+        0.0003400690987780307,
+        0.0008320097763770131,
+        0.00032878163901601387
+      ],
+      "release_tip_error_max_m": [
+        0.0015135554866361246,
+        0.0006245167187455037,
+        0.002074539188958341
+      ],
+      "reference": {
+        "drag_end_tip_m": [
+          [
+            0.21478655224200338,
+            0.06969598832074553,
+            0.002001778514227226
+          ],
+          [
+            0.2519734586821869,
+            0.10337441982119344,
+            0.0019985810530442905
+          ],
+          [
+            0.1917915486264974,
+            0.08989541584742256,
+            0.002018758588064884
+          ]
+        ],
+        "drag_tip_xy_shift_m": [
+          [
+            0.11527014218154363,
+            0.04885137322708033
+          ],
+          [
+            0.10277358698658645,
+            0.06900905752991093
+          ],
+          [
+            0.09706835434189998,
+            0.04304682083602529
+          ]
+        ],
+        "drag_extreme_marker_span_m": [
+          [
+            0.09932308083150188,
+            0.09968514139167543
+          ],
+          [
+            0.1490921353243063,
+            0.14950169499602156
+          ],
+          [
+            0.09942249356886057,
+            0.09963644068895977
+          ]
+        ],
+        "drag_peak_sag_m": [
+          -0.0030007570085217594,
+          -0.0030011396739837437,
+          -0.00299944821574627
+        ],
+        "drag_normal_impulse_abs_n_s": [
+          0.05826727372183929,
+          0.10071154223895665,
+          0.028832819824054497
+        ],
+        "drag_shear_impulse_abs_n_s": [
+          0.013432848558315502,
+          0.02652745995484105,
+          0.006004421175996334
+        ],
+        "peak_node_penetration_m": [
+          5.599424450556971e-06,
+          8.709976092022551e-06,
+          5.325049148798164e-06
+        ],
+        "sampled_min_particle_z_m": [
+          0.00024924101307988167,
+          0.0002487925812602043,
+          0.0002486268640495837
+        ],
+        "max_particle_speed_m_s": [
+          0.5936164311860993,
+          0.7286436960699431,
+          0.860612934785806
+        ],
+        "min_J": [
+          0.9867135269221471,
+          0.9794744433180563,
+          0.9905134637128574
+        ],
+        "max_J": [
+          1.0131273712022393,
+          1.0249741960448555,
+          1.0090976361595085
+        ],
+        "release_final_tip_m": [
+          [
+            0.21748373529408127,
+            0.07239660620689392,
+            0.001999957501539029
+          ],
+          [
+            0.25336031726328656,
+            0.10501020684023388,
+            0.0019999450257728313
+          ],
+          [
+            0.19262864731717855,
+            0.0922736354987137,
+            0.001999965381742186
+          ]
+        ],
+        "release_max_tip_motion_m": [
+          0.003816833193446918,
+          0.002187539683479402,
+          0.002521312920699752
+        ],
+        "release_final_tip_speed_m_s": [
+          1.3720495349806347e-06,
+          6.334572727025275e-07,
+          4.7631558541509553e-07
+        ],
+        "release_peak_abs_grip_force_n": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "release_loaded_steps": [
+          40,
+          40,
+          40
+        ]
+      },
+      "candidate": {
+        "drag_end_tip_m": [
+          [
+            0.21466928673908114,
+            0.06940983911044896,
+            0.001998558074774337
+          ],
+          [
+            0.251382197951898,
+            0.10385186923667789,
+            0.001997325519369042
+          ],
+          [
+            0.19183196336962283,
+            0.08958956564310938,
+            0.002010823360251379
+          ]
+        ],
+        "drag_tip_xy_shift_m": [
+          [
+            0.11539704236201942,
+            0.048424663982586935
+          ],
+          [
+            0.1024826301727444,
+            0.06899257662007585
+          ],
+          [
+            0.09732356830500066,
+            0.04286269337171689
+          ]
+        ],
+        "drag_extreme_marker_span_m": [
+          [
+            0.09881918664743973,
+            0.09916950522352225
+          ],
+          [
+            0.14858693448357355,
+            0.14904530335536728
+          ],
+          [
+            0.09886847518741598,
+            0.09911178510964082
+          ]
+        ],
+        "drag_peak_sag_m": [
+          -0.002999944992552628,
+          -0.003000135312504426,
+          -0.0029996925049999845
+        ],
+        "drag_normal_impulse_abs_n_s": [
+          0.05986539395600752,
+          0.10187172366347864,
+          0.029728888451149144
+        ],
+        "drag_shear_impulse_abs_n_s": [
+          0.01581670071877111,
+          0.02693488939102535,
+          0.006316980716218351
+        ],
+        "peak_node_penetration_m": [
+          2.2103659192159617e-05,
+          2.8221457978299696e-05,
+          2.4053584641207616e-05
+        ],
+        "sampled_min_particle_z_m": [
+          0.0004975575720891356,
+          0.0004976550699211657,
+          0.0004976110649295151
+        ],
+        "max_particle_speed_m_s": [
+          0.6285954848512603,
+          0.764487969845499,
+          0.7057901935116229
+        ],
+        "min_J": [
+          0.9845629253350916,
+          0.977364379083659,
+          0.9876826390264818
+        ],
+        "max_J": [
+          1.0153017420555792,
+          1.0263033126933667,
+          1.0127864903324777
+        ],
+        "release_final_tip_m": [
+          [
+            0.21693855826742947,
+            0.07098464865703136,
+            0.00199990528926719
+          ],
+          [
+            0.25283273169770837,
+            0.105328414356336,
+            0.0019998935267722118
+          ],
+          [
+            0.19315693038515747,
+            0.09026748931501061,
+            0.0019999215355710476
+          ]
+        ],
+        "release_max_tip_motion_m": [
+          0.002762176776711476,
+          0.0020836695505822432,
+          0.0015153976565824329
+        ],
+        "release_final_tip_speed_m_s": [
+          2.5974068919970895e-06,
+          1.9368170556158768e-06,
+          1.9595718363470376e-06
+        ],
+        "release_peak_abs_grip_force_n": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "release_loaded_steps": [
+          40,
+          40,
+          40
+        ]
+      }
+    }
+  },
+  "pairing": "Reference N3 against the identical first three slots and seeds of each N8 result",
+  "release": "Deactivate the ideal grip and remove separately applied tip traction. Gravity and table friction continue.",
+  "numerics_limits": "v2 fixed friction 0.3, no new contact envelope or calibration claim"
+}

@@ -93,3 +93,72 @@ quadrature points. The same mode with two particles per axis reached
 0.25 in interpolation and 500 m⁻¹ in gradient magnitude. This motivates
 keeping one-particle quadrature in the experimental sweep.
 See the [CPU control receipt](../evidence/high_speed/rubber_numerics_controls.json).
+
+## Fast and Turbo Rubber
+
+Both opt-in profiles use nominal CFL 0.65, two particles per cell axis,
+two Prony branches, consistent-mass grip projection and v2 table contact.
+Fast uses 3 cells through thickness, β=10 and float64 shadows. Turbo uses
+2 cells, β=5 and float32 state. The constitutive Prony state retains its
+existing precision. Both update MUSL momentum only at stencil nodes
+affected by the F8 particle correction, so the second global scatter is
+unnecessary. The Reference task keeps its original scatter and CFL.
+
+| N | Profile | Particles in batch | dx | dt | Substeps | Batch step | Aggregate env-steps/s | Gain vs paired Reference | Factory-to-close, 100 steps |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | Fast | 22,176 | 1.333 mm | 9.099 µs | 2,198 | 0.451 s | 2.219 | 3.37× | 40.81 s |
+| 1 | Turbo | 6,656 | 2.000 mm | 18.248 µs | 1,096 | 0.195 s | 5.136 | 7.80× | 18.35 s |
+| 3 | Fast | 77,328 | 1.333 mm | 9.099 µs | 2,198 | 0.640 s | 4.686 | 4.69× | 60.78 s |
+| 3 | Turbo | 23,168 | 2.000 mm | 18.248 µs | 1,096 | 0.216 s | 13.858 | 13.87× | 20.61 s |
+| 8 | Fast | 220,608 | 1.333 mm | 9.099 µs | 2,198 | 1.254 s | 6.380 | 5.45× | 124.15 s |
+| 8 | Turbo | 66,048 | 2.000 mm | 18.248 µs | 1,096 | 0.288 s | 27.777 | 23.74× | 27.89 s |
+
+The timed window is 50 synchronized drag steps after 10 preload steps.
+All listed rows completed 40 more steps with the grip released and zero
+invalid states. Every environment recorded a nonzero table normal force
+in all 50 timed steps. Matched slots and seeds keep the workload pairing
+consistent across resolutions.
+
+The matched N=3 factory-to-close wall time for 100 steps was 290.53 s
+for Reference, 60.78 s for Fast and 20.61 s for Turbo. This corresponds
+to 37.2, 177.7 and 524.0 measured 100-step episodes/GPU-hour.
+These runs include build, reset, rollout, diagnostics and close.
+
+### Quality and negative results
+
+| Profile | Max drag tip error | Max release tip error | Max drag span difference | Change in normal impulse, max | Change in shear impulse, max | Worst sampled nodal penetration |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Fast | 0.426 mm | 0.663 mm | 0.189 mm | 0.9% | 10.2% | 0.018 mm |
+| Turbo | 1.076 mm | 2.075 mm | 0.554 mm | 3.1% | 17.7% | 0.028 mm |
+
+The quality table compares seeds 4000–4002 with matching slots at every
+sample time. The grip force was zero in the release interval. The sampled
+particle centres stayed above the table. Marker sag, tip sliding, force
+history and material extrema are retained in the receipts. Table contact
+forces and strain are provisional simulation quantities.
+
+Nominal CFL 0.8 passed the 100-step fixed drag and release, then tripped
+the actual Prony guard at step 73 (Fast) and step 36 (Turbo) on the
+stiff/light seed 872. Both final CFL 0.65 profiles reran all 250 steps
+with zero flags. The simple goal-seeking stress driver reached the
+horizon and the frozen evaluator returned `NOT_SUCCESS` for both.
+The stress test checks stability under the attempted motion.
+
+The 64-substep eager Fast pilot attributes 16.1% of sampled CUDA
+kernel time to both MUSL passes plus particle projection. Its graph
+A/B at N=8 rose from 5.835 to 6.363 env-steps/s for the moderate
+Fast arm and from 18.818 to 19.749 for the moderate Turbo arm.
+A separate eager vector run of the same moderate Fast arm reached
+5.431 env-steps/s. Higher nominal CFL, lower bulk ratio, one Prony
+term, float32 and lumped grip were screened separately. The single
+point per cell arm recorded zero loaded table steps in its timed
+drag and remains a failed research probe. Its checkerboard null
+mode also rules out promotion based on short-run speed alone.
+
+Reference replay on CPU matched all 37 arrays across its original
+and integrated code paths, including a masked reset and the final
+material state. The original source digests remain auditable at
+the frozen Reference commit.
+
+See the [final measurements](../evidence/high_speed/rubber_final.json)
+and [screening results](../evidence/high_speed/rubber_sweep.json).
