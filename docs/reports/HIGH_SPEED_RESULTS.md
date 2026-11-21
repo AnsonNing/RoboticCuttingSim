@@ -161,3 +161,45 @@ Reference replay on CPU matched all 37 arrays across its original
 and integrated code paths, including a masked reset and the final
 material state. The original source digests remain auditable at
 the frozen Reference commit.
+
+## Headless CUT and TRIM
+
+CUT uses the fixed bar and `ReferenceCommandPolicyV1`. TRIM replays
+the preserved WP-17 measured blade and two pad trajectories, with seed
+512 at N=1 and alternating 512/15 at N=8. Both benchmark paths run the
+batched v7.2 material solver on physical GPU 1. The cut law resolves
+mechanical separation through the packed material history. Neither row
+includes Native articulation, cameras, or rendering.
+
+| Task | N | Profile | Timed steps | Tool-active steps per env | Aggregate env-steps/s | Peak sampled process MiB | Full batch wall |
+| --- | ---: | --- | --- | ---: | ---: | ---: | ---: |
+| CUT | 1 | Reference | 206–265 | 32 | 7.058 | 944 | 103.59 s |
+| CUT | 8 | Reference | 234–293 | 60 | 10.426 | 1,368 | Window only |
+| CUT | 1 | Coarse | 234–293 | 56 | 40.697 | 770 | 18.27 s |
+| CUT | 8 | Coarse | 234–293 | 56 | 189.781 | 944 | 31.43 s |
+| TRIM | 1 | Reference | 270–329 | 55 | 6.480 | 1,040 | 174.07 s |
+| TRIM | 8 | Reference | 270–329 | 53–55 | 9.517 | 1,410 | Window only |
+| TRIM | 1 | Coarse | 270–329 | 52 | 6.553 | 794 | 45.54 s |
+
+Reference uses 1 mm particles, a 4 mm grid and 200 material substeps at
+0.1 ms per 20 ms control step. Coarse uses the numerical settings of
+`research_fast_v1`, 2 mm particles, an 8 mm grid and 100 substeps at 0.2 ms,
+with the existing `alias_free_v2` particle contact. The comparison measures
+their combined effect. GPU samples saw desktop graphics on GPU 1 with zero
+reported foreign SM load and no competing compute processes.
+
+CUT Reference completed 700 steps and passed integrity and outcome.
+Each coarse CUT episode completed 700 steps and passed integrity. All
+nine runs produced two 72 g components with full mass retained. The
+coarse interface statistic was 3.0 mm, equal to the ideal-partition
+statistic at that resolution. The frozen 2.0 mm location check failed.
+The N=8 contact window was 18.20× faster in aggregate, and the N=1 full
+episode took 5.67× less wall time. This is a coarse physical CUT path
+for research where millimetre-scale location error is acceptable.
+
+Reference TRIM completed 1,200 steps and passed integrity and outcome
+for seed 512. The target separated as a 0.498 g chip. The 153.6 g
+substrate was preserved, with a 1.5 mm reference-interface statistic.
+Coarse TRIM passed material integrity and retained the substrate, but
+its protrusion stayed attached. The shorter full wall time does not
+constitute a successful accelerated TRIM episode.
