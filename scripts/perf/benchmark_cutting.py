@@ -81,7 +81,10 @@ def execute(args, telemetry):
         sync()
         reset_s = time.perf_counter() - t0
         drive, first_armed, replay_checks = make_step(env)
-        first = args.window_start if args.window_start is not None else first_armed + 15
+        # The CUT controller arms during approach. The first Reference run found
+        # tool contact starting at step 234 (armed at 191) in this fixed workload.
+        offset = 43 if args.task == "cut" else 15
+        first = args.window_start if args.window_start is not None else first_armed + offset
         last = first + args.window_steps - 1
         if not 2 <= first <= last <= env.max_episode_steps:
             raise ValueError(f"invalid measured window [{first}, {last}] for {env.max_episode_steps} steps")
