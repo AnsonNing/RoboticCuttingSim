@@ -21,8 +21,15 @@ def batch_task(args):
     from robotic_cutting_sim.rl.reference_policy import ReferenceCommandPolicyV1, reference_schedule
 
     n = args.num_envs
+    numerical_overrides = {
+        key: value for key, value in (
+            ("particle_spacing_m", args.particle_spacing_m),
+            ("material_dt_s", args.material_dt_s),
+        ) if value is not None
+    }
     if args.task == "cut":
-        family = ConfiguredTaskFamily.from_cut_workload(n, runtime_profile=args.runtime_profile)
+        family = ConfiguredTaskFamily.from_cut_workload(
+            n, runtime_profile=args.runtime_profile, **numerical_overrides)
 
         def make_step(env):
             schedule = reference_schedule(env.tasks[0])
@@ -41,11 +48,11 @@ def batch_task(args):
     replay.WP17 = wp17_record(args.wp17, order)
     inputs = replay.load_inputs(scene_seeds)
     family = replay.family_for(scene_seeds, inputs)
-    if args.runtime_profile is not None:
-        family = replace(family, runtime_profile=args.runtime_profile)
+    if args.runtime_profile is not None or numerical_overrides:
+        family = replace(family, runtime_profile=args.runtime_profile, **numerical_overrides)
 
     def make_step(env):
-        if args.runtime_profile is None:
+        if args.runtime_profile is None and not numerical_overrides:
             replay.check_payloads(env, inputs)
         source = [inputs[x]["trajectory"] for x in order]
         first_armed = min(int(np.flatnonzero(t.cutting)[0]) + 1 for t in source)
@@ -130,6 +137,10 @@ def execute(args, telemetry):
             "num_envs": n,
             "steps": steps,
             "control_dt_s": env.control_dt,
+            "numerics": [{
+                "particle_spacing_m": task.particle_spacing_m, "grid_dx_m": task.grid_dx_m,
+                "material_dt_s": family.material_dt_s,
+            } for task in env.tasks],
             "build_s": build_s,
             "reset_s": reset_s,
             "episode_s": episode_s,
@@ -187,10 +198,14 @@ def main():
     p.add_argument("--wp17", type=Path)
     p.add_argument("--scene-seeds", type=int, nargs="+", default=(512, 15))
     p.add_argument("--runtime-profile")
+    p.add_argument("--particle-spacing-m", type=float)
+    p.add_argument("--material-dt-s", type=float)
     p.add_argument("--contact-mode", default="frozen_v1")
     args = p.parse_args()
     if args.num_envs < 1 or args.window_steps < 1:
         p.error("num-envs and window-steps must be positive")
+    if args.runtime_profile is not None and (args.particle_spacing_m is not None or args.material_dt_s is not None):
+        p.error("--runtime-profile fixes resolution and material dt")
     args.out.mkdir(parents=True, exist_ok=False)
     write_json(args.out / "meta.json", {
         "command": [sys.executable, *sys.argv],
