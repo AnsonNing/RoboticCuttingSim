@@ -237,14 +237,16 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
     options = {'history_mode': 'latest'} if stream_physics else {}
     options['material_diagnostics'] = material_diagnostics
     options['v7_2_optimizations'] = v7_2_optimizations
-    options['reuse_grasp_state'] = reuse_grasp_state
-    options['robot_substeps'] = int(robot_substeps)
-    material_dt = .0001
+    if reuse_grasp_state is not False:
+        options['reuse_grasp_state'] = reuse_grasp_state
+    if robot_substeps != 10:
+        options['robot_substeps'] = int(robot_substeps)
+    dx, material_dt = .004, .0001
     if runtime_profile is not None:
         from .runtime_profiles import runtime_profile as load_profile, check_task
         profile = load_profile(runtime_profile)
         material_dt = float(profile['material_dt_s'])
-        check_task(profile, task, material_dt)
+        dx = check_task(profile, task, material_dt)['grid_dx_m']
         options.update(profile.get('native') or {})
     if native_sensor_runtime is not None:
         options['native_sensor_runtime'] = native_sensor_runtime
@@ -254,7 +256,7 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
     try:
         with open_cutting_env(runtime='isaac_sim', output_dir=output/'native', task=task, seed=sim_seed,
                 preset='cutting_research_v1', camera_rig_profile='wrist_camera_rig_v14', global_rgb_only=True,
-                active_camera_ids=CAMERAS, device='cuda:0', dx=task.grid_dx_m, material_dt=material_dt,
+                active_camera_ids=CAMERAS, device='cuda:0', dx=dx, material_dt=material_dt,
                 surface_update='on_capture', history_stride=10, **options,
                 preset_overrides=dict(camera_every=10, gripper_control_mode='hold')) as env:
             adapter = AgenticTrimEnv(env, output, task, manifest, seed=seed,
