@@ -1,0 +1,107 @@
+{
+  "source": {
+    "commit": "e13919ded49cf6de9ee8bcb5d62138c4991bda2e",
+    "command": "/home/ningan/RoboticCuttingSim-high-speed/.deps/isaacsim-venv/bin/python /mnt/data/ningan/lab_records/rcs_high_speed_20261122/rubber_baseline_001.py --out /mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/rubber_baseline_001 --rows RL07 --gpu-index 1",
+    "physical_gpu": 1,
+    "gpu": "NVIDIA GeForce RTX 5090, 570.211.01",
+    "warp": "1.17.0",
+    "torch": "2.11.0+cu128",
+    "python": "3.12.12",
+    "started": "2026-11-22T03:39:06+0900",
+    "dirty_tree": false,
+    "blas_threads_env": {
+      "OPENBLAS_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1"
+    }
+  },
+  "artifact": "artifacts/rubber_baseline_001",
+  "completed_quick_row": {
+    "label": "full_5",
+    "N": 8,
+    "slots": [
+      "L100_t4",
+      "L100_t5",
+      "L100_t6",
+      "L125_t4",
+      "L125_t5",
+      "L125_t6",
+      "L150_t4",
+      "L150_t5"
+    ],
+    "particles_per_env_mean": 76848.0,
+    "particles_total": 614784,
+    "control_hz": 50.0,
+    "material_dt_s": 3.827018752391887e-06,
+    "substeps": 5226,
+    "n_t": [
+      4,
+      5,
+      6
+    ],
+    "beta": 20.0,
+    "M": 2,
+    "contact_law": "grid_node_penalty_coulomb_v2",
+    "cameras": 0,
+    "recording": false,
+    "cold_s": 8.79690318601206,
+    "warm_walls_s": [
+      8.502034063974861,
+      8.420477556006517,
+      8.370437779987697,
+      8.345537343993783,
+      8.329906594997738
+    ],
+    "env_steps_per_s": 0.955744515433428,
+    "aggregate_sim_time_per_wall": 0.019114890308668562,
+    "ms_per_substep": 1.6016911174871213,
+    "vram_peak_process_mib": 1228.0,
+    "warp_mempool_high_mib": 454.5213842391968,
+    "material_memory_bytes": 477416912,
+    "reset_s": 0.30751354701351374,
+    "build_s": 1.9385841820039786,
+    "physics_verdict": "finite, invalid 0",
+    "reduced_fidelity": null,
+    "graph": {
+      "graph_chunk_substeps": 256,
+      "chunk_replays": 20,
+      "remainder_substeps": 106,
+      "capture_wall_s": 0.12580963602522388
+    }
+  },
+  "wrapper_error": "UnsupportedRubberConfiguration(\"UNSUPPORTED_TASK: unknown slots ['L100_t5', 'L100_t6', 'L125_t4', 'L125_t5', 'L125_t6', 'L150_t5'] (set ('L100_t4', 'L150_t4'))\")",
+  "row_sharing": {
+    "label": "EXCLUSIVE_AT_SAMPLES",
+    "co_tenant_pids": [],
+    "samples": [
+      {
+        "t": "2026-11-22T03:39:06+0900",
+        "tag": "RL07:start",
+        "gpu": "481 MiB, 32607 MiB, 0 %",
+        "apps": []
+      },
+      {
+        "t": "2026-11-22T03:39:59+0900",
+        "tag": "RL07:end",
+        "gpu": "1714 MiB, 32607 MiB, 0 %",
+        "apps": [
+          {
+            "pid": 2178626,
+            "used_mib": 1228.0
+          }
+        ]
+      }
+    ]
+  },
+  "reported_throughput_scope": "5 control steps following the first step, inside the 10-step seeded preload",
+  "seeds": [
+    4000,
+    4001,
+    4002,
+    4003,
+    4004,
+    4005,
+    4006,
+    4007
+  ]
+}
