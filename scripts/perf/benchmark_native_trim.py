@@ -52,7 +52,7 @@ def main():
                "control": {"path": str(args.controller), "sha256": args.controller_sha256},
                "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                "dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT)),
-               "gpu_uuid": os.environ["RSI_GPU1_UUID"], "runtime_profile": args.runtime_profile,
+               "gpu_uuid": os.environ["CUDA_VISIBLE_DEVICES"], "runtime_profile": args.runtime_profile,
                "robot_substeps": args.robot_substeps, "reuse_grasp_state": args.reuse_grasp_state})
     start = time.perf_counter()
     with open_env(output_dir=args.out / "env", seed=args.seed, stream_physics=True, memory_receipts=True,
