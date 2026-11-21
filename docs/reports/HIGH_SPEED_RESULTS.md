@@ -1,5 +1,9 @@
 # High-speed simulation research
 
+The [benchmark receipt](../evidence/high_speed/benchmark.json) contains the measured rows,
+raw artifact paths and source identities. Original Rubber receipts are also
+available at milestone `d13e05a`.
+
 ## Initial Rubber timing
 
 The fresh Reference run on physical GPU 1 used RTX 5090, driver 570.211.01,
@@ -18,7 +22,7 @@ the 10-step preload. They record full-slot Reference separately and compare
 Reference and the existing reduced profile with identical alternating
 `L100_t4` and `L150_t4` slots and seeds.
 
-See the [quick baseline receipt](../evidence/high_speed/rubber_quick_baseline.json).
+The benchmark receipt records the quick row and the scratch wrapper error.
 
 ```bash
 flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu1.lock env \
@@ -40,7 +44,7 @@ eight average 4,755.88 substeps at the within-group maximum, a 9.0% reduction.
 Perfectly sorted groups of eight average 4,005.29, a 23.4% reduction. These
 are analytical estimates before deformation, independently timed resets,
 and graph scheduling. Bucketing stays outside the first implementation.
-See the [step-rule analysis](../evidence/high_speed/rubber_step_rule_distribution.json).
+
 
 ## Full-slot Reference drag
 
@@ -52,8 +56,6 @@ open-loop drag and is used for contact timing.
 | ---: | ---: | ---: | ---: | ---: | ---: |
 | 1 | 1.518 s | 0.659 | 0.01317 | 92.96 s | 812 |
 | 8 | 8.297 s | 0.964 | 0.01928 | 501.82 s | 1228 |
-
-See the [contact baseline receipts](../evidence/high_speed/rubber_contact_baseline.json).
 
 ## Matched Reference and legacy reduced geometry
 
@@ -71,7 +73,7 @@ table contact in all 50 steps and no invalid bits.
 Legacy reduced increased throughput by 1.87× at N=1 and 2.82× at N=8.
 The N=1 Reference slot and seed also appear in the full-slot row. That
 independent repetition differs by under 0.05% in throughput.
-See the [paired baseline receipts](../evidence/high_speed/rubber_paired_baseline.json).
+
 
 ## CPU numerical controls
 
@@ -92,7 +94,7 @@ invisible to both interpolation and the deformation gradient at all 48
 quadrature points. The same mode with two particles per axis reached
 0.25 in interpolation and 500 m⁻¹ in gradient magnitude. This motivates
 keeping one-particle quadrature in the experimental sweep.
-See the [CPU control receipt](../evidence/high_speed/rubber_numerics_controls.json).
+
 
 ## Fast and Turbo Rubber
 
@@ -159,6 +161,3 @@ Reference replay on CPU matched all 37 arrays across its original
 and integrated code paths, including a masked reset and the final
 material state. The original source digests remain auditable at
 the frozen Reference commit.
-
-See the [final measurements](../evidence/high_speed/rubber_final.json)
-and [screening results](../evidence/high_speed/rubber_sweep.json).
