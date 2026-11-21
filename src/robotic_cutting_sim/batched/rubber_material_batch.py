@@ -373,7 +373,7 @@ class BatchedRubberMaterial:
 
     def __init__(self, lives, *, device="cuda:0", parity_mode=False, strict=True, capture_graph=None,
                  graph_chunk=DEFAULT_GRAPH_CHUNK, ranges=None, seeds=None, cameras=None, recorders=None,
-                 constitutive_model=None, bc_launch=None):
+                 constitutive_model=None, bc_launch=None, projection_momentum="full_scatter_v1", batch_cfl=0.5):
         if cameras or recorders:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_SENSOR" if cameras else "UNSUPPORTED_RECORDER",
                                                 f"cameras={cameras!r} recorders={recorders!r}")
@@ -394,7 +394,8 @@ class BatchedRubberMaterial:
             # ADR 0023 §22 (P2-4 B1): lives built with a ContactSpec run the batched contact path
             from .rubber_contact_batch import BatchedTLMPMRubberContact
             solver_cls = BatchedTLMPMRubberContact
-        self.solver = s = solver_cls(pk, device, **({} if bc_launch is None else {"bc_launch": bc_launch}))
+        solver_options = {} if bc_launch is None else {"bc_launch": bc_launch}
+        self.solver = s = solver_cls(pk, device, projection_momentum=projection_momentum, **solver_options)
         self.contact = None
         if pk.uniform.get("contact") is not None:
             from .rubber_contact_batch import ContactOutputs
@@ -403,6 +404,11 @@ class BatchedRubberMaterial:
         self._init_projection_host(lives)
         self._initial_prony = [tuple(live.material.prony) for live in lives] if s.M else None
         self.G, self.Gt, self.K = s.G, s.Gt, pk.uniform["markers"]
+        self.batch_cfl = float(batch_cfl)
+        if not 0.0 < self.batch_cfl <= 1.0:
+            raise ValueError("batch_cfl must lie in (0, 1]")
+        if self.batch_cfl > 0.5 and any(life.step_rule["cfl_declared"] != self.batch_cfl for life in lives):
+            raise ValueError("an opt-in batch_cfl above 0.5 requires matching live step rules")
         self.ranges = self._check_ranges(ranges, lives)
         self.self_penetration = self._init_self_penetration(lives)
         G1, Gt1 = max(self.G, 1), max(self.Gt, 1)
@@ -518,9 +524,9 @@ class BatchedRubberMaterial:
         rho_min = out.get("density", (min(l.material.density for l in lives), 0))[0]
         c_max = cr.wave_speed(mu_max, beta*mu_max, rho_min)
         cfl = self.solver.dt*c_max/self.solver.dx
-        if cfl > 0.5+1e-9:
+        if cfl > self.batch_cfl + 1e-9:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_NONUNIFORM_BATCH",
-                                                f"randomisation ranges need CFL {cfl:.3f} > 0.5 at the batch dt; build "
+                                                f"randomisation ranges need CFL {cfl:.3f} > {self.batch_cfl:g} at the batch dt; build "
                                                 "the single references with step_material = the range maxima")
         return out
 
@@ -791,8 +797,8 @@ class BatchedRubberMaterial:
                 if key not in self.ranges and key in values and abs(values[key]-1.0) > 1e-12:
                     raise ValueError(f"{key} = {values[key]} but no {key} range is declared")
         c = cr.wave_speed(m.mu0, m.kappa, m.density)
-        if self.solver.dt*c/self.solver.dx > 0.5+1e-9:
-            raise ValueError("material violates the batch step rule (CFL > 0.5)")
+        if self.solver.dt*c/self.solver.dx > self.batch_cfl+1e-9:
+            raise ValueError(f"material violates the batch step rule (CFL > {self.batch_cfl:g})")
 
     def reset_masked(self, full=False):
         s, N = self.solver, self.num_envs

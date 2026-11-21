@@ -257,6 +257,27 @@ def _proj_reaction_b(row_node: wp.array(dtype=int), row_comp: wp.array(dtype=int
 
 
 @wp.kernel
+def _proj_particles_scatter_delta(particles: wp.array(dtype=int), v: wp.array(dtype=wp.vec3),
+                                  mass: wp.array(dtype=float), nodes: wp.array2d(dtype=int),
+                                  weights: wp.array2d(dtype=float), mu_node: wp.array2d(dtype=wp.float64),
+                                  gp: wp.array(dtype=wp.vec3)):
+    """Apply the F8 correction and update the existing MUSL momentum near the constrained nodes."""
+    p = particles[wp.tid()]
+    correction = wp.vec3d()
+    for c in range(8):
+        i = nodes[p, c]
+        w = wp.float64(weights[p, c])
+        correction += wp.vec3d(w * mu_node[i, 0], w * mu_node[i, 1], w * mu_node[i, 2])
+    before = v[p]
+    after = wp.vec3(wp.vec3d(before) - correction)
+    v[p] = after
+    if after[0] != before[0] or after[1] != before[1] or after[2] != before[2]:
+        for c in range(8):
+            weighted_mass = weights[p, c] * mass[p]
+            wp.atomic_add(gp, nodes[p, c], weighted_mass * after - weighted_mass * before)
+
+
+@wp.kernel
 def _traction_work_grid_b(x: wp.array(dtype=wp.vec3), x_start: wp.array(dtype=wp.vec3), mass: wp.array(dtype=float),
                           particle_traction: wp.array(dtype=int), traction_force: wp.array(dtype=wp.vec3),
                           traction_mass: wp.array(dtype=float), env_of_particle: wp.array(dtype=int),
@@ -299,12 +320,15 @@ class BatchedTLMPMRubber:
                      "consistent_mass_projection_v1": PROJECTION_ROW_ARRAYS+PROJECTION_BLOCK_ARRAYS
                      + ("proj_inv", "proj_mu_node", "env_of_row")}
 
-    def __init__(self, packed, device, *, bc_launch=DEFAULT_BC_LAUNCH):
+    def __init__(self, packed, device, *, bc_launch=DEFAULT_BC_LAUNCH, projection_momentum="full_scatter_v1"):
         if bc_launch not in BC_LAUNCHES:
             raise UnsupportedBatchConfiguration("UNSUPPORTED_SOLVER", f"bc_launch={bc_launch!r} not in {BC_LAUNCHES}")
         self.packed = packed
         self.device = str(wp.get_device(device))
         self.bc_launch = bc_launch
+        if projection_momentum not in ("full_scatter_v1", "delta_scatter_v1"):
+            raise ValueError(f"Unknown projection momentum mode {projection_momentum!r}")
+        self.projection_momentum = projection_momentum
         u = packed.uniform
         self.dirichlet, self.traction_work, self.state_precision = (u["dirichlet"], u["traction_work"],
                                                                     u["state_precision"])
@@ -343,6 +367,16 @@ class BatchedTLMPMRubber:
             names += visco_energy_arrays(self.visco_energy)
         self.bc_node_count = int(np.count_nonzero(h["node_group"] >= 0)) if self.G else 0
         self.proj_rows = int(h["proj_row_node"].shape[0]) if self.projection else 0
+        self.proj_particles = None
+        self.proj_particle_count = 0
+        if projection_momentum == "delta_scatter_v1":
+            if not self.proj_rows:
+                raise ValueError("delta_scatter_v1 requires F8 projection rows")
+            projected_nodes = np.zeros(self.total_nodes, dtype=bool)
+            projected_nodes[h["proj_row_node"]] = True
+            ids = np.flatnonzero(projected_nodes[h["nodes"]].any(axis=1)).astype(np.int32)
+            self.proj_particles = wp.array(ids, dtype=int, device=self.device)
+            self.proj_particle_count = len(ids)
         with wp.ScopedDevice(self.device):
             for name in names:
                 setattr(self, name, wp.array(h[name], dtype=self._DTYPES[name]))
@@ -393,8 +427,9 @@ class BatchedTLMPMRubber:
             wp.launch(v5._musl, (n, 8), [self.v, self.mass, self.slot, self.nodes, self.weights, self.gp, 1])
             if projection and self.proj_rows:
                 self._launch_projection()
-                self.gp.zero_()
-                wp.launch(v5._musl, (n, 8), [self.v, self.mass, self.slot, self.nodes, self.weights, self.gp, 1])
+                if self.proj_particles is None:
+                    self.gp.zero_()
+                    wp.launch(v5._musl, (n, 8), [self.v, self.mass, self.slot, self.nodes, self.weights, self.gp, 1])
             wp.launch(v5._grid_update, (1, nn), [self.gm, self.gp, self.gj, self.old, self.new_v, self.slot_code, 1])
             self._after_final_grid_update()
             self._launch_bc(0)
@@ -450,7 +485,11 @@ class BatchedTLMPMRubber:
                                    self.proj_block_size, self.proj_inv_offset, self.proj_inv, self.proj_rhs,
                                    self.proj_row_node, self.proj_row_comp, self.proj_row_group, self.group_active,
                                    self.proj_mu_node, self.proj_mu])
-        wp.launch(_proj_particles, self.total_particles, [self.v, self.nodes, self.weights, self.proj_mu_node])
+        if self.proj_particles is None:
+            wp.launch(_proj_particles, self.total_particles, [self.v, self.nodes, self.weights, self.proj_mu_node])
+        else:
+            wp.launch(_proj_particles_scatter_delta, self.proj_particle_count,
+                      [self.proj_particles, self.v, self.mass, self.nodes, self.weights, self.proj_mu_node, self.gp])
         wp.launch(_proj_reaction_b, r, [self.proj_row_node, self.proj_row_comp, self.proj_row_group, self.node_X,
                                         self.gm, self.proj_mu, self.proj_vpresc, self.index, self.substeps]
                   + groups + [self.group_origin, self.reaction,
@@ -567,7 +606,8 @@ class BatchedTLMPMRubber:
     def options_receipt(self):
         return {"dirichlet": self.dirichlet, "traction_work": self.traction_work,
                 "state_precision": self.state_precision, "constraint_work": self.constraint_work,
-                "projection_rows": self.proj_rows, "visco_terms": self.M, "visco_energy": self.visco_energy,
+                "projection_rows": self.proj_rows, "projection_momentum": self.projection_momentum,
+                "projection_delta_particle_count": self.proj_particle_count, "visco_terms": self.M, "visco_energy": self.visco_energy,
                 "bc_launch": self.bc_launch, "bc_nodes": self.bc_node_count, "adr": "ADR 0023 §20"}
 
     def solver_receipt(self):
@@ -575,6 +615,7 @@ class BatchedTLMPMRubber:
                 "execution": "batched_flat_soa_env_kernels_v1", "constitutive_model": self.model.receipt(),
                 "dt_s": self.dt, "dx_m": self.dx, "substeps_per_control_step": self.substeps, "pic": 0.0,
                 "stable_step_guard": (None if self.cfl_guard_limit is None else
-                                      {"id": rc.STABLE_STEP_GUARD_ID, "limit": self.cfl_guard_limit}),
+                                      {"id": rvc.VISCO_GUARD_ID if self.M else rc.STABLE_STEP_GUARD_ID,
+                                       "limit": self.cfl_guard_limit}),
                 "options": self.options_receipt(),
                 "source_sha256": source_sha256(), "device": self.device, "warp_version": wp.config.version}

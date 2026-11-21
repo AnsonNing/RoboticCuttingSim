@@ -21,6 +21,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .rubber_speed import SPEED_PROFILES
+
 ROOT = Path(__file__).resolve().parents[3]
 TASK_CONFIG = ROOT/"configs"/"rubber"/"rl"/"rubber_strip_drag_v2.json"
 TASK_CONFIG_SHA256 = "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb"   # P6.0 v2 pin (400f5c5)
@@ -72,11 +74,13 @@ class RubberStripTaskFamily:
     ``slots``: one slot id per env (e.g. ``["L125_t4"] * 8``), or None with ``num_envs`` and ``slot_seed`` for the
     declared seeded selection. ``config``: the task id ``"rubber_strip_drag_v1"``, a path or a dict (tests).
     ``variant``: None (the declared task) or ``"cpu_parity_v1"`` (the config's CPU test configuration, labelled in
-    every receipt). ``max_episode_steps`` overrides the horizon (recorded in the receipt)."""
+    every receipt). ``max_episode_steps`` overrides the horizon (recorded in the receipt).
+    ``speed_profile`` selects an opt-in numerical profile of the v2 task for
+    the ``L100_t4`` and ``L150_t4`` slots. See docs/reports/HIGH_SPEED_RESULTS.md."""
     is_rubber_task_family = True        # duck-typed marker read by the open_vector_env dispatch (no import there)
 
     def __init__(self, slots=None, *, num_envs=None, slot_seed=0, config="rubber_strip_drag_v2", variant=None,
-                 max_episode_steps=None, resolution=None, expected_sha256=TASK_CONFIG_SHA256):
+                 max_episode_steps=None, resolution=None, speed_profile=None, expected_sha256=TASK_CONFIG_SHA256):
         if config == "rubber_strip_drag_v1" and expected_sha256 == TASK_CONFIG_SHA256:
             expected_sha256 = TASK_CONFIG_V1_SHA256          # superseded v1 (never run formally), by id only
         cfg, path, sha = load_task_config(config, expected_sha256)
@@ -86,6 +90,12 @@ class RubberStripTaskFamily:
             raise UnsupportedRubberConfiguration("UNSUPPORTED_OPTION", f"variant {variant!r}; supported {VARIANTS}")
         self.config, self.config_path, self.config_sha256, self.variant = cfg, path, sha, variant
         self.id = cfg["id"]
+        if speed_profile is not None and (speed_profile not in SPEED_PROFILES or self.id != "rubber_strip_drag_v2"
+                                           or resolution is not None or variant is not None):
+            raise UnsupportedRubberConfiguration("UNSUPPORTED_OPTION", f"speed profile {speed_profile!r} "
+                                                 "requires the v2 task without a resolution or test variant")
+        self.speed_profile = speed_profile
+        speed = self.speed = SPEED_PROFILES.get(speed_profile)
         v = cfg["test_configurations"][variant] if variant else {}
         sc = cfg["scene"]
         self.width = float(v.get("width_m", sc["width_m"]))
@@ -102,10 +112,15 @@ class RubberStripTaskFamily:
                                                      f"{sorted(rv)}; not with a test variant)")
             self.slot_set = {k: dict(self.slot_set[k], n_t=int(rv[resolution]["n_t"])) for k in rv[resolution]["slots"]}
             self.resolution_n_t = int(rv[resolution]["n_t"])
+        if speed is not None:
+            # All environments in a packed graph must share dx and dt. Preserve the declared strip dimensions.
+            allowed = cfg["resolution_variants"]["rubber_rl_v1"]["slots"]
+            self.slot_set = {k: dict(self.slot_set[k], n_t=speed.n_t) for k in allowed}
+            self.resolution_n_t = speed.n_t
         self.slot_ids = tuple(self.slot_set)
         for s in self.slot_set.values():
             n_t = s["thickness_m"]/self.dx
-            if resolution is None and (abs(n_t-round(n_t)) > 1e-9 or int(round(n_t)) != s["n_t"]):
+            if resolution is None and speed is None and (abs(n_t-round(n_t)) > 1e-9 or int(round(n_t)) != s["n_t"]):
                 raise ValueError(f"slot {s['id']}: n_t {s['n_t']} != t / dx")
         self.control_dt = float(v.get("control_dt_s", cfg["control_dt_s"]))
         pre = dict(cfg["preload"], **v.get("preload", {}))
@@ -135,6 +150,11 @@ class RubberStripTaskFamily:
         if self.recipe.calibration_status != "SIMULATOR_ONLY_UNCALIBRATED":
             raise ValueError("P2-6 v1 runs SIMULATOR_ONLY_UNCALIBRATED recipes only")
         self.profile = dict(cfg["profile"])
+        if speed is not None:
+            self.profile.update(id=speed_profile, cfl=speed.cfl, state_precision=speed.precision,
+                                projection_momentum=speed.projection_momentum,
+                                approximation={**dataclasses.asdict(speed), "particles_per_cell_axis": 2})
+            self.profile.pop("difference_to_v1", None)
         self.contact_cfg = dict(cfg["contact"])
         env_cfg = self.contact_cfg["envelope"]
         self.envelope = load_envelope(ROOT/env_cfg["path"], expected_sha256=env_cfg["sha256"])
@@ -147,16 +167,23 @@ class RubberStripTaskFamily:
         self.ranges = {k: (float(lo), float(hi)) for k, (lo, hi) in rnd["ranges"].items()}
         self.ranges.update({k: (float(lo), float(hi)) for k, (lo, hi) in v.get("randomisation_overrides",
                                                                                {}).items()})
-        lo, hi = self.envelope.friction_range(self.law, self.n_ts, lower=self.ranges["friction_table"][0],
-                                              general_slip=True)
-        if self.ranges["friction_table"][1] > hi or self.ranges["friction_table"][0] < lo:
-            raise UnsupportedRubberConfiguration("UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE",
-                                                 f"declared {self.ranges['friction_table']} vs envelope [{lo}, {hi}]")
-        for n_t in self.n_ts:
-            self.envelope.check_friction(self.law, n_t, self.ranges["friction_table"][1], general_slip=True)
+        self.experimental_contact = speed is not None
+        if self.experimental_contact:
+            if self.ranges["friction_table"] != (0.3, 0.3) or self.law != "grid_node_penalty_coulomb_v2":
+                raise UnsupportedRubberConfiguration("UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE",
+                                                     "speed profiles use v2 contact and fixed table friction 0.3")
+        else:
+            lo, hi = self.envelope.friction_range(self.law, self.n_ts, lower=self.ranges["friction_table"][0],
+                                                  general_slip=True)
+            if self.ranges["friction_table"][1] > hi or self.ranges["friction_table"][0] < lo:
+                raise UnsupportedRubberConfiguration("UNSUPPORTED_FRICTION_OUT_OF_ENVELOPE",
+                                                     f"declared {self.ranges['friction_table']} vs envelope [{lo}, {hi}]")
+            for n_t in self.n_ts:
+                self.envelope.check_friction(self.law, n_t, self.ranges["friction_table"][1], general_slip=True)
         sm = cfg["step_material"]
-        self.step_material = rm.MaterialValues(mu0=float(sm["mu0_pa"]), kappa=float(sm["bulk_ratio_beta"])*float(
-            sm["mu0_pa"]), density=float(sm["density_kg_m3"]))
+        self.bulk_ratio = float(sm["bulk_ratio_beta"]) if speed is None else speed.beta
+        self.step_material = rm.MaterialValues(mu0=float(sm["mu0_pa"]), kappa=self.bulk_ratio*float(sm["mu0_pa"]),
+                                               density=float(sm["density_kg_m3"]))
         mu_lo, mu_hi = self.ranges["mu0_pa"]
         rho_lo, rho_hi = self.ranges["density_kg_m3"]
         if mu_hi > self.step_material.mu0 or rho_lo < self.step_material.density:
@@ -202,8 +229,7 @@ class RubberStripTaskFamily:
         return RubberStripSpec(length=L, width=self.width, thickness=t, n_t=n, dx=dx, case="A",
                                jaw_length=self.jaw_length if n_t is None else 2*dx,
                                traction_regions=(("tip", (L-self.tip_region, -1.0, -1.0), (1.0, 1.0, 1.0)),),
-                               resolution_profile="rubber_rl_v1" if self.resolution == "rubber_rl_v1"
-                               else "rubber_ref_v1")
+                               resolution_profile=self.resolution_profile)
 
     def contact_spec(self):
         from ..rubber_contact import ContactSpec
@@ -221,13 +247,21 @@ class RubberStripTaskFamily:
     def build_material(self):
         """The build-time material: recipe nominal with friction_table = the midpoint of the declared range."""
         lo, hi = self.ranges["friction_table"]
-        return dataclasses.replace(self.recipe.nominal(), friction_table=0.5*(lo+hi))
+        nominal = self.recipe.nominal()
+        if self.speed is None:
+            return dataclasses.replace(nominal, friction_table=0.5*(lo+hi))
+        return dataclasses.replace(nominal, friction_table=0.5*(lo+hi), kappa=self.bulk_ratio*nominal.mu0)
 
     def build_life(self, slot, material=None, *, device="cpu", capture_graph=None, cfl=None, n_t=None, strict=False,
                    record=False):
         """A single-env ``LiveRubberMaterial`` of a slot with the profile ``rubber_rl_env_v1`` (the batch packs fresh
         CPU lives; on CUDA it is the single GPU reference). ``cfl`` / ``n_t``: RL-08 dt / spacing rows only."""
         from ..live_rubber_material import LiveRubberMaterial
+        if self.speed is not None:
+            if cfl is not None or n_t is not None:
+                raise UnsupportedRubberConfiguration("UNSUPPORTED_OPTION", "the speed profile fixes CFL and n_t")
+            if material is not None:
+                self.check_material(material, self.resolution_n_t)
         p = self.profile
         return LiveRubberMaterial(
             self.spec(slot, n_t=n_t), recipe=self.recipe, material=self.build_material() if material is None
@@ -274,7 +308,8 @@ class RubberStripTaskFamily:
         d = {k: float(rng.uniform(*self.ranges[k])) for k in DRAW_ORDER}
         prony = scale_prony(self.recipe.prony_terms(), d["prony_g_scale"], d["prony_tau_scale"])
         mu0 = d["mu0_pa"]
-        m = MaterialValues(mu0=mu0, kappa=20.0*mu0, density=d["density_kg_m3"], friction_table=d["friction_table"],
+        beta = 20.0 if self.speed is None else self.bulk_ratio
+        m = MaterialValues(mu0=mu0, kappa=beta*mu0, density=d["density_kg_m3"], friction_table=d["friction_table"],
                            friction_pad=self.recipe.friction_pad.value, friction_self=self.recipe.friction_self.value,
                            prony=prony)
         geo = self.geometry(slot)
@@ -290,7 +325,13 @@ class RubberStripTaskFamily:
 
     def check_material(self, m, n_t):
         """Every value inside the declared range and the envelope (raises)."""
-        self.envelope.check_friction(self.law, n_t, m.friction_table, general_slip=True)
+        if not self.experimental_contact:
+            self.envelope.check_friction(self.law, n_t, m.friction_table, general_slip=True)
+        if self.speed is not None:
+            if not math.isclose(m.beta, self.bulk_ratio, rel_tol=1e-12):
+                raise ValueError(f"bulk ratio {m.beta} differs from profile {self.bulk_ratio}")
+            if len(m.prony) != len(self.recipe.prony):
+                raise ValueError("material Prony term count differs from the speed profile")
         for key, value in (("mu0_pa", m.mu0), ("density_kg_m3", m.density), ("friction_table", m.friction_table)):
             lo, hi = self.ranges[key]
             if not lo <= value <= hi:
@@ -298,14 +339,29 @@ class RubberStripTaskFamily:
 
     # ------------------------------------------------------------------ receipts
 
+    @property
+    def resolution_profile(self):
+        if self.speed is not None:
+            return self.speed_profile
+        return "rubber_rl_v1" if self.resolution == "rubber_rl_v1" else "rubber_ref_v1"
+
+    def contact_receipt(self):
+        if self.experimental_contact:
+            return {str(n): {"status": "NOT_ESTABLISHED", "law": self.law, "n_t": n,
+                             "sliding_mu_max": None, "static_mu_max": None, "friction_fixed": 0.3,
+                             "scope": "experimental strip-drag approximation"}
+                    for n in self.n_ts}
+        return {str(n): self.envelope.receipt_row(self.law, n) for n in self.n_ts}
+
     def resolution_label(self):
         """The resolution label of every slot n_t (K2 Q1w conditions 1 / 2; K2-2 ``rubber_material.resolution_label``:
         profile, label, measured_bias, known_limitation; the scene compiler validates the profile against n_t)."""
         from ..rubber_material import resolution_label
-        name = "rubber_rl_v1" if self.resolution == "rubber_rl_v1" else "rubber_ref_v1"
+        name = self.resolution_profile
         return {"resolution_profile": name,
                 "per_n_t": {str(n): resolution_label(name, n) for n in self.n_ts},
-                "task_config_label": self.config["labels"].get("resolution_measured_bias")}
+                "task_config_label": self.config["labels"].get("resolution_measured_bias")
+                if self.speed is None else None}
 
     def to_dict(self):
         return {"id": self.id, "version": FAMILY_VERSION, "config": None if self.config_path is None
@@ -313,21 +369,33 @@ class RubberStripTaskFamily:
                 "variant": self.variant, "test_configuration": self.variant, "num_envs": self.num_envs,
                 "resolution_variant": self.resolution,
                 "reduced_fidelity": ("thickness_resolution_n_t3" if self.resolution == "rubber_rl_v1" else None),
-                "slots": list(self.env_slots), "slot_selection": self.slot_selection}
+                "slots": list(self.env_slots), "slot_selection": self.slot_selection,
+                **({"speed_profile": self.speed_profile} if self.speed is not None else {})}
+
+    def receipt_labels(self):
+        labels = dict(self.config["labels"])
+        if self.speed is not None:
+            labels["resolution_measured_bias"] = "NOT_MEASURED for this numerical profile"
+            labels["friction_range_limitation"] = "Experimental v2 contact at fixed table friction 0.3"
+        return labels
 
     def receipt(self):
         out = self.to_dict()
         out.update(
-            calibration_status="SIMULATOR_ONLY_UNCALIBRATED", labels=dict(self.config["labels"]),
+            calibration_status="SIMULATOR_ONLY_UNCALIBRATED", labels=self.receipt_labels(),
             resolution=self.resolution_label(),
             recipe={"id": self.recipe.id, "sha256": self.recipe.source_sha256}, profile=self.profile,
-            contact_law=self.law, envelope_rows={str(n): self.envelope.receipt_row(self.law, n) for n in self.n_ts},
+            contact_law=self.law, envelope_rows=self.contact_receipt(),
             ranges={k: list(v) for k, v in self.ranges.items()}, control_dt_s=self.control_dt,
             preload={"steps": self.preload_steps, "lift_m": self.preload_lift},
             max_episode_steps=self.max_episode_steps,
             step_material=self.step_material.to_dict(),
             slot_geometry={s: {k: (v.tolist() if isinstance(v, np.ndarray) else v)
                                for k, v in self.geometry(s).items()} for s in sorted(set(self.env_slots))})
+        if self.speed is not None:
+            out.update(reduced_fidelity=self.speed_profile,
+                       effective_material={"bulk_ratio": self.bulk_ratio,
+                                           "nominal_prony_terms": self.recipe.prony_terms()})
         return out
 
 

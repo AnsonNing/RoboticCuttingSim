@@ -150,6 +150,22 @@ RESOLUTION_PROFILES = {
             "cite_when": "always"}},
 }
 
+# These explicit profile names share geometry bands with the historical profiles.
+# Their solver and contact approximations need their own quality measurements.
+APPROXIMATION_RESOLUTION_BANDS = {"rubber_fast_v1": (3, 4), "rubber_turbo_v1": (2, 3)}
+for _name, (_lo, _hi) in APPROXIMATION_RESOLUTION_BANDS.items():
+    RESOLUTION_PROFILES[_name] = {
+        "particles_per_cell_axis": 2,
+        "min_cells_through_thickness": _lo, "cells_through_thickness_band": [_lo, _hi],
+        "label": f"reduced_fidelity: {_name}",
+        "measured_bias": {"schema": "rcs_resolution_bias_v1", "measured_at_cells_through_thickness": None,
+                          "status": "NOT_MEASURED", "observables": {},
+                          "text": "Historical refinement bias is scoped to its original solver and material."},
+        "known_limitation": {"id": _name, "summary": "Opt-in profile for rubber strip drag and release.",
+                             "decision": "See docs/reports/HIGH_SPEED_RESULTS.md for paired quality evidence.",
+                             "cite_when": "always"},
+    }
+
 _TOP_KEYS = {"schema", "id", "calibration_status", "material_identity", "density_kg_m3", "model", "elastic",
              "viscoelastic", "contact", "numerics", "derived", "provenance", "calibration_manifest",
              "heldout_verdict"}
@@ -583,6 +599,8 @@ def profile_for_n_t(n_t):
     n_t < 2 (no profile)."""
     n_t = float(n_t)
     for name, prof in RESOLUTION_PROFILES.items():
+        if name in APPROXIMATION_RESOLUTION_BANDS:
+            continue
         lo, hi = prof["cells_through_thickness_band"]
         if n_t >= lo-1e-9 and (hi is None or n_t < hi-1e-9):
             return name
@@ -599,8 +617,9 @@ def resolution_label(name, n_t, compact=False):
     if name not in RESOLUTION_PROFILES:
         _refuse(f"unknown resolution profile {name!r} (known: {sorted(RESOLUTION_PROFILES)})")
     expected = profile_for_n_t(n_t)
-    if name != expected:
-        lo, hi = RESOLUTION_PROFILES[name]["cells_through_thickness_band"]
+    lo, hi = RESOLUTION_PROFILES[name]["cells_through_thickness_band"]
+    explicit_approximation = name in APPROXIMATION_RESOLUTION_BANDS and lo - 1e-9 <= float(n_t) < hi - 1e-9
+    if name != expected and not explicit_approximation:
         _refuse(f"resolution profile {name!r} covers n_t in [{lo}, {'inf' if hi is None else hi}); this scene has "
                 f"n_t = {float(n_t):.4g} cells through the thickness, i.e. {expected!r}")
     prof = RESOLUTION_PROFILES[name]

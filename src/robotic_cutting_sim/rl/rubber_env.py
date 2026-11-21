@@ -76,7 +76,7 @@ CRITIC_TERMS = (("mu0_mpa", 1), ("density_t_m3", 1), ("friction_table", 1), ("pr
                 ("cfl_eff_max", 1), ("contact_impulse_events", 1), ("max_penetration_m", 1))
 POLICY_DIM = sum(n for _, n in POLICY_TERMS)          # 78
 CRITIC_DIM = POLICY_DIM+sum(n for _, n in CRITIC_TERMS)   # 106
-SOURCE_FILES = ("rl/rubber_env.py", "rl/rubber_family.py", "rl/rubber_contract.py", "rubber_contact_envelope.py",
+SOURCE_FILES = ("rl/rubber_env.py", "rl/rubber_family.py", "rl/rubber_speed.py", "rl/rubber_contract.py", "rubber_contact_envelope.py",
                 "batched/rubber_material_batch.py", "batched/rubber_batch.py", "batched/rubber_contact_batch.py",
                 "batched/rubber_layout.py", "live_rubber_material.py", "rubber_contact.py",
                 "tlmpm_rubber_contact_v1.py", "tlmpm_rubber_v1.py", "tlmpm_rubber_visco_v1.py",
@@ -191,7 +191,7 @@ class RubberVectorEnv:
     def __init__(self, num_envs, *, task, runtime=RUNTIME, observation_profile="state", device="cuda",
                  backend=BACKEND, action_spec=ACTION_SPEC, reward=REWARD, material=MATERIAL, autoreset=False,
                  strict=True, output_dir=None, parity_mode=False, cameras=None, sensors=None, recorders=None,
-                 debug_sync=False, graph_chunk=None):
+                 debug_sync=False, graph_chunk=None, capture_graph=None):
         t0 = time.perf_counter()
         import torch
         import warp as wp
@@ -244,6 +244,7 @@ class RubberVectorEnv:
             if self.output_dir.exists() and any(self.output_dir.iterdir()):
                 raise FileExistsError(f"output_dir {self.output_dir} exists and is not empty (never overwritten)")
             self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.capture_graph = capture_graph
         self._build(graph_chunk)
         self.build_wall_s = time.perf_counter()-t0
         if self.output_dir is not None:
@@ -260,7 +261,11 @@ class RubberVectorEnv:
         self.lives_build_wall_s = time.perf_counter()-t0
         kw = {} if graph_chunk is None else {"graph_chunk": int(graph_chunk)}
         self.material = BatchedRubberMaterial(lives, device=self.wp_device, parity_mode=self.parity_mode,
-                                              strict=self.strict, ranges=fam.batch_ranges(), **kw)
+                                              strict=self.strict, ranges=fam.batch_ranges(),
+                                              capture_graph=self.capture_graph,
+                                              projection_momentum=fam.profile.get("projection_momentum",
+                                                                                  "full_scatter_v1"),
+                                              batch_cfl=0.5 if fam.speed is None else fam.speed.cfl, **kw)
         del lives
         m = self.material
         if m.G != 1 or m.Gt != 1 or m.K != 9 or m.contact is None or m.self_penetration is None:
@@ -644,15 +649,17 @@ class RubberVectorEnv:
                 "evaluation_mode": EVALUATOR, "evaluator": {"id": EVALUATOR, "window_steps": fam.eval_window,
                                                             "tolerance_m": fam.eval_tolerance},
                 "success_source": f"evaluate() ({EVALUATOR}); never the reward",
-                "fidelity": {"reduced_fidelity": (fam.variant is not None or fam.resolution is not None),
+                "fidelity": {"reduced_fidelity": (fam.variant is not None or fam.resolution is not None or fam.speed is not None),
                              "test_configuration": fam.variant, "resolution_variant": fam.resolution,
+                             "speed_profile": fam.speed_profile,
                              "reduced_fidelity_label": ("thickness_resolution_n_t3" if fam.resolution == "rubber_rl_v1"
-                                                        else None),
+                                                        else fam.speed_profile),
                              "coupling": "kinematic_grip_ideal_tracking (no wrench feedback)",
                              "robot_feedback_coupling": "NOT_IMPLEMENTED_PHASE2",
                              "perception": "ideal_marker_tracking",
                              "self_contact": "NOT_IMPLEMENTED_V1 (detector surface_grid_v1)",
-                             "resolution": ("rubber_rl_v1 (n_t 3, dx 4/3 mm)" if fam.resolution == "rubber_rl_v1"
+                             "resolution": (fam.resolution_profile if fam.speed is not None else
+                                            "rubber_rl_v1 (n_t 3, dx 4/3 mm)" if fam.resolution == "rubber_rl_v1"
                                             else "rubber_ref_v1 (n_t 4-6 at dx 1 mm)")},
                 "observation": self.observation_metadata(), "observation_profile": self.observation_profile,
                 "action_spec": {"id": ACTION_SPEC, "dim": 6, "max_translation_m": fam.max_translation,
@@ -664,8 +671,8 @@ class RubberVectorEnv:
                                                     "preload_steps": fam.preload_steps, "autoreset": False},
                 "calibration": "SIMULATOR_ONLY_UNCALIBRATED", "calibration_status": "SIMULATOR_ONLY_UNCALIBRATED",
                 "profile": fam.profile, "contact_law": fam.law,
-                "envelope": {str(n): fam.envelope.receipt_row(fam.law, n) for n in fam.n_ts},
-                "labels": dict(fam.config["labels"]), "resolution": fam.resolution_label(),
+                "envelope": fam.contact_receipt(),
+                "labels": fam.receipt_labels(), "resolution": fam.resolution_label(),
                 "material": {k: v for k, v in self.material.receipt().items() if k != "envs"},
                 "step_staging": "device (advance_device); resets host-staged",
                 "stream_policy": "Warp launches on torch.cuda.current_stream via wp.stream_from_torch + "

@@ -1,9 +1,12 @@
 """P2-6 frozen-source pins (P6.6): the accepted P2-6 modules of record for rubber_rl_tests_v2 / v3 / v4 and RL-09.
 
-A failure means a pinned module changed after P6.6: a behaviour change needs a new versioned module or protocol, never
-a silent edit (update a pin only with a declared reason in the commit). CPU only.
+The original digests are audited against the frozen commit. The three additive high-speed API
+edits have their own declared digests and separate Reference behavior checks. CPU only.
 """
 import hashlib
+import subprocess
+
+import pytest
 
 from robotic_cutting_sim.rubber_material import ROOT
 
@@ -25,8 +28,32 @@ PINS = {
 }
 
 
-def test_p2_6_sources_unchanged():
+# High-speed opt-in profiles, effective receipts and eager benchmarking. The original
+# task declaration, ordinary Reference timestep, observation and evaluator stay pinned by behavior tests.
+REFERENCE_COMMIT = "e13919ded49cf6de9ee8bcb5d62138c4991bda2e"
+HIGH_SPEED_PINS = {
+    "batched/rubber_material_batch.py": "66b5b2fa995951478490b8c9b8f5f8f6242750ade2b4156186331f82de7143a1",
+    "rl/rubber_env.py": "64b715bed7a6c66c5d3d0bf65a6f1dc110f553f8d9d54eceeee7d9c2be925c76",
+    "rl/rubber_family.py": "fccff1febfa9ee746ff0776443f1dabdf5db938c0b71b7a6c22bacdfff4229c4",
+}
+
+
+def test_historical_p2_6_source_digests():
+    try:
+        present = subprocess.run(["git", "cat-file", "-e", REFERENCE_COMMIT], cwd=ROOT,
+                                 capture_output=True, check=False)
+    except FileNotFoundError:
+        pytest.skip("Git is needed to inspect the P2-6 source commit")
+    if present.returncode != 0:
+        pytest.skip("P2-6 source commit unavailable in this checkout")
     for name, pin in PINS.items():
+        original = subprocess.check_output(
+            ["git", "show", f"{REFERENCE_COMMIT}:src/robotic_cutting_sim/{name}"], cwd=ROOT)
+        assert hashlib.sha256(original).hexdigest() == pin, f"{name} differs from frozen P2-6 evidence"
+
+
+def test_current_rubber_source_digests():
+    for name, pin in (PINS | HIGH_SPEED_PINS).items():
         assert hashlib.sha256((PACKAGE/name).read_bytes()).hexdigest() == pin, f"{name} was modified"
 
 
