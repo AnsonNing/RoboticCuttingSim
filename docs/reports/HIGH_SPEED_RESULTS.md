@@ -31,3 +31,26 @@ Add `--resolution rubber_rl_v1` for the existing reduced profile, or use
 `--slots full` for the full-slot Reference. The runner records synchronized
 step walls, cold build/reset timing, table contact, invalid bits and GPU
 compute co-tenants. Each invocation requires a fresh output directory.
+
+## Timestep bucketing estimate
+
+The Reference wave-speed rule applied to 8,192 reset seeds gives 4,030
+median per-environment substeps versus the fixed 5,226. Random groups of
+eight average 4,755.88 substeps at the within-group maximum, a 9.0% reduction.
+Perfectly sorted groups of eight average 4,005.29, a 23.4% reduction. These
+are analytical estimates before deformation, independently timed resets,
+and graph scheduling. Bucketing stays outside the first implementation.
+See the [step-rule analysis](../evidence/high_speed/rubber_step_rule_distribution.json).
+
+## Full-slot Reference drag
+
+50 synchronized steps after the 10-step seeded preload. All slots recorded table
+contact in all 50 steps and zero invalid bits. The controller applies a fixed
+open-loop drag and is used for contact timing.
+
+| N | Batch step wall | Aggregate env-steps/s | Aggregate sim s/wall s | 60-step run wall | Sampled process MiB |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 1.518 s | 0.659 | 0.01317 | 92.96 s | 812 |
+| 8 | 8.297 s | 0.964 | 0.01928 | 501.82 s | 1228 |
+
+See the [contact baseline receipts](../evidence/high_speed/rubber_contact_baseline.json).

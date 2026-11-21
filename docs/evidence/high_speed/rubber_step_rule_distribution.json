@@ -1,0 +1,32 @@
+{
+  "scope": "Reference geometry and nominal wave-speed rule only. Excludes deformation and graph/reset/batch scheduling overhead.",
+  "commit": "e13919ded49cf6de9ee8bcb5d62138c4991bda2e",
+  "config_sha256": "7395e6104cab16a247dc03afb133f8bd65c96d68a0d01d058bc59e6fbbf2addb",
+  "seeds": {
+    "first": 0,
+    "last": 8191
+  },
+  "dx_m": 0.001,
+  "control_dt_s": 0.02,
+  "beta": 20.0,
+  "cfl": 0.5,
+  "declared_fixed_substeps": 5226,
+  "percentiles": [
+    0,
+    5,
+    50,
+    95,
+    100
+  ],
+  "per_env_substeps": [
+    2817.0,
+    3096.1,
+    4030.0,
+    4870.0,
+    5214.0
+  ],
+  "uniform_n8_sampled_max_mean": 4755.8818359375,
+  "sorted_n8_sampled_max_mean": 4005.287109375,
+  "ideal_n8_sampled_max_reduction_frac": 0.08995755148536166,
+  "ideal_n8_sorting_reduction_frac": 0.23358455618541907
+}
