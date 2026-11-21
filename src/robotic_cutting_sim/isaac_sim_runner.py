@@ -110,8 +110,12 @@ class IsaacSimCuttingConfig:
     material_diagnostics: str = "snapshot"
     # False restores original tlmpm_v7_2 contact/frontier paths; other solvers ignore it.
     v7_2_optimizations: bool = True
+    # The post-PhysX grasp sample is also the pre-PhysX state of the next rigid substep.
+    reuse_grasp_state: bool = False
 
     def __post_init__(self):
+        if not isinstance(self.reuse_grasp_state, bool):
+            raise ValueError("reuse_grasp_state must be a bool")
         if not isinstance(self.v7_2_optimizations, bool):
             raise ValueError("v7_2_optimizations must be a bool")
         if self.material_diagnostics not in ("snapshot", "device_reduction_v1"):
@@ -1534,8 +1538,10 @@ class LiveIsaacSimCutting:
         applied = self.material.pending_wrench.copy() if c.feedback else np.zeros(6)
         start = time.perf_counter()
         material_work, external_work = 0., 0.
+        current = None
         for _ in range(c.robot_substeps):
-            current = self.proprioception()
+            if current is None:
+                current = self.proprioception()
             wrench = applied+(self.external_tool_wrench if self.physical_grasp else 0.)
             receiver = self.tool_body if self.physical_grasp else self.hand
             receiver.apply_forces_and_torques_at_pos(wrench[None,:3],wrench[None,3:],
@@ -1547,6 +1553,7 @@ class LiveIsaacSimCutting:
                     positions=np.tile(current['tool_pose'][:3], (len(self.pad_geometry), 1)), local_frame=False)
             self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
             manager.step()
+            next_state = None
             if self.physical_grasp:
                 from scipy.spatial.transform import Rotation
                 row = self._grasp_sample("coupled_episode", applied, current)
@@ -1555,6 +1562,16 @@ class LiveIsaacSimCutting:
                     (Rotation.from_quat(after[3:])*Rotation.from_quat(current["tool_pose"][3:]).inv()).as_rotvec()]
                 material_work += float(applied@displacement)
                 external_work += float(self.external_tool_wrench@displacement)
+                if c.reuse_grasp_state:
+                    # The contact sample reads the completed rigid state. Only wrench application fields
+                    # are needed before the next PhysX step. Retain the full post-step proprioception read.
+                    next_state = {
+                        "tool_pose": row["measured_edge_pose_xyzw"],
+                        "tool_body_pose_xyzw": row["tool_body_pose_xyzw"],
+                        "tool_linear_velocity_world_m_s": row["tool_linear_velocity_world_m_s"],
+                        "tool_angular_velocity_world_rad_s": row["tool_angular_velocity_world_rad_s"],
+                    }
+            current = next_state
         self.step_index += 1
         self.time_s = self.step_index*c.control_dt
         native_relative = manager.get_simulation_time()-self.native_time_origin

@@ -150,8 +150,13 @@ class TaskFamily:
     material_dt_s: float = DEFAULT_MATERIAL_DT_S
     family_ids: tuple | None = None     # per-env family (P1-2b ``tasks=``); None: ``family_id`` everywhere
     env_seeds: tuple | None = None      # per-env initial RNG seed (P1-2b ``tasks=``); None: ``sim_seed`` everywhere
+    runtime_profile: str | None = None  # applies the profile's numerical options only (headless)
 
     def __post_init__(self):
+        if self.runtime_profile is not None:
+            from ..runtime_profiles import batch_material_dt
+            object.__setattr__(self, "material_dt_s", batch_material_dt(
+                self.runtime_profile, self.particle_spacing_m, self.material_dt_s))
         seeds = tuple(int(s) for s in self.scene_seeds)
         if not seeds or any(s < 0 for s in seeds):
             raise ValueError("scene_seeds must be a nonempty sequence of nonnegative ints")
@@ -183,6 +188,8 @@ class TaskFamily:
 
     def to_dict(self):
         out = asdict(self)
+        if self.runtime_profile is None:
+            out.pop("runtime_profile")
         for key in ("initial_edge_poses", "pad_boxes_edge"):
             if out[key] is not None:
                 out[key] = np.asarray(out[key], float).tolist()
@@ -194,8 +201,12 @@ def _compile(family, seed, family_id=None):
     from ..seeded_trim import generate_scene, goal_config
     options = {} if family.particle_spacing_m is None else {"particle_spacing_m": float(family.particle_spacing_m)}
     family_id = family.family_id if family_id is None else family_id
-    return compile_task(generate_scene(seed, distribution=TASK_FAMILIES[family_id]), goal_config(),
-                        seed=int(family.sim_seed), **options)
+    scene = generate_scene(seed, distribution=TASK_FAMILIES[family_id])
+    if family.runtime_profile is not None:
+        from ..runtime_profiles import compile_batch_task
+        return compile_batch_task(scene, goal_config(), name=family.runtime_profile,
+                                  material_dt_s=family.material_dt_s, seed=int(family.sim_seed))
+    return compile_task(scene, goal_config(), seed=int(family.sim_seed), **options)
 
 
 def compile_family(family):

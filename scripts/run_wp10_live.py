@@ -346,7 +346,16 @@ def compile_configured(a):
         return None
     from robotic_cutting_sim.scene_config import compile_task
     overrides = json.loads(a.planner_options) if a.planner_options else None
-    return compile_task(a.scene, a.goal, planner_options=overrides, seed=a.seed)
+    scene = a.scene
+    profile_name = getattr(a, 'runtime_profile', None)
+    if profile_name is not None:
+        from robotic_cutting_sim.runtime_profiles import profile_scene, runtime_profile, check_task
+        profile = runtime_profile(profile_name)
+        scene = profile_scene(scene, profile)
+        task = compile_task(scene, a.goal, planner_options=overrides, seed=a.seed)
+        check_task(profile, task, profile['material_dt_s'])
+        return task
+    return compile_task(scene, a.goal, planner_options=overrides, seed=a.seed)
 
 
 def validate_configured(p, a):
@@ -386,8 +395,11 @@ def validate_configured(p, a):
 def validate_arguments(p, a):
     if a.scene or a.goal:
         return validate_configured(p, a)
-    if hasattr(a, 'surface_profile') or hasattr(a, 'surface_timing_log'):
-        p.error('--surface-profile/--surface-timing-log apply to --scene/--goal runs')
+    configured_only = ('surface_profile', 'surface_timing_log', 'runtime_profile', 'native_sensor_runtime',
+                       'material_diagnostics', 'reuse_grasp_state', 'robot_substeps', 'surface_update')
+    invalid = [f"--{k.replace('_', '-')}" for k in configured_only if hasattr(a, k)]
+    if invalid:
+        p.error(f"{', '.join(invalid)} apply to --scene/--goal runs")
     if a.stop_after_phase is not None or a.return_home or a.planner_options or a.hold_after_stop_s \
             or a.hold_until_time_limit:
         p.error('--stop-after-phase/--hold-after-stop-s/--hold-until-time-limit/--return-home/--planner-options apply '
@@ -640,6 +652,14 @@ def main(argv=None):
                         'episode_###/runtime_timing_trace.json (profiling; both surface profiles)')
     p.add_argument('--save-render-surfaces',action='store_true',
                    help='Save privileged exact per-capture staged meshes for camera replay; physics and observations unchanged')
+    p.add_argument('--runtime-profile', default=argparse.SUPPRESS,
+                   help='Configured runs: numerical and Native stage options from a cutting runtime profile')
+    p.add_argument('--native-sensor-runtime', choices=('isaac62_physx_offline_v1',), default=argparse.SUPPRESS)
+    p.add_argument('--material-diagnostics', choices=('snapshot', 'device_reduction_v1'), default=argparse.SUPPRESS)
+    p.add_argument('--reuse-grasp-state', action='store_true', default=argparse.SUPPRESS,
+                   help='Configured runs: reuse post-PhysX wrench application state at the next rigid substep')
+    p.add_argument('--robot-substeps', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--surface-update', choices=('every_step', 'on_capture'), default=argparse.SUPPRESS)
     a = p.parse_args(argv)
     if a.global_view is not None:
         try:a.camera_rig_profile=select_global_view(a.global_view,a.camera_rig_profile)
@@ -801,6 +821,19 @@ def run_configured(a, out, task):
     options = dict(camera=a.observation != 'state' or a.record_cameras, ik_iterations=a.ik_iterations,
                    material_dt=a.material_dt, history_stride=a.oracle_stride, gpu=a.gpu, device=f'cuda:{a.gpu}',
                    action_limits=task.action_limits(), camera_rig_profile=a.camera_rig_profile)
+    profile_receipt = None
+    if hasattr(a, 'runtime_profile'):
+        from robotic_cutting_sim.runtime_profiles import check_task, profile_receipt as make_receipt, runtime_profile
+        runtime = runtime_profile(a.runtime_profile)
+        material_dt = float(runtime['material_dt_s'])
+        if a.material_dt not in (.0001, material_dt):
+            raise ValueError(f"runtime_profile {a.runtime_profile!r} fixes --material-dt to {material_dt}")
+        options.update(material_dt=material_dt, dx=task.grid_dx_m, **(runtime.get('native') or {}))
+        profile_receipt = make_receipt(runtime, check_task(runtime, task, material_dt))
+    for key in ('native_sensor_runtime', 'material_diagnostics', 'reuse_grasp_state',
+                'robot_substeps', 'surface_update'):
+        if hasattr(a, key):
+            options[key] = getattr(a, key)
     if a.overview_camera:
         options['overview_camera'] = True
     if getattr(a, 'surface_profile', None) is not None:
@@ -879,6 +912,8 @@ def run_configured(a, out, task):
                                status=preflight.get('status'), required=preflight.get('required'),
                                receipt=str(out / 'plan_preflight.json')),
                            reset_info=reset_info, stop_after_phase=a.stop_after_phase, task_end_reason=stop_reason)
+                if profile_receipt is not None:
+                    row['runtime_profile'] = profile_receipt
                 if policy is not None:
                     row.update(policy_plan=policy_plan_name(env.task, policy), edge_feedback=edge_feedback_receipt(a),
                                policy_position_tolerance_m=policy.position_tolerance_m,

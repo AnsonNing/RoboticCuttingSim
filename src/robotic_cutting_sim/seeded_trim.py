@@ -77,9 +77,13 @@ def goal_config():
         minimum_removed_fraction=.9, minimum_substrate_share=.99, maximum_detached_below_fraction=.01)
 
 
-def compile_seed(scene_seed, *, policy_seed=0, sim_seed=42, distribution='id', output_dir=None):
+def compile_seed(scene_seed, *, policy_seed=0, sim_seed=42, distribution='id', output_dir=None,
+                 runtime_profile=None):
     """Compile before Native startup, recording all draws and initial-state hashes."""
     scene = generate_scene(scene_seed, distribution=distribution)
+    if runtime_profile is not None:
+        from .runtime_profiles import profile_scene, runtime_profile as load_profile
+        scene = profile_scene(scene, load_profile(runtime_profile))
     task = compile_task(scene, goal_config(), seed=int(sim_seed))
     points, masses, lattice = task.sample_particles()
     connectivity = lattice_report(lattice)
@@ -104,6 +108,8 @@ def compile_seed(scene_seed, *, policy_seed=0, sim_seed=42, distribution='id', o
         initial_particles_sha256=digest_array(points), initial_masses_sha256=digest_array(masses),
         initial_lattice_sha256=digest_array(lattice), sampled_scene=scene,
         material_calibration='provisional_uncalibrated', coordinate_convention='SI; world Z up; quaternion XYZW')
+    if runtime_profile is not None:
+        manifest['runtime_profile'] = runtime_profile
     if output_dir is not None:
         out = Path(output_dir)
         out.mkdir(parents=True, exist_ok=False)

@@ -57,8 +57,13 @@ class ConfiguredTaskFamily:
     family_id: str = FAMILY_ID
     workload_id: str | None = None
     native_reference: dict = field(default_factory=lambda: dict(NATIVE_REFERENCE_NOT_RUN))
+    runtime_profile: str | None = None  # applies the profile's numerical options only (headless)
 
     def __post_init__(self):
+        if self.runtime_profile is not None:
+            from ..runtime_profiles import batch_material_dt
+            object.__setattr__(self, "material_dt_s", batch_material_dt(
+                self.runtime_profile, self.particle_spacing_m, self.material_dt_s))
         n = len(self.scenes)
         if n < 1 or len(self.goals) != n:
             raise ValueError("scenes and goals must hold one entry per env (at least one)")
@@ -114,14 +119,21 @@ class ConfiguredTaskFamily:
                               str(goal) if isinstance(goal, (str, Path)) else goal, options], sort_keys=True,
                              default=str)
             if key not in cache:
-                spacing = {} if self.particle_spacing_m is None else {"particle_spacing_m": float(self.particle_spacing_m)}
-                cache[key] = compile_task(resolve_scene(scene), goal, planner_options=options, seed=int(self.sim_seed),
-                                          **spacing)
+                args = {"planner_options": options, "seed": int(self.sim_seed)}
+                if self.runtime_profile is not None:
+                    from ..runtime_profiles import compile_batch_task
+                    cache[key] = compile_batch_task(scene, goal, name=self.runtime_profile,
+                                                    material_dt_s=self.material_dt_s, **args)
+                else:
+                    cache[key] = compile_task(resolve_scene(scene), goal, particle_spacing_m=self.particle_spacing_m,
+                                              **args)
             out.append(cache[key])
         return out
 
     def to_dict(self):
         out = asdict(self)
+        if self.runtime_profile is None:
+            out.pop("runtime_profile")
         out["scenes"] = [str(s) if isinstance(s, (str, Path)) else s for s in self.scenes]
         out["goals"] = [str(g) if isinstance(g, (str, Path)) else g for g in self.goals]
         for key in ("initial_edge_poses", "pad_boxes_edge"):

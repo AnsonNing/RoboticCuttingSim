@@ -70,3 +70,22 @@ def profile_receipt(profile, resolution):
             "native": profile.get("native") or {}, "preset_overrides": profile.get("preset_overrides") or {},
             "recording": profile.get("recording") or {}, "history_stride": profile.get("history_stride"),
             "fidelity_limits": profile.get("fidelity_limits")}
+
+
+def batch_material_dt(name, particle_spacing_m, material_dt_s):
+    """Resolve the numerical portion of a runtime profile for the headless vector API."""
+    profile = runtime_profile(name)
+    check_caller_overrides(profile, particle_spacing_m=particle_spacing_m)
+    dt = float(profile["material_dt_s"])
+    if material_dt_s not in (0.0001, dt):
+        raise ValueError(f"runtime_profile {name!r} fixes material_dt_s to {dt:g}")
+    return dt
+
+
+def compile_batch_task(scene, goal, *, name, material_dt_s, **options):
+    """Compile with the profile's scene numerics. Camera and recorder settings are Native-only."""
+    from .scene_config import compile_task
+    profile = runtime_profile(name)
+    task = compile_task(profile_scene(scene, profile), goal, **options)
+    check_task(profile, task, material_dt_s)
+    return task
