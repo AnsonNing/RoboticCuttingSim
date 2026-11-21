@@ -155,6 +155,14 @@ def execute(args, telemetry):
         }
         if evaluation is not None:
             res["evaluation"] = evaluation
+            t0 = time.perf_counter()
+            names = []
+            for e in range(n):
+                name = f"final_env{e:02d}.npz"
+                np.savez_compressed(args.out / name, **env.snapshot_world(e), **env.evaluation_reference(e))
+                names.append(name)
+            res["terminal_exports"] = names
+            res["terminal_export_wall_s"] = time.perf_counter() - t0
     res["total_wall_s"] = time.perf_counter() - start
     res["episodes_per_gpu_hour"] = 3600.0 * n / res["total_wall_s"] if res["status"] == "COMPLETE" else None
     return res
