@@ -821,7 +821,7 @@ def run_configured(a, out, task):
     options = dict(camera=a.observation != 'state' or a.record_cameras, ik_iterations=a.ik_iterations,
                    material_dt=a.material_dt, history_stride=a.oracle_stride, gpu=a.gpu, device=f'cuda:{a.gpu}',
                    action_limits=task.action_limits(), camera_rig_profile=a.camera_rig_profile)
-    profile_receipt = None
+    runtime_receipt = None
     if hasattr(a, 'runtime_profile'):
         from robotic_cutting_sim.runtime_profiles import check_task, profile_receipt as make_receipt, runtime_profile
         runtime = runtime_profile(a.runtime_profile)
@@ -829,8 +829,8 @@ def run_configured(a, out, task):
         if a.material_dt not in (.0001, material_dt):
             raise ValueError(f"runtime_profile {a.runtime_profile!r} fixes --material-dt to {material_dt}")
         options.update(material_dt=material_dt, dx=task.grid_dx_m, **(runtime.get('native') or {}))
-        profile_receipt = make_receipt(runtime, check_task(runtime, task, material_dt))
-        profile_receipt.update(recording={"every": a.record_every}, preset_overrides={},
+        runtime_receipt = make_receipt(runtime, check_task(runtime, task, material_dt))
+        runtime_receipt.update(recording={"every": a.record_every}, preset_overrides={},
                                history_stride=a.oracle_stride)
     for key in ('native_sensor_runtime', 'material_diagnostics', 'reuse_grasp_state',
                 'robot_substeps', 'surface_update'):
@@ -914,8 +914,8 @@ def run_configured(a, out, task):
                                status=preflight.get('status'), required=preflight.get('required'),
                                receipt=str(out / 'plan_preflight.json')),
                            reset_info=reset_info, stop_after_phase=a.stop_after_phase, task_end_reason=stop_reason)
-                if profile_receipt is not None:
-                    row['runtime_profile'] = profile_receipt
+                if runtime_receipt is not None:
+                    row['runtime_profile'] = runtime_receipt
                 if policy is not None:
                     row.update(policy_plan=policy_plan_name(env.task, policy), edge_feedback=edge_feedback_receipt(a),
                                policy_position_tolerance_m=policy.position_tolerance_m,
