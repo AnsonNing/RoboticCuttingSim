@@ -13125,6 +13125,542 @@
       }
     },
     {
+      "status": "COMPLETE",
+      "seed": 512,
+      "control_steps": 1200,
+      "simulated_s": 24.0,
+      "factory_s": 12.266155845019966,
+      "reset_s": 51.82312065595761,
+      "controller_wall_s": 327.2327902679681,
+      "finalize_s": 11.515314011019655,
+      "full_episode_wall_s": 402.87286040902836,
+      "episodes_per_gpu_hour": 8.935821579902393,
+      "task_success": true,
+      "frame_manifest_entries": 121,
+      "recording": "env/recording/attempt_000",
+      "controller_stage_inclusive_s": {
+        "control_step": 325.81662740226596,
+        "tlmpm_substeps_graph": 194.24286531825783,
+        "material_advance": 195.63353748020018,
+        "camera_render_readback": 28.92075576080242,
+        "surface_extract_usd": 7.684016375220381,
+        "physx_step": 17.504646094399504,
+        "grasp_contact_sample": 31.20639090234181,
+        "proprioception_readback": 10.078377911937423,
+        "ik_controller": 20.648526168602984,
+        "camera_extrinsics": 1.0600274397875182
+      },
+      "home_status": "NOT_RUN",
+      "source": {
+        "command": [
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_candidate_source_001/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_native_trim.py",
+          "--seed",
+          "512",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512",
+          "--controller",
+          "/mnt/data/ningan/lab_records/wp17_performance_20261104/inputs/trim_skim_c3.py",
+          "--reuse-grasp-state"
+        ],
+        "ctx": {
+          "seed": 512,
+          "split": "high_speed_engineering",
+          "params": {},
+          "out_dir": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512/controller",
+          "candidate_id": "trim_skim_c3",
+          "policy_seed": 0
+        },
+        "control": {
+          "path": "/mnt/data/ningan/lab_records/wp17_performance_20261104/inputs/trim_skim_c3.py",
+          "sha256": "10e128c57627a6f304471c7d9c9ddeecf7b2206a10add218776ce039f8efa506"
+        },
+        "commit": "faf4c1b8b4f0611fda69796cfd03855b4236a2a5",
+        "dirty": false,
+        "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+        "runtime_profile": null,
+        "robot_substeps": 10,
+        "reuse_grasp_state": true
+      },
+      "stage_receipt": "artifacts/cutting_native_optimized_004/trim-reuse-512/stage_summary.json",
+      "task": "trim",
+      "artifact": "artifacts/cutting_native_optimized_004/trim-reuse-512",
+      "benchmark_sha256": "eae71236edd1254b2b859450b30fffa0121eac9c39bbb5616e3f73b25c474f7a",
+      "git_sha": "faf4c1b8b4f0611fda69796cfd03855b4236a2a5",
+      "git_dirty": false,
+      "packages": {
+        "newton": "1.6.1",
+        "warp-lang": "1.17.0",
+        "numpy": "2.3.1",
+        "scipy": "1.17.0",
+        "isaaclab": null,
+        "isaacsim": "6.2.0.0",
+        "torch": "2.11.0+cu128",
+        "usd-core": null,
+        "mujoco": "3.12.0",
+        "mujoco-warp": "3.12.0",
+        "newton-usd-schemas": "0.5.0",
+        "ovrtx": null,
+        "ovstage": null
+      },
+      "runtime_options": {
+        "dx": 0.004,
+        "material_dt": 0.0001,
+        "control_dt": 0.02,
+        "robot_substeps": 10,
+        "reuse_grasp_state": true,
+        "width": 640,
+        "height": 480,
+        "camera_rig_profile": "wrist_camera_rig_v14",
+        "global_rgb_only": true,
+        "active_camera_ids": [
+          "global_d455",
+          "wrist_d405_0"
+        ],
+        "record_every": 10,
+        "surface_update": "on_capture",
+        "material_diagnostics": "device_reduction_v1",
+        "stage_reset": "reopen",
+        "native_sensor_runtime": "isaac62_physx_offline_v1"
+      },
+      "process_wall_s": 403.92056710697943,
+      "process_exit": 0,
+      "process_receipt": "artifacts/cutting_native_optimized_004/trim-reuse-512_process.json",
+      "admission_receipt": "artifacts/cutting_native_optimized_004/admission.json",
+      "gpu_summary": {
+        "label": "EXCLUSIVE_GPU",
+        "foreign_processes_max": 0,
+        "foreign_pids": [],
+        "foreign_mem_mib_max": 0,
+        "gpu_util_p50": 32.5,
+        "util_p50": 32.5,
+        "mem_used_min_mib": 478,
+        "mem_used_max_mib": 5871,
+        "samples": 588,
+        "samples_with_processes": 588
+      },
+      "raw_audit": "artifacts/native_trim_reuse_audit_001/audit.json",
+      "physical_audit": {
+        "native_run": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512",
+        "recording": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512/env/recording/attempt_000",
+        "task_id": "CFG-agentic_trim_id_s512-agentic_trim_all_v1-d06c01a6",
+        "material_phase_s": 24.0,
+        "last_sample_s": 24.0,
+        "finite": true,
+        "total_mass_kg": 0.15409799999999996,
+        "mechanical_components": 2,
+        "component_masses_kg": [
+          0.15359999999987178,
+          0.0004979999999999977
+        ],
+        "physics_frames": 121,
+        "material_phase_frames": 121,
+        "recording_complete": true,
+        "evaluator": {
+          "integrity": {
+            "status": "PASS",
+            "checks": {
+              "initial_codes_zero": true,
+              "initial_continuous_graph": true,
+              "persistent_history_no_digit_rewrites": true,
+              "valid_digit_values": true,
+              "reference_matches_scene_sampler": true,
+              "reference_mass_budget": true,
+              "complete_episode": true,
+              "stream_finalized": true,
+              "stream_complete": true
+            },
+            "metrics": {
+              "initial_components": 1,
+              "nonzero_digit_rewrites": 0,
+              "code_encoding": "packed2",
+              "cuts": 2,
+              "frames": 121,
+              "particles": 102732,
+              "recorded_mass_kg": 0.15409799999999996,
+              "reference_mass_absolute_error_kg": 0.0
+            },
+            "scope": "Recording and persistent-history validity only; not the goal outcome"
+          },
+          "outcome": {
+            "status": "PASS",
+            "checks": {
+              "selection_nonempty": true,
+              "selected_protrusions_removed": true,
+              "unselected_protrusions_retained": true,
+              "substrate_holds_below_plane_mass": true,
+              "detached_below_plane_mass_bounded": true,
+              "single_substrate_component": true
+            },
+            "metrics": {
+              "mechanical_components": 2,
+              "plane_local_z_m": 0.02,
+              "largest_component_below_plane_mass_share": 0.9999999999991656,
+              "detached_below_plane_mass_fraction": 0.0,
+              "reference_substrate_component_ids": [
+                0
+              ],
+              "items": [
+                {
+                  "id": "p0",
+                  "selected": true,
+                  "reference_particles_above_plane": 332,
+                  "reference_mass_above_plane_kg": 0.000498,
+                  "removed_mass_fraction": 1.0,
+                  "pass": true,
+                  "residual_substrate_height_m": 0.0
+                }
+              ],
+              "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+            },
+            "missing_evidence": []
+          },
+          "quality": {
+            "status": "REPORTED_NOT_SCORED",
+            "residual_substrate_height_m": {
+              "p0": 0.0
+            },
+            "surface": {
+              "status": "MEASURED",
+              "scope": "Frozen TRIM surface metrics, reported as quality only",
+              "measurement_spacing_xy_m": [
+                0.001,
+                0.001
+              ],
+              "grid_shape_xy": [
+                160,
+                32
+              ],
+              "valid_surface_fraction": 1.0,
+              "missing_surface_fraction": 0.0,
+              "maximum_substrate_surface_residual_height_m": 0.0,
+              "surface_p95_absolute_plane_error_m": 0.00048329501754539283,
+              "surface_rms_plane_error_m": 0.00017355026298486386,
+              "maximum_gouge_depth_m": 0.0014004509711666412,
+              "overcut_volume_m3": 7.224619646909885e-07,
+              "overcut_volume_fraction_of_initial_base": 0.007055292623935434
+            }
+          },
+          "success": true
+        },
+        "evaluation_sha256": "f3a7f9168bf773c4ceb1b942e4d616d1cf130d4fb70f599db561ebaee650d2ea",
+        "media": {
+          "status": "PASS",
+          "path": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512/env/recording/attempt_000/media_000/episode.mp4",
+          "sha256": "c9a46f808fe6f6cfd8ec6e966937a9beb258d0c9b1678600a75c9a341e1cfae9",
+          "frames": 121,
+          "first_pts_s": 0.0,
+          "last_pts_s": 24.0,
+          "ffmpeg": [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-xerror",
+            "-i",
+            "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512/env/recording/attempt_000/media_000/episode.mp4",
+            "-f",
+            "null",
+            "-"
+          ],
+          "ffprobe": [
+            "ffprobe",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_frames",
+            "-show_entries",
+            "frame=best_effort_timestamp_time",
+            "-of",
+            "json",
+            "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512/env/recording/attempt_000/media_000/episode.mp4"
+          ]
+        }
+      },
+      "grasp_state_audit": {
+        "trace": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512/env/native/physical_grasp_trace_00.jsonl",
+        "rigid_rows": 12000,
+        "control_steps": 1200,
+        "same_control_call_pairs": 10800,
+        "invalid_contact_samples": 0,
+        "max_abs_before_vs_previous_after": {
+          "force_application_point_world_m": 0.0,
+          "tool_body_pose_before_step_xyzw": 0.0,
+          "tool_linear_velocity_before_step_world_m_s": 0.0,
+          "tool_angular_velocity_before_step_world_rad_s": 0.0
+        }
+      }
+    },
+    {
+      "status": "COMPLETE",
+      "seed": 512,
+      "control_steps": 1200,
+      "simulated_s": 24.0,
+      "factory_s": 12.701734535978176,
+      "reset_s": 51.875854721991345,
+      "controller_wall_s": 163.25160599598894,
+      "finalize_s": 9.942518457013648,
+      "full_episode_wall_s": 237.8073540320038,
+      "episodes_per_gpu_hour": 15.13830392106174,
+      "task_success": true,
+      "frame_manifest_entries": 121,
+      "recording": "env/recording/attempt_000",
+      "controller_stage_inclusive_s": {
+        "control_step": 161.81800608814225,
+        "tlmpm_substeps_graph": 37.39483341650339,
+        "material_advance": 38.70643306180136,
+        "camera_render_readback": 22.461933273647446,
+        "surface_extract_usd": 1.8953455007285809,
+        "physx_step": 17.883900703047402,
+        "grasp_contact_sample": 31.87192902265815,
+        "proprioception_readback": 10.207617771171499,
+        "ik_controller": 20.367999210138805,
+        "camera_extrinsics": 0.9871341595426203
+      },
+      "home_status": "NOT_RUN",
+      "source": {
+        "command": [
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_candidate_source_001/.deps/isaacsim-venv/bin/python",
+          "scripts/perf/benchmark_native_trim.py",
+          "--seed",
+          "512",
+          "--out",
+          "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512",
+          "--controller",
+          "/mnt/data/ningan/lab_records/wp17_performance_20261104/inputs/trim_skim_c3.py",
+          "--reuse-grasp-state",
+          "--runtime-profile",
+          "research_fast_4mm_v1"
+        ],
+        "ctx": {
+          "seed": 512,
+          "split": "high_speed_engineering",
+          "params": {},
+          "out_dir": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512/controller",
+          "candidate_id": "trim_skim_c3",
+          "policy_seed": 0
+        },
+        "control": {
+          "path": "/mnt/data/ningan/lab_records/wp17_performance_20261104/inputs/trim_skim_c3.py",
+          "sha256": "10e128c57627a6f304471c7d9c9ddeecf7b2206a10add218776ce039f8efa506"
+        },
+        "commit": "faf4c1b8b4f0611fda69796cfd03855b4236a2a5",
+        "dirty": false,
+        "gpu_uuid": "GPU-a278df44-8db0-7770-630f-4f298a570b35",
+        "runtime_profile": "research_fast_4mm_v1",
+        "robot_substeps": 10,
+        "reuse_grasp_state": true
+      },
+      "stage_receipt": "artifacts/cutting_native_optimized_004/trim-fine-512/stage_summary.json",
+      "task": "trim",
+      "artifact": "artifacts/cutting_native_optimized_004/trim-fine-512",
+      "benchmark_sha256": "6e91e35e6d232f2febad7a5a646efaa0921e42c6c289d1a224f6a4730b600940",
+      "git_sha": "faf4c1b8b4f0611fda69796cfd03855b4236a2a5",
+      "git_dirty": false,
+      "packages": {
+        "newton": "1.6.1",
+        "warp-lang": "1.17.0",
+        "numpy": "2.3.1",
+        "scipy": "1.17.0",
+        "isaaclab": null,
+        "isaacsim": "6.2.0.0",
+        "torch": "2.11.0+cu128",
+        "usd-core": null,
+        "mujoco": "3.12.0",
+        "mujoco-warp": "3.12.0",
+        "newton-usd-schemas": "0.5.0",
+        "ovrtx": null,
+        "ovstage": null
+      },
+      "runtime_options": {
+        "dx": 0.004,
+        "material_dt": 0.0002,
+        "control_dt": 0.02,
+        "robot_substeps": 10,
+        "reuse_grasp_state": true,
+        "width": 640,
+        "height": 480,
+        "camera_rig_profile": "wrist_camera_rig_v14",
+        "global_rgb_only": true,
+        "active_camera_ids": [
+          "global_d455",
+          "wrist_d405_0"
+        ],
+        "record_every": 10,
+        "surface_update": "on_capture",
+        "material_diagnostics": "device_reduction_v1",
+        "stage_reset": "reopen",
+        "native_sensor_runtime": "isaac62_physx_offline_v1"
+      },
+      "process_wall_s": 238.84125032502925,
+      "process_exit": 0,
+      "process_receipt": "artifacts/cutting_native_optimized_004/trim-fine-512_process.json",
+      "admission_receipt": "artifacts/cutting_native_optimized_004/admission.json",
+      "gpu_summary": {
+        "label": "EXCLUSIVE_GPU",
+        "foreign_processes_max": 0,
+        "foreign_pids": [],
+        "foreign_mem_mib_max": 0,
+        "gpu_util_p50": 32.5,
+        "util_p50": 32.5,
+        "mem_used_min_mib": 478,
+        "mem_used_max_mib": 5871,
+        "samples": 588,
+        "samples_with_processes": 588
+      },
+      "raw_audit": "artifacts/native_trim_fine_audit_001/audit.json",
+      "physical_audit": {
+        "native_run": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512",
+        "recording": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512/env/recording/attempt_000",
+        "task_id": "CFG-agentic_trim_id_s512-agentic_trim_all_v1-53f9fa68",
+        "material_phase_s": 24.0,
+        "last_sample_s": 24.0,
+        "finite": true,
+        "total_mass_kg": 0.15409199999999995,
+        "mechanical_components": 2,
+        "component_masses_kg": [
+          0.15360000000001586,
+          0.0004920000000000004
+        ],
+        "physics_frames": 121,
+        "material_phase_frames": 121,
+        "recording_complete": true,
+        "evaluator": {
+          "integrity": {
+            "status": "PASS",
+            "checks": {
+              "initial_codes_zero": true,
+              "initial_continuous_graph": true,
+              "persistent_history_no_digit_rewrites": true,
+              "valid_digit_values": true,
+              "reference_matches_scene_sampler": true,
+              "reference_mass_budget": true,
+              "complete_episode": true,
+              "stream_finalized": true,
+              "stream_complete": true
+            },
+            "metrics": {
+              "initial_components": 1,
+              "nonzero_digit_rewrites": 0,
+              "code_encoding": "packed2",
+              "cuts": 2,
+              "frames": 121,
+              "particles": 12841,
+              "recorded_mass_kg": 0.15409199999999995,
+              "reference_mass_absolute_error_kg": 0.0
+            },
+            "scope": "Recording and persistent-history validity only; not the goal outcome"
+          },
+          "outcome": {
+            "status": "PASS",
+            "checks": {
+              "selection_nonempty": true,
+              "selected_protrusions_removed": true,
+              "unselected_protrusions_retained": true,
+              "substrate_holds_below_plane_mass": true,
+              "detached_below_plane_mass_bounded": true,
+              "single_substrate_component": true
+            },
+            "metrics": {
+              "mechanical_components": 2,
+              "plane_local_z_m": 0.02,
+              "largest_component_below_plane_mass_share": 1.0000000000001035,
+              "detached_below_plane_mass_fraction": 0.0,
+              "reference_substrate_component_ids": [
+                0
+              ],
+              "items": [
+                {
+                  "id": "p0",
+                  "selected": true,
+                  "reference_particles_above_plane": 41,
+                  "reference_mass_above_plane_kg": 0.000492,
+                  "removed_mass_fraction": 1.0,
+                  "pass": true,
+                  "residual_substrate_height_m": 0.0
+                }
+              ],
+              "ownership_rule": "particle centre above the plane; bump with the largest height contribution at (x, y)"
+            },
+            "missing_evidence": []
+          },
+          "quality": {
+            "status": "REPORTED_NOT_SCORED",
+            "residual_substrate_height_m": {
+              "p0": 0.0
+            },
+            "surface": {
+              "status": "MEASURED",
+              "scope": "Frozen TRIM surface metrics, reported as quality only",
+              "measurement_spacing_xy_m": [
+                0.001,
+                0.001
+              ],
+              "grid_shape_xy": [
+                160,
+                32
+              ],
+              "valid_surface_fraction": 0.9984375,
+              "missing_surface_fraction": 0.0015625000000000222,
+              "maximum_substrate_surface_residual_height_m": 0.0,
+              "surface_p95_absolute_plane_error_m": 0.0016662844087209888,
+              "surface_rms_plane_error_m": 0.00051545021041388,
+              "maximum_gouge_depth_m": 0.02,
+              "overcut_volume_m3": 1.793863368598739e-06,
+              "overcut_volume_fraction_of_initial_base": 0.017518196958972058
+            }
+          },
+          "success": true
+        },
+        "evaluation_sha256": "5ea32648cc26699ff2bfc1999a9a372334a38eb53f922427de4a1d76c9471d45",
+        "media": {
+          "status": "PASS",
+          "path": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512/env/recording/attempt_000/media_000/episode.mp4",
+          "sha256": "66459a6948a68357ec0ee25886e7b53e18abd1c19c72de7e402b6dc69aacc594",
+          "frames": 121,
+          "first_pts_s": 0.0,
+          "last_pts_s": 24.0,
+          "ffmpeg": [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-xerror",
+            "-i",
+            "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512/env/recording/attempt_000/media_000/episode.mp4",
+            "-f",
+            "null",
+            "-"
+          ],
+          "ffprobe": [
+            "ffprobe",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_frames",
+            "-show_entries",
+            "frame=best_effort_timestamp_time",
+            "-of",
+            "json",
+            "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512/env/recording/attempt_000/media_000/episode.mp4"
+          ]
+        }
+      },
+      "grasp_state_audit": {
+        "trace": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512/env/native/physical_grasp_trace_00.jsonl",
+        "rigid_rows": 12000,
+        "control_steps": 1200,
+        "same_control_call_pairs": 10800,
+        "invalid_contact_samples": 0,
+        "max_abs_before_vs_previous_after": {
+          "force_application_point_world_m": 0.0,
+          "tool_body_pose_before_step_xyzw": 0.0,
+          "tool_linear_velocity_before_step_world_m_s": 0.0,
+          "tool_angular_velocity_before_step_world_rad_s": 0.0
+        }
+      }
+    },
+    {
       "status": "PASS_EXECUTION",
       "seed": 42,
       "control_steps": 700,
@@ -13138,6 +13674,7 @@
       "simulated_with_home_s": 14.8,
       "stage_receipt": "artifacts/cutting_native_reference_002/cut-reference-42/episode_000/runtime_timing_trace.json",
       "task_success": true,
+      "nominal_task_control_calls_wall_s": 139.89065895823296,
       "control_backend_wall_s": 139.1238754040096,
       "material_wall_s": 87.71822477411479,
       "capture_wall_s_through_home": 33.91509211080847,
@@ -13356,6 +13893,351 @@
           ]
         }
       }
+    },
+    {
+      "status": "PASS_EXECUTION",
+      "seed": 42,
+      "control_steps": 700,
+      "simulated_s": 14.0,
+      "full_episode_wall_s": 197.2197004929767,
+      "reset_through_home_wall_s": 163.69569656002568,
+      "plan_preflight_s": 18.581069656996988,
+      "frame_manifest_entries": 75,
+      "home_status": "PASS",
+      "home_motion_steps": 40,
+      "simulated_with_home_s": 14.8,
+      "stage_receipt": "artifacts/cutting_native_fine_cut_001/cut-fine-42/episode_000/runtime_timing_trace.json",
+      "task_success": true,
+      "nominal_task_control_calls_wall_s": 69.14050309325103,
+      "control_backend_wall_s": 68.4515126235201,
+      "material_wall_s": 19.295516067009885,
+      "capture_wall_s_through_home": 28.81859873299254,
+      "task": "cut",
+      "artifact": "artifacts/cutting_native_fine_cut_001/cut-fine-42",
+      "benchmark_sha256": "8ff2d639fd838b5467a25ec5edcb58a16e13ef0930ef67e7fcb6533266d309dc",
+      "git_sha": "faf4c1b8b4f0611fda69796cfd03855b4236a2a5",
+      "git_dirty": false,
+      "packages": {
+        "newton": "1.6.1",
+        "warp-lang": "1.17.0",
+        "numpy": "2.3.1",
+        "scipy": "1.17.0",
+        "isaaclab": null,
+        "isaacsim": "6.2.0.0",
+        "torch": "2.11.0+cu128",
+        "usd-core": null,
+        "mujoco": "3.12.0",
+        "mujoco-warp": "3.12.0",
+        "newton-usd-schemas": "0.5.0",
+        "ovrtx": null,
+        "ovstage": null
+      },
+      "runtime_options": {
+        "dx": 0.004,
+        "material_dt": 0.0002,
+        "control_dt": 0.02,
+        "robot_substeps": 10,
+        "reuse_grasp_state": false,
+        "width": 640,
+        "height": 480,
+        "camera_rig_profile": "wrist_camera_rig_v5",
+        "global_rgb_only": false,
+        "active_camera_ids": null,
+        "record_every": 10,
+        "surface_update": "on_capture",
+        "material_diagnostics": "device_reduction_v1",
+        "stage_reset": "reopen",
+        "native_sensor_runtime": "isaac62_physx_offline_v1"
+      },
+      "process_wall_s": 198.807474309986,
+      "process_exit": 0,
+      "process_receipt": "artifacts/cutting_native_fine_cut_001/cut-fine-42_process.json",
+      "admission_receipt": "artifacts/cutting_native_fine_cut_001/admission.json",
+      "gpu_summary": {
+        "label": "EXCLUSIVE_GPU",
+        "foreign_processes_max": 0,
+        "foreign_pids": [],
+        "foreign_mem_mib_max": 0,
+        "gpu_util_p50": 24.5,
+        "util_p50": 24.5,
+        "mem_used_min_mib": 480,
+        "mem_used_max_mib": 6629,
+        "samples": 182,
+        "samples_with_processes": 182
+      },
+      "raw_audit": "artifacts/native_cut_fine_audit_001/audit.json",
+      "physical_audit": {
+        "native_run": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_fine_cut_001/cut-fine-42",
+        "recording": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_fine_cut_001/cut-fine-42/episode_000",
+        "task_id": "CFG-bar_flat_board-sever_mid-6bca561c",
+        "material_phase_s": 14.0,
+        "last_sample_s": 14.8,
+        "finite": true,
+        "total_mass_kg": 0.14399999999999996,
+        "mechanical_components": 2,
+        "component_masses_kg": [
+          0.07199999999999555,
+          0.07199999999999555
+        ],
+        "physics_frames": 75,
+        "material_phase_frames": 71,
+        "recording_complete": null,
+        "evaluator": {
+          "integrity": {
+            "status": "PASS",
+            "checks": {
+              "initial_codes_zero": true,
+              "initial_continuous_graph": true,
+              "persistent_history_no_digit_rewrites": true,
+              "valid_digit_values": true,
+              "reference_matches_scene_sampler": true,
+              "reference_mass_budget": true,
+              "complete_episode": true
+            },
+            "metrics": {
+              "initial_components": 1,
+              "nonzero_digit_rewrites": 0,
+              "code_encoding": "packed2",
+              "cuts": 4,
+              "frames": 71,
+              "particles": 12000,
+              "recorded_mass_kg": 0.14399999999999996,
+              "reference_mass_absolute_error_kg": 0.0
+            },
+            "scope": "Recording and persistent-history validity only; not the goal outcome"
+          },
+          "outcome": {
+            "status": "PASS",
+            "checks": {
+              "expected_substantial_pieces": true,
+              "main_pieces_retain_mass": true,
+              "every_plane_has_an_interface": true,
+              "cut_at_declared_planes": true
+            },
+            "metrics": {
+              "mechanical_components": 2,
+              "piece_mass_fractions": [
+                0.49999999999996925,
+                0.49999999999996925
+              ],
+              "substantial_pieces": 2,
+              "main_pieces_mass_fraction": 0.9999999999999385,
+              "minor_pieces_mass_fraction": 0.0
+            },
+            "missing_evidence": []
+          },
+          "quality": {
+            "status": "REPORTED_NOT_SCORED",
+            "plane_location": [
+              {
+                "plane": 0,
+                "origin_local_m": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "normal_local": [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                "grid_aligned": true,
+                "actual": {
+                  "cross_component_reference_node_count": 54,
+                  "severed_particle_pair_node_incidences": 33984,
+                  "maximum_reference_midpoint_plane_distance_m": 0.0009999999892897904
+                },
+                "ideal_geometric_label": {
+                  "cross_component_reference_node_count": 54,
+                  "severed_particle_pair_node_incidences": 33984,
+                  "maximum_reference_midpoint_plane_distance_m": 0.0009999999892897904
+                },
+                "frozen_2mm_statistic_m": 0.0009999999892897904,
+                "frozen_bound_m": 0.002,
+                "rule": "frozen midpoint statistic <= plane_error_bound_m",
+                "pass": true
+              }
+            ]
+          },
+          "success": true
+        },
+        "evaluation_sha256": "ace331970d4da01f0d4cde08d89e38eb235e624d5537dd3f745d9b31196a839d",
+        "media": {
+          "status": "PASS",
+          "path": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/native_cut_fine_audit_001/native_overview.mp4",
+          "sha256": "85abadacd81e1e1c14c3e497fb847bc325d4ac417433863cbf959399b8f7b1c5",
+          "frames": 75,
+          "first_pts_s": 0.0,
+          "last_pts_s": 14.8,
+          "ffmpeg": [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-xerror",
+            "-i",
+            "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/native_cut_fine_audit_001/native_overview.mp4",
+            "-f",
+            "null",
+            "-"
+          ],
+          "ffprobe": [
+            "ffprobe",
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_frames",
+            "-show_entries",
+            "frame=best_effort_timestamp_time",
+            "-of",
+            "json",
+            "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/native_cut_fine_audit_001/native_overview.mp4"
+          ],
+          "ordered_capture_sha256": "c6788482de9bc3f67d78f194f21c2838455fb186d63b2a77036ed043880e5ab8",
+          "encode_command": [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-n",
+            "-f",
+            "rawvideo",
+            "-pixel_format",
+            "rgb24",
+            "-video_size",
+            "960x540",
+            "-framerate",
+            "1000.0",
+            "-i",
+            "-",
+            "-vf",
+            "setpts='0*eq(N,0)+200*eq(N,1)+400*eq(N,2)+600*eq(N,3)+800*eq(N,4)+1000*eq(N,5)+1200*eq(N,6)+1400*eq(N,7)+1600*eq(N,8)+1800*eq(N,9)+2000*eq(N,10)+2200*eq(N,11)+2400*eq(N,12)+2600*eq(N,13)+2800*eq(N,14)+3000*eq(N,15)+3200*eq(N,16)+3400*eq(N,17)+3600*eq(N,18)+3800*eq(N,19)+4000*eq(N,20)+4200*eq(N,21)+4400*eq(N,22)+4600*eq(N,23)+4800*eq(N,24)+5000*eq(N,25)+5200*eq(N,26)+5400*eq(N,27)+5600*eq(N,28)+5800*eq(N,29)+6000*eq(N,30)+6200*eq(N,31)+6400*eq(N,32)+6600*eq(N,33)+6800*eq(N,34)+7000*eq(N,35)+7200*eq(N,36)+7400*eq(N,37)+7600*eq(N,38)+7800*eq(N,39)+8000*eq(N,40)+8200*eq(N,41)+8400*eq(N,42)+8600*eq(N,43)+8800*eq(N,44)+9000*eq(N,45)+9200*eq(N,46)+9400*eq(N,47)+9600*eq(N,48)+9800*eq(N,49)+10000*eq(N,50)+10200*eq(N,51)+10400*eq(N,52)+10600*eq(N,53)+10800*eq(N,54)+11000*eq(N,55)+11200*eq(N,56)+11400*eq(N,57)+11600*eq(N,58)+11800*eq(N,59)+12000*eq(N,60)+12200*eq(N,61)+12400*eq(N,62)+12600*eq(N,63)+12800*eq(N,64)+13000*eq(N,65)+13200*eq(N,66)+13400*eq(N,67)+13600*eq(N,68)+13800*eq(N,69)+14000*eq(N,70)+14200*eq(N,71)+14400*eq(N,72)+14600*eq(N,73)+14800*eq(N,74)'",
+            "-vsync",
+            "vfr",
+            "-enc_time_base",
+            "1:1000",
+            "-c:v",
+            "libx264",
+            "-crf",
+            "24",
+            "-pix_fmt",
+            "yuv420p",
+            "-movflags",
+            "+faststart",
+            "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/native_cut_fine_audit_001/native_overview.mp4"
+          ]
+        }
+      }
     }
-  ]
+  ],
+  "native_effective_runtime_pairing": {
+    "trim": {
+      "reference": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_reference_002/trim-reference-512",
+      "reuse": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-reuse-512",
+      "fine": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_optimized_004/trim-fine-512",
+      "ref_to_reuse": {
+        "reuse_grasp_state": [
+          false,
+          true
+        ]
+      },
+      "reuse_to_fine": {
+        "material_dt": [
+          0.0001,
+          0.0002
+        ],
+        "task_id": [
+          "CFG-agentic_trim_id_s512-agentic_trim_all_v1-d06c01a6",
+          "CFG-agentic_trim_id_s512-agentic_trim_all_v1-53f9fa68"
+        ],
+        "particle_spacing_m": [
+          0.001,
+          0.002
+        ],
+        "configured_task_sha256": [
+          "d06c01a6850a3d8800418e5e5282c88349447577a4150f2dbca2d998d50955ff",
+          "53f9fa684f38fd2e8681b52edb47026c242f309e695e30c1e29ac684153797f7"
+        ]
+      },
+      "camera_rig": "wrist_camera_rig_v14",
+      "rigid_substeps": 10,
+      "record_every": 10,
+      "cameras": [
+        "global_d455",
+        "wrist_d405_0"
+      ]
+    },
+    "cut": {
+      "reference": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_reference_002/cut-reference-42",
+      "fine": "/mnt/data/ningan/lab_records/rcs_high_speed_20261122/artifacts/cutting_native_fine_cut_001/cut-fine-42",
+      "changed": {
+        "material_dt": [
+          0.0001,
+          0.0002
+        ],
+        "task_id": [
+          "CFG-bar_flat_board-sever_mid-e5d82380",
+          "CFG-bar_flat_board-sever_mid-6bca561c"
+        ],
+        "particle_spacing_m": [
+          0.001,
+          0.002
+        ],
+        "task_sha256": [
+          "e5d82380bfd0d28581e8b16c9075d50c0d4a61c51f0f697109ab4bde817c0678",
+          "6bca561c9c54d32852d53293b6963202044feff379ae9af33caf69e0700e55a1"
+        ]
+      },
+      "grid_dx_m": 0.004,
+      "rigid_substeps": 10,
+      "record_every": 10,
+      "camera_rig": "wrist_camera_rig_v5",
+      "reuse_grasp_state": false,
+      "hold_to_task_limit": true,
+      "return_home_requested": true
+    }
+  },
+  "native_reuse_only_end_to_end_acceleration": "FAIL in the controlled engineering pair",
+  "native_120s_episode_target": "FAIL on both measured tasks at reference camera and robot cadence",
+  "validation": {
+    "rubber_and_related_cpu": {
+      "log": "high_speed_final_focused_cpu_001.log",
+      "passed": 539,
+      "skipped": 4,
+      "warnings": 3
+    },
+    "four_mm_profile_cpu": {
+      "log": "high_speed_4mm_cpu_001.log",
+      "passed": 47
+    },
+    "release_focused_cpu": {
+      "log": "high_speed_release_cpu_001.log",
+      "passed": 118,
+      "warnings": 1,
+      "source": "997f52b"
+    },
+    "diagnostics_initial_reproduction": {
+      "log": "material_diagnostics_focused_001.log",
+      "passed": 70,
+      "failed": 2
+    },
+    "diagnostics_fixed": {
+      "log": "material_diagnostics_focused_002.log",
+      "passed": 116,
+      "warnings": 1,
+      "fix": "b873efc"
+    },
+    "naming_initial_reproduction": {
+      "log": "repo_naming_focused_001.log",
+      "passed": 1,
+      "failed": 1,
+      "fix": "997f52b"
+    },
+    "ongoing_broad_cpu_log": "integrated_cpu_002.log"
+  },
+  "rubber_independent_review": {
+    "path": "rubber_numerics_max_review.md",
+    "sha256": "bbd751eac136cd8aaa2c0d4195dfc18ae2f67aea9c4bfe3418c8791fb57607f8",
+    "covered_source": "3c4722a",
+    "discriminating_controls": "rubber.numerics_controls"
+  }
 }

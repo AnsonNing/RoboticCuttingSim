@@ -1,3 +1,24 @@
+# High-speed simulation — 2026-11-22 — measured development profiles
+
+- Rubber `rubber_fast_v1` and `rubber_turbo_v1` reached 6.38 and 27.78
+  aggregate env-steps/s at N=8 versus 1.17 for the matched Reference.
+  Loaded drag and grip release passed numerical checks. Maximum release
+  tip differences were 0.66 and 2.07 mm. Both nominal CFL 0.65 profiles
+  survived the 250-step stiff/light seed after the 0.8 failures.
+- Headless `research_fast_4mm_v1` uses 2 mm particles, a 4 mm grid and
+  a 0.20 ms material step. N=8 CUT and TRIM reached 192.67 and 131.67
+  aggregate env-steps/s. All 16 complete trials passed frozen integrity
+  and outcome. The 8 mm TRIM replays retained attached targets.
+- Native kept the paired camera and robot cadence. Full CUT (700 task
+  plus 40 HOME steps) went from 291.99 to 197.22 s, with integrity,
+  outcome and HOME passing. TRIM (1,200 task steps) went from 375.52 to
+  237.81 s, with complete target removal and the substrate preserved.
+  Reuse alone reduced readback time and increased full wall time.
+- Independent persisted-physics re-score and MP4 decode/timestamps passed
+  for all five Native runs. Focused release CPU checks passed 118.
+  [Measured report](reports/HIGH_SPEED_RESULTS.md) ·
+  [Benchmark receipt](evidence/high_speed/benchmark.json).
+
 # WP-17 performance — 2026-11-04 — paired Native verified
 
 - Full Episode Wall Time: pooled 1034.211→765.959s, 25.94% less (1.350×).

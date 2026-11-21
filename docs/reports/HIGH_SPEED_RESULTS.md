@@ -240,6 +240,18 @@ mass and the 1.0 mm reference-interface statistic. Window throughput
 at N=8 was 18.48× Reference for CUT and 13.84× for TRIM. Both
 headless N=8 Reference rows simulated only the window and its prefix.
 
+```bash
+flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu1.lock env \
+  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 OPENBLAS_NUM_THREADS=1 \
+  PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/perf/benchmark_cutting.py \
+    cut --num-envs 8 --full --gpu-index 1 --runtime-profile research_fast_4mm_v1 \
+    --contact-mode alias_free_v2 --out artifacts/cut_4mm_fresh
+```
+
+For TRIM, select `trim` and pass `--wp17` with the preserved WP-17
+artifact root containing the seed-512 and seed-15 recordings. The
+benchmark finds both measured tool/pad inputs under that root.
+
 ## Native CUT and TRIM
 
 The live runs used Isaac Sim 6.2, PhysX for robot, gripper and tool
@@ -257,10 +269,67 @@ IK 20.97 s. Stage timers are inclusive. The independent evaluator
 passed, the whole target separated, and the 0-to-24 s capture timeline
 has 121 frames with verified MP4 decode and timestamps.
 
-Native CUT Reference reached 700 task steps at 14.00 s, followed by
-40 HOME steps through 14.80 s. Task integrity, task outcome and HOME
-all passed. The recorded task-end state had two 72 g pieces and a
-1.5 mm plane statistic. The 291.99 s run includes plan preflight,
-startup, the task, HOME and raw recording. The process returned after
-293.33 s. Post-run MP4 verification covered all 75 original overview
-captures through HOME.
+| Native TRIM seed 512 | Simulated task | Setup | Controller | Finalize | Cold-to-finalize | Complete process |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Reference | 24.00 s | 67.30 s | 296.51 s | 11.67 s | 375.52 s | 376.31 s |
+| Grasp-state reuse only | 24.00 s | 64.09 s | 327.23 s | 11.52 s | 402.87 s | 403.92 s |
+| 4 mm profile plus reuse | 24.00 s | 64.58 s | 163.25 s | 9.94 s | 237.81 s | 238.84 s |
+
+The first two runtime manifests differ only in grasp-state reuse.
+The readback stage fell from 18.21 to 10.08 s. The material graph took
+194.24 s in the reuse run, versus 153.63 s in Reference, and overall
+wall time increased. The reuse-only episode is negative evidence for
+end-to-end acceleration. All 10,800 reused pre/post pairs matched in
+the four recorded wrench-application fields, with zero stale contact
+samples across 12,000 rigid substeps.
+
+The 4 mm arm kept ten rigid substeps and both camera streams at
+5 Hz. The runtime manifests for reuse and 4 mm differ in material
+spacing and timestep, plus the resulting task identity. Its graph
+took 37.39 s. Cold-to-finalize wall time was 1.58× faster than the
+fresh Reference and 1.69× faster than the reuse-only run. All three
+runs passed the frozen TRIM integrity and outcome checks. The 4 mm
+arm detached a 0.492 g chip and retained the 153.6 g substrate.
+The target was sampled as 0.498 g at Reference resolution. The
+separate HOME check was `NOT_RUN` for TRIM.
+
+| Native CUT seed 42 | Task + HOME simulated | Task control calls | Task material | Cold-to-finalize | Complete process | Interface |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Reference | 14.00 + 0.80 s | 139.89 s | 87.72 s | 291.99 s | 293.33 s | 1.50 mm |
+| 4 mm profile | 14.00 + 0.80 s | 69.14 s | 19.30 s | 197.22 s | 198.81 s | 1.00 mm |
+
+Both CUT episodes ran 700 task steps and 40 HOME steps. Both passed
+frozen integrity, outcome and HOME and produced two 72 g pieces.
+The 4 mm CUT run kept the Reference robot and camera cadence and
+used the Reference grasp-state path. The paired manifests differ in
+particle spacing, timestep and the resulting task identity. The full
+run includes plan preflight, cold startup and reset, the task, HOME
+and raw recording. Task control calls are the sum of the 700 logged
+`env.step` times during the nominal task. Post-run MP4 verification
+covered all 75 original overview captures through HOME in each run.
+
+Both 4 mm Native tasks accelerated full episodes. CUT improved 1.48×
+and TRIM 1.58× on their paired cold-to-finalize boundaries. The 120 s
+research target remained out of reach at the measured robot and camera
+cadence. These are single paired episodes per scene with provisional
+material parameters. The 4 mm profile is marked experimental. Each successful
+Native recording was independently re-scored from persisted physics,
+and the corresponding MP4 passed full decode and a frame timestamp
+comparison.
+
+The Native TRIM benchmark entry is
+`scripts/perf/benchmark_native_trim.py` inside the existing
+Hephorvis GPU1-only namespace. Supply `--seed 512`, a fresh `--out`
+and the preserved WP-17 C3 `--controller`. Add `--reuse-grasp-state`
+for the controlled reuse run and `--runtime-profile research_fast_4mm_v1`
+for its 4 mm pair. Native CUT uses the configured
+`scripts/run_wp10_live.py` runner. The process receipts record the exact
+namespace launch, task files, flags, seed and camera cadence.
+
+## Verification
+
+The focused release suite passed 118 CPU checks, including the
+diagnostics adapter, frozen-source audit and both cutting profiles.
+The earlier Rubber and related CPU suite passed 539 and skipped
+four checks. The benchmark receipt links the preserved broad log
+and the two focused adapter failures and successful rerun.
