@@ -168,18 +168,25 @@ CUT uses the fixed bar and `ReferenceCommandPolicyV1`. TRIM replays
 the preserved WP-17 measured blade and two pad trajectories, with seed
 512 at N=1 and alternating 512/15 at N=8. Both benchmark paths run the
 batched v7.2 material solver on physical GPU 1. The cut law resolves
-mechanical separation through the packed material history. Neither row
-includes Native articulation, cameras, or rendering.
+mechanical separation through the packed material history. Headless
+timings cover kinematic blade and pad inputs and material simulation.
 
 | Task | N | Profile | Timed steps | Tool-active steps per env | Aggregate env-steps/s | Peak sampled process MiB | Full batch wall |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: |
 | CUT | 1 | Reference | 206–265 | 32 | 7.058 | 944 | 103.59 s |
+| CUT | 1 | Reference | 234–293 | 60 | 6.802 | 860 | Window only |
 | CUT | 8 | Reference | 234–293 | 60 | 10.426 | 1,368 | Window only |
 | CUT | 1 | Coarse | 234–293 | 56 | 40.697 | 770 | 18.27 s |
 | CUT | 8 | Coarse | 234–293 | 56 | 189.781 | 944 | 31.43 s |
+| CUT | 1 | 4 mm grid, 0.20 ms | 234–293 | 56 | 45.293 | 770 | 17.49 s |
+| CUT | 8 | 4 mm grid, 0.20 ms | 234–293 | 56 | 192.667 | 944 | 31.93 s |
 | TRIM | 1 | Reference | 270–329 | 55 | 6.480 | 1,040 | 174.07 s |
 | TRIM | 8 | Reference | 270–329 | 53–55 | 9.517 | 1,410 | Window only |
 | TRIM | 1 | Coarse | 270–329 | 52 | 6.553 | 794 | 45.54 s |
+| TRIM | 8 | Coarse | 270–329 | 50–52 | 44.928 | 1,034 | 94.00 s |
+| TRIM | 1 | 4 mm grid, 0.10 ms | 270–329 | 52 | 13.587 | 868 | 51.18 s |
+| TRIM | 1 | 4 mm grid, 0.20 ms | 270–329 | 52 | 26.341 | 794 | 28.39 s |
+| TRIM | 8 | 4 mm grid, 0.20 ms | 270–329 | 50–52 | 131.672 | 1,066 | 58.24 s |
 
 Reference uses 1 mm particles, a 4 mm grid and 200 material substeps at
 0.1 ms per 20 ms control step. Coarse uses the numerical settings of
@@ -200,6 +207,60 @@ for research where millimetre-scale location error is acceptable.
 Reference TRIM completed 1,200 steps and passed integrity and outcome
 for seed 512. The target separated as a 0.498 g chip. The 153.6 g
 substrate was preserved, with a 1.5 mm reference-interface statistic.
-Coarse TRIM passed material integrity and retained the substrate, but
-its protrusion stayed attached. The shorter full wall time does not
-constitute a successful accelerated TRIM episode.
+Coarse TRIM passed material integrity and retained the substrate. Every
+target stayed attached, yielding a frozen outcome of `FAIL` at N=1 and
+in all eight runs at N=8.
+
+The independent terminal-state review found all 41 seed-512 target
+particles on the positive cut digit. Six 8 mm reference nodes still
+linked 11 of those particles directly to unassigned, code-zero particles
+below the trim plane. Rebuilding the stencils at 4 mm on the same
+particles and labels recovered two components. Rebuilding the
+Reference stencils at 8 mm yielded one component. This CPU diagnostic
+isolates stencil connectivity at fixed labels. The live grid sweep
+exercised cut-front propagation and contact on the same blade replay.
+
+The opt-in `research_fast_4mm_v1` uses 2 mm particles on the 4 mm grid,
+with 100 substeps at 0.20 ms. Both N=1 episodes passed the frozen
+integrity and outcome checks. CUT produced two 72 g pieces and a
+1.0 mm interface statistic. TRIM removed 100% of the target, with a
+0.492 g chip, all 153.6 g of substrate retained, and a 1.0 mm
+reference-interface statistic. The 0.10 ms TRIM control reached the same
+topology and interface statistic. At 0.20 ms, full N=1 runs were
+5.92× faster for CUT and 6.13× for TRIM against their original-resolution
+runs. Keeping 1 mm particles and changing the step to 0.20 ms also
+passed TRIM integrity and outcome. Its contact-window rate was
+5.203 env-steps/s.
+
+The named profile passed all eight complete episodes for each task.
+Every CUT produced two 72 g pieces with a 1.0 mm interface statistic.
+Every TRIM separated all targets, including both chips in seed 15.
+Measured substrate retention was 100%, with no detached below-plane
+mass and the 1.0 mm reference-interface statistic. Window throughput
+at N=8 was 18.48× Reference for CUT and 13.84× for TRIM. Both
+headless N=8 Reference rows simulated only the window and its prefix.
+
+## Native CUT and TRIM
+
+The live runs used Isaac Sim 6.2, PhysX for robot, gripper and tool
+dynamics, and CUDA Graphs for the coupled material. The GPU namespace
+exposed only physical GPU 1. Timing includes a cold per-run cache.
+The CUT controller uses measured edge pose. It records rig v5 views
+and an overview at 5 Hz. TRIM runs the frozen WP-17 C3 controller with
+rig14 Global RGB and wrist-0 RGB-D at 5 Hz.
+
+The 1,200-action Native TRIM Reference completed in 375.52 s including
+67.30 s to construct and reset and 11.67 s to finalize and score.
+The controller took 296.51 s. During its control steps the material
+CUDA Graph took 153.63 s, camera render and readback 29.60 s, and
+IK 20.97 s. Stage timers are inclusive. The independent evaluator
+passed, the whole target separated, and the 0-to-24 s capture timeline
+has 121 frames with verified MP4 decode and timestamps.
+
+Native CUT Reference reached 700 task steps at 14.00 s, followed by
+40 HOME steps through 14.80 s. Task integrity, task outcome and HOME
+all passed. The recorded task-end state had two 72 g pieces and a
+1.5 mm plane statistic. The 291.99 s run includes plan preflight,
+startup, the task, HOME and raw recording. The process returned after
+293.33 s. Post-run MP4 verification covered all 75 original overview
+captures through HOME.

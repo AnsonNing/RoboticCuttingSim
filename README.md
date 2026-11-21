@@ -508,6 +508,28 @@ scoped to rubber deformation and manipulation.
 
 [Measured speed and quality](docs/reports/HIGH_SPEED_RESULTS.md).
 
+### Fast CUT and TRIM for headless research
+
+Select `research_fast_4mm_v1` for 2 mm particles on the 4 mm grid with a
+0.20 ms material step. Leave out `runtime_profile` to use the original
+resolution.
+
+```python
+from robotic_cutting_sim.rl import ConfiguredTaskFamily, open_vector_env
+
+task = ConfiguredTaskFamily.from_cut_workload(8, runtime_profile="research_fast_4mm_v1")
+with open_vector_env(8, task=task, device="cuda:0",
+                     particle_contact_mode="alias_free_v2") as env:
+    observation, info = env.reset()
+```
+
+TRIM accepts the same option through
+`TaskFamily(scene_seeds=(512, 15), runtime_profile="research_fast_4mm_v1")`.
+The measured 4 mm runs preserved material integrity and met the frozen
+outcome checks. The older 8 mm `research_fast_v1` experiment left the
+TRIM targets attached and exceeded the CUT plane bound.
+[Headless timing and outcomes](docs/reports/HIGH_SPEED_RESULTS.md#headless-cut-and-trim).
+
 ## Agentic control robot seeded trimming
 
 The opt-in [seeded trimming challenge](docs/AGENTIC_TRIM_CHALLENGE.md) provides

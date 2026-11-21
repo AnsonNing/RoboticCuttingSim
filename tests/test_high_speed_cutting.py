@@ -12,22 +12,26 @@ from robotic_cutting_sim.seeded_trim import compile_seed, digest_array
 
 
 @pytest.mark.parametrize("kind", ["cut", "trim"])
-def test_batched_opt_in_research_fast_profile(kind):
+@pytest.mark.parametrize(("profile", "grid_dx"), [
+    ("research_fast_v1", 0.008),
+    ("research_fast_4mm_v1", 0.004),
+])
+def test_batched_opt_in_research_fast_profile(kind, profile, grid_dx):
     if kind == "cut":
         full = ConfiguredTaskFamily.from_cut_workload(1)
-        fast = ConfiguredTaskFamily.from_cut_workload(1, runtime_profile="research_fast_v1")
+        fast = ConfiguredTaskFamily.from_cut_workload(1, runtime_profile=profile)
         reference, candidate = full.compile_tasks()[0], fast.compile_tasks()[0]
     else:
         full = TaskFamily(scene_seeds=(512,))
-        fast = TaskFamily(scene_seeds=(512,), runtime_profile="research_fast_v1")
+        fast = TaskFamily(scene_seeds=(512,), runtime_profile=profile)
         reference, candidate = compile_family(full)[0], compile_family(fast)[0]
     assert (reference.particle_spacing_m, reference.grid_dx_m, full.material_dt_s) == (0.001, 0.004, 0.0001)
-    assert (candidate.particle_spacing_m, candidate.grid_dx_m, fast.material_dt_s) == (0.002, 0.008, 0.0002)
+    assert (candidate.particle_spacing_m, candidate.grid_dx_m, fast.material_dt_s) == (0.002, grid_dx, 0.0002)
     assert candidate.goal == reference.goal
     assert candidate.control_dt_s == reference.control_dt_s
     assert candidate.task_id != reference.task_id
     np.testing.assert_array_equal(candidate.reference_edge_pose_world(0), reference.reference_edge_pose_world(0))
-    assert fast.to_dict()["runtime_profile"] == "research_fast_v1"
+    assert fast.to_dict()["runtime_profile"] == profile
     assert "runtime_profile" not in full.to_dict()
 
 
@@ -38,12 +42,13 @@ def test_batch_runtime_profile_rejects_conflicting_numerics():
         TaskFamily((512,), runtime_profile="research_fast_v1", material_dt_s=.0005)
 
 
-def test_native_trim_receipt_hashes_effective_resolution(tmp_path):
+@pytest.mark.parametrize("profile", ["research_fast_v1", "research_fast_4mm_v1"])
+def test_native_trim_receipt_hashes_effective_resolution(tmp_path, profile):
     options = dict(policy_seed=0, sim_seed=42, distribution="id")
     reference, original = compile_seed(512, **options)
     out = tmp_path / "scene"
     task, manifest = compile_profiled_trim_seed(
-        512, name="research_fast_v1", output_dir=out, **options)
+        512, name=profile, output_dir=out, **options)
     replay = task_from_payload(json.loads((out / "compiled_task.json").read_text()))
     points, masses, lattice = replay.sample_particles()
     assert manifest == json.loads((out / "scene_manifest.json").read_text())
