@@ -223,9 +223,13 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
     memory_log = output/'runtime_memory.jsonl' if memory_receipts else None
     record_memory(memory_log, 'before_scene_compile')
     try:
-        task, manifest = compile_seed(seed, policy_seed=policy_seed, sim_seed=sim_seed,
-                                     distribution=distribution, output_dir=output/'scene',
-                                     runtime_profile=runtime_profile)
+        seed_options = dict(policy_seed=policy_seed, sim_seed=sim_seed, distribution=distribution)
+        if runtime_profile is None:
+            task, manifest = compile_seed(seed, output_dir=output/'scene', **seed_options)
+        else:
+            from .runtime_profiles import compile_profiled_trim_seed
+            task, manifest = compile_profiled_trim_seed(
+                seed, name=runtime_profile, output_dir=output/'scene', **seed_options)
     except SceneInfeasible as error:
         write_json(output/'scene_infeasible.json', dict(status='SCENE_INFEASIBLE', scene_seed=seed, reason=str(error)))
         raise

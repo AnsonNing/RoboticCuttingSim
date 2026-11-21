@@ -89,3 +89,51 @@ def compile_batch_task(scene, goal, *, name, material_dt_s, **options):
     task = compile_task(profile_scene(scene, profile), goal, **options)
     check_task(profile, task, material_dt_s)
     return task
+
+
+def compile_profiled_trim_seed(scene_seed, *, name, policy_seed, sim_seed, distribution, output_dir):
+    """Compile an opt-in Native TRIM task using the frozen seeded scene and goal."""
+    from pathlib import Path
+
+    from .geometry_providers import lattice_report
+    from .scene_config import (SceneInfeasible, canonical_json, compile_task,
+                               configured_task_payload, sha256_json)
+    from .seeded_trim import compile_seed, digest_array
+
+    reference, manifest = compile_seed(
+        scene_seed, policy_seed=policy_seed, sim_seed=sim_seed, distribution=distribution)
+    profile = runtime_profile(name)
+    material_dt_s = float(profile["material_dt_s"])
+    scene = profile_scene(manifest["sampled_scene"], profile)
+    task = compile_task(scene, reference.goal, seed=int(sim_seed))
+    resolution = check_task(profile, task, material_dt_s)
+    points, masses, lattice = task.sample_particles()
+    connectivity = lattice_report(lattice)
+    if not connectivity["ok"]:
+        raise SceneInfeasible("initial_connectivity", canonical_json(connectivity))
+    height_above_base = points[:, 2] - task.geometry.base_height_m
+    counts = [
+        int(((height_above_base > 0) & (
+            bump.height(points[:, 0], points[:, 1]) > height_above_base)).sum())
+        for bump in task.geometry.bumps
+    ]
+    if min(counts) < 20:
+        raise SceneInfeasible("unresolved_protrusion", str(counts))
+    manifest.update(
+        runtime_profile=name, runtime_resolution=resolution,
+        acceptance_valid=bool(profile["acceptance_valid"]),
+        particle_count=len(points), target_particle_counts=counts,
+        initial_lattice_connectivity=connectivity,
+        scene_hash=sha256_json(scene), solver_hash=sha256_json(scene["solver"]),
+        task_hash=task.config_sha256, initial_particles_sha256=digest_array(points),
+        initial_masses_sha256=digest_array(masses), initial_lattice_sha256=digest_array(lattice),
+        sampled_scene=scene,
+    )
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=False)
+    for label, data in (
+        ("scene", scene), ("goal", task.goal), ("scene_manifest", manifest),
+        ("compiled_task", json.loads(configured_task_payload(task))),
+    ):
+        (out / f"{label}.json").write_text(json.dumps(data, indent=2) + "\n")
+    return task, manifest
