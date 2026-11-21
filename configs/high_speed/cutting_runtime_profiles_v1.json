@@ -1,0 +1,23 @@
+{
+  "schema": "rcs_runtime_profiles_v1",
+  "version": "high_speed_cutting_runtime_profiles_v1",
+  "profiles": {
+    "research_fast_4mm_v1": {
+      "acceptance_valid": false,
+      "purpose": "Coarser particle sampling with the 4 mm grid for CUT and TRIM research.",
+      "require": {
+        "particle_spacing_m": 0.002,
+        "grid_dx_m": 0.004,
+        "material_dt_s": 0.0002,
+        "control_dt_s": 0.02
+      },
+      "solver_override": {"particle_spacing_m": 0.002, "grid_dx_m": 0.004},
+      "material_dt_s": 0.0002,
+      "forbid_caller_overrides": ["particle_spacing_m", "material_dt", "dx"],
+      "fidelity_limits": {
+        "scope": "Experimental resolution. Use full_physics_v1 for formal acceptance.",
+        "contact_forces": "Contact forces are provisional and have not been calibrated at this resolution."
+      }
+    }
+  }
+}

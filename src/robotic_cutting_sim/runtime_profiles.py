@@ -13,6 +13,7 @@ import json
 from .recording import ROOT
 
 PROFILES_PATH = ROOT/"configs/wp11/runtime_profiles_v1.json"
+HIGH_SPEED_PROFILES_PATH = ROOT/"configs/high_speed/cutting_runtime_profiles_v1.json"
 PROFILE_SCHEMA = "rcs_runtime_profiles_v1"
 
 
@@ -25,10 +26,14 @@ def load_runtime_profiles(path=PROFILES_PATH):
 
 def runtime_profile(name, path=PROFILES_PATH):
     """The declared profile ``name`` (a dict with its id and the config version)."""
-    doc = load_runtime_profiles(path)
-    if name not in doc["profiles"]:
-        raise ValueError(f"Unknown runtime profile {name!r}; declared: {sorted(doc['profiles'])}")
-    return {"profile_id": name, "config_version": doc["version"], **copy.deepcopy(doc["profiles"][name])}
+    paths = (PROFILES_PATH, HIGH_SPEED_PROFILES_PATH) if path == PROFILES_PATH else (path,)
+    declared = set()
+    for candidate in paths:
+        doc = load_runtime_profiles(candidate)
+        if name in doc["profiles"]:
+            return {"profile_id": name, "config_version": doc["version"], **copy.deepcopy(doc["profiles"][name])}
+        declared.update(doc["profiles"])
+    raise ValueError(f"Unknown runtime profile {name!r}; declared: {sorted(declared)}")
 
 
 def profile_scene(scene, profile):
