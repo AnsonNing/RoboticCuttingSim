@@ -1,9 +1,14 @@
 """The existing coarse numerics are reachable through both headless task families."""
+import json
+
 import numpy as np
 import pytest
 
 from robotic_cutting_sim.rl import ConfiguredTaskFamily, TaskFamily
 from robotic_cutting_sim.rl.vector_env import compile_family
+from robotic_cutting_sim.runtime_profiles import compile_profiled_trim_seed
+from robotic_cutting_sim.scene_config import task_from_payload
+from robotic_cutting_sim.seeded_trim import compile_seed, digest_array
 
 
 @pytest.mark.parametrize("kind", ["cut", "trim"])
@@ -31,3 +36,23 @@ def test_batch_runtime_profile_rejects_conflicting_numerics():
         ConfiguredTaskFamily.from_cut_workload(1, runtime_profile="research_fast_v1", particle_spacing_m=.003)
     with pytest.raises(ValueError, match="fixes material_dt"):
         TaskFamily((512,), runtime_profile="research_fast_v1", material_dt_s=.0005)
+
+
+def test_native_trim_receipt_hashes_effective_resolution(tmp_path):
+    options = dict(policy_seed=0, sim_seed=42, distribution="id")
+    reference, original = compile_seed(512, **options)
+    out = tmp_path / "scene"
+    task, manifest = compile_profiled_trim_seed(
+        512, name="research_fast_v1", output_dir=out, **options)
+    replay = task_from_payload(json.loads((out / "compiled_task.json").read_text()))
+    points, masses, lattice = replay.sample_particles()
+    assert manifest == json.loads((out / "scene_manifest.json").read_text())
+    assert task.config_sha256 == replay.config_sha256 == manifest["task_hash"]
+    assert task.goal == reference.goal
+    assert manifest["geometry_hash"] == original["geometry_hash"]
+    assert manifest["material_hash"] == original["material_hash"]
+    assert manifest["solver_hash"] != original["solver_hash"]
+    assert manifest["acceptance_valid"] is False
+    assert manifest["initial_particles_sha256"] == digest_array(points)
+    assert manifest["initial_masses_sha256"] == digest_array(masses)
+    assert manifest["initial_lattice_sha256"] == digest_array(lattice)
