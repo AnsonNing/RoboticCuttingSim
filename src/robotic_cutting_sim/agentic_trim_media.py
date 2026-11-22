@@ -73,19 +73,22 @@ def export_success(recording_dir):
                 f'{provenance.get("controller_provenance")} | {provenance.get("candidate_id")}\n'
                 'Live Global RGB / wrist_0 RGB / wrist_0 optical Z: 0.07-1.00 m; invalid black')
         draw.text((6, 486), text, fill='white')
-        image.save(stage/f'frame_{i:05d}.png')
+        image.save(stage/f'frame_{i:05d}.png', compress_level=1)
         sources.append(dict(global_sha256=sha256(gp), wrist_sha256=sha256(wp), time_s=float(t)))
-    # VFR concat holds each measured frame until the next real capture. The
-    # final frame has the muxer's ordinary terminal duration; no interpolated frames.
-    lines = ['ffconcat version 1.0']
-    for i in range(len(times)):
-        lines.append(f"file 'frame_{i:05d}.png'")
-        if i+1 < len(times):
-            lines.append(f'duration {times[i+1]-times[i]:.12f}')
-    (stage/'frames.ffconcat').write_text('\n'.join(lines)+'\n')
+    # Image2 takes a 1 ms time base so even 20 ms observations have distinct PTS.
+    ticks = np.rint(times * 1000).astype(np.int64)
+    if not np.allclose(ticks / 1000., times, atol=1e-9, rtol=0):
+        raise ValueError('Native camera capture times must have millisecond precision')
+    intervals = np.diff(ticks)
+    pts = stage/'capture_pts.txt'
+    if len(intervals) and np.all(intervals == intervals[0]):
+        pts.write_text(f'setpts=N*{intervals[0]}\n')
+    else:
+        pts.write_text('setpts=' + '+'.join(f'{tick}*eq(N,{i})' for i, tick in enumerate(ticks)) + '\n')
     movie = stage/'episode.mp4'
-    cmd = ['ffmpeg', '-v', 'error', '-n', '-safe', '0', '-i', str(stage/'frames.ffconcat'),
-           '-vsync', 'vfr', '-c:v', 'libx264', '-threads', '2', '-crf', '24', '-pix_fmt', 'yuv420p',
+    cmd = ['ffmpeg', '-v', 'error', '-n', '-framerate', '1000', '-i', str(stage/'frame_%05d.png'),
+           '-filter_script:v', str(pts), '-vsync', 'vfr', '-enc_time_base', '1:1000',
+           '-c:v', 'libx264', '-threads', '2', '-crf', '24', '-pix_fmt', 'yuv420p',
            '-movflags', '+faststart', str(movie)]
     subprocess.run(cmd, check=True, timeout=300)
     probe = json.loads(subprocess.check_output(['ffprobe', '-v', 'error', '-show_streams', '-show_format',
@@ -95,6 +98,11 @@ def export_success(recording_dir):
     video = next(stream for stream in probe['streams'] if stream['codec_type'] == 'video')
     if video['codec_name'] != 'h264' or video['pix_fmt'] != 'yuv420p' or int(video['nb_frames']) != len(times):
         raise ValueError('Media codec, pixel format or complete original frame count mismatch')
+    frames = json.loads(subprocess.check_output(['ffprobe', '-v', 'error', '-select_streams', 'v:0',
+        '-show_frames', '-show_entries', 'frame=best_effort_timestamp_time', '-of', 'json', str(movie)], text=True))
+    decoded_times = np.asarray([float(frame['best_effort_timestamp_time']) for frame in frames['frames']])
+    if decoded_times.shape != times.shape or not np.allclose(decoded_times, times, atol=1e-6, rtol=0):
+        raise ValueError('Decoded video timestamps differ from the original camera capture')
     metrics = result.get('outcome', {}).get('metrics', {})
     manifest = dict(**provenance, episode_id=episode_id,
         task_success=True, physical_result=result, home_status=receipt['home_status'],
@@ -103,7 +111,8 @@ def export_success(recording_dir):
         mechanical_components=metrics.get('mechanical_components'),
         simulation_duration_s=float(times[-1]), wall_time_s=receipt['wall_time_s'],
         mp4_path=str(movie.relative_to(rec)), mp4_sha256=sha256(movie), media_decode_status='PASS',
-        capture_time_s=times.tolist(), original_frame_count=len(times), sources=sources, command=cmd,
+        capture_time_s=times.tolist(), decoded_pts_check='PASS', original_frame_count=len(times),
+        sources=sources, command=cmd,
         recording_hashes={str(p.relative_to(rec)): sha256(p) for p in
             (*physical_recording_paths(rec), rec/'compiled_task.json',
              rec/'independent_evaluation.json', rec/'provenance.json')})

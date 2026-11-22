@@ -252,6 +252,7 @@ def test_actual_success_encoding_and_audit_from_same_original_frames(task, tmp_p
     before = (rec / 'physics_state.npz').read_bytes()
     manifest = export_success(rec)
     assert manifest['media_decode_status'] == 'PASS'
+    assert manifest['decoded_pts_check'] == 'PASS'
     assert manifest['original_frame_count'] == 3
     assert manifest['capture_time_s'] == [0., 12., 24.]
     assert export_success(rec) == manifest  # resumable idempotent export
