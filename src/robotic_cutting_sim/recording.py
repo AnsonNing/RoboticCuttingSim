@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from queue import Queue
@@ -86,6 +87,14 @@ def new_output(path):
     path = Path(path)
     path.mkdir(parents=True, exist_ok=False)
     return path
+
+
+def savez_fast(path_or_stream, **arrays):
+    """A lossless NumPy archive with DEFLATE level 1 and the usual named arrays."""
+    with zipfile.ZipFile(path_or_stream, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=1) as archive:
+        for name, array in arrays.items():
+            with archive.open(name + ".npy", "w", force_zip64=True) as entry:
+                np.lib.format.write_array(entry, np.asarray(array), allow_pickle=False)
 
 
 PHYSICS_STREAM_SCHEMA = 'physical_state_stream_v1'

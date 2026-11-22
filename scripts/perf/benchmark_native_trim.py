@@ -72,20 +72,35 @@ def main():
     p.add_argument("--seed", type=int, choices=(512, 15), required=True)
     p.add_argument("--controller", type=Path, required=True)
     p.add_argument("--controller-sha256", default=C3_SHA256)
-    p.add_argument("--runtime-profile")
+    p.add_argument("--runtime-profile", help=argparse.SUPPRESS)
+    p.add_argument("--fidelity", choices=("reference", "turbo"))
     p.add_argument("--reuse-grasp-state", action="store_true")
     p.add_argument("--robot-substeps", type=int, default=10)
-    p.add_argument("--camera-every", type=int, default=10)
-    p.add_argument("--record-every", type=int, default=10)
+    p.add_argument("--camera-every", type=int)
+    p.add_argument("--record-every", type=int)
     p.add_argument("--camera-snapshot", action="store_true")
     p.add_argument("--steady-render-passes", type=int)
     p.add_argument("--async-camera-write", action="store_true")
     p.add_argument("--buffer-grasp-trace", action="store_true")
     p.add_argument("--stage-reset", choices=("reopen", "reload_in_place"))
     p.add_argument("--episodes", type=int, default=1)
+    p.add_argument("--ik-iterations", type=int, default=48)
     args = p.parse_args()
     if args.episodes < 1:
         p.error("--episodes must be positive")
+    if args.fidelity is not None:
+        from robotic_cutting_sim.runtime_profiles import fidelity_profile, native_50hz_cadence
+        if args.runtime_profile is not None:
+            p.error("Choose --fidelity or --runtime-profile")
+        args.runtime_profile = fidelity_profile(args.fidelity, "isaac_sim")
+        try:
+            args.camera_every, args.record_every = native_50hz_cadence(args.camera_every, args.record_every)
+        except ValueError as error:
+            p.error(str(error))
+    if args.camera_every is None:
+        args.camera_every = 10
+    if args.record_every is None:
+        args.record_every = 10
     from agentic_robot.lab.sim.envs.rcs_gpu1 import _require_gpu1, launch_app_gpu1
     from robotic_cutting_sim import isaac_sim_runner
     from robotic_cutting_sim.agentic_trim_env import AgenticTrimEnv, open_env, write_json
@@ -104,11 +119,12 @@ def main():
                "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                "dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT)),
                "gpu_uuid": os.environ["CUDA_VISIBLE_DEVICES"], "runtime_profile": args.runtime_profile,
+               "fidelity": args.fidelity,
                "robot_substeps": args.robot_substeps, "reuse_grasp_state": args.reuse_grasp_state,
                "camera_every": args.camera_every, "record_every": args.record_every,
                "camera_snapshot": args.camera_snapshot, "steady_render_passes": args.steady_render_passes,
                "async_camera_write": args.async_camera_write, "buffer_grasp_trace": args.buffer_grasp_trace,
-               "stage_reset": args.stage_reset, "episodes": args.episodes}
+               "stage_reset": args.stage_reset, "episodes": args.episodes, "ik_iterations": args.ik_iterations}
     write_json(args.out / "spec.json", spec)
     start = time.perf_counter()
     with open_env(output_dir=args.out / "env", seed=args.seed, stream_physics=True, memory_receipts=True,
@@ -117,7 +133,8 @@ def main():
                   robot_substeps=args.robot_substeps, camera_every=args.camera_every,
                   record_every=args.record_every, camera_snapshot=args.camera_snapshot,
                   steady_render_passes=args.steady_render_passes, async_camera_write=args.async_camera_write,
-                  buffer_grasp_trace=args.buffer_grasp_trace, stage_reset=args.stage_reset) as env:
+                  buffer_grasp_trace=args.buffer_grasp_trace, stage_reset=args.stage_reset,
+                  ik_iterations=args.ik_iterations) as env:
         factory_s = time.perf_counter() - start
         rows = [run_episode(env, args.out, run, ctx, start, factory_s, full_cadence=args.record_every == 1)]
         for index in range(1, args.episodes):

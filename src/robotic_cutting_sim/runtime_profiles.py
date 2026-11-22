@@ -15,6 +15,31 @@ from .recording import ROOT
 PROFILES_PATH = ROOT/"configs/wp11/runtime_profiles_v1.json"
 HIGH_SPEED_PROFILES_PATH = ROOT/"configs/high_speed/cutting_runtime_profiles_v1.json"
 PROFILE_SCHEMA = "rcs_runtime_profiles_v1"
+FIDELITIES = ("reference", "turbo")
+_TURBO_BY_BACKEND = {
+    "kinematic": "research_fast_4mm_v1",
+    "kinematic_ideal_tracking_batched": "research_fast_4mm_v1",
+    "isaac_sim": "research_fast_4mm_v1",
+    "kinematic_grip_batched": "rubber_turbo_v1",
+}
+
+
+def fidelity_profile(fidelity, backend):
+    """Resolve the public fidelity selection to its existing backend-specific profile."""
+    if fidelity not in FIDELITIES:
+        raise ValueError(f"Unknown fidelity {fidelity!r}; choose reference or turbo")
+    if fidelity == "reference":
+        return None
+    if backend not in _TURBO_BY_BACKEND:
+        raise NotImplementedError(f"fidelity='turbo' is unavailable for {backend!r}")
+    return _TURBO_BY_BACKEND[backend]
+
+
+def native_50hz_cadence(camera_every=None, record_every=None):
+    if any(value is not None and (type(value) is not int or value != 1)
+           for value in (camera_every, record_every)):
+        raise ValueError("Native Vision fidelity requires camera_every=1 and record_every=1")
+    return 1, 1
 
 
 def load_runtime_profiles(path=PROFILES_PATH):

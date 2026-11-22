@@ -220,7 +220,7 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
              material_diagnostics='snapshot', v7_2_optimizations=True, runtime_profile=None,
              reuse_grasp_state=False, robot_substeps=10, camera_every=10, record_every=10,
              camera_snapshot=False, steady_render_passes=None, async_camera_write=False,
-             buffer_grasp_trace=False, stage_reset=None):
+             buffer_grasp_trace=False, stage_reset=None, ik_iterations=None):
     """Entry used by a GPU1-only launcher; never selects a GPU by itself."""
     from .live_env import open_cutting_env
     if not isinstance(v7_2_optimizations, bool):
@@ -268,6 +268,10 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
         options.update(profile.get('native') or {})
     if stage_reset is not None:
         options['stage_reset'] = stage_reset
+    if ik_iterations is not None:
+        if type(ik_iterations) is not int or ik_iterations < 1:
+            raise ValueError("ik_iterations must be a positive integer")
+        options['ik_iterations'] = ik_iterations
     if native_sensor_runtime is not None:
         options['native_sensor_runtime'] = native_sensor_runtime
     previous_log = os.environ.get('RCS_RUNTIME_MEMORY_LOG')

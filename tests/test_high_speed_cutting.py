@@ -1,5 +1,6 @@
 """The existing coarse numerics are reachable through both headless task families."""
 import json
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -9,6 +10,34 @@ from robotic_cutting_sim.rl.vector_env import compile_family
 from robotic_cutting_sim.runtime_profiles import compile_profiled_trim_seed
 from robotic_cutting_sim.scene_config import task_from_payload
 from robotic_cutting_sim.seeded_trim import compile_seed, digest_array
+
+
+def test_public_cutting_fidelity_uses_existing_headless_profiles(monkeypatch):
+    from robotic_cutting_sim.rl import vector_env
+
+    def stub(num_envs, **options):
+        return SimpleNamespace(close=lambda: None, **options)
+
+    monkeypatch.setattr(vector_env, "VectorCuttingEnv", stub)
+    task = ConfiguredTaskFamily.from_cut_workload(1)
+    with vector_env.open_vector_env(1, task=task, fidelity="reference") as reference:
+        assert reference.task is task
+    with vector_env.open_vector_env(1, task=task, fidelity="turbo") as turbo:
+        assert turbo.task.runtime_profile == "research_fast_4mm_v1"
+        assert turbo.task.compile_tasks()[0].grid_dx_m == .004
+        assert turbo.task.material_dt_s == .0002
+        assert turbo.particle_contact_mode == "alias_free_v2"
+    with pytest.raises(NotImplementedError, match="turbo"), vector_env.open_vector_env(
+            1, task=task, backend=vector_env.LAB_BACKEND, fidelity="turbo"):
+        pytest.fail("Unsupported Isaac Lab fidelity succeeded")
+
+
+def test_public_native_fidelity_rejects_low_cadence_before_launch():
+    from robotic_cutting_sim.live_env import open_cutting_env
+
+    with pytest.raises(ValueError, match="Native Vision fidelity"), open_cutting_env(
+            output_dir="unused", record_every=10, fidelity="reference"):
+        pytest.fail("Native fidelity accepted a reduced recording rate")
 
 
 @pytest.mark.parametrize("kind", ["cut", "trim"])

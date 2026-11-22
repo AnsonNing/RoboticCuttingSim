@@ -4,7 +4,7 @@ import subprocess
 import numpy as np
 import pytest
 
-from robotic_cutting_sim.recording import CameraFrameWriter, write_json
+from robotic_cutting_sim.recording import CameraFrameWriter, savez_fast, write_json
 
 
 def test_numeric_audit_receipt_preserves_boolean_types_and_rejects_nan(tmp_path):
@@ -19,7 +19,7 @@ def test_numeric_audit_receipt_preserves_boolean_types_and_rejects_nan(tmp_path)
 def test_camera_writer_preserves_order_and_lossless_frames(tmp_path):
     frames = tmp_path / "observations"
     frames.mkdir()
-    writer = CameraFrameWriter(tmp_path, np.savez_compressed, max_bytes=16, max_frames=1, chunk_frames=2)
+    writer = CameraFrameWriter(tmp_path, savez_fast, max_bytes=16, max_frames=1, chunk_frames=2)
     for frame in range(5):
         rgb = np.full((2, 2, 3), frame, dtype=np.uint8)
         rgb.setflags(write=False)

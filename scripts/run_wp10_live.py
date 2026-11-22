@@ -18,7 +18,8 @@ sys.path.insert(0, str(ROOT / 'src'))
 from robotic_cutting_sim.control import ActionLimits, DELTA_MODE
 from robotic_cutting_sim.live_env import open_cutting_env
 from robotic_cutting_sim.policy_config import policy_preset
-from robotic_cutting_sim.recording import CameraFrameWriter, PhysicsStreamWriter, manifest, new_output, write_json
+from robotic_cutting_sim.recording import (CameraFrameWriter, PhysicsStreamWriter, manifest, new_output,
+                                           savez_fast, write_json)
 
 
 def jsonable(value):
@@ -142,6 +143,10 @@ class EpisodeRecorder:
 
     def measured(self):
         backend = self.env.backend
+        if getattr(getattr(backend, 'config', None), 'camera_snapshot', False):
+            measured = getattr(self.env, '_proprio', {})
+            if measured.get('timestamp_s') == self.env.time_s:
+                return measured
         return backend.measured() if hasattr(backend, 'measured') else backend.proprioception()
 
     def body_poses(self):
@@ -150,14 +155,15 @@ class EpisodeRecorder:
 
     def _save_camera(self, path, **arrays):
         timing = getattr(self, 'camera_io', None)
+        save = savez_fast if getattr(self, 'camera_writer', None) is not None else np.savez_compressed
         if timing is None:
-            np.savez_compressed(path, **arrays)
+            save(path, **arrays)
             return
         start = time.perf_counter()
         with path.open('wb') as stream:
             opened = time.perf_counter()
             writer = _TimedWrites(stream)
-            np.savez_compressed(writer, **arrays)
+            save(writer, **arrays)
             encoded = time.perf_counter()
         timing['files'] += 1
         timing['serialization_wall_s'] += encoded - opened - writer.seconds
@@ -693,7 +699,7 @@ def main(argv=None):
     p.add_argument('--steps', type=int, default=400)
     p.add_argument('--episodes', type=int, default=1)
     p.add_argument('--spacing', type=float)
-    p.add_argument('--record-every', type=int, default=10)
+    p.add_argument('--record-every', type=int)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--scene', help='WP-11 Phase D: rcs_scene_v1 config (with --goal): run the compiled configured task')
     p.add_argument('--goal', help='rcs_goal_v1 config (with --scene)')
@@ -727,8 +733,9 @@ def main(argv=None):
     p.add_argument('--stream-physics', action='store_true', default=argparse.SUPPRESS)
     p.add_argument('--save-render-surfaces',action='store_true',
                    help='Save privileged exact per-capture staged meshes for camera replay; physics and observations unchanged')
-    p.add_argument('--runtime-profile', default=argparse.SUPPRESS,
-                   help='Configured runs: numerical and Native stage options from a cutting runtime profile')
+    p.add_argument('--runtime-profile', default=argparse.SUPPRESS, help=argparse.SUPPRESS)
+    p.add_argument('--fidelity', choices=('reference', 'turbo'), default=argparse.SUPPRESS,
+                   help='Physics fidelity. Native vision records every control step in both modes.')
     p.add_argument('--native-sensor-runtime', choices=('isaac62_physx_offline_v1',), default=argparse.SUPPRESS)
     p.add_argument('--material-diagnostics', choices=('snapshot', 'device_reduction_v1'), default=argparse.SUPPRESS)
     p.add_argument('--reuse-grasp-state', action='store_true', default=argparse.SUPPRESS,
@@ -736,6 +743,20 @@ def main(argv=None):
     p.add_argument('--robot-substeps', type=int, default=argparse.SUPPRESS)
     p.add_argument('--surface-update', choices=('every_step', 'on_capture'), default=argparse.SUPPRESS)
     a = p.parse_args(argv)
+    if hasattr(a, 'fidelity'):
+        from robotic_cutting_sim.runtime_profiles import fidelity_profile, native_50hz_cadence
+        if hasattr(a, 'runtime_profile'):
+            p.error("Choose --fidelity or --runtime-profile")
+        try:
+            profile = fidelity_profile(a.fidelity, a.runtime)
+            if profile is not None:
+                a.runtime_profile = profile
+            if a.runtime == 'isaac_sim':
+                _, a.record_every = native_50hz_cadence(record_every=a.record_every)
+        except (ValueError, NotImplementedError) as error:
+            p.error(str(error))
+    if a.record_every is None:
+        a.record_every = 1 if a.runtime == 'isaac_sim' and not hasattr(a, 'runtime_profile') else 10
     if a.global_view is not None:
         try:a.camera_rig_profile=select_global_view(a.global_view,a.camera_rig_profile)
         except ValueError as error:p.error(str(error))

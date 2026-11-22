@@ -246,7 +246,8 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
                home_outcome=None if home is None else home['home_outcome'])
     metrics = env.finish_recording(row)
     recorder_closed = bool(recorder.stream.closed and (directory/'result.json').exists())
-    exported, export = ds.export_episode(directory)
+    exported, export = ds.export_episode(
+        directory, fast_compression=getattr(getattr(env.backend, 'config', None), 'async_camera_write', False))
     memory_after = process_memory()
     every = int(env.recording.get('every', 10)) if env.recording else int(a.record_every or 10)
     frequencies = dict(control_rate_hz=1./dt, control_dt_s=dt, recorded_camera_every_steps=every if env.cameras_available else None,
@@ -562,8 +563,7 @@ def main(argv=None):
     p.add_argument('--stop-after-phase')
     p.add_argument('--hold-until-time-limit', action='store_true')
     p.add_argument('--edge-feedback', choices=('nominal', 'measured'), default='nominal')
-    p.add_argument('--record-every', type=int, help='Recorded frame interval in control steps (default 10, or the '
-                                                     '--runtime-profile recording rate)')
+    p.add_argument('--record-every', type=int, help='Recorded frame interval in control steps (Native defaults to 1)')
     p.add_argument('--camera-every', type=int, help='Live: control steps between policy camera refreshes (default 1, or '
                                                      'the --runtime-profile value)')
     p.add_argument('--camera-snapshot', action='store_true', help=argparse.SUPPRESS)
@@ -574,10 +574,12 @@ def main(argv=None):
     p.add_argument('--stream-physics', action='store_true', help=argparse.SUPPRESS)
     p.add_argument('--native-sensor-runtime', choices=('isaac62_physx_offline_v1',), help=argparse.SUPPRESS)
     p.add_argument('--material-diagnostics', choices=('snapshot', 'device_reduction_v1'), help=argparse.SUPPRESS)
+    p.add_argument('--ik-iterations', type=int, help=argparse.SUPPRESS)
     p.add_argument('--observation-profile', choices=('deployable', 'privileged_state'), default='deployable')
     p.add_argument('--history-stride', type=int, help='Oracle history stride (default 1)')
-    p.add_argument('--runtime-profile', help='WP-11 Phase H4 runtime profile id (configs/wp11/runtime_profiles_v1.json: '
-                                             'full_physics_v1 | research_fast_v1); default: none (unchanged behaviour)')
+    p.add_argument('--runtime-profile', help=argparse.SUPPRESS)
+    p.add_argument('--fidelity', choices=('reference', 'turbo'),
+                   help='Physics fidelity. Native vision captures and stores at 50 Hz in both modes.')
     p.add_argument('--stage-reset', choices=('reopen', 'reload_in_place'),
                    help='Isaac Sim: IsaacSimCuttingConfig.stage_reset (WP-11 Phase H1; default: the runtime default '
                         'or the --runtime-profile value)')
@@ -602,6 +604,16 @@ def main(argv=None):
     p.add_argument('--out', type=Path, required=True)
     argv = list(sys.argv[1:] if argv is None else argv)
     a = p.parse_args(argv)
+    if a.fidelity is not None:
+        from robotic_cutting_sim.runtime_profiles import fidelity_profile, native_50hz_cadence
+        if a.runtime_profile is not None:
+            p.error("Choose --fidelity or --runtime-profile")
+        try:
+            a.runtime_profile = fidelity_profile(a.fidelity, a.runtime)
+            if a.runtime == 'isaac_sim':
+                a.camera_every, a.record_every = native_50hz_cadence(a.camera_every, a.record_every)
+        except (ValueError, NotImplementedError) as error:
+            p.error(str(error))
     if a.recycle_every is not None and a.recycle_every < 1:
         raise SystemExit('--recycle-every must be >= 1')
     entries = episode_entries(a)
@@ -615,15 +627,17 @@ def main(argv=None):
     git = manifest({}, 'probe')
     git = {key: git.get(key) for key in ('git_sha', 'git_dirty', 'packages', 'python')}
     planner_options = json.loads(a.planner_options) if a.planner_options else None
-    if a.runtime_profile is None:   # unchanged defaults without a profile
+    if a.runtime_profile is None:
         a.material_dt = .0001 if a.material_dt is None else a.material_dt
         a.history_stride = 1 if a.history_stride is None else a.history_stride
-        a.record_every = 10 if a.record_every is None else a.record_every
+        if a.record_every is None:
+            a.record_every = 1 if a.runtime == 'isaac_sim' else 10
         a.camera_every = 1 if a.camera_every is None else a.camera_every
     runtime_options = {key: value for key, value in dict(material_dt=a.material_dt, history_stride=a.history_stride).items()
                        if value is not None}
     native_flags = ('camera_snapshot', 'steady_render_passes', 'async_camera_write', 'buffer_grasp_trace',
-                    'overview_camera', 'native_sensor_runtime', 'material_diagnostics', 'stream_physics')
+                    'overview_camera', 'native_sensor_runtime', 'material_diagnostics', 'stream_physics',
+                    'ik_iterations')
     native_options = {key: value for key in native_flags
                       if (value := getattr(a, key)) is not None and value is not False}
     if native_options and a.runtime != 'isaac_sim':

@@ -599,7 +599,7 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
                      action_mode=ACTION_MODES[0], observation_profile="vision_proprio",
                      include_global_camera=False, camera_layout="wrist_d405_global_d455", task=None, preset=None,
                      scene=None, goal=None, solver_profile=None, planner_options=None, global_view=None,
-                     **backend_options):
+                     fidelity=None, **backend_options):
     """Start a pinned live runtime in its dedicated venv, then close it on exit.
 
     Use a fresh output directory. Isaac Sim defaults to real native SingleView
@@ -627,6 +627,50 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
     tasks; turns the cut_events_v1 recorder on; selection and per-frame provenance are recorded,
     ``surface_runtime.py``). The surface is render geometry only and never feeds back into physics.
     """
+    if fidelity is not None:
+        from . import runtime_profiles as rp
+
+        profile_name = rp.fidelity_profile(fidelity, runtime)
+        if backend_options.get("runtime_profile") is not None:
+            raise ValueError("Choose fidelity or an experimental runtime profile")
+        if runtime == "isaac_sim":
+            if preset is not None:
+                overrides = dict(backend_options.get("preset_overrides") or {})
+                recording = backend_options.get("recording")
+                camera_every, record_every = rp.native_50hz_cadence(
+                    overrides.get("camera_every"), recording.get("every") if recording else None)
+                backend_options["preset_overrides"] = {**overrides, "camera_every": camera_every}
+                if recording is not None:
+                    backend_options["recording"] = {**recording, "every": record_every}
+            else:
+                _, backend_options["record_every"] = rp.native_50hz_cadence(
+                    record_every=backend_options.get("record_every"))
+        if profile_name is not None:
+            from .scene_config import ConfiguredTaskSpec, compile_task
+
+            profile = rp.runtime_profile(profile_name)
+            rp.check_caller_overrides(profile, backend_options=backend_options)
+            compiled_seed = None
+            if isinstance(task, ConfiguredTaskSpec) and scene is None and goal is None:
+                if planner_options is not None or solver_profile is not None:
+                    raise ValueError("A compiled task already fixes the planner and solver")
+                compiled_seed = task.seed
+                scene, goal, planner_options = task.scene, task.goal, task.controller["planner"]
+                task = None
+            if scene is None or goal is None or task is not None:
+                raise ValueError("Turbo needs a configured cutting scene and goal")
+            scene = rp.profile_scene(scene, profile)
+            if scene["solver"]["module"] != "tlmpm_v7_2":
+                raise ValueError("Cutting Turbo requires a tlmpm_v7_2 scene")
+            if preset is not None and compiled_seed is None:
+                backend_options["runtime_profile"] = profile_name
+            else:
+                backend_options["material_dt"] = float(profile["material_dt_s"])
+                if runtime == "isaac_sim":
+                    backend_options["dx"] = float(scene["solver"]["grid_dx_m"])
+                if compiled_seed is not None:
+                    task = compile_task(scene, goal, planner_options=planner_options, seed=compiled_seed)
+                    scene = goal = planner_options = None
     if global_view is not None:
         from .camera_rig import select_global_view
         backend_options['camera_rig_profile'] = select_global_view(global_view,backend_options.get('camera_rig_profile'))

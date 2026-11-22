@@ -26,7 +26,7 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial.transform import Rotation, Slerp
 
-from .recording import load_physics_recording, physical_recording_paths
+from .recording import load_physics_recording, physical_recording_paths, savez_fast
 
 DATASET_VERSION = "rcs_dataset_v1"
 ACTION_PROGRAM_SCHEMA = "rcs_action_program_v1"
@@ -130,7 +130,7 @@ def _stack(rows, key, shape, dtype=float):
     return out
 
 
-def export_episode(episode_dir):
+def export_episode(episode_dir, *, fast_compression=False):
     """episode_export.npz from the recorder files: deployable arrays only; returns (path, summary)."""
     episode_dir = Path(episode_dir)
     actions = read_jsonl(episode_dir/"actions.jsonl")
@@ -212,7 +212,8 @@ def export_episode(episode_dir):
                               "recorded_rate_hz": float(1./np.median(dt)) if len(dt) and np.median(dt) > 0 else None}
     arrays["frame_time_s"] = np.asarray([row["time_s"] for row in frames], float)
     path = episode_dir/EXPORT_NAME
-    np.savez_compressed(path, **arrays)
+    save = savez_fast if fast_compression else np.savez_compressed
+    save(path, **arrays)
     return path, {"steps": n, "cameras": camera_rates, "export_sha256": sha256_file(path), "keys": sorted(arrays)}
 
 
