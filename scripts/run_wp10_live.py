@@ -27,6 +27,21 @@ def jsonable(value):
 
 
 @contextmanager
+def configured_stage_profile(output, enabled):
+    if not enabled:
+        yield
+        return
+    from robotic_cutting_sim.profiling import STAGES, StageProfiler
+
+    stages = (*STAGES, ('control_step', 'robotic_cutting_sim.live_env:CuttingTaskEnv.step'))
+    with StageProfiler(stages=stages) as profiler:
+        try:
+            yield
+        finally:
+            write_json(output / 'stage_summary.json', jsonable(profiler.summary()))
+
+
+@contextmanager
 def failure_receipt(output, env=None):
     # Native Kit may exit Python during app.close(); write failures before closing it.
     try:
@@ -70,11 +85,27 @@ def save_surface_snapshot(backend, output, index, timestamp):
             source_surface_sha256=digest,**extra)
 
 
+class _TimedWrites:
+    def __init__(self, stream):
+        self.stream = stream
+        self.seconds = 0.
+
+    def write(self, payload):
+        start = time.perf_counter()
+        count = self.stream.write(payload)
+        self.seconds += time.perf_counter() - start
+        return count
+
+    def __getattr__(self, key):
+        return getattr(self.stream, key)
+
+
 class EpisodeRecorder:
     """Raw RGB-D, poses, commands and actual material history, with fresh names."""
     def __init__(self, output, env, controller, every=10, *, save_surfaces=False, stream_physics=False):
         self.output, self.env, self.controller, self.every = Path(output), env, controller, every
         self.save_surfaces=save_surfaces
+        self.camera_io = None if every != 1 else dict(files=0, serialization_wall_s=0., disk_write_wall_s=0.)
         self.output.mkdir(exist_ok=False)
         (self.output / 'observations').mkdir()
         self.rows, self.samples, self.states, self.errors, self.rotation_errors = [], [], [], [], []
@@ -114,6 +145,21 @@ class EpisodeRecorder:
         backend = self.env.backend
         return backend.body_poses().copy() if hasattr(backend, 'body_poses') else backend.measured()['body_pose'].copy()
 
+    def _save_camera(self, path, **arrays):
+        timing = getattr(self, 'camera_io', None)
+        if timing is None:
+            np.savez_compressed(path, **arrays)
+            return
+        start = time.perf_counter()
+        with path.open('wb') as stream:
+            opened = time.perf_counter()
+            writer = _TimedWrites(stream)
+            np.savez_compressed(writer, **arrays)
+            encoded = time.perf_counter()
+        timing['files'] += 1
+        timing['serialization_wall_s'] += encoded - opened - writer.seconds
+        timing['disk_write_wall_s'] += writer.seconds + (opened - start) + (time.perf_counter() - encoded)
+
     def capture(self):
         env = self.env
         backend = env.backend
@@ -129,23 +175,23 @@ class EpisodeRecorder:
             if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
                 raise ValueError('Only current, measured camera frames may be recorded')
             public['physics_timestamp_s'] = timestamp
-            np.savez_compressed(self.output / 'observations' / f'{name}_{index:04d}.npz', **public)
+            self._save_camera(self.output / 'observations' / f'{name}_{index:04d}.npz', **public)
         overview = getattr(backend, 'overview_frame', None) if frames else None
         if overview is not None:
             # Presentation-only RGB (never an observation); same measured-time rule.
             timestamp = float(overview['physics_timestamp_s'])
             if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
                 raise ValueError('Only current overview frames may be recorded')
-            np.savez_compressed(self.output / 'observations' / f'overview_rgb_{index:04d}.npz',
-                                rgb=overview['rgb'], physics_timestamp_s=timestamp)
+            self._save_camera(self.output / 'observations' / f'overview_rgb_{index:04d}.npz',
+                              rgb=overview['rgb'], physics_timestamp_s=timestamp)
         closeup = getattr(backend, 'closeup_frame', None) if frames else None
         if closeup is not None:
             # Presentation-only close-up RGB (never an observation); same measured-time rule.
             timestamp = float(closeup['physics_timestamp_s'])
             if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
                 raise ValueError('Only current close-up frames may be recorded')
-            np.savez_compressed(self.output / 'observations' / f'closeup_rgb_{index:04d}.npz',
-                                rgb=closeup['rgb'], physics_timestamp_s=timestamp)
+            self._save_camera(self.output / 'observations' / f'closeup_rgb_{index:04d}.npz',
+                              rgb=closeup['rgb'], physics_timestamp_s=timestamp)
         self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
                               camera_calibration=jsonable(backend.calibration),
                               cut_enabled=getattr(self, 'last_cut', False)))
@@ -288,6 +334,8 @@ class EpisodeRecorder:
                        rotation_error_rad={key: float(value) for key, value in zip(
                            ('p50', 'p95', 'max'), np.percentile(self.rotation_errors or [0.], [50, 95, 100]))})
         write_json(self.output / 'result.json', {**result, **metrics})
+        if getattr(self, 'camera_io', None) is not None:
+            write_json(self.output / 'camera_io_timing.json', self.camera_io)
         if getattr(self, 'physics_stream', None) is not None:
             self.physics_stream.finalize()
         return metrics
@@ -395,7 +443,7 @@ def validate_configured(p, a):
 def validate_arguments(p, a):
     if a.scene or a.goal:
         return validate_configured(p, a)
-    configured_only = ('surface_profile', 'surface_timing_log', 'runtime_profile', 'native_sensor_runtime',
+    configured_only = ('surface_profile', 'surface_timing_log', 'stage_profile', 'runtime_profile', 'native_sensor_runtime',
                        'material_diagnostics', 'reuse_grasp_state', 'robot_substeps', 'surface_update')
     invalid = [f"--{k.replace('_', '-')}" for k in configured_only if hasattr(a, k)]
     if invalid:
@@ -650,6 +698,8 @@ def main(argv=None):
     p.add_argument('--surface-timing-log', action='store_true', default=argparse.SUPPRESS,
                    help='Configured runs: write the in-memory per-step physics/surface/camera timings to '
                         'episode_###/runtime_timing_trace.json (profiling; both surface profiles)')
+    p.add_argument('--stage-profile', action='store_true', default=argparse.SUPPRESS,
+                   help='Measure the configured Native episode with StageProfiler')
     p.add_argument('--save-render-surfaces',action='store_true',
                    help='Save privileged exact per-capture staged meshes for camera replay; physics and observations unchanged')
     p.add_argument('--runtime-profile', default=argparse.SUPPRESS,
@@ -846,15 +896,20 @@ def run_configured(a, out, task):
         from robotic_cutting_sim.physical_tool import ToolGraspConfig
         options['grasp'] = replace(ToolGraspConfig(), **grip_overrides)
     results, status = [], 'FAIL_EXECUTION'
+    startup_start = time.monotonic()
     try:
         with open_cutting_env(task=task, runtime='isaac_sim', output_dir=out / 'runtime', seed=a.seed,
-                              observation_profile=a.observation, **options) as env, failure_receipt(out, env):
+                              observation_profile=a.observation, **options) as env, failure_receipt(out, env), \
+                configured_stage_profile(out, getattr(a, 'stage_profile', False)):
+            startup_s = time.monotonic() - startup_start
             if a.reward:
                 from robotic_cutting_sim.reward import CuttingReward
                 env.reward = CuttingReward(env.task)
             for episode in range(a.episodes):
                 seed, episode_start = a.seed + episode, time.monotonic()
                 observation, reset_info = env.reset(seed=seed)
+                reset_s = time.monotonic() - episode_start
+                control_start = time.monotonic()
                 recorder = EpisodeRecorder(out / f'episode_{episode:03d}', env, a.controller, a.record_every,
                                            save_surfaces=a.save_render_surfaces)
                 policy, profile_receipt = None, None
@@ -904,7 +959,10 @@ def run_configured(a, out, task):
                 if env.episode_state == 'RUNNING':
                     env.end_task(stop_reason or 'STEP_BUDGET')
                 task_end = env.lifecycle.snapshot()
+                control_s = time.monotonic() - control_start
+                evaluation_start = time.monotonic()
                 strict, _, _ = evaluate_episode(env)
+                eval_s = time.monotonic() - evaluation_start
                 row = dict(runtime='isaac_sim', task_id=env.task.task_id, controller=a.controller, seed=seed,
                            status='PASS_EXECUTION', task_status=strict.get('verdict', strict.get('status')), task_outcome=strict,
                            task_phase_end=task_end, runtime_source=env.runtime_source, observation_profile=a.observation,
@@ -922,6 +980,7 @@ def run_configured(a, out, task):
                                policy_final_phase=policy.phase, controller_profile=profile_receipt)
                     if getattr(policy, 'vision', None):
                         row.update(policy_vision=policy.vision)
+                home_start = time.monotonic()
                 if a.return_home:
                     def on_step(action, result, before, label):
                         recorder.step(action, result, before, None, policy_phase=f'RETURN_HOME:{label}')
@@ -932,6 +991,10 @@ def run_configured(a, out, task):
                                         labels=np.asarray(home.get('labels', []), str))
                     row.update(home_outcome=home['home_outcome'], home_measurement=home['measurement'],
                                home_plan={key: value for key, value in plan.items() if key != 'q'})
+                if getattr(a, 'stage_profile', False):
+                    row['stage_wall_s'] = dict(startup_s=startup_s, reset_s=reset_s,
+                                               control_s=control_s, evaluation_s=eval_s,
+                                               home_s=time.monotonic()-home_start if a.return_home else 0.)
                 row.update(episode_state_final=env.lifecycle.snapshot(), episode_transitions=env.lifecycle.history,
                            wall_s=time.monotonic() - episode_start)
                 if getattr(a, 'surface_timing_log', False):
@@ -940,7 +1003,10 @@ def run_configured(a, out, task):
                         surface_profile=env.backend.config.surface_profile, **env.backend.runtime_timing_trace(),
                         gpu_process_memory_mib=gpu_memory_now(),
                         scope='perf_counter wall times inside the Native runner (in-memory trace since reset)')))
+                finalize_start = time.monotonic()
                 row.update(recorder.finish(jsonable(row)))
+                if getattr(a, 'stage_profile', False):
+                    row['stage_wall_s']['finalize_s'] = time.monotonic() - finalize_start
                 results.append(row)
                 write_json(out / 'results.json', jsonable(results))
             status = 'PASS_EXECUTION'

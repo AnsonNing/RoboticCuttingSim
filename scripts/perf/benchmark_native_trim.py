@@ -33,6 +33,8 @@ def main():
     p.add_argument("--runtime-profile")
     p.add_argument("--reuse-grasp-state", action="store_true")
     p.add_argument("--robot-substeps", type=int, default=10)
+    p.add_argument("--camera-every", type=int, default=10)
+    p.add_argument("--record-every", type=int, default=10)
     args = p.parse_args()
     from agentic_robot.lab.sim.envs.rcs_gpu1 import _require_gpu1, launch_app_gpu1
     from robotic_cutting_sim import isaac_sim_runner
@@ -53,12 +55,14 @@ def main():
                "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                "dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT)),
                "gpu_uuid": os.environ["CUDA_VISIBLE_DEVICES"], "runtime_profile": args.runtime_profile,
-               "robot_substeps": args.robot_substeps, "reuse_grasp_state": args.reuse_grasp_state})
+               "robot_substeps": args.robot_substeps, "reuse_grasp_state": args.reuse_grasp_state,
+               "camera_every": args.camera_every, "record_every": args.record_every})
     start = time.perf_counter()
     with open_env(output_dir=args.out / "env", seed=args.seed, stream_physics=True, memory_receipts=True,
                   native_sensor_runtime="isaac62_physx_offline_v1", material_diagnostics="device_reduction_v1",
                   runtime_profile=args.runtime_profile, reuse_grasp_state=args.reuse_grasp_state,
-                  robot_substeps=args.robot_substeps) as env:
+                  robot_substeps=args.robot_substeps, camera_every=args.camera_every,
+                  record_every=args.record_every) as env:
         factory_s = time.perf_counter() - start
         env.reset()
         reset_s = time.perf_counter() - start - factory_s
@@ -73,6 +77,8 @@ def main():
         finally:
             profiler.uninstall()
             write_json(args.out / "stage_summary.json", profiler.summary())
+            if args.record_every == 1:
+                write_json(args.out / "native_timing.json", env.env.backend.runtime_timing_trace())
         rec = env.current_recording
         ev = json.loads((rec / "evaluation.json").read_text())
         frames = json.loads((rec / "frame_manifest.json").read_text())

@@ -1645,7 +1645,8 @@ class LiveIsaacSimCutting:
         capture_start = time.perf_counter()
         result = self._capture()
         if hasattr(self, "capture_trace"):   # in memory only
-            self.capture_trace.append({"time_s": self.time_s, "capture_wall_s": time.perf_counter()-capture_start})
+            self.capture_trace.append({"time_s": self.time_s, "capture_wall_s": time.perf_counter()-capture_start,
+                                       **getattr(self, "_capture_timing", {})})
         return result
 
     def _capture(self):
@@ -1668,8 +1669,12 @@ class LiveIsaacSimCutting:
         overview_rgb=None
         closeup=getattr(self,"closeup_sensor",None)
         closeup_rgb=None
+        render_s = readback_s = 0.
         for _ in range(self.config.render_warmup+30):
+            started = time.perf_counter()
             rep.orchestrator.step(rt_subframes=1,delta_time=0.)
+            rendered = time.perf_counter()
+            render_s += rendered - started
             latest = {name:{a:data(name,sensor,a) for a in
                        (["rgb","distance_to_image_plane","depth_sensor_distance","depth_sensor_point_cloud_position"]
                        if name in self.native_parameters else
@@ -1680,6 +1685,7 @@ class LiveIsaacSimCutting:
                 overview_rgb=overview.get_data("rgb")[0]
             if closeup is not None:
                 closeup_rgb=closeup.get_data("rgb")[0]
+            readback_s += time.perf_counter() - rendered
             if (_ >= self.config.render_warmup-1 and all(value[0] is not None for data in latest.values() for value in data.values())
                     and (overview is None or overview_rgb is not None) and (closeup is None or closeup_rgb is not None)):
                 break
@@ -1692,7 +1698,9 @@ class LiveIsaacSimCutting:
         if not all(np.array_equal(robot_before[key],robot_after[key]) for key in ("q","qdot","tool_pose","hand_pose_both_xyzw")):
             raise RuntimeError("Rendering changed native measured robot state while physics was held")
         frames = {}
+        started = time.perf_counter()
         parameters_by_name={name:annotator.get_data() for name,annotator in self.camera_params.items()}
+        readback_s += time.perf_counter() - started
         write_json(self.output/"camera_params_latest.json",parameters_by_name)
         self.camera_runtime_extrinsic_checks={}
         for name, payload in latest.items():
@@ -1801,6 +1809,8 @@ class LiveIsaacSimCutting:
             self.closeup_frame={"rgb":rgb[:,:,:3].astype(np.uint8,copy=False),"physics_timestamp_s":self.time_s,
                                 "native_physics_timestamp_s":before[0],"camera_id":"closeup_rgb",
                                 "presentation_only":True,"live_source":"Isaac Sim6.2 Kit/PhysX/RTX"}
+        self._capture_timing = {"render_wall_s": render_s, "annotator_readback_wall_s": readback_s,
+                                "render_iterations": _ + 1}
         return frames,{name:{a:str(value[1]) for a,value in payload.items()} for name,payload in latest.items()}
 
     def close(self):

@@ -47,11 +47,12 @@ class AgenticTrimEnv:
     A reset before the first action is idempotent (the external worker resets too).
     """
     def __init__(self, env, output, task, manifest, *, seed, evaluator_python=None,
-                 stream_physics=False, memory_log=None):
+                 stream_physics=False, memory_log=None, record_every=10):
         self.env, self.output, self.task = env, Path(output), task
         self.manifest, self.seed = manifest, int(seed)
         self.evaluator_python = evaluator_python
         self.stream_physics, self.memory_log = bool(stream_physics), memory_log
+        self.record_every = record_every
         self.started, self.finished, self.attempts = False, True, []
         self.total_steps = 0
         self.wall_start = time.perf_counter()
@@ -105,7 +106,8 @@ class AgenticTrimEnv:
         rec.parent.mkdir(exist_ok=True)
         recorder, _ = load_episode_recorder()
         options = {'stream_physics': True} if self.stream_physics else {}
-        self.env._recorder = recorder(rec, self.env.inner, 'agentic control robot', every=10, **options)
+        self.env._recorder = recorder(
+            rec, self.env.inner, 'agentic control robot', every=self.record_every, **options)
         self.env._recorder_finished = False
         self.current_recording = rec
         write_json(rec/'compiled_task.json', json.loads(configured_task_payload(self.task)))
@@ -213,11 +215,14 @@ class AgenticTrimEnv:
 def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id', evaluator_python=None,
              stream_physics=False, memory_receipts=False, native_sensor_runtime=None,
              material_diagnostics='snapshot', v7_2_optimizations=True, runtime_profile=None,
-             reuse_grasp_state=False, robot_substeps=10):
+             reuse_grasp_state=False, robot_substeps=10, camera_every=10, record_every=10):
     """Entry used by a GPU1-only launcher; never selects a GPU by itself."""
     from .live_env import open_cutting_env
     if not isinstance(v7_2_optimizations, bool):
         raise ValueError("v7_2_optimizations must be a bool")
+    if (type(camera_every) is not int or type(record_every) is not int or camera_every < 1
+            or record_every < 1 or record_every % camera_every):
+        raise ValueError("record_every must be a positive multiple of camera_every")
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=False)
     memory_log = output/'runtime_memory.jsonl' if memory_receipts else None
@@ -258,9 +263,10 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
                 preset='cutting_research_v1', camera_rig_profile='wrist_camera_rig_v14', global_rgb_only=True,
                 active_camera_ids=CAMERAS, device='cuda:0', dx=dx, material_dt=material_dt,
                 surface_update='on_capture', history_stride=10, **options,
-                preset_overrides=dict(camera_every=10, gripper_control_mode='hold')) as env:
+                preset_overrides=dict(camera_every=camera_every, gripper_control_mode='hold')) as env:
             adapter = AgenticTrimEnv(env, output, task, manifest, seed=seed,
-                evaluator_python=evaluator_python, stream_physics=stream_physics, memory_log=memory_log)
+                evaluator_python=evaluator_python, stream_physics=stream_physics, memory_log=memory_log,
+                record_every=record_every)
             try:
                 yield adapter
             except BaseException as error:
