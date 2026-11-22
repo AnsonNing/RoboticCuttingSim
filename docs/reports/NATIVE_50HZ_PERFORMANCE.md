@@ -53,9 +53,10 @@ only supply presentation views are included in the raw recording.
   The existing 5 Hz readback-only attempt remains negative evidence.
   [High-speed research history](HIGH_SPEED_RESULTS.md)
 
-Commands, runtime versions, the GPU and RSS samples, profiler stages,
-audits and original recordings are under
-`/home/ningan/RoboticCuttingSim-high-speed/.native50hz/artifacts/p0_50hz_001`.
+The artifact root is
+`/home/ningan/RoboticCuttingSim-high-speed/.native50hz/artifacts`.
+`p0_50hz_001` holds the baseline commands, runtime versions, GPU and RSS
+samples, profiler stages, audits and original recordings.
 Each `*_process.json` records its complete launch command. The
 `*_cadence_v2.json` receipts enumerate every acquired camera stream.
 `matched_phase_summary.jsonl` includes the StageProfiler and I/O
@@ -76,6 +77,13 @@ breakdowns and `EVIDENCE_SHA256SUMS` records the evidence digests.
   DEFLATE, 0.31 s and 16.88 MB for level 1, 1.16 s and 13.47 MB for
   chunked NPZ, and 1.22 s for a stored intermediate followed by conversion.
   Level 1 preserves the arrays exactly.
+- The policy and recorder share the same captured frames through
+  owned host buffers. The public observation API returns detached
+  arrays. A pinned-copy probe checked 12 live arrays per modality against
+  the same GPU source. All matched exactly. Median time until the host
+  array was ready fell from 0.191 to 0.055 ms on contiguous wrist depth
+  and rose from 0.725 to 1.100 ms on strided RGB. The production camera
+  transfers stay synchronous. Probe data are in `p1_pinned_copy_002`.
 - Tuned CUT Turbo shortened cold process wall by 65.4%. RTX render time
   fell from 245.20 to 40.25 s, with 745 render passes for 741 timestamps.
   The measured CUDA-to-host conversion took 3.35 s. The synchronous
@@ -119,3 +127,26 @@ presentation views also have static USD calibration in the runtime setup
 receipts. The historical `POLICY_READY` score failed the reset tool-rest
 check and requires a failed episode in the collection. Dataset integrity
 and physical outcomes passed independently.
+
+The 4-, 8-, and 16-episode recycle probes crossed the restart boundary
+and read back all 5, 9, and 17 short episodes. Their three-control-step
+budgets produced four timestamps per camera. Episode IDs, seed
+assignments, and frame counts passed, with deliberately incomplete
+physical outcomes labelled separately. The 16-episode block's ending
+RSS grew from 6.12 to 6.71 GiB. The full-workload throughput measurement
+uses the verified four-episode recycle interval.
+
+### Rigid control and preserved backends
+
+CUT Turbo with five and four PhysX substeps took 205.62 s and 201.15 s.
+Both retained material separation, loaded grasp, HOME, and complete
+50 Hz recordings. Actual HOME took 47 and 39 steps, giving 748 and 740
+frames per stream. At ten, five, and four substeps the p95 tracking errors
+were 1.37, 1.91, and 2.69 mm. Peak finger penetration was 7.33, 28.77,
+and 45.89 µm. The Native defaults retain ten substeps. The original
+contact force and slip records are in `p5_rigid_and_rubber_001`.
+
+Native Rubber Reference also passed a six-control-step 50 Hz smoke.
+Both calibrated RGB-D cameras saved seven frames with their native
+physics timestamps, measured clamp pose, and parked robot state.
+The smoke used the original Native Rubber material and the held clamp.
