@@ -271,6 +271,28 @@ def validate_episode(root, episode):
     for key in arrays:
         if key.startswith("camera__") and key.endswith("__time_s"):
             checks[f"{key}_at_step_times"] = set(np.round(arrays[key], 9).tolist()) <= step_times
+    modalities = meta.get("frequencies", {}).get("native_50hz_modalities")
+    if modalities is not None:
+        expected_times = np.r_[0., times]
+        camera_names = {key.split("__")[1] for key in arrays
+                        if key.startswith("camera__") and key.endswith("__time_s")}
+        checks["native_50hz_camera_set"] = bool(modalities) and set(modalities) == camera_names
+        checks["native_50hz_recorded_times"] = (
+            np.allclose(expected_times, np.arange(len(expected_times)) / 50, rtol=0, atol=1e-9)
+            and arrays["frame_time_s"].shape == expected_times.shape
+            and np.allclose(arrays["frame_time_s"], expected_times, rtol=0, atol=1e-9))
+        for name, channels in modalities.items():
+            camera = {key.rsplit("__", 1)[-1]: value for key, value in arrays.items()
+                      if key.startswith(f"camera__{name}__")}
+            time = camera.get("time_s", np.empty(0))
+            checks[f"{name}_full_cadence"] = (time.shape == expected_times.shape
+                                             and np.allclose(time, expected_times, rtol=0, atol=1e-9))
+            required = {*channels, "K", "T_world_camera"}
+            if "depth_m" in required:
+                required.add("valid_mask")
+            checks[f"{name}_complete_modalities"] = (required <= camera.keys()
+                and ("depth_m" in camera) == ("depth_m" in required)
+                and all(len(camera[key]) == len(expected_times) for key in required))
     checks["evaluation_present"] = meta.get("task_result") is not None and meta["task_result"].get("verdict") is not None
     checks["termination_recorded"] = "termination_reason" in meta and "episode_state_final" in meta
     physics, checkpoint = load_physics_recording(directory)

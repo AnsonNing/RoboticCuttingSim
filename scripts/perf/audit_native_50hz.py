@@ -25,6 +25,8 @@ PRESENTATION = {"overview_rgb", "closeup_rgb"}
 def read_frames(path, times, rgbd, calibrated):
     size = None
     initial_native_time = None
+    previous_rgb = None
+    identical_consecutive_rgb = 0
     for file, time_s in zip(path, times, strict=True):
         with np.load(file, allow_pickle=False) as frame:
             rgb = frame["rgb"]
@@ -32,8 +34,11 @@ def read_frames(path, times, rgbd, calibrated):
                 raise ValueError(f"Invalid RGB payload in {file}")
             if size is None:
                 size = rgb.shape[:2]
-            if rgb.shape[:2] != size or abs(float(frame["physics_timestamp_s"]) - time_s) > 1e-9:
+            if rgb.shape[:2] != size or not np.isclose(
+                    float(frame["physics_timestamp_s"]), time_s, rtol=0, atol=1e-9):
                 raise ValueError(f"RGB shape or physics timestamp mismatch in {file}")
+            identical_consecutive_rgb += int(previous_rgb is not None and np.array_equal(previous_rgb, rgb))
+            previous_rgb = rgb
             if ("depth_m" in frame) != rgbd or ("valid_mask" in frame) != rgbd:
                 raise ValueError(f"Depth modality mismatch in {file}")
             if rgbd:
@@ -48,17 +53,20 @@ def read_frames(path, times, rgbd, calibrated):
                         or not np.isfinite(pose).all() or min(K[0, 0], K[1, 1]) <= 0
                         or not np.allclose(pose @ frame["T_camera_world"], np.eye(4), rtol=0, atol=1e-5)):
                     raise ValueError(f"Invalid camera calibration in {file}")
-                if any(abs(float(frame[key]) - time_s) > 1e-9 for key in
+                if any(not np.isclose(float(frame[key]), time_s, rtol=0, atol=1e-9) for key in
                        ("surface_timestamp_s", "camera_extrinsics_timestamp_s")):
                     raise ValueError(f"Camera and scene times differ in {file}")
+                if not rgbd and list(frame["modalities"]) != ["rgb"]:
+                    raise ValueError(f"Missing RGB-only modality declaration in {file}")
+            if calibrated or "native_physics_timestamp_s" in frame:
                 native_time = float(frame["native_physics_timestamp_s"])
                 if initial_native_time is None:
                     initial_native_time = native_time
-                if not np.isfinite(native_time) or abs(native_time - initial_native_time - time_s) > 1e-6:
+                if not np.isclose(native_time, initial_native_time + time_s, rtol=0, atol=1e-6):
                     raise ValueError(f"Native physics clock mismatch in {file}")
-                if not rgbd and list(frame["modalities"]) != ["rgb"]:
-                    raise ValueError(f"Missing RGB-only modality declaration in {file}")
-    return {"frames": len(path), "height": size[0], "width": size[1], "rgb": True, "depth_m": rgbd}
+    return {"frames": len(path), "height": size[0], "width": size[1], "rgb": True, "depth_m": rgbd,
+            "initial_native_timestamp_s": initial_native_time,
+            "identical_consecutive_rgb": identical_consecutive_rgb}
 
 
 def audit(episode, task, steps):
@@ -92,6 +100,10 @@ def audit(episode, task, steps):
             raise ValueError(f"Missing or surplus camera frames: {name}")
         paths = [by_index[index] for index in indices]
         streams[name] = read_frames(paths, times, CAMERAS[task][name], name not in PRESENTATION)
+    clock_origins = [row["initial_native_timestamp_s"] for row in streams.values()
+                     if row["initial_native_timestamp_s"] is not None]
+    if not np.allclose(clock_origins, clock_origins[0], rtol=0, atol=1e-9):
+        raise ValueError("Camera streams have differing Native physics clock origins")
     return {"status": "PASS", "task": task, "actions": steps, "frame_times": len(times),
             "invalid_or_mismatched_timestamps": 0, "cameras": streams}
 

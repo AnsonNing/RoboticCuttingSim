@@ -193,16 +193,18 @@ class EpisodeRecorder:
             timestamp = float(overview['physics_timestamp_s'])
             if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
                 raise ValueError('Only current overview frames may be recorded')
+            native_clock = {key: overview[key] for key in ('native_physics_timestamp_s',) if key in overview}
             files.append((observations / f'overview_rgb_{index:04d}.npz',
-                          dict(rgb=overview['rgb'], physics_timestamp_s=timestamp)))
+                          dict(rgb=overview['rgb'], physics_timestamp_s=timestamp, **native_clock)))
         closeup = getattr(backend, 'closeup_frame', None) if frames else None
         if closeup is not None:
             # Presentation-only close-up RGB (never an observation); same measured-time rule.
             timestamp = float(closeup['physics_timestamp_s'])
             if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
                 raise ValueError('Only current close-up frames may be recorded')
+            native_clock = {key: closeup[key] for key in ('native_physics_timestamp_s',) if key in closeup}
             files.append((observations / f'closeup_rgb_{index:04d}.npz',
-                          dict(rgb=closeup['rgb'], physics_timestamp_s=timestamp)))
+                          dict(rgb=closeup['rgb'], physics_timestamp_s=timestamp, **native_clock)))
         row = dict(frame=index, time_s=env.time_s, controller=self.controller,
                    camera_calibration=jsonable(backend.calibration), cut_enabled=getattr(self, 'last_cut', False))
         writer = getattr(self, 'camera_writer', None)
@@ -560,7 +562,11 @@ def measured_edge_estimator(env):
     backend = env.backend
 
     def estimate(observation):
-        measured = backend.measured() if hasattr(backend, 'measured') else backend.proprioception()
+        measured = {}
+        if getattr(getattr(backend, 'config', None), 'camera_snapshot', False):
+            measured = getattr(env, '_proprio', {})
+        if measured.get('timestamp_s') != env.time_s:
+            measured = backend.measured() if hasattr(backend, 'measured') else backend.proprioception()
         stamp = float(measured.get('timestamp_s', env.time_s))
         if abs(stamp - float(observation['timestamp_s'])) > 1e-9:
             raise ValueError('Measured tool-edge feedback must match the observation time')
@@ -979,7 +985,7 @@ def run_configured(a, out, task):
                     if policy is not None and policy.done:
                         stop_reason = 'CONTROLLER_DONE'
                         break
-                    before_observation = env.observe()
+                    before_observation = observation if getattr(a, 'camera_snapshot', False) else env.observe()
                     step_start = time.monotonic()
                     result = env.step(action)
                     observation = result[0]
@@ -996,9 +1002,10 @@ def run_configured(a, out, task):
                 for _ in range(hold_steps if stop_reason and env.episode_state == 'RUNNING' else 0):
                     if env.time_s >= env.task.duration_s - hold_margin - 1e-9:
                         break
-                    before_observation = env.observe()
+                    before_observation = observation if getattr(a, 'camera_snapshot', False) else env.observe()
                     step_start = time.monotonic()
                     result = env.step(hold)
+                    observation = result[0]
                     recorder.step(hold, result, before_observation, time.monotonic() - step_start,
                                   policy_phase='HOLD_AFTER_STOP', controller_profile=profile_receipt)
                     if result[2]:

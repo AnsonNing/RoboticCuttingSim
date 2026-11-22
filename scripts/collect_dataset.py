@@ -75,7 +75,11 @@ def measured_edge_estimator(env):
     backend = env.backend
 
     def estimate(observation):
-        measured = backend.measured() if hasattr(backend, 'measured') else backend.proprioception()
+        measured = {}
+        if getattr(getattr(backend, 'config', None), 'camera_snapshot', False):
+            measured = getattr(env.inner, '_proprio', {})
+        if measured.get('timestamp_s') != env.time_s:
+            measured = backend.measured() if hasattr(backend, 'measured') else backend.proprioception()
         if abs(float(measured.get('timestamp_s', env.time_s)) - float(observation['timestamp_s'])) > 1e-9:
             raise ValueError('Measured tool-edge feedback must match the observation time')
         return np.asarray(measured['tool_pose'], float).copy()
@@ -162,6 +166,7 @@ def make_controller(env, entry):
 def run_episode(env, entry, index, out, a, clocks, extra=None):
     start, memory_before = time.monotonic(), process_memory()
     observation, reset_info = env.reset(seed=entry['seed'], controller=entry['label'])
+    reset_finished = time.monotonic()
     act, done, receipt, privileged_inputs = make_controller(env, entry)
     receipt = dict(receipt, hold_until_time_limit=bool(entry.get('hold_until_time_limit')),
                    return_home=bool(entry.get('return_home')))
@@ -231,8 +236,10 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
     evaluation_wall = time.monotonic() - evaluation_start
     verdict = result.get('verdict', result.get('status'))
     home = None
+    home_start = time.monotonic()
     if entry.get('return_home'):
         home = env.return_home()
+    finalize_start = time.monotonic()
     material = env.backend.material
     codes = np.asarray(material.history_state()['codes'])
     recorder = env.recorder
@@ -246,8 +253,12 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
                home_outcome=None if home is None else home['home_outcome'])
     metrics = env.finish_recording(row)
     recorder_closed = bool(recorder.stream.closed and (directory/'result.json').exists())
+    export_start = time.monotonic()
     exported, export = ds.export_episode(
         directory, fast_compression=getattr(getattr(env.backend, 'config', None), 'async_camera_write', False))
+    timing = dict(reset_wall_s=reset_finished-start, task_wall_s=evaluation_start-reset_finished,
+                  home_wall_s=finalize_start-home_start if home is not None else 0.,
+                  finalize_wall_s=export_start-finalize_start, export_wall_s=time.monotonic()-export_start)
     memory_after = process_memory()
     every = int(env.recording.get('every', 10)) if env.recording else int(a.record_every or 10)
     frequencies = dict(control_rate_hz=1./dt, control_dt_s=dt, recorded_camera_every_steps=every if env.cameras_available else None,
@@ -256,6 +267,11 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
                        policy_camera_rate_hz=(1./(env.preset.camera_every*dt)) if env.cameras_available else None,
                        physics_state_record_every_steps=every, measured_camera=export['cameras'],
                        note='Camera content is stored at recorded_camera_rate_hz; it is never 50 Hz unless every == 1')
+    if (a.runtime == 'isaac_sim' and env.cameras_available and every == env.preset.camera_every == 1
+            and abs(dt - .02) < 1e-12):
+        frequencies['native_50hz_modalities'] = {
+            name: ['rgb'] if name == 'global_d455' and env.backend.config.global_rgb_only else ['rgb', 'depth_m']
+            for name in env.backend.cameras}
     from robotic_cutting_sim.scene_config import configured_task_payload
     meta = dict(episode_id=f'episode_{index:03d}', dataset_version=ds.DATASET_VERSION, label=entry['label'],
                 controller=entry['controller'], controller_receipt=receipt, expect=entry.get('expect'),
@@ -288,7 +304,7 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
                 runtime_profile=getattr(env, 'runtime_profile', None),
                 acceptance_valid=(None if getattr(env, 'runtime_profile', None) is None
                                   else bool(env.runtime_profile['acceptance_valid'])),
-                wall_s=time.monotonic() - start, git=clocks['git'],
+                wall_s=time.monotonic() - start, phase_wall_s=timing, git=clocks['git'],
                 physics_version=dict(solver=task.solver_module, cutting_law=task.cutting_law, max_cuts=task.max_cuts,
                                      material_receipt_sha256=hashlib.sha256(json.dumps(jsonable(material.parameter_receipt),
                                                                                          sort_keys=True).encode()).hexdigest(),
@@ -521,11 +537,13 @@ def recycle_child(a, entries, out, runtime_options, clocks, planner_options):
         write_json(result_path, jsonable(dict(block=block, pid=memory_start['pid'], first_episode=first,
                                               episodes_planned=len(block_entries), index_rows=index['episodes'],
                                               failures=failures, memory_start=memory_start,
+                                              startup_wall_s=state.get('startup_wall_s'),
                                               memory_end=process_memory(), wall_s=time.monotonic() - start,
                                               status=state['status'], env_closed=state['closed'])))
     try:
         with open_env(a, int(spec['compile_seed']), out, out/spec['runtime_dir'], runtime_options, planner_options,
                       episode_index_start=first) as env:
+            state['startup_wall_s'] = time.monotonic() - start
             write_result()
             run_entries(env, block_entries, first, out, a, clocks, runtime_options, metas, failures, index,
                         write_result, extra=receipt)
@@ -684,6 +702,7 @@ def main(argv=None):
         return recycle_parent(a, entries, out, argv, index, write_index)
     try:
         with open_env(a, entries[0]['seed'], out, out/'runtime', runtime_options, planner_options) as env:
+            index['startup_wall_s'] = time.monotonic() - start
             run_entries(env, entries, 0, out, a, clocks, runtime_options, metas, failures, index, write_index)
             report = score(out, a, index, metas, failures, entries, start)
             write_index()
