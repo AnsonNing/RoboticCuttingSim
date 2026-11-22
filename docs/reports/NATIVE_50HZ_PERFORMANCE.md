@@ -20,7 +20,9 @@ Global RGB and Wrist-0 RGB-D.
 | Native CUT Turbo, baseline | 1 | 50 | 50 | 656.12 | — | 5.49 | PASS, 741 per stream | PASS, HOME PASS |
 | Native TRIM Reference, baseline | 1 | 50 | 50 | 1,004.95 | — | 3.58 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
 | Native TRIM Turbo, baseline | 1 | 50 | 50 | 789.76 | — | 4.56 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
+| Native CUT Reference, tuned | 1 | 50 | 50 | 334.53 | — | 10.76 | PASS, 741 per stream | PASS, HOME PASS |
 | Native CUT Turbo, tuned | 1 | 50 | 50 | 227.01 | — | 15.86 | PASS, 741 per stream | PASS, HOME PASS |
+| Native TRIM Turbo, tuned | 1 | 50 | 50 | 306.04 | — | 11.76 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
 
 The baseline processes come from `da120b39997d3b5bdda1492dcd8fbff0e6ead1b8`.
 Cold process wall includes preflight and setup, reset, the full controller,
@@ -42,8 +44,8 @@ only supply presentation views are included in the raw recording.
   recording finalize, including the legacy stacked physics archive.
 - The old TRIM media encoder produced 602 decoded pictures from 1,201
   original captures. That failed attempt and the complete source recording
-  are preserved. A 40.17 s re-encode of the original TRIM Reference frames
-  produced all 1,201 pictures with matching decoded timestamps.
+  are preserved. Re-encoding the saved frames took 40.17 s for Reference and
+  37.98 s for Turbo and retained all 1,201 pictures with matching timestamps.
 - The grasp traces from both CUT baselines contain 7,400 valid, fresh
   coupled PhysX samples in order, plus 1,000 initial settling records.
   The existing 5 Hz readback-only attempt remains negative evidence.
@@ -54,6 +56,8 @@ audits and original recordings are under
 `/home/ningan/RoboticCuttingSim-high-speed/.native50hz/artifacts/p0_50hz_001`.
 Each `*_process.json` records its complete launch command. The
 `*_cadence_v2.json` receipts enumerate every acquired camera stream.
+`matched_phase_summary.jsonl` includes the StageProfiler and I/O
+breakdowns and `EVIDENCE_SHA256SUMS` records the evidence digests.
 
 ### Measured pipeline changes
 
@@ -77,6 +81,11 @@ Each `*_process.json` records its complete launch command. The
   The camera writer peaked at 23.6 MiB of the 64 MiB budget and waited
   0.0043 s for room. Streamed physical samples reduced finalize time
   from 20.23 s to 0.96 s. The separate dataset export took 28.20 s.
+- Tuned CUT Reference shortened cold process wall by 61.8% with the
+  original solve. Tuned TRIM Turbo shortened it by 61.2% and captured
+  exactly 1,201 timestamps with 1,205 render passes. The finalized
+  H.264 media retained 1,201 decoded frames at their original times.
+  Its separate dataset export took 31.28 s.
 - The eight-iteration CUT IK candidate preserved all 700 baseline
   target joint solutions in an offline pose replay. The live CUT Turbo
   run retained 7,400 fresh substep samples with bilateral loaded handle
