@@ -1090,7 +1090,8 @@ class LiveIsaacSimCutting:
             self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
             self.SimulationManager.step()
             self._grasp_sample("rigid_control_probe",np.zeros(6),before)
-        self._flush_grasp_trace()
+        if getattr(self, "_grasp_stream", None) is not None:
+            self._flush_grasp_trace()
         self.step_index += 1
         self.time_s=self.step_index*self.config.control_dt
         self.physx.update_transformations(False,True,True)

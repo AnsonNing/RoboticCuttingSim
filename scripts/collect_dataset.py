@@ -267,7 +267,7 @@ def run_episode(env, entry, index, out, a, clocks, extra=None):
                        policy_camera_rate_hz=(1./(env.preset.camera_every*dt)) if env.cameras_available else None,
                        physics_state_record_every_steps=every, measured_camera=export['cameras'],
                        note='Camera content is stored at recorded_camera_rate_hz; it is never 50 Hz unless every == 1')
-    if (a.runtime == 'isaac_sim' and env.cameras_available and every == env.preset.camera_every == 1
+    if (env.runtime_source == 'live_isaac_sim' and env.cameras_available and every == env.preset.camera_every == 1
             and abs(dt - .02) < 1e-12):
         frequencies['native_50hz_modalities'] = {
             name: ['rgb'] if name == 'global_d455' and env.backend.config.global_rgb_only else ['rgb', 'depth_m']
