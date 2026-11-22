@@ -20,13 +20,14 @@ Global RGB and Wrist-0 RGB-D.
 | Native CUT Turbo, baseline | 1 | 50 | 50 | 656.12 | — | 5.49 | PASS, 741 per stream | PASS, HOME PASS |
 | Native TRIM Reference, baseline | 1 | 50 | 50 | 1,004.95 | — | 3.58 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
 | Native TRIM Turbo, baseline | 1 | 50 | 50 | 789.76 | — | 4.56 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
+| Native CUT Turbo, tuned | 1 | 50 | 50 | 227.01 | — | 15.86 | PASS, 741 per stream | PASS, HOME PASS |
 
 The baseline processes come from `da120b39997d3b5bdda1492dcd8fbff0e6ead1b8`.
 Cold process wall includes preflight and setup, reset, the full controller,
 raw recording finalize and shutdown. The separate consolidated dataset
-export took 57.21 s for CUT Reference, 57.24 s for CUT Turbo and 84.22 s
-for TRIM Reference. The two CUT cameras that only supply presentation
-views are included in the raw recording.
+export took 57.21 s for CUT Reference, 57.24 s for CUT Turbo, 84.22 s
+for TRIM Reference and 82.64 s for TRIM Turbo. The two CUT cameras that
+only supply presentation views are included in the raw recording.
 
 ### Baseline evidence
 
@@ -53,3 +54,33 @@ audits and original recordings are under
 `/home/ningan/RoboticCuttingSim-high-speed/.native50hz/artifacts/p0_50hz_001`.
 Each `*_process.json` records its complete launch command. The
 `*_cadence_v2.json` receipts enumerate every acquired camera stream.
+
+### Measured pipeline changes
+
+- At 13 matched CUT physics states, one and five RTX passes had exactly
+  matching calibrated camera poses, intrinsics, frame timestamps and
+  depth validity masks. The maximum frame-wise mean RGB difference was
+  0.448/255. The minimum PSNR was 46.9 dB and the 99th-percentile absolute
+  depth difference was zero at each state and camera. The probe verifies
+  that later renders leave an earlier owned snapshot intact. Each episode
+  retains five initial render passes.
+- The writer appends camera index rows, checkpoints the written prefix
+  and publishes the legacy manifest after the bounded queue drains. A
+  60-file CUT codec trial measured 1.07 s and 13.60 MB for default
+  DEFLATE, 0.31 s and 16.88 MB for level 1, 1.16 s and 13.47 MB for
+  chunked NPZ, and 1.22 s for a stored intermediate followed by conversion.
+  Level 1 preserves the arrays exactly.
+- Tuned CUT Turbo shortened cold process wall by 65.4%. RTX render time
+  fell from 245.20 to 40.25 s, with 745 render passes for 741 timestamps.
+  The measured CUDA-to-host conversion took 3.35 s. The synchronous
+  transfer still produces each snapshot at its matching physics time.
+  The camera writer peaked at 23.6 MiB of the 64 MiB budget and waited
+  0.0043 s for room. Streamed physical samples reduced finalize time
+  from 20.23 s to 0.96 s. The separate dataset export took 28.20 s.
+- The eight-iteration CUT IK candidate preserved all 700 baseline
+  target joint solutions in an offline pose replay. The live CUT Turbo
+  run retained 7,400 fresh substep samples with bilateral loaded handle
+  contact and passed HOME. The physics cadence stayed at ten substeps.
+
+The tuned runs and component measurements are in sibling artifact folders
+`tuned_50hz_001`, `p1_render_probe_001` and `p2_codec_probe_002`.
