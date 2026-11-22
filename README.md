@@ -523,16 +523,19 @@ Global RGB and Wrist-0 RGB-D streams.
 [Native 50 Hz measurements](docs/reports/NATIVE_50HZ_PERFORMANCE.md)
 
 Use the Native Isaac Sim environment to collect CUT data. The example
-runs on a single visible GPU and retains the final HOME action sequence.
+runs on a single visible GPU, retains HOME and restarts Isaac Sim after
+four episodes. The five-episode run sustained 16.74 episodes/GPU-hour.
 
 ```bash
 .deps/isaacsim-venv/bin/python scripts/collect_dataset.py \
-  --runtime isaac_sim --gpu 0 --fidelity turbo --episodes 1 \
+  --runtime isaac_sim --gpu 0 --fidelity turbo --episodes 5 \
   --scene configs/rl_benchmark/scenes/bar_flat_board_tlmpm_v7_2_v1.json \
   --goal configs/wp14/goals/standard_cut.json \
   --planner-options '{"controller_profile":"path_v2","max_rotation_deg":1.0,"max_translation_m":0.001}' \
   --edge-feedback measured --hold-until-time-limit --return-home \
-  --native-sensor-runtime isaac62_physx_offline_v1 \
+  --stage-reset reload_in_place --recycle-every 4 --overview-camera \
+  --ik-iterations 8 --surface-update on_capture \
+  --native-sensor-runtime isaac62_physx_offline_v1 --material-diagnostics device_reduction_v1 \
   --out artifacts/native_cut_50hz
 .venv/bin/python scripts/read_dataset.py artifacts/native_cut_50hz
 ```

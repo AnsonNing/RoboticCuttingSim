@@ -24,6 +24,7 @@ Global RGB and Wrist-0 RGB-D.
 | Native CUT Turbo, tuned | 1 | 50 | 50 | 227.01 | — | 15.86 | PASS, 741 per stream | PASS, HOME PASS |
 | Native TRIM Reference, tuned | 1 | 50 | 50 | 534.26 | — | 6.74 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
 | Native TRIM Turbo, tuned | 1 | 50 | 50 | 306.04 | — | 11.76 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
+| Native CUT Turbo, collect five, recycle every four | 1 | 50 | 50 | 263.23 to first stored episode | 191.01 median | 16.74 | PASS, 5 × 741 per stream | 5 × PASS, HOME PASS |
 
 The baseline processes come from `da120b39997d3b5bdda1492dcd8fbff0e6ead1b8`.
 Cold process wall includes preflight and setup, reset, the full controller,
@@ -97,3 +98,24 @@ breakdowns and `EVIDENCE_SHA256SUMS` records the evidence digests.
 
 The tuned runs and component measurements are in sibling artifact folders
 `tuned_50hz_001`, `p1_render_probe_001` and `p2_codec_probe_002`.
+
+### Resident collection
+
+The five CUT episodes used two processes and took 1,075.16 s including
+validation and consolidated export. Warm wall measures reset through export.
+The first reset took 44.47 s. The three resident resets took 6.62–7.08 s.
+The second process started from a warm disk cache and reset in 9.20 s.
+The sustained rate was 3.32× the 50 Hz Turbo baseline plus its separate
+dataset export. Compared with the tuned cold benchmark plus export, the
+sustained rate was 1.19×. Host RSS peaked at 15.93 GiB including export
+and validation. Sampled GPU memory peaked at 7,331 MiB.
+
+The `rcs_dataset_v1` dataset is in `p4_full_collection_001/collect-r4full-42`
+under the artifact root. The existing reader passed all five episodes.
+Each episode retains five original camera streams. The consolidated
+`episode_export.npz` retains the three policy camera streams with
+calibration and the complete control and HOME timeline. The optional
+presentation views also have static USD calibration in the runtime setup
+receipts. The historical `POLICY_READY` score failed the reset tool-rest
+check and requires a failed episode in the collection. Dataset integrity
+and physical outcomes passed independently.
