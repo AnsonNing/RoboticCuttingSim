@@ -26,10 +26,12 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial.transform import Rotation, Slerp
 
+from .recording import load_physics_recording, physical_recording_paths
+
 DATASET_VERSION = "rcs_dataset_v1"
 ACTION_PROGRAM_SCHEMA = "rcs_action_program_v1"
 EXPORT_NAME = "episode_export.npz"
-REQUIRED_EPISODE_FILES = ("manifest.json", "actions.jsonl", "frame_manifest.json", "physics_state.npz",
+REQUIRED_EPISODE_FILES = ("manifest.json", "actions.jsonl", "frame_manifest.json",
                           "robot_state.json", "task.json", "material.json", "result.json", "episode.json",
                           "action_log.jsonl")
 SEGMENT_KINDS = ("edge_pose", "edge_line", "edge_delta", "hold", "hold_until_time_limit")
@@ -243,7 +245,8 @@ def validate_episode(root, episode):
     loaded = load_episode(root, episode)
     row, directory, meta, arrays, actions = (loaded[k] for k in ("row", "dir", "meta", "arrays", "actions"))
     checks = {}
-    checks["required_files"] = all((directory/name).exists() for name in REQUIRED_EPISODE_FILES)
+    checks["required_files"] = (all((directory/name).is_file() for name in REQUIRED_EPISODE_FILES)
+                                and all(path.is_file() for path in physical_recording_paths(directory)))
     checks["export_sha256_matches_index"] = sha256_file(directory/EXPORT_NAME) == row.get("export_sha256")
     dt = float(meta["control_dt_s"])
     times = arrays["step_time_s"]
@@ -269,12 +272,15 @@ def validate_episode(root, episode):
             checks[f"{key}_at_step_times"] = set(np.round(arrays[key], 9).tolist()) <= step_times
     checks["evaluation_present"] = meta.get("task_result") is not None and meta["task_result"].get("verdict") is not None
     checks["termination_recorded"] = "termination_reason" in meta and "episode_state_final" in meta
-    with np.load(directory/"physics_state.npz", allow_pickle=False) as physics:
-        recorded = np.asarray(physics["time_s"], float)
-        checks["physics_state_at_frame_times"] = bool(np.allclose(recorded, arrays["frame_time_s"], atol=1e-9))
-        checks["physics_final_codes_hash_matches"] = (
-            hashlib.sha256(np.ascontiguousarray(physics["codes"][-1]).tobytes()).hexdigest()
-            == meta.get("final_codes_sha256"))
+    physics, checkpoint = load_physics_recording(directory)
+    recorded = np.asarray(physics["time_s"], float)
+    checks["physics_state_at_frame_times"] = (recorded.shape == arrays["frame_time_s"].shape
+                                                and bool(np.allclose(recorded, arrays["frame_time_s"], atol=1e-9)))
+    checks["physics_final_codes_hash_matches"] = (
+        hashlib.sha256(np.ascontiguousarray(physics["codes"][-1]).tobytes()).hexdigest()
+        == meta.get("final_codes_sha256"))
+    if checkpoint is not None:
+        checks["physics_stream_finalized"] = bool(checkpoint["finalized"])
     failing = sorted(name for name, ok in checks.items() if not ok)
     return {"episode_id": row["episode_id"], "status": "PASS" if not failing else "FAIL", "checks": checks,
             "failing": failing}
@@ -326,8 +332,8 @@ def replay_kinematic(root, episode, *, device=None):
             env.step(action)
         codes = np.asarray(env.backend.material.history_state()["codes"])
         digest = hashlib.sha256(np.ascontiguousarray(codes).tobytes()).hexdigest()
-        with np.load(loaded["dir"]/"physics_state.npz", allow_pickle=False) as physics:
-            recorded = np.asarray(physics["codes"][-1])
+        physics, _ = load_physics_recording(loaded["dir"])
+        recorded = np.asarray(physics["codes"][-1])
         mismatched = int(np.count_nonzero(codes != recorded)) if codes.shape == recorded.shape else None
         result = env.evaluate()
         return {"status": "PASS" if mismatched == 0 else "FAIL", "steps_replayed": int(mask.sum()),

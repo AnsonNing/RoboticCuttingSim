@@ -24,6 +24,48 @@ def load_controller(path, sha256):
     return module.run
 
 
+def run_episode(env, out, run, ctx, start, factory_s, *, full_cadence):
+    from robotic_cutting_sim.agentic_trim_env import write_json
+    from robotic_cutting_sim.policy_env import process_memory
+    from robotic_cutting_sim.profiling import StageProfiler
+
+    env.reset()
+    reset_s = time.perf_counter() - start - factory_s
+    with StageProfiler() as profiler:
+        t0 = time.perf_counter()
+        try:
+            control = run(env, ctx)
+            play_s = time.perf_counter() - t0
+            t0 = time.perf_counter()
+            env.finalize("HIGH_SPEED_BENCHMARK")
+            finalize_s = time.perf_counter() - t0
+        finally:
+            write_json(out / "stage_summary.json", profiler.summary())
+            if full_cadence:
+                write_json(out / "native_timing.json", env.env.backend.runtime_timing_trace())
+    rec = env.current_recording
+    ev = json.loads((rec / "evaluation.json").read_text())
+    frames = json.loads((rec / "frame_manifest.json").read_text())
+    physics_stream = json.loads((rec / "physics_stream.json").read_text())
+    boundary = env.total_steps == 1200 and abs(env.time_s - 24.0) <= 1e-9
+    if full_cadence:
+        boundary = boundary and len(frames) == 1201
+    total = time.perf_counter() - start
+    result = {"status": "COMPLETE" if boundary else "INCOMPLETE",
+              "physics_status": ev.get("status"), "task_success": bool(ev.get("success")),
+              "control_steps": env.total_steps, "simulated_s": env.time_s, "seed": ctx["seed"],
+              "factory_s": factory_s, "reset_s": reset_s, "controller_wall_s": play_s,
+              "finalize_s": finalize_s, "full_episode_wall_s": total,
+              "episodes_per_gpu_hour": 3600 / total if boundary else None,
+              "control": control, "evaluation": ev, "memory": process_memory(),
+              "recording": str(rec.relative_to(out)), "episode_dir": str(out),
+              "frame_manifest_entries": len(frames), "physics_stream": physics_stream}
+    write_json(out / "benchmark.json", result)
+    print(json.dumps({k: result[k] for k in ("status", "physics_status", "control_steps",
+                                             "full_episode_wall_s")}), flush=True)
+    return result
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--out", type=Path, required=True)
@@ -39,11 +81,14 @@ def main():
     p.add_argument("--steady-render-passes", type=int)
     p.add_argument("--async-camera-write", action="store_true")
     p.add_argument("--buffer-grasp-trace", action="store_true")
+    p.add_argument("--stage-reset", choices=("reopen", "reload_in_place"))
+    p.add_argument("--episodes", type=int, default=1)
     args = p.parse_args()
+    if args.episodes < 1:
+        p.error("--episodes must be positive")
     from agentic_robot.lab.sim.envs.rcs_gpu1 import _require_gpu1, launch_app_gpu1
     from robotic_cutting_sim import isaac_sim_runner
-    from robotic_cutting_sim.agentic_trim_env import open_env, write_json
-    from robotic_cutting_sim.profiling import StageProfiler
+    from robotic_cutting_sim.agentic_trim_env import AgenticTrimEnv, open_env, write_json
 
     _require_gpu1()
     isaac_sim_runner.launch_app = launch_app_gpu1
@@ -54,7 +99,7 @@ def main():
     control_dir.mkdir()
     ctx = {"seed": args.seed, "split": "high_speed_engineering", "params": {},
            "out_dir": str(control_dir), "candidate_id": args.controller.stem, "policy_seed": 0}
-    write_json(args.out / "spec.json", {"command": [sys.executable, *sys.argv], "ctx": ctx,
+    spec = {"command": [sys.executable, *sys.argv], "ctx": ctx,
                "control": {"path": str(args.controller), "sha256": args.controller_sha256},
                "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
                "dirty": bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT)),
@@ -62,7 +107,9 @@ def main():
                "robot_substeps": args.robot_substeps, "reuse_grasp_state": args.reuse_grasp_state,
                "camera_every": args.camera_every, "record_every": args.record_every,
                "camera_snapshot": args.camera_snapshot, "steady_render_passes": args.steady_render_passes,
-               "async_camera_write": args.async_camera_write, "buffer_grasp_trace": args.buffer_grasp_trace})
+               "async_camera_write": args.async_camera_write, "buffer_grasp_trace": args.buffer_grasp_trace,
+               "stage_reset": args.stage_reset, "episodes": args.episodes}
+    write_json(args.out / "spec.json", spec)
     start = time.perf_counter()
     with open_env(output_dir=args.out / "env", seed=args.seed, stream_physics=True, memory_receipts=True,
                   native_sensor_runtime="isaac62_physx_offline_v1", material_diagnostics="device_reduction_v1",
@@ -70,42 +117,30 @@ def main():
                   robot_substeps=args.robot_substeps, camera_every=args.camera_every,
                   record_every=args.record_every, camera_snapshot=args.camera_snapshot,
                   steady_render_passes=args.steady_render_passes, async_camera_write=args.async_camera_write,
-                  buffer_grasp_trace=args.buffer_grasp_trace) as env:
+                  buffer_grasp_trace=args.buffer_grasp_trace, stage_reset=args.stage_reset) as env:
         factory_s = time.perf_counter() - start
-        env.reset()
-        reset_s = time.perf_counter() - start - factory_s
-        profiler = StageProfiler(sync_device=None, kernels=False).install()
-        t0 = time.perf_counter()
-        try:
-            control = run(env, ctx)
-            play_s = time.perf_counter() - t0
-            t0 = time.perf_counter()
-            env.finalize("HIGH_SPEED_BENCHMARK")
-            finalize_s = time.perf_counter() - t0
-        finally:
-            profiler.uninstall()
-            write_json(args.out / "stage_summary.json", profiler.summary())
-            if args.record_every == 1:
-                write_json(args.out / "native_timing.json", env.env.backend.runtime_timing_trace())
-        rec = env.current_recording
-        ev = json.loads((rec / "evaluation.json").read_text())
-        frames = json.loads((rec / "frame_manifest.json").read_text())
-        physics_stream = json.loads((rec / "physics_stream.json").read_text())
-        boundary = env.total_steps == 1200 and abs(env.time_s - 24.0) <= 1e-9
-        total = time.perf_counter() - start
-        result = {"status": "COMPLETE" if boundary else "INCOMPLETE",
-                  "physics_status": ev.get("status"), "task_success": bool(ev.get("success")),
-                  "control_steps": env.total_steps, "simulated_s": env.time_s, "seed": args.seed,
-                  "factory_s": factory_s, "reset_s": reset_s, "controller_wall_s": play_s,
-                  "finalize_s": finalize_s, "full_episode_wall_s": total,
-                  "episodes_per_gpu_hour": 3600 / total if boundary else None,
-                  "control": control, "evaluation": ev,
-                  "recording": str(rec.relative_to(args.out)),
-                  "frame_manifest_entries": len(frames), "physics_stream": physics_stream}
-        write_json(args.out / "benchmark.json", result)
-        print(json.dumps({k: result[k] for k in ("status", "physics_status", "control_steps",
-                                                "full_episode_wall_s")}), flush=True)
-    return 0 if boundary else 1
+        rows = [run_episode(env, args.out, run, ctx, start, factory_s, full_cadence=args.record_every == 1)]
+        for index in range(1, args.episodes):
+            out = args.out / f"warm_{index:03d}"
+            control_dir = out / "controller"
+            control_dir.mkdir(parents=True)
+            (out / "env").mkdir()
+            context = {**ctx, "out_dir": str(control_dir)}
+            write_json(out / "spec.json", {**spec, "ctx": context, "resident_episode": index})
+            memory_log = out / "env/runtime_memory.jsonl"
+            os.environ["RCS_RUNTIME_MEMORY_LOG"] = str(memory_log)
+            warm = AgenticTrimEnv(env.env, out / "env", env.task, env.manifest, seed=args.seed,
+                                 stream_physics=True, memory_log=memory_log, record_every=args.record_every)
+            try:
+                rows.append(run_episode(warm, out, run, context, time.perf_counter(), 0.,
+                                        full_cadence=args.record_every == 1))
+            finally:
+                warm.finalize("WORKER_EXIT")
+            wall = time.perf_counter() - start
+            complete = sum(row["status"] == "COMPLETE" and row["task_success"] for row in rows)
+            write_json(args.out / "resident_episodes.json", {"episodes": rows, "wall_s": wall,
+                       "complete_physical_episodes": complete, "episodes_per_gpu_hour": 3600 * complete / wall})
+    return int(any(row["status"] != "COMPLETE" for row in rows))
 
 
 if __name__ == "__main__":

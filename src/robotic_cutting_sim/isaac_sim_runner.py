@@ -56,6 +56,7 @@ class IsaacSimCuttingConfig:
     steady_render_passes: int | None = None
     async_camera_write: bool = False
     buffer_grasp_trace: bool = False
+    stream_physics: bool = False
     camera_mode: str = "rtx_rgbd"
     camera_layout: str = "legacy_fixed_d455"
     camera_rig_profile: str = "wrist_camera_rig_v5"
@@ -122,6 +123,8 @@ class IsaacSimCuttingConfig:
             raise ValueError("camera_snapshot must be a bool")
         if not isinstance(self.buffer_grasp_trace, bool):
             raise ValueError("buffer_grasp_trace must be a bool")
+        if not isinstance(self.stream_physics, bool):
+            raise ValueError("stream_physics must be a bool")
         if not isinstance(self.async_camera_write, bool) or (
                 self.async_camera_write and not (self.camera_snapshot and self.camera)):
             raise ValueError("async_camera_write requires owned Native camera snapshots")

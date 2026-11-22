@@ -566,6 +566,14 @@ def main(argv=None):
                                                      '--runtime-profile recording rate)')
     p.add_argument('--camera-every', type=int, help='Live: control steps between policy camera refreshes (default 1, or '
                                                      'the --runtime-profile value)')
+    p.add_argument('--camera-snapshot', action='store_true', help=argparse.SUPPRESS)
+    p.add_argument('--steady-render-passes', type=int, help=argparse.SUPPRESS)
+    p.add_argument('--async-camera-write', action='store_true', help=argparse.SUPPRESS)
+    p.add_argument('--buffer-grasp-trace', action='store_true', help=argparse.SUPPRESS)
+    p.add_argument('--overview-camera', action='store_true', help=argparse.SUPPRESS)
+    p.add_argument('--stream-physics', action='store_true', help=argparse.SUPPRESS)
+    p.add_argument('--native-sensor-runtime', choices=('isaac62_physx_offline_v1',), help=argparse.SUPPRESS)
+    p.add_argument('--material-diagnostics', choices=('snapshot', 'device_reduction_v1'), help=argparse.SUPPRESS)
     p.add_argument('--observation-profile', choices=('deployable', 'privileged_state'), default='deployable')
     p.add_argument('--history-stride', type=int, help='Oracle history stride (default 1)')
     p.add_argument('--runtime-profile', help='WP-11 Phase H4 runtime profile id (configs/wp11/runtime_profiles_v1.json: '
@@ -614,6 +622,13 @@ def main(argv=None):
         a.camera_every = 1 if a.camera_every is None else a.camera_every
     runtime_options = {key: value for key, value in dict(material_dt=a.material_dt, history_stride=a.history_stride).items()
                        if value is not None}
+    native_flags = ('camera_snapshot', 'steady_render_passes', 'async_camera_write', 'buffer_grasp_trace',
+                    'overview_camera', 'native_sensor_runtime', 'material_diagnostics', 'stream_physics')
+    native_options = {key: value for key in native_flags
+                      if (value := getattr(a, key)) is not None and value is not False}
+    if native_options and a.runtime != 'isaac_sim':
+        p.error("Native recording and sensor options require --runtime isaac_sim")
+    runtime_options.update(native_options)
     if a.runtime_profile is not None:
         runtime_options['runtime_profile'] = a.runtime_profile
     if a.stage_reset is not None:
