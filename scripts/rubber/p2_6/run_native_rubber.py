@@ -41,9 +41,20 @@ def main():
     ap.add_argument("--protocol", required=True)
     ap.add_argument("--protocol-sha256", required=True)
     ap.add_argument("--steps", type=int, default=None, help="default: the declared 100 (anything else is a smoke)")
-    ap.add_argument("--label", choices=("formal", "smoke"), default="formal")
+    ap.add_argument("--label", choices=("formal", "smoke"))
+    ap.add_argument("--fidelity", choices=("reference", "turbo"),
+                    help="Reference physics with full-cadence Native RGB-D recording")
     ap.add_argument("--friction-table", type=float, default=None, help="smoke only: override the build friction")
     a = ap.parse_args()
+    if a.fidelity is not None:
+        from robotic_cutting_sim.runtime_profiles import fidelity_profile
+        try:
+            fidelity_profile(a.fidelity, "native_rubber")
+        except NotImplementedError as error:
+            ap.error(str(error))
+        if a.label == "formal":
+            ap.error("The frozen formal protocol has its own capture interval")
+    a.label = a.label or ("research" if a.fidelity is not None else "formal")
     from robotic_cutting_sim import native_rubber_host as H
     out = Path(a.out)
     out = out if out.is_absolute() else ROOT/out
@@ -52,6 +63,8 @@ def main():
     if NM.sha256(protocol) != a.protocol_sha256:
         raise SystemExit(f"protocol {protocol} sha256 {NM.sha256(protocol)} != {a.protocol_sha256}")
     episode = dict(H.EPISODE)
+    if a.fidelity is not None:
+        episode.update(capture_every=1, fidelity=a.fidelity)
     if a.steps is not None:
         episode["steps"] = int(a.steps)
     if a.label == "formal" and (episode["steps"] != H.EPISODE["steps"] or a.friction_table is not None):
@@ -65,7 +78,7 @@ def main():
     try:
         from robotic_cutting_sim.isaac_sim_runner import launch_app, runtime_versions
         t0 = time.perf_counter()
-        app = launch_app(SimpleNamespace(gpu=a.gpu, width=640, height=480), out)
+        app = launch_app(SimpleNamespace(gpu=a.gpu, device=f"cuda:{a.gpu}", width=640, height=480), out)
         walls["kit_launch_s"] = time.perf_counter()-t0
         import warp as wp
         wp.init()
@@ -114,13 +127,23 @@ def main():
             markers = live.scene.marker_reference if k == 0 else live.markers()
             markers_world = placement.to_world(np.asarray(markers, np.float64))
             row = {"step": k, "capture_wall_s": None, "cameras": {}}
+            timestamps = {}
+            if a.fidelity is not None:
+                native_time = scene.SimulationManager.get_simulation_time()
+                stamps_match = np.isclose(native_time - scene.time_origin, k * live.control_dt, atol=1e-6, rtol=0)
+                if not stamps_match:
+                    raise RuntimeError("Rubber RGB-D capture does not match the PhysX control step")
+                timestamps = dict(physics_timestamp_s=k * live.control_dt, native_physics_timestamp_s=native_time)
+                row.update(**timestamps, parked_robot_state=scene.arm_state(),
+                           measured_clamp_pose_world_xyzw=scene.measured_clamp_pose().tolist())
             from PIL import Image
             for name, d in frames.items():
                 rgb = np.asarray(d["rgb"])[..., :3].astype(np.uint8)
                 depth = np.asarray(d["distance_to_image_plane"], np.float32)
                 Image.fromarray(rgb).save(out/"captures"/f"{name}_rgb_{k:03d}.png")
-                np.savez_compressed(out/"captures"/f"{name}_depth_{k:03d}.npz", depth=depth)
                 cal = specs[name]["authored_usd_readback"]
+                np.savez_compressed(out/"captures"/f"{name}_depth_{k:03d}.npz", depth=depth, **timestamps,
+                                    **({} if not timestamps else dict(K=cal["K"], T_world_camera=cal["T_world_camera"])))
                 row["cameras"][name] = H.marker_depth_consistency(markers_world, cal["K"], cal["T_world_camera"],
                                                                   depth)
             row["capture_wall_s"] = time.perf_counter()-t
@@ -150,6 +173,8 @@ def main():
         # initial bridge row (step 0) is written before the loop's first on_step: put every row in one file
         NM.write_new(out/"bridge_rows.json", rows)
         NM.write_new(out/"camera_consistency.json", consistency)
+        if a.fidelity is not None and [row["step"] for row in consistency] != list(range(episode["steps"] + 1)):
+            raise RuntimeError("Rubber RGB-D recording missed a control step")
         NM.write_new(out/"scene.json", {**scene.receipt, "arm_state_end": scene.arm_state(),
                                         "live_receipt_device": live.receipt()["solver"]["device"]})
         step_walls = [r["step_wall_s"] for r in rows if "step_wall_s" in r]
@@ -163,7 +188,7 @@ def main():
                               else None, "captures": len(consistency)},
                       throughput_row={"N": 1, "particles_per_env": int(sc.n), "control_hz": 1/live.control_dt,
                                       "material_dt_s": live.dt, "substeps": live.substeps,
-                                      "cameras": "overview + close-up RGB-D 960x540, every 10 steps",
+                                      "cameras": f"overview + close-up RGB-D 960x540, every {episode['capture_every']} steps",
                                       "recording": "rcs_rubber_record_v1 + arrays + surface every step",
                                       "warm": "steps 2..N mean", "gpu": a.gpu})
     except BaseException as exc:

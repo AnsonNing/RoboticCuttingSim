@@ -50,24 +50,31 @@ def main():
     p.add_argument("--protocol", required=True)
     p.add_argument("--protocol-sha256", required=True)
     p.add_argument("--smoke-steps", type=int, default=None, help="label smoke, N steps (never the formal run)")
+    p.add_argument("--fidelity", choices=("reference", "turbo"),
+                   help="Run the Native vision research path at 50 Hz")
     p.add_argument("--friction-table", type=float, default=None, help="smoke only")
     a = p.parse_args()
+    if a.fidelity == "turbo":
+        p.error("fidelity='turbo' is unavailable for Native Rubber")
     smoke = a.smoke_steps is not None
+    label = "smoke" if smoke else "research" if a.fidelity else "formal"
     if a.friction_table is not None and not smoke:
         raise SystemExit("--friction-table is a smoke-only override")
-    base = new_dir("native_rubber_smoke" if smoke else "native_rubber")
+    base = new_dir("native_rubber" if label == "formal" else f"native_rubber_{label}")
     out = base/"run"
     command = [str(PYTHON.relative_to(ROOT)), "scripts/rubber/p2_6/run_native_rubber.py", "--out",
                str(out.relative_to(ROOT)), "--gpu", str(a.gpu), "--task-config", a.task_config,
                "--task-config-sha256", a.task_config_sha256, "--protocol", a.protocol,
                "--protocol-sha256", a.protocol_sha256]
+    if a.fidelity is not None:
+        command += ["--fidelity", a.fidelity]
     if smoke:
         command += ["--steps", str(a.smoke_steps), "--label", "smoke"]
         if a.friction_table is not None:
             command += ["--friction-table", str(a.friction_table)]
     before = NM.smi(a.gpu)
     status = NM.sh("git", "status", "--porcelain", "--untracked-files=no", "--", "src", "scripts", "configs", "tests")
-    record = dict(schema="rcs_p2_6_native_rubber_launch_v1", task="P6.5", label="smoke" if smoke else "formal",
+    record = dict(schema="rcs_p2_6_native_rubber_launch_v1", task="P6.5", label=label,
                   command=command, cwd=str(ROOT), gpu=a.gpu, need_free_mib=a.need_mib, gpu_before=before,
                   git_head=NM.sh("git", "rev-parse", "HEAD"), git_dirty=bool(status), dirty_paths=status.splitlines(),
                   env=dict(OMNI_KIT_ACCEPT_EULA="YES", PYTHONUNBUFFERED="1", CUDA_DEVICE_ORDER="PCI_BUS_ID",
