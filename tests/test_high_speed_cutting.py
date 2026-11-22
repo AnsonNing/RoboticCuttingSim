@@ -1,4 +1,5 @@
 """The existing coarse numerics are reachable through both headless task families."""
+from contextlib import contextmanager
 import json
 from types import SimpleNamespace
 
@@ -38,6 +39,25 @@ def test_public_native_fidelity_rejects_low_cadence_before_launch():
     with pytest.raises(ValueError, match="Native Vision fidelity"), open_cutting_env(
             output_dir="unused", record_every=10, fidelity="reference"):
         pytest.fail("Native fidelity accepted a reduced recording rate")
+
+
+@pytest.mark.parametrize("fidelity", ["reference", "turbo"])
+def test_public_native_fidelities_use_same_vision_settings(monkeypatch, fidelity):
+    from robotic_cutting_sim import policy_env
+    from robotic_cutting_sim.live_env import open_cutting_env
+
+    @contextmanager
+    def capture_options(*args, **options):
+        yield options
+
+    monkeypatch.setattr(policy_env, "open_policy_env", capture_options)
+    with open_cutting_env(output_dir="unused", fidelity=fidelity, preset="cutting_research_v1",
+            scene="configs/rl_benchmark/scenes/bar_flat_board_tlmpm_v7_2_v1.json",
+            goal="configs/wp14/goals/standard_cut.json", recording={"root": "unused"}) as effective:
+        assert effective["preset_overrides"]["camera_every"] == effective["recording"]["every"] == 1
+        assert effective["camera_snapshot"] and effective["async_camera_write"]
+        assert effective["steady_render_passes"] == 1
+        assert effective.get("runtime_profile") == ("research_fast_4mm_v1" if fidelity == "turbo" else None)
 
 
 @pytest.mark.parametrize("kind", ["cut", "trim"])

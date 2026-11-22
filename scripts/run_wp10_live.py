@@ -939,6 +939,9 @@ def run_configured(a, out, task):
                 'buffer_grasp_trace', 'stage_reset', 'stream_physics'):
         if hasattr(a, key):
             options[key] = getattr(a, key)
+    if hasattr(a, 'fidelity') and options['camera']:
+        from robotic_cutting_sim.runtime_profiles import NATIVE_50HZ_RECORDING
+        options = {**NATIVE_50HZ_RECORDING, **options}
     if a.overview_camera:
         options['overview_camera'] = True
     if getattr(a, 'surface_profile', None) is not None:
@@ -985,7 +988,7 @@ def run_configured(a, out, task):
                     if policy is not None and policy.done:
                         stop_reason = 'CONTROLLER_DONE'
                         break
-                    before_observation = observation if getattr(a, 'camera_snapshot', False) else env.observe()
+                    before_observation = observation if options.get('camera_snapshot') else env.observe()
                     step_start = time.monotonic()
                     result = env.step(action)
                     observation = result[0]
@@ -1002,7 +1005,7 @@ def run_configured(a, out, task):
                 for _ in range(hold_steps if stop_reason and env.episode_state == 'RUNNING' else 0):
                     if env.time_s >= env.task.duration_s - hold_margin - 1e-9:
                         break
-                    before_observation = observation if getattr(a, 'camera_snapshot', False) else env.observe()
+                    before_observation = observation if options.get('camera_snapshot') else env.observe()
                     step_start = time.monotonic()
                     result = env.step(hold)
                     observation = result[0]

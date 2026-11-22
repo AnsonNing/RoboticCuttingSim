@@ -634,6 +634,10 @@ def open_cutting_env(task_id="CUT-01", *, runtime="isaac_sim", output_dir, seed=
         if backend_options.get("runtime_profile") is not None:
             raise ValueError("Choose fidelity or an experimental runtime profile")
         if runtime == "isaac_sim":
+            if backend_options.get("camera", True):
+                if backend_options.get("camera_snapshot") is False:
+                    backend_options.setdefault("async_camera_write", False)
+                backend_options = {**rp.NATIVE_50HZ_RECORDING, **backend_options}
             if preset is not None:
                 overrides = dict(backend_options.get("preset_overrides") or {})
                 recording = backend_options.get("recording")

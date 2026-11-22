@@ -515,10 +515,11 @@ outcome checks. Headless trajectories use ideal or replayed tool motion.
 Choose `--fidelity reference` for the original physics or `--fidelity turbo`
 for the measured 4 mm grid profile. Both record one new image per enabled
 camera at each 20 ms control step and also record the initial observation.
-The paired 50 Hz baseline took **876.23 s / 656.12 s** for CUT and
-**1,004.95 s / 789.76 s** for TRIM (Reference / Turbo, full process).
-Both CUT runs passed physical separation and HOME. Both TRIM runs passed
-physical separation with the rig14 Global RGB and Wrist-0 RGB-D streams.
+The tuned 50 Hz runs took **334.53 s / 227.01 s** for CUT and
+**534.26 s / 306.04 s** for TRIM (Reference / Turbo, full process).
+The four paired improvements were 46.8–65.4%. CUT passed physical
+separation and HOME. TRIM passed physical separation with the rig14
+Global RGB and Wrist-0 RGB-D streams.
 [Native 50 Hz measurements](docs/reports/NATIVE_50HZ_PERFORMANCE.md)
 
 Use the Native Isaac Sim environment to collect CUT data. The example
@@ -531,6 +532,7 @@ runs on a single visible GPU and retains the final HOME action sequence.
   --goal configs/wp14/goals/standard_cut.json \
   --planner-options '{"controller_profile":"path_v2","max_rotation_deg":1.0,"max_translation_m":0.001}' \
   --edge-feedback measured --hold-until-time-limit --return-home \
+  --native-sensor-runtime isaac62_physx_offline_v1 \
   --out artifacts/native_cut_50hz
 .venv/bin/python scripts/read_dataset.py artifacts/native_cut_50hz
 ```

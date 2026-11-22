@@ -660,6 +660,9 @@ def main(argv=None):
                       if (value := getattr(a, key)) is not None and value is not False}
     if native_options and a.runtime != 'isaac_sim':
         p.error("Native recording and sensor options require --runtime isaac_sim")
+    if a.runtime == 'isaac_sim' and a.fidelity is not None:
+        from robotic_cutting_sim.runtime_profiles import NATIVE_50HZ_RECORDING
+        native_options = {**NATIVE_50HZ_RECORDING, **native_options}
     runtime_options.update(native_options)
     if a.runtime_profile is not None:
         runtime_options['runtime_profile'] = a.runtime_profile

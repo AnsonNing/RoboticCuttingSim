@@ -22,6 +22,7 @@ Global RGB and Wrist-0 RGB-D.
 | Native TRIM Turbo, baseline | 1 | 50 | 50 | 789.76 | — | 4.56 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
 | Native CUT Reference, tuned | 1 | 50 | 50 | 334.53 | — | 10.76 | PASS, 741 per stream | PASS, HOME PASS |
 | Native CUT Turbo, tuned | 1 | 50 | 50 | 227.01 | — | 15.86 | PASS, 741 per stream | PASS, HOME PASS |
+| Native TRIM Reference, tuned | 1 | 50 | 50 | 534.26 | — | 6.74 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
 | Native TRIM Turbo, tuned | 1 | 50 | 50 | 306.04 | — | 11.76 | PASS, 1,201 per stream | PASS, HOME NOT_RUN |
 
 The baseline processes come from `da120b39997d3b5bdda1492dcd8fbff0e6ead1b8`.
@@ -82,14 +83,17 @@ breakdowns and `EVIDENCE_SHA256SUMS` records the evidence digests.
   0.0043 s for room. Streamed physical samples reduced finalize time
   from 20.23 s to 0.96 s. The separate dataset export took 28.20 s.
 - Tuned CUT Reference shortened cold process wall by 61.8% with the
-  original solve. Tuned TRIM Turbo shortened it by 61.2% and captured
-  exactly 1,201 timestamps with 1,205 render passes. The finalized
-  H.264 media retained 1,201 decoded frames at their original times.
-  Its separate dataset export took 31.28 s.
+  original solve. TRIM Reference shortened it by 46.8% and TRIM Turbo
+  by 61.2%. Each tuned TRIM episode captured 1,201 timestamps with
+  1,205 render passes. Both H.264 files retained all 1,201 decoded
+  frames at their original times.
 - The eight-iteration CUT IK candidate preserved all 700 baseline
   target joint solutions in an offline pose replay. The live CUT Turbo
   run retained 7,400 fresh substep samples with bilateral loaded handle
-  contact and passed HOME. The physics cadence stayed at ten substeps.
+  contact and passed HOME. Live IK time fell from 10.14 to 2.35 s for
+  Turbo and from 10.16 to 2.51 s for Reference. The physics cadence
+  stayed at ten substeps. Isolated contact and robot readback times
+  varied across the matched runs.
 
 The tuned runs and component measurements are in sibling artifact folders
 `tuned_50hz_001`, `p1_render_probe_001` and `p2_codec_probe_002`.

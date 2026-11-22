@@ -16,6 +16,13 @@ PROFILES_PATH = ROOT/"configs/wp11/runtime_profiles_v1.json"
 HIGH_SPEED_PROFILES_PATH = ROOT/"configs/high_speed/cutting_runtime_profiles_v1.json"
 PROFILE_SCHEMA = "rcs_runtime_profiles_v1"
 FIDELITIES = ("reference", "turbo")
+NATIVE_50HZ_RECORDING = {
+    "camera_snapshot": True,
+    "steady_render_passes": 1,
+    "async_camera_write": True,
+    "buffer_grasp_trace": True,
+    "stream_physics": True,
+}
 _TURBO_BY_BACKEND = {
     "kinematic": "research_fast_4mm_v1",
     "kinematic_ideal_tracking_batched": "research_fast_4mm_v1",
