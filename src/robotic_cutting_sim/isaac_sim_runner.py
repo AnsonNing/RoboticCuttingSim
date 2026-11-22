@@ -1716,6 +1716,19 @@ class LiveIsaacSimCutting:
         before = (manager.get_simulation_time(),manager.get_num_physics_steps())
         robot_before=self.proprioception()
         latest = {}
+        cuda_readback_s = own_array_s = 0.
+
+        def owned_array(raw):
+            nonlocal cuda_readback_s, own_array_s
+            started = time.perf_counter()
+            array = raw.numpy() if hasattr(raw, "numpy") else np.asarray(raw)
+            copied_to_host = time.perf_counter()
+            if getattr(getattr(raw, "device", None), "is_cuda", False):
+                cuda_readback_s += copied_to_host - started
+            owned = array.copy()
+            own_array_s += time.perf_counter() - copied_to_host
+            return owned
+
         def data(name,sensor,annotator):
             if name in self.native_rgb and annotator in ("rgb","depth_sensor_point_cloud_position"):
                 source=self.native_rgb[name] if annotator=="rgb" else self.native_xyz[name]
@@ -1788,7 +1801,7 @@ class LiveIsaacSimCutting:
                 self.camera_runtime_extrinsic_checks[name]={"runtime_vs_current_USD":check,
                     "runtime_vs_measured_hand_composition":transform_error(expected_pose,runtime_pose),
                     "physics_timestamp_s":self.time_s,"rendering_advanced_physics":False}
-            rgb = numpy_data(payload["rgb"][0])
+            rgb = owned_array(payload["rgb"][0])
             if name == 'global_d455' and self.config.global_rgb_only:
                 expected=(self.calibration[name]['height'], self.calibration[name]['width'])
                 if rgb.shape[:2] != expected:
@@ -1801,7 +1814,7 @@ class LiveIsaacSimCutting:
                     'camera_extrinsics_timestamp_s': self.camera_extrinsics['timestamp_s'],
                     'physical_sensor_calibration_validated': False}
                 continue
-            depth = numpy_data(payload["distance_to_image_plane"][0]).squeeze()
+            depth = owned_array(payload["distance_to_image_plane"][0]).squeeze()
             expected=(self.calibration[name]["height"],self.calibration[name]["width"])
             if rgb.shape[:2] != expected or depth.shape != expected:
                 raise ValueError(f"Malformed native RTX arrays: {name}")
@@ -1821,8 +1834,8 @@ class LiveIsaacSimCutting:
                 frame["rtx_reference_range_rejected_mask"]=raw_valid&~valid
             if name in self.native_parameters:
                 from .single_view_registration import register_kit_single_view_depth
-                frame["depth_sensor_distance_raw"] = numpy_data(payload["depth_sensor_distance"][0])
-                frame["depth_sensor_point_cloud_position_raw"] = numpy_data(payload["depth_sensor_point_cloud_position"][0]).reshape(*expected,-1)
+                frame["depth_sensor_distance_raw"] = owned_array(payload["depth_sensor_distance"][0])
+                frame["depth_sensor_point_cloud_position_raw"] = owned_array(payload["depth_sensor_point_cloud_position"][0]).reshape(*expected,-1)
                 if not self.camera_specs:
                     frame["rtx_reference_depth_m"] = frame.pop("depth_m")
                     frame["rtx_reference_valid_mask"] = frame.pop("valid_mask")
@@ -1856,7 +1869,7 @@ class LiveIsaacSimCutting:
         write_json(self.output/"calibration_runtime.json",self.calibration)
         write_json(self.output/"native_registration_latest.json",self.native_registration)
         if overview is not None:
-            rgb=numpy_data(overview_rgb)
+            rgb=owned_array(overview_rgb)
             if rgb.shape[:2] != (self.overview_spec["height"],self.overview_spec["width"]):
                 raise ValueError("Malformed presentation overview RGB array")
             # Not returned in frames: presentation-only, recorded separately.
@@ -1864,7 +1877,7 @@ class LiveIsaacSimCutting:
                                  "native_physics_timestamp_s":before[0],"camera_id":"overview_rgb",
                                  "presentation_only":True,"live_source":"Isaac Sim6.2 Kit/PhysX/RTX"}
         if closeup is not None:
-            rgb=numpy_data(closeup_rgb)
+            rgb=owned_array(closeup_rgb)
             if rgb.shape[:2] != (self.closeup_spec["height"],self.closeup_spec["width"]):
                 raise ValueError("Malformed presentation close-up RGB array")
             # Not returned in frames: presentation-only, recorded separately.
@@ -1872,6 +1885,7 @@ class LiveIsaacSimCutting:
                                 "native_physics_timestamp_s":before[0],"camera_id":"closeup_rgb",
                                 "presentation_only":True,"live_source":"Isaac Sim6.2 Kit/PhysX/RTX"}
         self._capture_timing = {"render_wall_s": render_s, "annotator_readback_wall_s": readback_s,
+                                "cuda_to_host_wall_s": cuda_readback_s, "owned_array_copy_wall_s": own_array_s,
                                 "render_iterations": iteration}
         return frames,{name:{a:str(value[1]) for a,value in payload.items()} for name,payload in latest.items()}
 

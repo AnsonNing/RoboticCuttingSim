@@ -358,11 +358,11 @@ class EpisodeRecorder:
                            ('p50', 'p95', 'max'), np.percentile(self.errors or [0.], [50, 95, 100]))},
                        rotation_error_rad={key: float(value) for key, value in zip(
                            ('p50', 'p95', 'max'), np.percentile(self.rotation_errors or [0.], [50, 95, 100]))})
-        write_json(self.output / 'result.json', {**result, **metrics})
         if getattr(self, 'camera_io', None) is not None:
             write_json(self.output / 'camera_io_timing.json', self.camera_io)
         if getattr(self, 'physics_stream', None) is not None:
             self.physics_stream.finalize()
+        write_json(self.output / 'result.json', {**result, **metrics})
         return metrics
 
 
