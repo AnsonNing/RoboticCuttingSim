@@ -510,6 +510,34 @@ measured 4 mm runs preserved material integrity and met the frozen
 outcome checks. Headless trajectories use ideal or replayed tool motion.
 [Headless timing and outcomes](docs/reports/HIGH_SPEED_RESULTS.md#headless-cut-and-trim).
 
+### Native Vision at 50 Hz
+
+Choose `--fidelity reference` for the original physics or `--fidelity turbo`
+for the measured 4 mm grid profile. Both record one new image per enabled
+camera at each 20 ms control step and also record the initial observation.
+The paired 50 Hz baseline took **876.23 s / 656.12 s** for CUT and
+**1,004.95 s / 789.76 s** for TRIM (Reference / Turbo, full process).
+Both CUT runs passed physical separation and HOME. Both TRIM runs passed
+physical separation with the rig14 Global RGB and Wrist-0 RGB-D streams.
+[Native 50 Hz measurements](docs/reports/NATIVE_50HZ_PERFORMANCE.md)
+
+Use the Native Isaac Sim environment to collect CUT data. The example
+runs on a single visible GPU and retains the final HOME action sequence.
+
+```bash
+.deps/isaacsim-venv/bin/python scripts/collect_dataset.py \
+  --runtime isaac_sim --gpu 0 --fidelity turbo --episodes 1 \
+  --scene configs/rl_benchmark/scenes/bar_flat_board_tlmpm_v7_2_v1.json \
+  --goal configs/wp14/goals/standard_cut.json \
+  --planner-options '{"controller_profile":"path_v2","max_rotation_deg":1.0,"max_translation_m":0.001}' \
+  --edge-feedback measured --hold-until-time-limit --return-home \
+  --out artifacts/native_cut_50hz
+.venv/bin/python scripts/read_dataset.py artifacts/native_cut_50hz
+```
+
+The Isaac Lab robot batch and Native Rubber host support Reference. Turbo
+is available for headless Rubber and headless and Native CUT/TRIM.
+
 ## Agentic control robot seeded trimming
 
 The opt-in [seeded trimming challenge](docs/AGENTIC_TRIM_CHALLENGE.md) provides
