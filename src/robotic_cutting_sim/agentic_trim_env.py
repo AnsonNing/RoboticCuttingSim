@@ -208,21 +208,33 @@ class AgenticTrimEnv:
         if result.get('success'):
             write_json(rec/'success_media_pending.json', dict(status='SUCCESS_MEDIA_PENDING', **self.provenance))
             from .agentic_trim_media import export_success
+            media_start = time.perf_counter()
             try:
                 export_success(rec)
             except Exception as error:
                 write_json(rec/'success_media_error.json', dict(status='SUCCESS_MEDIA_PENDING', error=repr(error)))
+            finally:
+                record_memory(self.memory_log, 'success_media_export_finished',
+                              wall_s=time.perf_counter()-media_start)
 
 
 @contextmanager
 def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id', evaluator_python=None,
              stream_physics=False, memory_receipts=False, native_sensor_runtime=None,
              material_diagnostics='snapshot', v7_2_optimizations=True, runtime_profile=None,
-             reuse_grasp_state=False, robot_substeps=10, camera_every=10, record_every=10,
+             reuse_grasp_state=False, robot_substeps=10, camera_every=None, record_every=None, fidelity=None,
              camera_snapshot=False, steady_render_passes=None, async_camera_write=False,
              buffer_grasp_trace=False, stage_reset=None, ik_iterations=None):
     """Entry used by a GPU1-only launcher; never selects a GPU by itself."""
     from .live_env import open_cutting_env
+    if fidelity is not None:
+        from .runtime_profiles import fidelity_profile, native_50hz_cadence
+        if runtime_profile is not None:
+            raise ValueError("Choose fidelity or an experimental runtime profile")
+        runtime_profile = fidelity_profile(fidelity, "isaac_sim")
+        camera_every, record_every = native_50hz_cadence(camera_every, record_every)
+    camera_every = 10 if camera_every is None else camera_every
+    record_every = 10 if record_every is None else record_every
     if not isinstance(v7_2_optimizations, bool):
         raise ValueError("v7_2_optimizations must be a bool")
     if (type(camera_every) is not int or type(record_every) is not int or camera_every < 1

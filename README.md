@@ -462,10 +462,10 @@ reviews: [P2-0..P2-2](docs/reports/rl_ready/P2_0_P2_2_ACCEPTANCE_REVIEW.md),
 [P2-3](docs/reports/rl_ready/P2_PREREQ_P2_3_REVIEW.md), [K2 combined](docs/reports/rl_ready/P2_K2_COMBINED_REVIEW.md),
 [P2-5](docs/reports/rl_ready/P2_5_ACCEPTANCE_REVIEW.md), [P2-6](docs/reports/rl_ready/P2_6_ACCEPTANCE_REVIEW.md).
 
-### Use Fast or Turbo Rubber
+### Rubber fidelity
 
-Omit `speed_profile` for the Reference task. Both speed profiles support
-`L100_t4` and `L150_t4` and keep the 20 ms control interval, 6-value
+Choose `fidelity="reference"` for the original Rubber task. Turbo supports
+`L100_t4` and `L150_t4` and keeps the 20 ms control interval, 6-value
 `grip_delta_v1` action, 78-value policy observation, seeded masked reset,
 reward and termination semantics.
 
@@ -475,31 +475,15 @@ import torch
 from robotic_cutting_sim.rl.rubber_family import RubberStripTaskFamily
 from robotic_cutting_sim.rl.vector_env import open_vector_env
 
-task = RubberStripTaskFamily(
-    ["L100_t4", "L150_t4"] * 4,
-    speed_profile="rubber_fast_v1",  # or rubber_turbo_v1
-)
-with open_vector_env(8, task=task, backend="kinematic_grip_batched", device="cuda:0") as env:
+task = RubberStripTaskFamily(["L100_t4", "L150_t4"] * 4)
+with open_vector_env(8, task=task, backend="kinematic_grip_batched", device="cuda:0",
+                     fidelity="turbo") as env:
     observation, info = env.reset(seeds=list(range(4000, 4008)))
     action = torch.zeros((8, 6), dtype=torch.float32, device="cuda:0")
     observation, reward, terminated, truncated, info = env.step(action)
 ```
 
-Benchmark the normal vector step plus a diagnostic release in a new output
-directory. The standard task's ideal clamp has no open-grip action. The
-benchmark deactivates that clamp and removes the independent tip traction
-at the start of its release phase. Its force and particle diagnostics stay
-outside the policy observation.
-
-```bash
-flock /mnt/data/ningan/lab_records/rcs_rl_runner/gpu1.lock env \
-  CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=1 OPENBLAS_NUM_THREADS=1 \
-  PYTHONPATH=src .deps/isaacsim-venv/bin/python scripts/perf/benchmark_rubber.py \
-    --gpu-index 1 --num-envs 8 --speed-profile rubber_turbo_v1 \
-    --steps 50 --release 40 --out artifacts/rubber_turbo_fresh
-```
-
-The faster profiles are uncalibrated kinematic strip experiments with v2
+The Turbo profile is an uncalibrated kinematic strip experiment with v2
 frictional table contact at fixed µ=0.3. The original resolution-bias and
 contact-envelope studies retain their scopes. The new receipts identify
 the effective bulk ratio, grid, precision, projection mode and actual
@@ -508,26 +492,22 @@ scoped to rubber deformation and manipulation.
 
 [Measured speed and quality](docs/reports/HIGH_SPEED_RESULTS.md).
 
-### Fast CUT and TRIM for headless research
+### Headless CUT and TRIM fidelity
 
-Select `research_fast_4mm_v1` for 2 mm particles on the 4 mm grid with a
-0.20 ms material step. Leave out `runtime_profile` to use the original
-resolution.
+Choose `fidelity="turbo"` for 2 mm particles on the 4 mm grid with a
+0.20 ms material step. Reference retains the original resolution.
 
 ```python
 from robotic_cutting_sim.rl import ConfiguredTaskFamily, open_vector_env
 
-task = ConfiguredTaskFamily.from_cut_workload(8, runtime_profile="research_fast_4mm_v1")
-with open_vector_env(8, task=task, device="cuda:0",
-                     particle_contact_mode="alias_free_v2") as env:
+task = ConfiguredTaskFamily.from_cut_workload(8)
+with open_vector_env(8, task=task, device="cuda:0", fidelity="turbo") as env:
     observation, info = env.reset()
 ```
 
-TRIM accepts the same option through
-`TaskFamily(scene_seeds=(512, 15), runtime_profile="research_fast_4mm_v1")`.
-The measured 4 mm runs preserved material integrity and met the frozen
-outcome checks. The older 8 mm `research_fast_v1` experiment left the
-TRIM targets attached and exceeded the CUT plane bound.
+TRIM accepts the same option with `TaskFamily(scene_seeds=(512, 15))`. The
+measured 4 mm runs preserved material integrity and met the frozen
+outcome checks. Headless trajectories use ideal or replayed tool motion.
 [Headless timing and outcomes](docs/reports/HIGH_SPEED_RESULTS.md#headless-cut-and-trim).
 
 ## Agentic control robot seeded trimming

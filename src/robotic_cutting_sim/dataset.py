@@ -293,6 +293,13 @@ def validate_episode(root, episode):
             checks[f"{name}_complete_modalities"] = (required <= camera.keys()
                 and ("depth_m" in camera) == ("depth_m" in required)
                 and all(len(camera[key]) == len(expected_times) for key in required))
+            K = camera.get("K", np.empty(0))
+            pose = camera.get("T_world_camera", np.empty(0))
+            checks[f"{name}_calibration_present"] = (
+                K.shape == (len(expected_times), 3, 3)
+                and pose.shape == (len(expected_times), 4, 4)
+                and np.isfinite(K).all() and np.isfinite(pose).all()
+                and np.all(K[:, (0, 1), (0, 1)] > 0))
     checks["evaluation_present"] = meta.get("task_result") is not None and meta["task_result"].get("verdict") is not None
     checks["termination_recorded"] = "termination_reason" in meta and "episode_state_final" in meta
     physics, checkpoint = load_physics_recording(directory)
