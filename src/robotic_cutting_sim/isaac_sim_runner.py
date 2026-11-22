@@ -1725,6 +1725,10 @@ class LiveIsaacSimCutting:
             copied_to_host = time.perf_counter()
             if getattr(getattr(raw, "device", None), "is_cuda", False):
                 cuda_readback_s += copied_to_host - started
+                if self.config.camera_snapshot:
+                    # Warp numpy() transfers CUDA arrays to a new host allocation.
+                    # NumPy retains it as a base even after the annotator overwrites its device buffer.
+                    return array
             owned = array.copy()
             own_array_s += time.perf_counter() - copied_to_host
             return owned
