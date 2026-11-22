@@ -6,6 +6,9 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from queue import Queue
+from threading import Condition, Thread
+from time import perf_counter
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -102,6 +105,101 @@ def _atomic_checkpoint(path, data):
         os.fsync(descriptor)
     finally:
         os.close(descriptor)
+
+
+class CameraFrameWriter:
+    """Write owned camera snapshots in order with bounded backlog and a durable frame journal."""
+
+    def __init__(self, output, save_camera, *, max_bytes=64 * 1024**2, max_frames=4, chunk_frames=32):
+        if min(max_bytes, max_frames, chunk_frames) < 1:
+            raise ValueError("Camera writer limits must be positive")
+        self.output = Path(output)
+        self.save_camera = save_camera
+        self.max_bytes, self.max_frames, self.chunk_frames = max_bytes, max_frames, chunk_frames
+        self.condition, self.queue = Condition(), Queue()
+        self.pending_bytes = self.pending_frames = self.peak_pending_bytes = 0
+        self.wait_s = self.checkpoint_s = 0.
+        self.error, self.closed = None, False
+        self.thread = Thread(target=self._work, name="rcs-camera-writer", daemon=True)
+        self.thread.start()
+
+    def submit(self, row, files):
+        size = sum(array.nbytes for _, payload in files for array in payload.values()
+                   if isinstance(array, np.ndarray))
+        if size > self.max_bytes:
+            raise ValueError("Camera snapshot exceeds the recorder's pending byte budget")
+        start = perf_counter()
+        with self.condition:
+            self.condition.wait_for(lambda: self.error is not None or self.closed or
+                                    (self.pending_bytes + size <= self.max_bytes
+                                     and self.pending_frames < self.max_frames))
+            self.wait_s += perf_counter() - start
+            self._check_error()
+            if self.closed:
+                raise RuntimeError("Camera writer is closed")
+            self.pending_bytes += size
+            self.pending_frames += 1
+            self.peak_pending_bytes = max(self.peak_pending_bytes, self.pending_bytes)
+            self.queue.put((row, files, size))
+
+    def _check_error(self):
+        if self.error is not None:
+            raise RuntimeError("Camera writer failed before recording completed") from self.error
+
+    def _checkpoint(self, journal, files, count, complete):
+        start = perf_counter()
+        for path in files:
+            with path.open("rb") as stream:
+                os.fsync(stream.fileno())
+        directory = os.open(self.output / "observations", os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+        journal.flush()
+        os.fsync(journal.fileno())
+        _atomic_checkpoint(self.output / "frame_manifest_checkpoint.json",
+                           {"committed_frames": count, "complete": complete})
+        self.checkpoint_s += perf_counter() - start
+        files.clear()
+
+    def _work(self):
+        count, pending = 0, []
+        try:
+            with (self.output / "frame_manifest.jsonl").open("x") as journal:
+                while (work := self.queue.get()) is not None:
+                    row, files, size = work
+                    if row["frame"] != count:
+                        raise ValueError("Camera frame index is out of order")
+                    for path, payload in files:
+                        self.save_camera(path, **payload)
+                        pending.append(path)
+                    journal.write(json.dumps(row, allow_nan=False, separators=(",", ":")) + "\n")
+                    count += 1
+                    if count % self.chunk_frames == 0:
+                        self._checkpoint(journal, pending, count, False)
+                    del work, files
+                    payload = None
+                    with self.condition:
+                        self.pending_bytes -= size
+                        self.pending_frames -= 1
+                        self.condition.notify_all()
+                self._checkpoint(journal, pending, count, True)
+        except Exception as error:
+            with self.condition:
+                self.error = error
+                self.condition.notify_all()
+
+    def finish(self):
+        with self.condition:
+            if not self.closed:
+                self.closed = True
+                self.queue.put(None)
+                self.condition.notify_all()
+        self.thread.join()
+        self._check_error()
+        return {"queue_wait_wall_s": self.wait_s, "checkpoint_wall_s": self.checkpoint_s,
+                "peak_pending_bytes": self.peak_pending_bytes, "max_pending_bytes": self.max_bytes}
 
 
 class PhysicsStreamWriter:

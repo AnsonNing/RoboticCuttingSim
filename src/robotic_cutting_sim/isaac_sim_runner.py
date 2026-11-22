@@ -52,6 +52,9 @@ class IsaacSimCuttingConfig:
     global_resolution_scale: int = 2
     record_every: int = 10
     render_warmup: int = 5
+    camera_snapshot: bool = False
+    steady_render_passes: int | None = None
+    async_camera_write: bool = False
     camera_mode: str = "rtx_rgbd"
     camera_layout: str = "legacy_fixed_d455"
     camera_rig_profile: str = "wrist_camera_rig_v5"
@@ -114,6 +117,14 @@ class IsaacSimCuttingConfig:
     reuse_grasp_state: bool = False
 
     def __post_init__(self):
+        if not isinstance(self.camera_snapshot, bool):
+            raise ValueError("camera_snapshot must be a bool")
+        if not isinstance(self.async_camera_write, bool) or (
+                self.async_camera_write and not (self.camera_snapshot and self.camera)):
+            raise ValueError("async_camera_write requires owned Native camera snapshots")
+        if self.steady_render_passes is not None and (
+                type(self.steady_render_passes) is not int or self.steady_render_passes < 1):
+            raise ValueError("steady_render_passes must be a positive integer")
         if not isinstance(self.reuse_grasp_state, bool):
             raise ValueError("reuse_grasp_state must be a bool")
         if not isinstance(self.v7_2_optimizations, bool):
@@ -726,6 +737,8 @@ class LiveIsaacSimCutting:
         self.cut_aware_surface = None
         # In-memory timing traces (both profiles; perf_counter only): never written unless a caller asks.
         self.surface_trace, self.step_trace, self.capture_trace = [], [], []
+        self._camera_snapshot = None
+        self.camera_snapshot_hits = 0
         if c.surface_profile == "cut_aware_surface_v1":
             # A fresh extractor per reset (no topology cache survives an episode); never meshes nothing.
             from .surface_runtime import LiveCutAwareSurface
@@ -1276,6 +1289,7 @@ class LiveIsaacSimCutting:
     def runtime_timing_trace(self):
         """In-memory per-step physics / surface / camera timings since reset (timings; both profiles)."""
         return {"surface": list(getattr(self, "surface_trace", [])), "capture": list(getattr(self, "capture_trace", [])),
+                "camera_snapshot_hits": getattr(self, "camera_snapshot_hits", 0),
                 "steps": list(getattr(self, "step_trace", []))}
 
     def _refresh_surface(self):
@@ -1642,8 +1656,22 @@ class LiveIsaacSimCutting:
         return actual, self.last_diagnostics
 
     def capture(self):
+        snapshot = getattr(self, "_camera_snapshot", None)
+        if self.config.camera_snapshot and snapshot is not None and snapshot[0] == self.time_s:
+            self.camera_snapshot_hits += 1
+            return snapshot[1]
         capture_start = time.perf_counter()
         result = self._capture()
+        if self.config.camera_snapshot:
+            # _capture owns the NumPy buffers. Consumers can keep them across later
+            # renders, while public observation APIs still return writable copies.
+            frames = list(result[0].values())
+            frames.extend(frame for frame in (self.overview_frame, self.closeup_frame) if frame is not None)
+            for frame in frames:
+                for value in frame.values():
+                    if isinstance(value, np.ndarray):
+                        value.setflags(write=False)
+            self._camera_snapshot = (self.time_s, result)
         if hasattr(self, "capture_trace"):   # in memory only
             self.capture_trace.append({"time_s": self.time_s, "capture_wall_s": time.perf_counter()-capture_start,
                                        **getattr(self, "_capture_timing", {})})
@@ -1670,11 +1698,16 @@ class LiveIsaacSimCutting:
         closeup=getattr(self,"closeup_sensor",None)
         closeup_rgb=None
         render_s = readback_s = 0.
-        for _ in range(self.config.render_warmup+30):
+        passes = self.config.render_warmup
+        if self.capture_trace and self.config.steady_render_passes is not None:
+            passes = self.config.steady_render_passes
+        for iteration in range(1, passes + 31):
             started = time.perf_counter()
             rep.orchestrator.step(rt_subframes=1,delta_time=0.)
             rendered = time.perf_counter()
             render_s += rendered - started
+            if self.config.camera_snapshot and iteration < passes:
+                continue
             latest = {name:{a:data(name,sensor,a) for a in
                        (["rgb","distance_to_image_plane","depth_sensor_distance","depth_sensor_point_cloud_position"]
                        if name in self.native_parameters else
@@ -1686,7 +1719,7 @@ class LiveIsaacSimCutting:
             if closeup is not None:
                 closeup_rgb=closeup.get_data("rgb")[0]
             readback_s += time.perf_counter() - rendered
-            if (_ >= self.config.render_warmup-1 and all(value[0] is not None for data in latest.values() for value in data.values())
+            if (iteration >= passes and all(value[0] is not None for data in latest.values() for value in data.values())
                     and (overview is None or overview_rgb is not None) and (closeup is None or closeup_rgb is not None)):
                 break
         else:
@@ -1810,7 +1843,7 @@ class LiveIsaacSimCutting:
                                 "native_physics_timestamp_s":before[0],"camera_id":"closeup_rgb",
                                 "presentation_only":True,"live_source":"Isaac Sim6.2 Kit/PhysX/RTX"}
         self._capture_timing = {"render_wall_s": render_s, "annotator_readback_wall_s": readback_s,
-                                "render_iterations": _ + 1}
+                                "render_iterations": iteration}
         return frames,{name:{a:str(value[1]) for a,value in payload.items()} for name,payload in latest.items()}
 
     def close(self):

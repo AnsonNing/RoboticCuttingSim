@@ -128,7 +128,9 @@ class AgenticTrimEnv:
                     action_limits=self.env.action_limits.to_dict())
 
     def observe(self):
-        observation = self.env.observe()
+        return self._public_observation(self.env.observe())
+
+    def _public_observation(self, observation):
         cameras = observation['cameras']
         if set(cameras.get('rgb', {})) != set(CAMERAS):
             raise RuntimeError('Required independent live camera streams unavailable')
@@ -141,7 +143,7 @@ class AgenticTrimEnv:
                 array = array[0]
             if key in ('q', 'qdot', 'hand_pose', 'finger_q', 'finger_qdot'):
                 proprio[key] = array.copy()
-        return dict(timestamp_s=observation['timestamp_s'], cameras=copy.deepcopy(cameras), proprio=proprio,
+        return dict(timestamp_s=observation['timestamp_s'], cameras=cameras, proprio=proprio,
             ee_pose_world_xyzw=np.asarray(observation['ee_pose_world_xyzw']).copy(),
             edge_command_world_xyzw=np.asarray(observation['edge_command_world_xyzw']).copy(),
             gripper=copy.deepcopy(observation['gripper']), camera_timestamp_s=observation['camera_timestamp_s'],
@@ -154,7 +156,7 @@ class AgenticTrimEnv:
             raise RuntimeError('Episode ended')
         if self.total_steps >= 1200:
             raise RuntimeError('The total episode control-step budget is exhausted')
-        _, _, terminated, truncated, info = self.env.step(action)
+        observation, _, terminated, truncated, info = self.env.step(action)
         self.total_steps += 1
         if self.total_steps == 1 or self.total_steps % 100 == 0:
             record_memory(self.memory_log, 'control_step', control_steps=self.total_steps,
@@ -164,7 +166,8 @@ class AgenticTrimEnv:
         public_info = {k: copy.deepcopy(info[k]) for k in allowed if k in info}
         if info.get('action_rejection'):
             public_info['action_rejection'] = {'reason': info['action_rejection']['reason']}
-        return self.observe(), 0., bool(terminated), bool(truncated or self.total_steps >= 1200), public_info
+        return (self._public_observation(observation), 0., bool(terminated),
+                bool(truncated or self.total_steps >= 1200), public_info)
 
     def close(self):
         # The worker persists its result before Native teardown. Candidate close
@@ -215,7 +218,8 @@ class AgenticTrimEnv:
 def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id', evaluator_python=None,
              stream_physics=False, memory_receipts=False, native_sensor_runtime=None,
              material_diagnostics='snapshot', v7_2_optimizations=True, runtime_profile=None,
-             reuse_grasp_state=False, robot_substeps=10, camera_every=10, record_every=10):
+             reuse_grasp_state=False, robot_substeps=10, camera_every=10, record_every=10,
+             camera_snapshot=False, steady_render_passes=None, async_camera_write=False):
     """Entry used by a GPU1-only launcher; never selects a GPU by itself."""
     from .live_env import open_cutting_env
     if not isinstance(v7_2_optimizations, bool):
@@ -246,6 +250,12 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
         options['reuse_grasp_state'] = reuse_grasp_state
     if robot_substeps != 10:
         options['robot_substeps'] = int(robot_substeps)
+    if camera_snapshot is not False:
+        options['camera_snapshot'] = camera_snapshot
+    if steady_render_passes is not None:
+        options['steady_render_passes'] = steady_render_passes
+    if async_camera_write is not False:
+        options['async_camera_write'] = async_camera_write
     dx, material_dt = .004, .0001
     if runtime_profile is not None:
         from .runtime_profiles import runtime_profile as load_profile, check_task

@@ -18,7 +18,7 @@ sys.path.insert(0, str(ROOT / 'src'))
 from robotic_cutting_sim.control import ActionLimits, DELTA_MODE
 from robotic_cutting_sim.live_env import open_cutting_env
 from robotic_cutting_sim.policy_config import policy_preset
-from robotic_cutting_sim.recording import PhysicsStreamWriter, manifest, new_output, write_json
+from robotic_cutting_sim.recording import CameraFrameWriter, PhysicsStreamWriter, manifest, new_output, write_json
 
 
 def jsonable(value):
@@ -109,6 +109,7 @@ class EpisodeRecorder:
         self.output.mkdir(exist_ok=False)
         (self.output / 'observations').mkdir()
         self.rows, self.samples, self.states, self.errors, self.rotation_errors = [], [], [], [], []
+        self.camera_writer = None
         self.physics_stream = None
         if stream_physics:
             material = env.backend.material
@@ -135,6 +136,8 @@ class EpisodeRecorder:
         write_json(self.output / 'manifest.json', manifest(jsonable(dict(
             controller=controller, runtime_source=env.runtime_source, config=config,
             task_id=env.task.task_id, seed=env.task.seed)), 'wp10_actual_live_episode'))
+        if getattr(getattr(env.backend, 'config', None), 'async_camera_write', False):
+            self.camera_writer = CameraFrameWriter(self.output, self._save_camera)
         self.capture()
 
     def measured(self):
@@ -167,6 +170,8 @@ class EpisodeRecorder:
         frames = env._frames
         if not frames and getattr(getattr(backend, 'config', None), 'camera', False):
             frames, _ = backend.capture()
+        observations = self.output / 'observations'
+        files = []
         # State episodes may record no cameras; this is explicit in every receipt.
         for name, frame in frames.items():
             public = {key: value for key, value in frame.items() if not key.startswith('rtx_reference_')
@@ -175,26 +180,32 @@ class EpisodeRecorder:
             if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
                 raise ValueError('Only current, measured camera frames may be recorded')
             public['physics_timestamp_s'] = timestamp
-            self._save_camera(self.output / 'observations' / f'{name}_{index:04d}.npz', **public)
+            files.append((observations / f'{name}_{index:04d}.npz', public))
         overview = getattr(backend, 'overview_frame', None) if frames else None
         if overview is not None:
             # Presentation-only RGB (never an observation); same measured-time rule.
             timestamp = float(overview['physics_timestamp_s'])
             if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
                 raise ValueError('Only current overview frames may be recorded')
-            self._save_camera(self.output / 'observations' / f'overview_rgb_{index:04d}.npz',
-                              rgb=overview['rgb'], physics_timestamp_s=timestamp)
+            files.append((observations / f'overview_rgb_{index:04d}.npz',
+                          dict(rgb=overview['rgb'], physics_timestamp_s=timestamp)))
         closeup = getattr(backend, 'closeup_frame', None) if frames else None
         if closeup is not None:
             # Presentation-only close-up RGB (never an observation); same measured-time rule.
             timestamp = float(closeup['physics_timestamp_s'])
             if abs(timestamp - env.time_s) > 1e-9 or not np.isfinite(timestamp):
                 raise ValueError('Only current close-up frames may be recorded')
-            self._save_camera(self.output / 'observations' / f'closeup_rgb_{index:04d}.npz',
-                              rgb=closeup['rgb'], physics_timestamp_s=timestamp)
-        self.rows.append(dict(frame=index, time_s=env.time_s, controller=self.controller,
-                              camera_calibration=jsonable(backend.calibration),
-                              cut_enabled=getattr(self, 'last_cut', False)))
+            files.append((observations / f'closeup_rgb_{index:04d}.npz',
+                          dict(rgb=closeup['rgb'], physics_timestamp_s=timestamp)))
+        row = dict(frame=index, time_s=env.time_s, controller=self.controller,
+                   camera_calibration=jsonable(backend.calibration), cut_enabled=getattr(self, 'last_cut', False))
+        writer = getattr(self, 'camera_writer', None)
+        if writer is not None:
+            writer.submit(row, files)
+        else:
+            for path, payload in files:
+                self._save_camera(path, **payload)
+        self.rows.append(row)
         if getattr(self,'save_surfaces',False):
             save_surface_snapshot(backend,self.output,index,env.time_s)
         if getattr(self, 'physics_stream', None) is None:
@@ -214,7 +225,8 @@ class EpisodeRecorder:
             row = backend.surface_frame()
             self.surface_frames.append(dict(frame=index, time_s=env.time_s, extraction=row['extraction'],
                                             codes_sha256=row['codes_sha256']))
-        write_json(self.output / 'frame_manifest.json', self.rows)
+        if writer is None:
+            write_json(self.output / 'frame_manifest.json', self.rows)
 
     def step(self, action, result, before_observation=None, step_wall_s=None, policy_phase=None,
              controller_profile=None, policy_tracking=None, policy_vision=None):
@@ -292,6 +304,11 @@ class EpisodeRecorder:
         env, material = self.env, self.env.backend.material
         if self.rows[-1]['time_s'] != env.time_s:
             self.capture()
+        if getattr(self, 'camera_writer', None) is not None:
+            timing = self.camera_writer.finish()
+            if self.camera_io is not None:
+                self.camera_io.update(timing)
+            write_json(self.output / 'frame_manifest.json', self.rows)
         if getattr(self, 'physics_stream', None) is None:
             samples = self.samples
             np.savez_compressed(self.output / 'physics_state.npz',
@@ -444,7 +461,8 @@ def validate_arguments(p, a):
     if a.scene or a.goal:
         return validate_configured(p, a)
     configured_only = ('surface_profile', 'surface_timing_log', 'stage_profile', 'runtime_profile', 'native_sensor_runtime',
-                       'material_diagnostics', 'reuse_grasp_state', 'robot_substeps', 'surface_update')
+                       'material_diagnostics', 'reuse_grasp_state', 'robot_substeps', 'surface_update',
+                       'camera_snapshot', 'steady_render_passes', 'async_camera_write')
     invalid = [f"--{k.replace('_', '-')}" for k in configured_only if hasattr(a, k)]
     if invalid:
         p.error(f"{', '.join(invalid)} apply to --scene/--goal runs")
@@ -700,6 +718,9 @@ def main(argv=None):
                         'episode_###/runtime_timing_trace.json (profiling; both surface profiles)')
     p.add_argument('--stage-profile', action='store_true', default=argparse.SUPPRESS,
                    help='Measure the configured Native episode with StageProfiler')
+    p.add_argument('--camera-snapshot', action='store_true', default=argparse.SUPPRESS)
+    p.add_argument('--steady-render-passes', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--async-camera-write', action='store_true', default=argparse.SUPPRESS)
     p.add_argument('--save-render-surfaces',action='store_true',
                    help='Save privileged exact per-capture staged meshes for camera replay; physics and observations unchanged')
     p.add_argument('--runtime-profile', default=argparse.SUPPRESS,
@@ -883,7 +904,7 @@ def run_configured(a, out, task):
         runtime_receipt.update(recording={"every": a.record_every}, preset_overrides={},
                                history_stride=a.oracle_stride)
     for key in ('native_sensor_runtime', 'material_diagnostics', 'reuse_grasp_state',
-                'robot_substeps', 'surface_update'):
+                'robot_substeps', 'surface_update', 'camera_snapshot', 'steady_render_passes', 'async_camera_write'):
         if hasattr(a, key):
             options[key] = getattr(a, key)
     if a.overview_camera:
