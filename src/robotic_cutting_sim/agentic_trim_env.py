@@ -219,7 +219,8 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
              stream_physics=False, memory_receipts=False, native_sensor_runtime=None,
              material_diagnostics='snapshot', v7_2_optimizations=True, runtime_profile=None,
              reuse_grasp_state=False, robot_substeps=10, camera_every=10, record_every=10,
-             camera_snapshot=False, steady_render_passes=None, async_camera_write=False):
+             camera_snapshot=False, steady_render_passes=None, async_camera_write=False,
+             buffer_grasp_trace=False):
     """Entry used by a GPU1-only launcher; never selects a GPU by itself."""
     from .live_env import open_cutting_env
     if not isinstance(v7_2_optimizations, bool):
@@ -256,6 +257,8 @@ def open_env(*, output_dir, seed, policy_seed=0, sim_seed=42, distribution='id',
         options['steady_render_passes'] = steady_render_passes
     if async_camera_write is not False:
         options['async_camera_write'] = async_camera_write
+    if buffer_grasp_trace is not False:
+        options['buffer_grasp_trace'] = buffer_grasp_trace
     dx, material_dt = .004, .0001
     if runtime_profile is not None:
         from .runtime_profiles import runtime_profile as load_profile, check_task

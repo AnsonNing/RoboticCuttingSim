@@ -462,7 +462,7 @@ def validate_arguments(p, a):
         return validate_configured(p, a)
     configured_only = ('surface_profile', 'surface_timing_log', 'stage_profile', 'runtime_profile', 'native_sensor_runtime',
                        'material_diagnostics', 'reuse_grasp_state', 'robot_substeps', 'surface_update',
-                       'camera_snapshot', 'steady_render_passes', 'async_camera_write')
+                       'camera_snapshot', 'steady_render_passes', 'async_camera_write', 'buffer_grasp_trace')
     invalid = [f"--{k.replace('_', '-')}" for k in configured_only if hasattr(a, k)]
     if invalid:
         p.error(f"{', '.join(invalid)} apply to --scene/--goal runs")
@@ -721,6 +721,7 @@ def main(argv=None):
     p.add_argument('--camera-snapshot', action='store_true', default=argparse.SUPPRESS)
     p.add_argument('--steady-render-passes', type=int, default=argparse.SUPPRESS)
     p.add_argument('--async-camera-write', action='store_true', default=argparse.SUPPRESS)
+    p.add_argument('--buffer-grasp-trace', action='store_true', default=argparse.SUPPRESS)
     p.add_argument('--save-render-surfaces',action='store_true',
                    help='Save privileged exact per-capture staged meshes for camera replay; physics and observations unchanged')
     p.add_argument('--runtime-profile', default=argparse.SUPPRESS,
@@ -904,7 +905,8 @@ def run_configured(a, out, task):
         runtime_receipt.update(recording={"every": a.record_every}, preset_overrides={},
                                history_stride=a.oracle_stride)
     for key in ('native_sensor_runtime', 'material_diagnostics', 'reuse_grasp_state',
-                'robot_substeps', 'surface_update', 'camera_snapshot', 'steady_render_passes', 'async_camera_write'):
+                'robot_substeps', 'surface_update', 'camera_snapshot', 'steady_render_passes', 'async_camera_write',
+                'buffer_grasp_trace'):
         if hasattr(a, key):
             options[key] = getattr(a, key)
     if a.overview_camera:

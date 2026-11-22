@@ -55,6 +55,7 @@ class IsaacSimCuttingConfig:
     camera_snapshot: bool = False
     steady_render_passes: int | None = None
     async_camera_write: bool = False
+    buffer_grasp_trace: bool = False
     camera_mode: str = "rtx_rgbd"
     camera_layout: str = "legacy_fixed_d455"
     camera_rig_profile: str = "wrist_camera_rig_v5"
@@ -119,6 +120,8 @@ class IsaacSimCuttingConfig:
     def __post_init__(self):
         if not isinstance(self.camera_snapshot, bool):
             raise ValueError("camera_snapshot must be a bool")
+        if not isinstance(self.buffer_grasp_trace, bool):
+            raise ValueError("buffer_grasp_trace must be a bool")
         if not isinstance(self.async_camera_write, bool) or (
                 self.async_camera_write and not (self.camera_snapshot and self.camera)):
             raise ValueError("async_camera_write requires owned Native camera snapshots")
@@ -420,10 +423,12 @@ class LiveIsaacSimCutting:
         self.time_s = 0.
         self.step_index = 0
         self.reset_index = -1
+        self._grasp_stream = None
         self._closed = False
         self.home = None  # declared HOME (WP-11 Phase D), set at reset
 
     def reset(self,seed=None):
+        self._close_grasp_trace()
         if self.config.native_sensor_runtime is not None and not hasattr(self, "contact_extension_runtime"):
             import omni.kit.app
             from .native_sensor_runtime import activate_offline_contact_extension
@@ -1082,6 +1087,7 @@ class LiveIsaacSimCutting:
             self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
             self.SimulationManager.step()
             self._grasp_sample("rigid_control_probe",np.zeros(6),before)
+        self._flush_grasp_trace()
         self.step_index += 1
         self.time_s=self.step_index*self.config.control_dt
         self.physx.update_transformations(False,True,True)
@@ -1132,9 +1138,27 @@ class LiveIsaacSimCutting:
             if isinstance(value, np.generic):
                 return value.item()
             raise TypeError(type(value).__name__)
-        with (self.output/f"physical_grasp_trace_{self.reset_index:02d}.jsonl").open("a") as stream:
-            stream.write(json.dumps(row,default=json_default,allow_nan=False)+"\n")
+        path = self.output/f"physical_grasp_trace_{self.reset_index:02d}.jsonl"
+        encoded = json.dumps(row, default=json_default, allow_nan=False) + "\n"
+        if self.config.buffer_grasp_trace:
+            if self._grasp_stream is None:
+                self._grasp_stream = path.open("a")
+            self._grasp_stream.write(encoded)
+        else:
+            with path.open("a") as stream:
+                stream.write(encoded)
         return row
+
+    def _flush_grasp_trace(self):
+        stream = getattr(self, "_grasp_stream", None)
+        if stream is not None:
+            stream.flush()
+
+    def _close_grasp_trace(self):
+        stream = getattr(self, "_grasp_stream", None)
+        if stream is not None:
+            stream.close()
+            self._grasp_stream = None
 
     def _settle_grasp(self, q):
         """Actual finger actuation before material exists or the episode starts."""
@@ -1156,6 +1180,7 @@ class LiveIsaacSimCutting:
             self.arms.set_dof_efforts(self.arms.get_dof_gravity_compensation_forces())
             manager.step()
             self._grasp_sample("pregrasp_settling", application_state=before)
+        self._flush_grasp_trace()
         final = self.grasp_trace[-1]["native_time_s"]
         rows = [r for r in self.grasp_trace if r["native_time_s"] >= final-g.stability_window_s-1e-9]
         relative = np.asarray([r["relative_tool_pose_xyzw"] for r in rows])
@@ -1586,6 +1611,7 @@ class LiveIsaacSimCutting:
                         "tool_angular_velocity_world_rad_s": row["tool_angular_velocity_world_rad_s"],
                     }
             current = next_state
+        self._flush_grasp_trace()
         self.step_index += 1
         self.time_s = self.step_index*c.control_dt
         native_relative = manager.get_simulation_time()-self.native_time_origin
@@ -1848,6 +1874,7 @@ class LiveIsaacSimCutting:
 
     def close(self):
         if not self._closed:
+            self._close_grasp_trace()
             self.app.close(wait_for_replicator=False)
             self._closed=True
 

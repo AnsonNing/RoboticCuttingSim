@@ -38,6 +38,7 @@ def main():
     p.add_argument("--camera-snapshot", action="store_true")
     p.add_argument("--steady-render-passes", type=int)
     p.add_argument("--async-camera-write", action="store_true")
+    p.add_argument("--buffer-grasp-trace", action="store_true")
     args = p.parse_args()
     from agentic_robot.lab.sim.envs.rcs_gpu1 import _require_gpu1, launch_app_gpu1
     from robotic_cutting_sim import isaac_sim_runner
@@ -61,14 +62,15 @@ def main():
                "robot_substeps": args.robot_substeps, "reuse_grasp_state": args.reuse_grasp_state,
                "camera_every": args.camera_every, "record_every": args.record_every,
                "camera_snapshot": args.camera_snapshot, "steady_render_passes": args.steady_render_passes,
-               "async_camera_write": args.async_camera_write})
+               "async_camera_write": args.async_camera_write, "buffer_grasp_trace": args.buffer_grasp_trace})
     start = time.perf_counter()
     with open_env(output_dir=args.out / "env", seed=args.seed, stream_physics=True, memory_receipts=True,
                   native_sensor_runtime="isaac62_physx_offline_v1", material_diagnostics="device_reduction_v1",
                   runtime_profile=args.runtime_profile, reuse_grasp_state=args.reuse_grasp_state,
                   robot_substeps=args.robot_substeps, camera_every=args.camera_every,
                   record_every=args.record_every, camera_snapshot=args.camera_snapshot,
-                  steady_render_passes=args.steady_render_passes, async_camera_write=args.async_camera_write) as env:
+                  steady_render_passes=args.steady_render_passes, async_camera_write=args.async_camera_write,
+                  buffer_grasp_trace=args.buffer_grasp_trace) as env:
         factory_s = time.perf_counter() - start
         env.reset()
         reset_s = time.perf_counter() - start - factory_s
